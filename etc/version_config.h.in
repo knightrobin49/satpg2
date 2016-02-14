@@ -1,0 +1,17 @@
+﻿
+
+//////////////////////////////////////////////////////////////////////
+// バージョン変数の設定
+//////////////////////////////////////////////////////////////////////
+
+/// @brief プロジェクトの major バージョン
+#define SATPG_VERSION_MAJIR @SATPG_VERSION_MAJOR@
+
+/// @brief プロジェクトの minor バージョン
+#define SATPG_VERSION_MINOR @SATPG_VERSION_MINOR@
+
+/// @brief プロジェクトのバージョン
+#define SATPG_VERSION @SATPG_VERSION@
+
+/// @brief プロジェクトの名前空間
+#define SATPG_NAMESPACE @SATPG_NAMESPACE@
