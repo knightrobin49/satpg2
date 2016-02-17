@@ -20,7 +20,7 @@
 #include "NodeSet.h"
 #include "ModelValMap.h"
 
-#include "YmUtils/StopWatch.h"
+#include "ym/StopWatch.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG
@@ -338,8 +338,8 @@ MinPatBase::make_testvector(TpgNetwork& network,
 
   SatEngine engine(string(), string(), nullptr);
 
-  vector<Bool3> sat_model;
-  Bool3 sat_ans = engine.check_sat(gval_cnf, suf_list, sat_model);
+  vector<SatBool3> sat_model;
+  SatBool3 sat_ans = engine.check_sat(gval_cnf, suf_list, sat_model);
   ASSERT_COND ( sat_ans == kB3True );
 
   const VidMap& var_map = gval_cnf.var_map();
@@ -349,7 +349,7 @@ MinPatBase::make_testvector(TpgNetwork& network,
     const TpgNode* node = network.input(i);
     ymuint input_id = node->input_id();
     Val3 val;
-    if ( var_map(node) == kVarIdIllegal ) {
+    if ( var_map(node) == kSatVarIdIllegal ) {
       val = kVal0;
     }
     else {

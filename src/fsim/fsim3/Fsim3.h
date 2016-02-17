@@ -15,6 +15,7 @@
 #include "PackedVal.h"
 #include "EventQ.h"
 #include "SimFault.h"
+#include "TpgNode.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG_FSIM
@@ -190,7 +191,7 @@ private:
 
   /// @brief logic ノードを作る．
   SimNode*
-  make_node(GateType type,
+  make_node(TpgNode::GateType type,
 	    const vector<SimNode*>& inputs);
 
 

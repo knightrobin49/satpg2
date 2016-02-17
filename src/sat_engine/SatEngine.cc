@@ -566,7 +566,7 @@ SatEngine::make_node_cnf(const TpgNode* node,
     ;
   }
   else if ( node->is_output() ) {
-    make_gate_cnf(kGateBuff, VidLitMap(node, vid_map));
+    make_gate_cnf(TpgNode::kGateBuff, VidLitMap(node, vid_map));
   }
   else if ( node->is_logic() ) {
     make_gate_cnf(node->gate_type(), VidLitMap(node, vid_map));
@@ -695,36 +695,36 @@ SatEngine::make_fault_cnf(const TpgFault* fault,
 
     bool inv = false;
     switch ( node->gate_type() ) {
-    case kGateBuff:
-    case kGateNot:
+    case TpgNode::kGateBuff:
+    case TpgNode::kGateNot:
       ASSERT_NOT_REACHED;
       break;
 
-    case kGateNand:
+    case TpgNode::kGateNand:
       ASSERT_COND( fval == 1 );
       make_and_cnf(VectLitMap(ivars, ovar), true);
       break;
 
-    case kGateAnd:
+    case TpgNode::kGateAnd:
       ASSERT_COND( fval == 1 );
       make_and_cnf(VectLitMap(ivars, ovar), false);
       break;
 
-    case kGateNor:
+    case TpgNode::kGateNor:
       ASSERT_COND( fval == 0 );
       make_or_cnf(VectLitMap(ivars, ovar), true);
       break;
 
-    case kGateOr:
+    case TpgNode::kGateOr:
       ASSERT_COND( fval == 0 );
       make_or_cnf(VectLitMap(ivars, ovar), false);
       break;
 
-    case kGateXnor:
+    case TpgNode::kGateXnor:
       inv = true;
       // わざと次に続く
 
-    case kGateXor:
+    case TpgNode::kGateXor:
       if ( fval == 1 ) {
 	inv = !inv;
       }
@@ -791,12 +791,12 @@ SatEngine::make_fault_cnf_d(const TpgFault* fault,
 
     bool inv = false;
     switch ( node->gate_type() ) {
-    case kGateBuff:
-    case kGateNot:
+    case TpgNode::kGateBuff:
+    case TpgNode::kGateNot:
       ASSERT_NOT_REACHED;
       break;
 
-    case kGateNand:
+    case TpgNode::kGateNand:
       ASSERT_COND( fval == 1 );
       for (ymuint i = 0; i < ni - 1; ++ i) {
 	add_clause(ilits[i]);
@@ -805,7 +805,7 @@ SatEngine::make_fault_cnf_d(const TpgFault* fault,
       add_clause(~oflit);
       break;
 
-    case kGateAnd:
+    case TpgNode::kGateAnd:
       ASSERT_COND( fval == 1 );
       for (ymuint i = 0; i < ni - 1; ++ i) {
 	add_clause(ilits[i]);
@@ -814,7 +814,7 @@ SatEngine::make_fault_cnf_d(const TpgFault* fault,
       add_clause( oflit);
       break;
 
-    case kGateNor:
+    case TpgNode::kGateNor:
       ASSERT_COND( fval == 0 );
       for (ymuint i = 0; i < ni - 1; ++ i) {
 	add_clause(~ilits[i]);
@@ -823,7 +823,7 @@ SatEngine::make_fault_cnf_d(const TpgFault* fault,
       add_clause( oflit);
       break;
 
-    case kGateOr:
+    case TpgNode::kGateOr:
       ASSERT_COND( fval == 0 );
       for (ymuint i = 0; i < ni - 1; ++ i) {
 	add_clause(~ilits[i]);
@@ -832,11 +832,11 @@ SatEngine::make_fault_cnf_d(const TpgFault* fault,
       add_clause(~oflit);
       break;
 
-    case kGateXnor:
+    case TpgNode::kGateXnor:
       inv = true;
       // わざと次に続く
 
-    case kGateXor:
+    case TpgNode::kGateXor:
       if ( fval == 1 ) {
 	inv = !inv;
       }
@@ -895,39 +895,39 @@ SatEngine::make_dchain_cnf(const TpgNode* node,
 // @param[in] gate_type ゲートの種類
 // @param[in] litmap 入出力のリテラルを保持するクラス
 void
-SatEngine::make_gate_cnf(GateType gate_type,
+SatEngine::make_gate_cnf(TpgNode::GateType gate_type,
 			 const LitMap& litmap)
 {
   switch ( gate_type ) {
-  case kGateNot:
+  case TpgNode::kGateNot:
     make_buff_cnf(mSolver, litmap.input(0), ~litmap.output());
     return;
 
-  case kGateBuff:
+  case TpgNode::kGateBuff:
     make_buff_cnf(mSolver, litmap.input(0), litmap.output());
     return;
 
-  case kGateNand:
+  case TpgNode::kGateNand:
     make_and_cnf(litmap, true);
     return;
 
-  case kGateAnd:
+  case TpgNode::kGateAnd:
     make_and_cnf(litmap, false);
     return;
 
-  case kGateNor:
+  case TpgNode::kGateNor:
     make_or_cnf(litmap, true);
     return;
 
-  case kGateOr:
+  case TpgNode::kGateOr:
     make_or_cnf(litmap, false);
     return;
 
-  case kGateXnor:
+  case TpgNode::kGateXnor:
     make_xor_cnf(litmap, true);
     return;
 
-  case kGateXor:
+  case TpgNode::kGateXor:
     make_xor_cnf(litmap, false);
     return;
 

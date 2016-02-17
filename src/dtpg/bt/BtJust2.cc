@@ -116,12 +116,12 @@ BtJust2::justify(const TpgNode* node,
   }
 
   switch ( node->gate_type() ) {
-  case kGateBuff:
-  case kGateNot:
+  case TpgNode::kGateBuff:
+  case TpgNode::kGateNot:
     // 無条件で唯一のファンインをたどる．
     return just_sub1(node, val_map);
 
-  case kGateAnd:
+  case TpgNode::kGateAnd:
     if ( gval == kVal1 ) {
       // すべてのファンインノードをたどる．
       return just_sub1(node, val_map);
@@ -132,7 +132,7 @@ BtJust2::justify(const TpgNode* node,
     }
     break;
 
-  case kGateNand:
+  case TpgNode::kGateNand:
     if ( gval == kVal1 ) {
       // 0の値を持つ最初のノードをたどる．
       return just_sub2(node, val_map, kVal0);
@@ -143,7 +143,7 @@ BtJust2::justify(const TpgNode* node,
     }
     break;
 
-  case kGateOr:
+  case TpgNode::kGateOr:
     if ( gval == kVal1 ) {
       // 1の値を持つ最初のノードをたどる．
       return just_sub2(node, val_map, kVal1);
@@ -154,7 +154,7 @@ BtJust2::justify(const TpgNode* node,
     }
     break;
 
-  case kGateNor:
+  case TpgNode::kGateNor:
     if ( gval == kVal1 ) {
       // すべてのファンインノードをたどる．
       return just_sub1(node, val_map);
@@ -165,8 +165,8 @@ BtJust2::justify(const TpgNode* node,
     }
     break;
 
-  case kGateXor:
-  case kGateXnor:
+  case TpgNode::kGateXor:
+  case TpgNode::kGateXnor:
     // すべてのファンインノードをたどる．
     return just_sub1(node, val_map);
     break;

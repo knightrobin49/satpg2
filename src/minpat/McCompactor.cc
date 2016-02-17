@@ -11,7 +11,7 @@
 #include "McOp.h"
 #include "Fsim.h"
 #include "TpgFault.h"
-#include "YmAlgo/MinCov.h"
+#include "MinCov.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG

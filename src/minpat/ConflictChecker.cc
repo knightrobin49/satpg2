@@ -21,9 +21,9 @@
 #include "FvalCnf.h"
 #include "SatEngine.h"
 
-#include "YmUtils/RandGen.h"
-#include "YmUtils/StopWatch.h"
-#include "YmUtils/HashSet.h"
+#include "ym/RandGen.h"
+#include "ym/StopWatch.h"
+#include "ym/HashSet.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG
@@ -255,7 +255,7 @@ ConflictChecker::analyze_conflict(ymuint f1_id,
     const NodeValList& ma_list2 = fi2.mandatory_assignment();
 
     mConflictStats.int2_timer.start();
-    Bool3 sat_stat = engine.check_sat(gval_cnf, suf_list2);
+    SatBool3 sat_stat = engine.check_sat(gval_cnf, suf_list2);
     if ( sat_stat == kB3True ) {
       // f2 の十分割当のもとで f1 が検出できれば f1 と f2 はコンフリクトしない．
       ++ mConflictStats.int2_count;
@@ -313,7 +313,7 @@ ConflictChecker::analyze_conflict(ymuint f1_id,
       const NodeSet& node_set2 = mAnalyzer.node_set(f2_id);
       engine.make_fval_cnf(fval_cnf2, f2, node_set2, kVal1);
 
-      Bool3 sat_stat = engine.check_sat();
+      SatBool3 sat_stat = engine.check_sat();
       if ( sat_stat == kB3False ) {
 	++ mConflictStats.conf_count;
 	++ mConflictStats.conf4_count;

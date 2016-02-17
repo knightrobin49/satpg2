@@ -345,7 +345,7 @@ FgMgrBase::find_group2(ymuint fid0,
 
     { // グループの十分割当が成り立っていたら両立している．
       const NodeValList& suf_list1 = sufficient_assignment(gid);
-      vector<Bool3> sat_model;
+      vector<SatBool3> sat_model;
       if ( engine0.check_sat(gval_cnf0, suf_list1, sat_model) == kB3True ) {
 	FaultGroup* fg = _fault_group(gid);
 	if ( fi0.single_cube() ) {
@@ -412,7 +412,7 @@ FgMgrBase::find_group2(ymuint fid0,
     }
     ++ mMnum;
 
-    vector<Bool3> sat_model;
+    vector<SatBool3> sat_model;
     if ( engine.check_sat(sat_model) == kB3True ) {
       ++ mFoundCount;
 
@@ -507,8 +507,8 @@ FgMgrBase::add_fault(ymuint gid,
     }
   }
 
-  vector<Bool3> sat_model;
-  Bool3 sat_ans = engine.check_sat(sat_model);
+  vector<SatBool3> sat_model;
+  SatBool3 sat_ans = engine.check_sat(sat_model);
   ASSERT_COND( sat_ans == kB3True );
 
   // 既存の故障の十分割当も更新する．

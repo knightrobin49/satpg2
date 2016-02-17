@@ -19,7 +19,7 @@
 #include "ModelValMap.h"
 #include "Extractor.h"
 #include "NodeValList.h"
-#include "YmUtils/HashSet.h"
+#include "ym/HashSet.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG

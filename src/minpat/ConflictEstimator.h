@@ -9,9 +9,9 @@
 /// All rights reserved.
 
 
-#include "satpg_nsdef.h"
-#include "YmUtils/RandGen.h"
-#include "YmUtils/StopWatch.h"
+#include "satpg.h"
+#include "ym/RandGen.h"
+#include "ym/StopWatch.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG

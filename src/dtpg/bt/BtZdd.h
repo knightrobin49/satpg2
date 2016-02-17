@@ -10,7 +10,7 @@
 
 
 #include "BtJustBase.h"
-#include "YmLogic/ZddMgr.h"
+#include "ym/ZddMgr.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG

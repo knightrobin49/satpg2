@@ -9,7 +9,7 @@
 /// All rights reserved.
 
 
-#include "satpg_nsdef.h"
+#include "satpg.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG

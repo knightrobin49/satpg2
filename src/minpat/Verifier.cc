@@ -11,7 +11,7 @@
 #include "FsimOp.h"
 #include "TpgFault.h"
 #include "TestVector.h"
-#include "YmUtils/HashSet.h"
+#include "ym/HashSet.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG

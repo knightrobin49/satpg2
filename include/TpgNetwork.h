@@ -279,10 +279,10 @@ private:
 
   /// @brief TpgNode と TpgNode の対応付けを行う．
   /// @param[in] node TpgNode
-  /// @param[in] tgnode もととなる BnNode
+  /// @param[in] bnnode もととなる BnNode
   void
   bind(TpgNode* node,
-       const BnNode* tgnode);
+       const BnNode* bnnode);
 
   /// @brief 名前を設定する．
   void
@@ -290,9 +290,9 @@ private:
 		const char* src_name);
 
   /// @brief ノードの入力と出力の故障を作る．
-  /// @param[in] tgnode もととなる BnNode
+  /// @param[in] bnnode もととなる BnNode
   void
-  make_faults(const BnNode* tgnode,
+  make_faults(const BnNode* bnnode,
 	      const HashMap<ymuint, CplxInfo*>& en_hash);
 
   /// @brief 出力の故障を作る．
@@ -355,8 +355,8 @@ private:
   //////////////////////////////////////////////////////////////////////
 
   /// @brief コンストラクタ
-  /// @param[in] tgnetwork もとのネットワーク
-  TpgNetwork(const BnNetwork& tgnetwork);
+  /// @param[in] bnnetwork もとのネットワーク
+  TpgNetwork(const BnNetwork& bnnetwork);
 
   /// @brief コピーコンストラクタは実装しない．
   TpgNetwork(const TpgNetwork& src);

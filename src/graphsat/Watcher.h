@@ -9,9 +9,9 @@
 /// All rights reserved.
 
 
-#include "satpg_nsdef.h"
+#include "satpg.h"
 #include "SatReason.h"
-#include "YmUtils/Alloc.h"
+#include "ym/Alloc.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG

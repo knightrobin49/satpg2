@@ -11,7 +11,6 @@
 
 #include "satpg.h"
 #include "Val3.h"
-#include "GateType.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG
@@ -31,6 +30,47 @@ class TpgMap;
 class TpgNode
 {
   friend class TpgNetwork;
+
+public:
+
+  //////////////////////////////////////////////////////////////////////
+  /// @brief 論理ゲートの種類を表す列挙型
+  //////////////////////////////////////////////////////////////////////
+  enum GateType {
+    /// @brief 定数0
+    kGateConst0 = 0,
+
+    /// @brief 定数1
+    kGateConst1 = 1,
+
+    /// @brief バッファ
+    kGateBuff   = 2,
+
+    /// @brief NOT
+    kGateNot    = 3,
+
+    /// @brief AND
+    kGateAnd    = 4,
+
+    /// @brief NAND
+    kGateNand   = 5,
+
+    /// @brief OR
+    kGateOr     = 6,
+
+    /// @brief NOR
+    kGateNor    = 7,
+
+    /// @brief XOR
+    kGateXor    = 8,
+
+    /// @brief XNOR
+    kGateXnor   = 9,
+
+    /// @brief 上記以外
+    kGateCplx   = 10
+  };
+
 
 public:
 
@@ -119,14 +159,14 @@ public:
   is_root() const;
 
   /// @brief もとのゲートのファンインに対応するノードを返す．
-  /// @param[in] pos もとの TgNode の入力の位置番号 (!!!)
+  /// @param[in] pos もとの BnNode の入力の位置番号 (!!!)
   ///
   /// is_root() が true の時のみ意味を持つ．
   TpgNode*
   input_map(ymuint pos) const;
 
-  /// @brief TgNode のファンインに対応するノードのファンイン番号を返す．
-  /// @param[in] pos もとの TgNode の入力の位置番号 (!!!)
+  /// @brief BnNode のファンインに対応するノードのファンイン番号を返す．
+  /// @param[in] pos もとの BnNode の入力の位置番号 (!!!)
   ///
   /// is_root() が true の時のみ意味を持つ．
   ymuint
@@ -397,7 +437,7 @@ TpgNode::is_logic() const
 
 // @brief ゲートタイプを得る．
 inline
-GateType
+TpgNode::GateType
 TpgNode::gate_type() const
 {
   ASSERT_COND( is_logic() );

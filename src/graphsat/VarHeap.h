@@ -9,8 +9,8 @@
 /// All rights reserved.
 
 
-#include "satpg_nsdef.h"
-#include "YmLogic/VarId.h"
+#include "satpg.h"
+#include "ym/VarId.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG

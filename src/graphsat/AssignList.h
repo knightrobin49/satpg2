@@ -9,8 +9,8 @@
 /// All rights reserved.
 
 
-#include "satpg_nsdef.h"
-#include "YmLogic/Literal.h"
+#include "satpg.h"
+#include "ym/Literal.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG

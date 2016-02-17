@@ -22,9 +22,9 @@
 #include "FvalCnf.h"
 #include "SatEngine.h"
 
-#include "YmUtils/RandGen.h"
-#include "YmUtils/StopWatch.h"
-#include "YmUtils/HashSet.h"
+#include "ym/RandGen.h"
+#include "ym/StopWatch.h"
+#include "ym/HashSet.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG

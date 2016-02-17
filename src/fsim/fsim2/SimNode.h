@@ -10,9 +10,9 @@
 
 
 #include "fsim2_nsdef.h"
+#include "TpgNode.h"
 #include "EqElem.h"
 #include "PackedVal.h"
-#include "ym/ym_bnet.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG_FSIM2
@@ -50,7 +50,7 @@ public:
   static
   SimNode*
   new_node(ymuint32 id,
-	   GateType type,
+	   TpgNode::GateType type,
 	   const vector<SimNode*>& inputs);
 
 

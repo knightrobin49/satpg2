@@ -10,11 +10,11 @@
 /// All rights reserved.
 
 
-#include "satpg_nsdef.h"
+#include "satpg.h"
 
 #include "YmCell/cell_nsdef.h"
-#include "YmUtils/Binder.h"
-#include "YmUtils/MStopWatch.h"
+#include "ym/Binder.h"
+#include "ym/MStopWatch.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG

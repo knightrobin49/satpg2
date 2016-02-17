@@ -13,8 +13,8 @@
 #include "NodeValList.h"
 #include "FaultAnalyzer.h"
 #include "FaultInfo.h"
-#include "YmUtils/HashSet.h"
-#include "YmUtils/USTime.h"
+#include "ym/HashSet.h"
+#include "ym/USTime.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG

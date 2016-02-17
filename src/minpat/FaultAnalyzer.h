@@ -9,12 +9,13 @@
 /// All rights reserved.
 
 
-#include "satpg_nsdef.h"
+#include "satpg.h"
 #include "NodeValList.h"
 #include "FaultInfo.h"
 #include "NodeSet.h"
-#include "YmUtils/RandGen.h"
-#include "YmUtils/StopWatch.h"
+#include "ym/RandGen.h"
+#include "ym/SatBool3.h"
+#include "ym/StopWatch.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG
@@ -160,7 +161,7 @@ private:
   /// @brief 故障の解析を行う．
   /// @param[in] fault 故障
   /// @param[in] tvmgr テストベクタのマネージャ
-  Bool3
+  SatBool3
   analyze_fault(const TpgFault* fault,
 		TvMgr& tvmgr);
 

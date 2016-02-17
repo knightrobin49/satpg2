@@ -13,8 +13,8 @@
 
 
 #include "YmTclpp/TclCmd.h"
-#include "YmUtils/StopWatch.h"
-#include "satpg_nsdef.h"
+#include "ym/StopWatch.h"
+#include "satpg.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG

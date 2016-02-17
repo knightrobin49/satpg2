@@ -8,8 +8,8 @@
 
 
 #include "GraphSat.h"
-#include "YmLogic/SatStats.h"
-#include "YmLogic/SatMsgHandler.h"
+#include "ym/SatStats.h"
+#include "ym/SatMsgHandler.h"
 #include "SatAnalyzer.h"
 #include "SatClause.h"
 #include "TpgNode.h"

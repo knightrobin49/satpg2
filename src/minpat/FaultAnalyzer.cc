@@ -22,9 +22,9 @@
 #include "FvalCnf.h"
 #include "SatEngine.h"
 
-#include "YmUtils/RandGen.h"
-#include "YmUtils/StopWatch.h"
-#include "YmUtils/HashSet.h"
+#include "ym/RandGen.h"
+#include "ym/StopWatch.h"
+#include "ym/HashSet.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG
@@ -174,7 +174,7 @@ FaultAnalyzer::init(const TpgNetwork& network,
     ymuint nf = node->fault_num();
     for (ymuint j = 0; j < nf; ++ j) {
       const TpgFault* fault = node->fault(j);
-      Bool3 stat = analyze_fault(fault, tvmgr);
+      SatBool3 stat = analyze_fault(fault, tvmgr);
       ++ f_all;
       switch ( stat ) {
       case kB3True:
@@ -251,7 +251,7 @@ FaultAnalyzer::init(const TpgNetwork& network,
 // @brief 故障の解析を行う．
 // @param[in] fault 故障
 // @param[in] tvmgr テストベクタのマネージャ
-Bool3
+SatBool3
 FaultAnalyzer::analyze_fault(const TpgFault* fault,
 			     TvMgr& tvmgr)
 {
@@ -266,8 +266,8 @@ FaultAnalyzer::analyze_fault(const TpgFault* fault,
 
   engine.make_fval_cnf(fval_cnf, fault, node_set(f_id), kVal1);
 
-  vector<Bool3> sat_model;
-  Bool3 sat_stat = engine.check_sat(sat_model);
+  vector<SatBool3> sat_model;
+  SatBool3 sat_stat = engine.check_sat(sat_model);
   if ( sat_stat == kB3True ) {
     NodeValList& suf_list = fi.mSufficientAssignment;
     NodeValList& pi_suf_list = fi.mPiSufficientAssignment;
@@ -539,7 +539,7 @@ FaultAnalyzer::check_dominance(ymuint f1_id,
     engine.make_fval_cnf(fval_cnf2, f2, node_set2, kVal0);
   }
 
-  Bool3 sat_stat = engine.check_sat();
+  SatBool3 sat_stat = engine.check_sat();
 
   timer.stop();
   USTime time = timer.time();
@@ -558,7 +558,7 @@ FaultAnalyzer::check_dominance(ymuint f1_id,
     const NodeSet& node_set2 = node_set(f2_id);
     engine.make_fval_cnf(fval_cnf2, f2, node_set2, kVal0);
 
-    Bool3 sat_stat2 = engine.check_sat();
+    SatBool3 sat_stat2 = engine.check_sat();
     if ( sat_stat != sat_stat2 ) {
       cout << "ERROR in check_dominance(" << f1 << ", " << f2 << ")" << endl
 	   << "  sat_stat  = " << sat_stat << endl

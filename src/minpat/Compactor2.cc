@@ -9,8 +9,8 @@
 
 #include "Compactor.h"
 #include "FgMgr.h"
-#include "YmUtils/HashSet.h"
-#include "YmUtils/StopWatch.h"
+#include "ym/HashSet.h"
+#include "ym/StopWatch.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG

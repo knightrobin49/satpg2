@@ -11,6 +11,10 @@
 #include "TpgNode.h"
 #include "TpgFault.h"
 #include "TpgMap.h"
+#include "ym/BnFuncType.h"
+#include "ym/BnNetwork.h"
+#include "ym/BnNode.h"
+#include "ym/Expr.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG
@@ -367,15 +371,14 @@ TpgNetwork*
 TpgNetwork::read_blif(const string& filename,
 		      const CellLibrary* cell_library)
 {
-  TgNetwork tgnetwork;
-  TgBlifReader read;
+  BnNetwork bnnetwork;
 
-  bool stat = read(filename, tgnetwork, cell_library);
+  bool stat = bnnetwork.read_blif(filename, cell_library);
   if ( !stat ) {
     return nullptr;
   }
 
-  TpgNetwork* network = new TpgNetwork(tgnetwork);
+  TpgNetwork* network = new TpgNetwork(bnnetwork);
 
   return network;
 }
@@ -386,36 +389,36 @@ TpgNetwork::read_blif(const string& filename,
 TpgNetwork*
 TpgNetwork::read_iscas89(const string& filename)
 {
-  TgNetwork tgnetwork;
-  TgIscas89Reader read;
+  BnNetwork bnnetwork;
 
-  bool stat = read(filename, tgnetwork);
+  bool stat = bnnetwork.read_iscas89(filename);
   if ( !stat ) {
     return nullptr;
   }
 
-  TpgNetwork* network = new TpgNetwork(tgnetwork);
+  TpgNetwork* network = new TpgNetwork(bnnetwork);
 
   return network;
 }
 
 // @brief コンストラクタ
-// @param[in] tgnetwork もとのネットワーク
-TpgNetwork::TpgNetwork(const TgNetwork& tgnetwork) :
+// @param[in] bnnetwork もとのネットワーク
+TpgNetwork::TpgNetwork(const BnNetwork& bnnetwork) :
   mAlloc(4096)
 {
   //////////////////////////////////////////////////////////////////////
   // 要素数を数え，必要なメモリ領域を確保する．
   //////////////////////////////////////////////////////////////////////
 
-  ymuint nn_orig = tgnetwork.node_num();
-  ymuint nl = tgnetwork.logic_num();
+  ymuint nn_orig = bnnetwork.node_num();
+  ymuint nl = bnnetwork.logic_num();
   ymuint nn = nn_orig;
   HashMap<ymuint, CplxInfo*> en_hash;
   for (ymuint i = 0; i < nl; ++ i) {
-    const TgNode* tgnode = tgnetwork.logic(i);
-    if ( tgnode->is_cplx_logic() ) {
-      ymuint fid = tgnode->func_id();
+    const BnNode* bnnode = bnnetwork.logic(i);
+    const BnFuncType* func_type = bnnode->func_type();
+    if ( func_type->type() == BnFuncType::kFt_EXPR ) {
+      ymuint fid = func_type->id();
       CplxInfo* cinfo;
       if ( en_hash.find(fid, cinfo) ) {
 	// すでに同じ論理式を処理済みの場合は
@@ -424,8 +427,8 @@ TpgNetwork::TpgNetwork(const TgNetwork& tgnetwork) :
       }
       else {
 	// 論理式を取り出す．
-	Expr expr = tgnetwork.get_lexp(fid);
-	ymuint ni = tgnode->fanin_num();
+	Expr expr = func_type->expr();
+	ymuint ni = bnnode->fanin_num();
 	// 追加で必要となるノード数を計算する．
 	ymuint n = extra_node_count(expr, ni);
 	cinfo = new CplxInfo(n, ni);
@@ -441,9 +444,9 @@ TpgNetwork::TpgNetwork(const TgNetwork& tgnetwork) :
     }
   }
 
-  mInputNum = tgnetwork.input_num1();
-  mOutputNum = tgnetwork.output_num1();
-  mFFNum = tgnetwork.ff_num();
+  mInputNum = bnnetwork.input_num();
+  mOutputNum = bnnetwork.output_num();
+  mFFNum = bnnetwork.dff_num();
 
   mNodeNum = nn;
   mNodeArray = alloc_array<TpgNode>(mAlloc, nn);
@@ -471,8 +474,8 @@ TpgNetwork::TpgNetwork(const TgNetwork& tgnetwork) :
   //////////////////////////////////////////////////////////////////////
   ymuint npi = input_num2();
   for (ymuint i = 0; i < npi; ++ i) {
-    const TgNode* tgnode = tgnetwork.input(i);
-    TpgNode* node = make_input_node(tgnode);
+    const BnNode* bnnode = bnnetwork.input(i);
+    TpgNode* node = make_input_node(bnnode);
     mInputArray[i] = node;
   }
 
@@ -482,8 +485,8 @@ TpgNetwork::TpgNetwork(const TgNetwork& tgnetwork) :
   // ただし mNodeArray は入力からのトポロジカル順になる．
   //////////////////////////////////////////////////////////////////////
   for (ymuint i = 0; i < nl; ++ i) {
-    const TgNode* tgnode = tgnetwork.sorted_logic(i);
-    TpgNode* node = make_logic_node(tgnode, tgnetwork);
+    const BnNode* bnnode = bnnetwork.sorted_logic(i);
+    TpgNode* node = make_logic_node(bnnode, bnnetwork);
   }
 
 
@@ -492,8 +495,8 @@ TpgNetwork::TpgNetwork(const TgNetwork& tgnetwork) :
   //////////////////////////////////////////////////////////////////////
   ymuint npo = output_num2();
   for (ymuint i = 0; i < npo; ++ i) {
-    const TgNode* tgnode = tgnetwork.output(i);
-    TpgNode* node = make_output_node(tgnode);
+    const BnNode* bnnode = bnnetwork.output(i);
+    TpgNode* node = make_output_node(bnnode);
     mOutputArray[i] = node;
   }
 
@@ -507,9 +510,9 @@ TpgNetwork::TpgNetwork(const TgNetwork& tgnetwork) :
   // 全故障数を数える．
   ymuint nfault = 0;
   for (ymuint i = 0; i < nn_orig; ++ i) {
-    const TgNode* tgnode = tgnetwork.node(i);
-    if ( !tgnode->is_output() ) {
-      nfault += (tgnode->fanin_num() + 1) * 2;
+    const BnNode* bnnode = bnnetwork.node(i);
+    if ( !bnnode->is_output() ) {
+      nfault += (bnnode->fanin_num() + 1) * 2;
     }
   }
 
@@ -517,12 +520,12 @@ TpgNetwork::TpgNetwork(const TgNetwork& tgnetwork) :
   mFaultChunk = alloc_array<TpgFault>(mAlloc, nfault);
   mFaultNum = 0;
   for (ymuint i = 0; i < nl; ++ i) {
-    const TgNode* tgnode = tgnetwork.sorted_logic(nl - i - 1);
-    make_faults(tgnode, en_hash);
+    const BnNode* bnnode = bnnetwork.sorted_logic(nl - i - 1);
+    make_faults(bnnode, en_hash);
   }
   for (ymuint i = 0; i < npi; ++ i) {
-    const TgNode* tgnode = tgnetwork.input(i);
-    make_faults(tgnode, en_hash);
+    const BnNode* bnnode = bnnetwork.input(i);
+    make_faults(bnnode, en_hash);
   }
 
   ASSERT_COND( mFaultNum == nfault );
@@ -1105,17 +1108,14 @@ TpgNetwork::connect(TpgNode* src,
 
 // @brief TpgNode と TpgNode の対応付けを行う．
 // @param[in] node TpgNode
-// @param[in] tgnode もととなる TgNodep
+// @param[in] bnnode もととなる BnNodep
 void
 TpgNetwork::bind(TpgNode* node,
 		 const char* name
-		 const TgNode* tgnode)
+		 const BnNode* bnnode)
 {
-  const char* src_name = tgnode->name();
-  if ( tgnode->is_output() ) {
-    src_name = tgnode->fanin(0)->name();
-  }
-  mNodeMap[tgnode->gid()] = node;
+  const char* src_name = bnnode->name();
+  mNodeMap[bnnode->id()] = node;
 }
 
 // @brief 名前を設定する．
@@ -1135,35 +1135,35 @@ TpgNetwork::set_node_name(TpgNode* node,
 }
 
 void
-TpgNetwork::make_faults(const TgNode* tgnode,
+TpgNetwork::make_faults(const BnNode* bnnode,
 			const HashMap<ymuint, CplxInfo*>& en_hash)
 {
   const TpgFault* rep0 = nullptr;
   const TpgFault* rep1 = nullptr;
 
-  if ( tgnode->fanout_num() == 1 &&
-       !tgnode->fanout(0)->is_output() ) {
+  if ( bnnode->fanout_num() == 1 &&
+       !bnnode->fanout(0)->is_output() ) {
     // 唯一のファンアウト先が外部出力でなければ
     // そのファンインブランチの故障と出力の故障
     // は等価
-    const TgNode* tgonode = tgnode->fanout(0);
-    ymuint ni = tgonode->fanin_num();
+    const BnNode* bnonode = bnnode->fanout(0);
+    ymuint ni = bnonode->fanin_num();
     ymuint ipos = ni;
     for (ymuint i = 0; i < ni; ++ i) {
-      if ( tgonode->fanin(i) == tgnode ) {
+      if ( bnonode->fanin(i) == bnnode ) {
 	ipos = i;
 	break;
       }
     }
     ASSERT_COND( ipos < ni );
-    TpgNode* onode = mNodeMap[tgonode->gid()];
+    TpgNode* onode = mNodeMap[bnonode->gid()];
     TpgNode* inode = onode->input_map(ipos);
     ymuint tpg_ipos = onode->ipos_map(ipos);
     rep0 = inode->input_fault(0, tpg_ipos);
     rep1 = inode->input_fault(1, tpg_ipos);
   }
 
-  TpgNode* node = mNodeMap[tgnode->gid()];
+  TpgNode* node = mNodeMap[bnnode->gid()];
 
 
   // 出力の故障を生成
@@ -1178,20 +1178,20 @@ TpgNetwork::make_faults(const TgNode* tgnode,
     ++ nf;
   }
 
-  ymuint ni = tgnode->fanin_num();
+  ymuint ni = bnnode->fanin_num();
   for (ymuint i = 0; i < ni; ++ i) {
     Val3 oval0;
     Val3 oval1;
-    if ( tgnode->is_cplx_logic() ) {
-      ymuint fid = tgnode->func_id();
+    if ( bnnode->is_cplx_logic() ) {
+      ymuint fid = bnnode->func_id();
       ASSERT_COND( en_hash.check(fid) );
       const CplxInfo* cinfo = en_hash[fid];
       oval0 = cinfo->mCVal[i * 2 + 0];
       oval1 = cinfo->mCVal[i * 2 + 1];
     }
     else {
-      oval0 = c_val(tgnode->gate_type(), kVal0);
-      oval1 = c_val(tgnode->gate_type(), kVal1);
+      oval0 = c_val(bnnode->gate_type(), kVal0);
+      oval1 = c_val(bnnode->gate_type(), kVal1);
     }
 
     const TpgFault* rep0 = nullptr;

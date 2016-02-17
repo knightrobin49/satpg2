@@ -15,7 +15,7 @@
  */
 
 
-#include "satpg_nsdef.h"
+#include "satpg.h"
 
 #define ERRORCODE_HACK 1
 

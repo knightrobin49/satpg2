@@ -9,9 +9,8 @@
 /// All rights reserved.
 
 
-#include "satpg_nsdef.h"
+#include "satpg.h"
 #include "NodeValList.h"
-#include "YmLogic/Bool3.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG

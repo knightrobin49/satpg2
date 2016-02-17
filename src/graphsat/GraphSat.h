@@ -9,13 +9,13 @@
 /// All rights reserved.
 
 
-#include "satpg_nsdef.h"
-#include "YmLogic/Bool3.h"
-#include "YmLogic/Literal.h"
-#include "YmLogic/SatStats.h"
-#include "YmUtils/FragAlloc.h"
-#include "YmUtils/RandGen.h"
-#include "YmUtils/StopWatch.h"
+#include "satpg.h"
+#include "ym/Bool3.h"
+#include "ym/Literal.h"
+#include "ym/SatStats.h"
+#include "ym/FragAlloc.h"
+#include "ym/RandGen.h"
+#include "ym/StopWatch.h"
 #include "SatClause.h"
 #include "SatReason.h"
 #include "AssignList.h"

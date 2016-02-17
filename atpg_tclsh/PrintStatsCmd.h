@@ -10,7 +10,7 @@
 
 
 #include "AtpgCmd.h"
-#include "YmUtils/StopWatch.h"
+#include "ym/StopWatch.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG

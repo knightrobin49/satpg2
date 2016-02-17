@@ -8,7 +8,7 @@
 
 
 #include "AtpgMsgHandler.h"
-#include "YmUtils/FileRegion.h"
+#include "ym/FileRegion.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG

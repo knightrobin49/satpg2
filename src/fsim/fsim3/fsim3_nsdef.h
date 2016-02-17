@@ -14,7 +14,7 @@
 
 // namespace でネストするのがいやなので define マクロでごまかす．
 
-#include "satpg_nsdef.h"
+#include "satpg.h"
 
 #define BEGIN_NAMESPACE_YM_SATPG_FSIM \
 BEGIN_NAMESPACE_YM_SATPG \

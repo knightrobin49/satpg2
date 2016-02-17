@@ -10,7 +10,7 @@
 
 
 #include "FsimOp.h"
-#include "YmAlgo/MinCov.h"
+#include "MinCov.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG

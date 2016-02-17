@@ -9,8 +9,8 @@
 /// All rights reserved.
 
 
-#include "satpg_nsdef.h"
-#include "YmUtils/MsgHandler.h"
+#include "satpg.h"
+#include "ym/MsgHandler.h"
 #include "YmTclpp/TclObj.h"
 
 
