@@ -511,7 +511,7 @@ TpgNetwork::TpgNetwork(const BnNetwork& bnnetwork) :
   ymuint npo = output_num2();
   for (ymuint i = 0; i < npo; ++ i) {
     const BnNode* bnnode = bnnetwork.output(i);
-    TpgNode* inode = mNodeArray[bnnode->id()];
+    TpgNode* inode = mNodeArray[bnnode->inode_id()];
     TpgNode* node = make_output_node(i, bnnode->name(), inode);
     mOutputArray[i] = node;
   }
@@ -1033,17 +1033,15 @@ TpgNetwork::make_prim_node(BnFuncType::Type type,
 
   ymuint ni = inode_list.size();
   switch ( type ) {
-#if 0
-  case kGateC0:
+  case BnFuncType::kFt_C0:
     p = mAlloc.get_memory(sizeof(TpgLogicC0));
     node = new (p) TpgLogicC0(mNodeNum);
     break;
 
-  case kGateC1:
+  case BnFuncType::kFt_C1:
     p = mAlloc.get_memory(sizeof(TpgLogicC1));
     node = new (p) TpgLogicC1(mNodeNum);
     break;
-#endif
 
   case BnFuncType::kFt_BUFF:
     p = mAlloc.get_memory(sizeof(TpgLogicBUFF));
