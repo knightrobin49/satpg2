@@ -10,7 +10,9 @@
 
 
 #include "satpg.h"
+#include "LitMap.h"
 #include "Val3.h"
+#include "ym/ym_sat.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG
@@ -75,9 +77,11 @@ public:
 public:
 
   /// @brief コンストラクタ
-  TpgNode();
+  /// @param[in] id ID番号
+  TpgNode(ymuint id);
 
   /// @brief デストラクタ
+  virtual
   ~TpgNode();
 
 
@@ -98,57 +102,80 @@ public:
 
   /// @brief 外部入力タイプの時 true を返す．
   /// @note FF 出力もここに含まれる．
+  virtual
   bool
   is_input() const;
 
   /// @brief 外部入力タイプの時に入力番号を返す．
   ///
+  /// node = TpgNetwork::input(node->input_id()
+  /// の関係を満たす．
   /// is_input() が false の場合の返り値は不定
+  virtual
   ymuint
   input_id() const;
 
   /// @brief 外部出力タイプの時 true を返す．
   /// @note FF 入力もここに含まれる．
+  virtual
   bool
   is_output() const;
 
   /// @brief 外部出力タイプの時に出力番号を返す．
   ///
+  /// node = TpgNetwork::output(node->output_id())
+  /// の関係を満たす．
   /// is_output() が false の場合の返り値は不定
+  virtual
   ymuint
   output_id() const;
 
   /// @brief TFIサイズの昇順に並べた時の出力番号を返す．
+  virtual
   ymuint
   output_id2() const;
 
   /// @brief logic タイプの時 true を返す．
+  virtual
   bool
   is_logic() const;
 
   /// @brief ゲートタイプを得る．
   ///
   /// is_logic() が false の場合の返り値は不定
+  virtual
   GateType
   gate_type() const;
 
   /// @brief controling value を得る．
-  /// @note ない場合は kValX を返す．
+  ///
+  /// is_logic() が false の場合の返り値は不定
+  /// ない場合は kValX を返す．
+  virtual
   Val3
   cval() const;
 
   /// @brief noncontroling valueを得る．
-  /// @note ない場合は kValX を返す．
+  ///
+  /// is_logic() が false の場合の返り値は不定
+  /// ない場合は kValX を返す．
+  virtual
   Val3
   nval() const;
 
   /// @brief controling output value を得る．
-  /// @note ない場合は kValX を返す．
+  ///
+  /// is_logic() が false の場合の返り値は不定
+  /// ない場合は kValX を返す．
+  virtual
   Val3
   coval() const;
 
   /// @brief noncontroling output value を得る．
-  /// @note ない場合は kValX を返す．
+  ///
+  /// is_logic() が false の場合の返り値は不定
+  /// ない場合は kValX を返す．
+  virtual
   Val3
   noval() const;
 
@@ -158,11 +185,17 @@ public:
   bool
   is_root() const;
 
+  /// @brief 内部ノードの時 true を返す．
+  ///
+  /// is_logic() が true の時のみ意味を持つ．
+  bool
+  is_internal() const;
+
   /// @brief もとのゲートのファンインに対応するノードを返す．
   /// @param[in] pos もとの BnNode の入力の位置番号 (!!!)
   ///
   /// is_root() が true の時のみ意味を持つ．
-  TpgNode*
+  const TpgNode*
   input_map(ymuint pos) const;
 
   /// @brief BnNode のファンインに対応するノードのファンイン番号を返す．
@@ -172,18 +205,14 @@ public:
   ymuint
   ipos_map(ymuint pos) const;
 
-  /// @brief 内部ノードの時 true を返す．
-  ///
-  /// is_logic() が true の時のみ意味を持つ．
-  bool
-  is_internal() const;
-
   /// @brief ファンイン数を得る．
+  virtual
   ymuint
   fanin_num() const;
 
   /// @brief ファンインを得る．
   /// @param[in] pos 位置番号 ( 0 <= pos < fanin_num() )
+  virtual
   TpgNode*
   fanin(ymuint pos) const;
 
@@ -220,27 +249,45 @@ public:
 
 public:
   //////////////////////////////////////////////////////////////////////
+  // CNF の生成に関する関数
+  //////////////////////////////////////////////////////////////////////
+
+  /// @brief 入出力の関係を表す CNF 式を生成する．
+  /// @param[in] solver SAT ソルバ
+  /// @param[in] lit_map 入出力とリテラルの対応マップ
+  virtual
+  void
+  make_cnf(SatSolver& solver,
+	   const LitMap& lit_map);
+
+
+public:
+  //////////////////////////////////////////////////////////////////////
   // 故障に関する関数
   //////////////////////////////////////////////////////////////////////
 
   /// @brief 出力の故障を得る．
   /// @param[in] val 故障値 ( 0 / 1 )
+  virtual
   const TpgFault*
   output_fault(int val) const;
 
   /// @brief 入力の故障を得る．
   /// @param[in] val 故障値 ( 0 / 1 )
   /// @param[in] pos 入力の位置番号
+  virtual
   const TpgFault*
   input_fault(int val,
 	      ymuint pos) const;
 
   /// @brief このノードに関係する故障数を返す．
+  virtual
   ymuint
   fault_num() const;
 
   /// @brief このノードに関係する故障を返す．
   /// @param[in] pos 位置番号 ( 0 <= pos < fault_num() )
+  virtual
   const TpgFault*
   fault(ymuint pos) const;
 
@@ -270,28 +317,12 @@ private:
   // 名前
   const char* mName;
 
-  // いくつかのデータをパックしたもの
-  // - [0:2] ノードタイプ
-  //   0: 未使用
-  //   1: 外部入力
-  //   2: 外部出力
-  //   4: 論理ノード(外部ノード)
-  //   5: 論理ノード(内部ノード)
-  //   6: 論理ノード(ダミーノード)
-  // - [3:31] 入力/出力ノードの場合の通し番号
-  //          or ゲートタイプ
-  ymuint32 mTypeId;
-
-  // ファンイン数
-  ymuint32 mFaninNum;
-
-  // ファンインの配列
-  TpgNode** mFanins;
+  // もとのゲートの入力の対応関係
+  // nullptr の時は内部ノード
+  const TpgMap* mMap;
 
   // ファンアウト数
   ymuint32 mFanoutNum;
-
-  ymuint32 mFanoutsSize;
 
   // ファンアウトの配列
   TpgNode** mFanouts;
@@ -302,21 +333,6 @@ private:
   // アクティブなファンアウトの配列
   TpgNode** mActFanouts;
 
-  // もとのゲートのファンインに対するマッピング
-  TpgMap* mInputMap;
-
-  // 出力の故障
-  const TpgFault* mOutputFault[2];
-
-  // 入力の故障
-  const TpgFault** mInputFault;
-
-  // 故障リスト
-  const TpgFault** mFaultList;
-
-  // 故障リストの要素数
-  ymuint32 mFaultNum;
-
   // いくつかのマークを納めるビットベクタ
   ymuint32 mMarks;
 
@@ -325,18 +341,6 @@ private:
 
   // immediate dominator
   TpgNode* mImmDom;
-
-  // controling value
-  Val3 mCval;
-
-  // noncontroling value
-  Val3 mNval;
-
-  // controling output value
-  Val3 mCOval;
-
-  // noncontroling output value
-  Val3 mNOval;
 
 };
 
@@ -352,135 +356,6 @@ print_node(ostream& s,
 //////////////////////////////////////////////////////////////////////
 // インライン関数の定義
 //////////////////////////////////////////////////////////////////////
-
-// @brief コンストラクタ
-inline
-TpgNode::TpgNode()
-{
-  // 実際の初期化は TpgNetwork が行なう．
-}
-
-// @brief デストラクタ
-inline
-TpgNode::~TpgNode()
-{
-}
-
-// @brief ID番号を得る．
-inline
-ymuint
-TpgNode::id() const
-{
-  return mId;
-}
-
-// @brief 名前を得る．
-inline
-const char*
-TpgNode::name() const
-{
-  return mName;
-}
-
-// @brief 外部入力タイプの時 true を返す．
-// @note FF 出力もここに含まれる．
-inline
-bool
-TpgNode::is_input() const
-{
-  return (mTypeId & 7U) == 1U;
-}
-
-// @brief 外部入力タイプの時に入力番号を返す．
-inline
-ymuint
-TpgNode::input_id() const
-{
-  ASSERT_COND( is_input() );
-  return (mTypeId >> 3);
-}
-
-// @brief 外部出力タイプの時 true を返す．
-// @note FF 入力もここに含まれる．
-inline
-bool
-TpgNode::is_output() const
-{
-  return (mTypeId & 7U) == 2U;
-}
-
-// @brief 外部出力タイプの時に出力番号を返す．
-inline
-ymuint
-TpgNode::output_id() const
-{
-  ASSERT_COND( is_output() );
-  return (mTypeId >> 3);
-}
-
-// @brief TFIサイズの昇順に並べた時の出力番号を返す．
-inline
-ymuint
-TpgNode::output_id2() const
-{
-  ASSERT_COND( is_output() );
-  return mFanoutNum;
-}
-
-// @brief logic タイプの時 true を返す．
-inline
-bool
-TpgNode::is_logic() const
-{
-  return (mTypeId & 4U) == 4U;
-}
-
-// @brief ゲートタイプを得る．
-inline
-TpgNode::GateType
-TpgNode::gate_type() const
-{
-  ASSERT_COND( is_logic() );
-  return static_cast<GateType>((mTypeId >> 3) & 15U);
-}
-
-// @brief 値のノードの時 true を返す．
-//
-// is_logic() が true の時のみ意味を持つ．
-inline
-bool
-TpgNode::is_root() const
-{
-  return (mTypeId & 7U) == 4U;
-}
-
-// @brief 内部ノードの時 true を返す．
-//
-// is_logic() が true の時のみ意味を持つ．
-inline
-bool
-TpgNode::is_internal() const
-{
-  return (mTypeId & 7U) == 5U;
-}
-
-// @brief ファンイン数を得る．
-inline
-ymuint
-TpgNode::fanin_num() const
-{
-  return mFaninNum;
-}
-
-// @brief ファンインを得る．
-// @param[in] pos 位置番号 ( 0 <= pos < fanin_num() )
-inline
-TpgNode*
-TpgNode::fanin(ymuint pos) const
-{
-  ASSERT_COND( pos < mFaninNum );
-  return mFanins[pos];
-}
 
 // @brief ファンアウト数を得る．
 inline
@@ -519,45 +394,6 @@ TpgNode::active_fanout(ymuint pos) const
 {
   ASSERT_COND( pos < mActFanoutNum );
   return mActFanouts[pos];
-}
-
-// @brief 出力の故障を得る．
-// @param[in] val 故障値 ( 0 / 1 )
-inline
-const TpgFault*
-TpgNode::output_fault(int val) const
-{
-  return mOutputFault[val % 2];
-}
-
-// @brief 入力の故障を得る．
-// @param[in] val 故障値 ( 0 / 1 )
-// @param[in] pos 入力の位置番号
-inline
-const TpgFault*
-TpgNode::input_fault(int val,
-		     ymuint pos) const
-{
-  ASSERT_COND( pos < mFaninNum );
-  return mInputFault[pos * 2 + (val % 2)];
-}
-
-// @brief このノードに関係する故障数を返す．
-inline
-ymuint
-TpgNode::fault_num() const
-{
-  return mFaultNum;
-}
-
-// @brief このノードに関係する故障を返す．
-// @param[in] pos 位置番号 ( 0 <= pos < fault_num() )
-inline
-const TpgFault*
-TpgNode::fault(ymuint pos) const
-{
-  ASSERT_COND( pos < mFaultNum );
-  return mFaultList[pos];
 }
 
 // @brief アクティブの場合 true を返す．
@@ -600,42 +436,6 @@ TpgNode*
 TpgNode::imm_dom() const
 {
   return mImmDom;
-}
-
-// @brief controling value を得る．
-// @note ない場合は kValX を返す．
-inline
-Val3
-TpgNode::cval() const
-{
-  return mCval;
-}
-
-// @brief noncontroling valueを得る．
-// @note ない場合は kValX を返す．
-inline
-Val3
-TpgNode::nval() const
-{
-  return mNval;
-}
-
-// @brief controling output value を得る．
-// @note ない場合は kValX を返す．
-inline
-Val3
-TpgNode::coval() const
-{
-  return mCOval;
-}
-
-// @brief noncontroling output value を得る．
-// @note ない場合は kValX を返す．
-inline
-Val3
-TpgNode::noval() const
-{
-  return mNOval;
 }
 
 END_NAMESPACE_YM_SATPG

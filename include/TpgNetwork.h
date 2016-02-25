@@ -11,10 +11,11 @@
 
 #include "satpg.h"
 #include "Val3.h"
-#include "GateType.h"
+#include "TpgNode.h"
 #include "ym/ym_bnet.h"
 #include "ym/ym_cell.h"
 #include "ym/ym_logic.h"
+#include "ym/BnFuncType.h"
 #include "ym/SimpleAlloc.h"
 #include "ym/HashMap.h"
 
@@ -89,15 +90,10 @@ public:
 
   /// @brief ノードを得る．
   /// @param[in] id ID番号 ( 0 <= id < node_num() )
-  /// @note node->id() == id となるノードを返す．
+  ///
+  /// node->id() == id となるノードを返す．
   const TpgNode*
   node(ymuint id) const;
-
-  /// @brief ノード番号の最大値を得る．
-  ///
-  /// ダミーノードがあるので上の node_num() とは異なる．
-  ymuint
-  max_node_id() const;
 
   /// @brief 外部入力数を得る．
   ymuint
@@ -190,29 +186,15 @@ public:
 		   const char* name,
 		   TpgNode* inode);
 
-  /// @brief プリミティブタイプの論理ノードを生成する．
+  /// @brief 論理ノードを生成する．
   /// @param[in] name ノード名
-  /// @param[in] ni ファンイン数
   /// @param[in] inode_list ファンインのリスト
-  /// @param[in] gate_type ゲートの型
+  /// @param[in] func_type ノードの論理関数
   /// @return 生成したノードを返す．
   TpgNode*
   make_logic_node(const char* name,
 		  const vector<TpgNode*>& inode_list,
-		  GateType gate_type);
-
-  /// @brief 複雑な型の論理ノードを生成する．
-  /// @param[in] name ノード名
-  /// @param[in] ni ファンイン数
-  /// @param[in] inode_list ファンインのリスト
-  /// @param[in] expr 論理式
-  /// @return 生成したノードを返す．
-  ///
-  /// 場合によっては複数の TpgNode を生成する．
-  TpgNode*
-  make_logic_node(const char* name,
-		  const vector<TpgNode*>& inode_list,
-		  const Expr& expr);
+		  const BnFuncType* func_type);
 
 
 private:
@@ -226,7 +208,6 @@ private:
 
   /// @brief 論理式から TpgNode の木を生成する．
   /// @param[in] expr 式
-  /// @param[in] nfo 根のノードのファンアウト数
   /// @param[in] leaf_nodes 式のリテラルに対応するノードの配列
   /// @param[in] input_map ファンインの対応関係を収める配列
   /// @return 生成したノードを返す．
@@ -235,38 +216,16 @@ private:
   /// 該当する変数の肯定/否定のリテラルが入っている．
   TpgNode*
   make_cplx_node(const Expr& expr,
-		 ymuint nfo,
 		 const vector<TpgNode*>& leaf_nodes,
 		 vector<pair<TpgNode*, ymuint> >& input_map);
 
   /// @brief 組み込み型の論理ゲートを生成する．
   /// @param[in] type ゲートの型
-  /// @param[in] root 根のノードの時 true
-  /// @param[in] ni ファンイン数
-  /// @param[in] nfo ファンアウト数
+  /// @param[in] fanin_list ファンインのリスト
   /// @return 生成したノードを返す．
   TpgNode*
-  make_prim_node(GateType type,
-		 bool root,
-		 ymuint ni,
-		 ymuint nfo);
-
-  /// @brief TpgNode を初期化する．
-  /// @param[in] node 対象のノード
-  /// @param[in] ni ファンイン数
-  /// @param[in] nfo ファンアウト数
-  /// @return 生成したノードを返す．
-  void
-  init_node(TpgNode* node,
-	    ymuint ni,
-	    ymuint nfo);
-
-  /// @brief TpgNode を生成する．
-  /// @return 生成したノードを返す．
-  ///
-  /// 実際には mNodeChunk で確保した領域から返す．
-  TpgNode*
-  new_node();
+  make_prim_node(BnFuncType::Type type,
+		 const vector<TpgNode*>& fanin_list);
 
   /// @brief ノード間の接続を行う．
   /// @param[in] src ソースノード
@@ -293,6 +252,7 @@ private:
   /// @param[in] bnnode もととなる BnNode
   void
   make_faults(const BnNode* bnnode,
+	      const BnNetwork& bnnetwork,
 	      const HashMap<ymuint, CplxInfo*>& en_hash);
 
   /// @brief 出力の故障を作る．
@@ -302,7 +262,7 @@ private:
   ///
   /// 自分自身が代表故障の場合には rep に nullptr を入れる．
   const TpgFault*
-  new_ofault(TpgNode* node,
+  new_ofault(const TpgNode* node,
 	     ymuint val,
 	     const TpgFault* rep);
 
@@ -314,7 +274,7 @@ private:
   ///
   /// 自分自身が代表故障の場合には rep に nullptr を入れる．
   const TpgFault*
-  new_ifault(TpgNode* ode,
+  new_ifault(const TpgNode* ode,
 	     ymuint ipos,
 	     ymuint val,
 	     const TpgFault* rep);
@@ -326,7 +286,7 @@ private:
   /// @param[in] val 縮退している値
   /// @param[in] rep 代表故障
   const TpgFault*
-  new_fault(TpgNode* node,
+  new_fault(const TpgNode* node,
 	    bool is_output,
 	    ymuint ipos,
 	    ymuint val,
@@ -386,13 +346,10 @@ private:
   // ノード数(mNodeArrayの要素数)
   ymuint mNodeNum;
 
-  // ノードの本体の配列
-  TpgNode* mNodeArray;
+  // ノードの配列
+  TpgNode** mNodeArray;
 
-  // ノード番号の最大値
-  ymuint mMaxNodeId;
-
-  // BnNode->gid() をキーにした TpgMap の配列
+  // BnNode->gid() をキーにした TpgNode の配列
   TpgNode** mNodeMap;
 
   // 外部入力ノードの配列
@@ -450,16 +407,6 @@ ymuint
 TpgNetwork::node_num() const
 {
   return mNodeNum;
-}
-
-// @brief ノード番号の最大値を得る．
-//
-// ダミーノードがあるので上の node_num() とは異なる．
-inline
-ymuint
-TpgNetwork::max_node_id() const
-{
-  return mMaxNodeId;
 }
 
 // @brief 外部入力数を得る．
@@ -562,7 +509,7 @@ inline
 ymuint
 TpgNetwork::tfibits_size() const
 {
-  return (output_num2() + 7) / 8;
+  return (output_num2() + 63) / 64;
 }
 
 END_NAMESPACE_YM_SATPG

@@ -1,0 +1,94 @@
+#ifndef TPGLOGIC2_H
+#define TPGLOGIC2_H
+
+/// @file TpgLogic2.h
+/// @brief TpgLogic2 のヘッダファイル
+/// @author Yusuke Matsunaga (松永 裕介)
+///
+/// Copyright (C) 2016 Yusuke Matsunaga
+/// All rights reserved.
+
+
+#include "TpgLogic.h"
+
+
+BEGIN_NAMESPACE_YM_SATPG
+
+//////////////////////////////////////////////////////////////////////
+/// @class TpgLogic2 TpgLogic2.h "TpgLogic2.h"
+/// @brief 0入力の TpgLogic
+//////////////////////////////////////////////////////////////////////
+class TpgLogic2 :
+  public TpgLogic
+{
+public:
+
+  /// @brief コンストラクタ
+  /// @param[in] id ID番号
+  /// @param[in] inode0, inode1 ファンインのノード
+  TpgLogic2(ymuint id,
+	    TpgNode* inode0,
+	    TpgNode* inode1);
+
+  /// @brief デストラクタ
+  ~TpgLogic2();
+
+
+public:
+  //////////////////////////////////////////////////////////////////////
+  // 外部インターフェイス
+  //////////////////////////////////////////////////////////////////////
+
+  /// @brief ファンイン数を得る．
+  virtual
+  ymuint
+  fanin_num() const;
+
+  /// @brief ファンインを得る．
+  /// @param[in] pos 位置番号 ( 0 <= pos < fanin_num() )
+  virtual
+  TpgNode*
+  fanin(ymuint pos) const;
+
+  /// @brief 入力の故障を得る．
+  /// @param[in] val 故障値 ( 0 / 1 )
+  /// @param[in] pos 入力の位置番号
+  virtual
+  const TpgFault*
+  input_fault(int val,
+	      ymuint pos) const;
+
+  /// @brief このノードに関係する故障数を返す．
+  virtual
+  ymuint
+  fault_num() const;
+
+  /// @brief このノードに関係する故障を返す．
+  /// @param[in] pos 位置番号 ( 0 <= pos < fault_num() )
+  virtual
+  const TpgFault*
+  fault(ymuint pos) const;
+
+
+private:
+  //////////////////////////////////////////////////////////////////////
+  // 内部で用いられる関数
+  //////////////////////////////////////////////////////////////////////
+
+
+private:
+  //////////////////////////////////////////////////////////////////////
+  // データメンバ
+  //////////////////////////////////////////////////////////////////////
+
+  // ファンイン
+  TpgNode* mFanins[2];
+
+  // 入力の故障
+  TpgFault* mInputFaults[4];
+
+};
+
+END_NAMESPACE_YM_SATPG
+
+#endif // TPGLOGIC2_H

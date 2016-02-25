@@ -73,7 +73,7 @@ MinPatBase::run(TpgNetwork& network,
 
   mFast = !exact;
 
-  mMaxNodeId = network.max_node_id();
+  mMaxNodeId = network.node_num();
 
   mAnalyzer.set_verbose(verbose());
 

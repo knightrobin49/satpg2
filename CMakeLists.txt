@@ -84,7 +84,9 @@ include_directories (
   ${PROJECT_SOURCE_DIR}/ym-cell/include
   ${PROJECT_SOURCE_DIR}/ym-common/include
   ${PROJECT_SOURCE_DIR}/ym-logic/include
+  ${PROJECT_SOURCE_DIR}/ym-mincov/include
   ${PROJECT_SOURCE_DIR}/ym-sat/include
+  ${PROJECT_SOURCE_DIR}/ym-udgraph/include
   ${PROJECT_BINARY_DIR}
   )
 
@@ -97,6 +99,8 @@ add_subdirectory ( ym-common )
 add_subdirectory ( ym-logic )
 add_subdirectory ( ym-cell )
 add_subdirectory ( ym-bnet )
+add_subdirectory ( ym-udgraph )
+add_subdirectory ( ym-mincov )
 add_subdirectory ( ym-sat )
 
 

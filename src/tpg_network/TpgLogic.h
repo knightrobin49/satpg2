@@ -1,39 +1,34 @@
-#ifndef MCOP_H
-#define MCOP_H
+#ifndef TPGLOGIC_H
+#define TPGLOGIC_H
 
-/// @file McOp.h
-/// @brief McOp のヘッダファイル
+/// @file TpgLogic.h
+/// @brief TpgLogic のヘッダファイル
 /// @author Yusuke Matsunaga (松永 裕介)
 ///
-/// Copyright (C) 2015 Yusuke Matsunaga
+/// Copyright (C) 2016 Yusuke Matsunaga
 /// All rights reserved.
 
 
-#include "FsimOp.h"
-#include "ym/MinCov.h"
+#include "TpgNode.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG
 
 //////////////////////////////////////////////////////////////////////
-// @class McOp McOp.h "McOp.h"
+/// @class TpgLogic TpgLogic.h "TpgLogic.h"
+/// @brief 論理ノードの基底クラス
 //////////////////////////////////////////////////////////////////////
-class McOp :
-  public FsimOp
+class TpgLogic :
+  public TpgNode
 {
 public:
 
   /// @brief コンストラクタ
-  /// @param[in] mincov 最小被覆問題のオブジェクト
-  /// @param[in] row_map 故障番号から行番号を得る表
-  /// @param[in] col_pos 列番号
-  McOp(MinCov& mincov,
-       const vector<ymuint>& row_map,
-       ymuint col_pos);
+  /// @param[in] id ID番号
+  TpgLogic(ymuint id);
 
   /// @brief デストラクタ
-  virtual
-  ~McOp();
+  ~TpgLogic();
 
 
 public:
@@ -41,13 +36,16 @@ public:
   // 外部インターフェイス
   //////////////////////////////////////////////////////////////////////
 
-  /// @brief 故障を検出したときの処理
-  /// @param[in] f 故障
-  /// @param[in] dpat 検出したパタンを表すビットベクタ
+  /// @brief logic タイプの時 true を返す．
   virtual
-  void
-  operator()(const TpgFault* f,
-	     PackedVal dpat);
+  bool
+  is_logic() const;
+
+  /// @brief 出力の故障を得る．
+  /// @param[in] val 故障値 ( 0 / 1 )
+  virtual
+  const TpgFault*
+  output_fault(int val) const;
 
 
 private:
@@ -61,17 +59,11 @@ private:
   // データメンバ
   //////////////////////////////////////////////////////////////////////
 
-  // 最小被覆問題
-  MinCov& mMinCov;
-
-  // 行番号を得るための表
-  const vector<ymuint>& mRowMap;
-
-  // 列番号
-  ymuint mColPos;
+  // 出力の故障
+  TpgFault* mOutputFaults[2];
 
 };
 
 END_NAMESPACE_YM_SATPG
 
-#endif // MCOP_H
+#endif // TPGLOGIC_H

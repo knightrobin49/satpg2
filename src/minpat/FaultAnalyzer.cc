@@ -101,7 +101,7 @@ FaultAnalyzer::init(const TpgNetwork& network,
   local_timer.start();
 
   ymuint nn = network.active_node_num();
-  mMaxNodeId = network.max_node_id();
+  mMaxNodeId = network.node_num();
   mMaxFaultId = 0;
   for (ymuint i = 0; i < nn; ++ i) {
     const TpgNode* node = network.active_node(i);

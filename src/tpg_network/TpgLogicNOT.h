@@ -1,39 +1,36 @@
-#ifndef MCOP_H
-#define MCOP_H
+#ifndef TPGLOGICNOT_H
+#define TPGLOGICNOT_H
 
-/// @file McOp.h
-/// @brief McOp のヘッダファイル
+/// @file TpgLogicNOT.h
+/// @brief TpgLogicNOT のヘッダファイル
 /// @author Yusuke Matsunaga (松永 裕介)
 ///
-/// Copyright (C) 2015 Yusuke Matsunaga
+/// Copyright (C) 2016 Yusuke Matsunaga
 /// All rights reserved.
 
 
-#include "FsimOp.h"
-#include "ym/MinCov.h"
+#include "TpgLogic1.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG
 
 //////////////////////////////////////////////////////////////////////
-// @class McOp McOp.h "McOp.h"
+/// @class TpgLogicNOT TpgLogicNOT.h "TpgLogicNOT.h"
+/// @brief buffer を表すクラス
 //////////////////////////////////////////////////////////////////////
-class McOp :
-  public FsimOp
+class TpgLogicNOT :
+  public TpgLogic1
 {
 public:
 
   /// @brief コンストラクタ
-  /// @param[in] mincov 最小被覆問題のオブジェクト
-  /// @param[in] row_map 故障番号から行番号を得る表
-  /// @param[in] col_pos 列番号
-  McOp(MinCov& mincov,
-       const vector<ymuint>& row_map,
-       ymuint col_pos);
+  /// @param[in] id ID番号
+  /// @param[in] inode ファンインのノード
+  TpgLogicNOT(ymuint id,
+	      TpgNode* inode);
 
   /// @brief デストラクタ
-  virtual
-  ~McOp();
+  ~TpgLogicNOT();
 
 
 public:
@@ -41,13 +38,20 @@ public:
   // 外部インターフェイス
   //////////////////////////////////////////////////////////////////////
 
-  /// @brief 故障を検出したときの処理
-  /// @param[in] f 故障
-  /// @param[in] dpat 検出したパタンを表すビットベクタ
+  /// @brief ゲートタイプを得る．
+  ///
+  /// is_logic() が false の場合の返り値は不定
+  virtual
+  GateType
+  gate_type() const;
+
+  /// @brief 入出力の関係を表す CNF 式を生成する．
+  /// @param[in] solver SAT ソルバ
+  /// @param[in] lit_map 入出力とリテラルの対応マップ
   virtual
   void
-  operator()(const TpgFault* f,
-	     PackedVal dpat);
+  make_cnf(SatSolver& solver,
+	   const LitMap& lit_map);
 
 
 private:
@@ -61,17 +65,9 @@ private:
   // データメンバ
   //////////////////////////////////////////////////////////////////////
 
-  // 最小被覆問題
-  MinCov& mMinCov;
-
-  // 行番号を得るための表
-  const vector<ymuint>& mRowMap;
-
-  // 列番号
-  ymuint mColPos;
 
 };
 
 END_NAMESPACE_YM_SATPG
 
-#endif // MCOP_H
+#endif // TPGLOGICNOT_H

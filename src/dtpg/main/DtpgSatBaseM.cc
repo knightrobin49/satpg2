@@ -55,7 +55,7 @@ DtpgSatBaseM::run(TpgNetwork& network,
 
   NodeSet node_set;
 
-  ymuint max_id = network.max_node_id();
+  ymuint max_id = network.node_num();
 
   // 故障番号の最大値を求める．
   ymuint max_fault_id = 0;

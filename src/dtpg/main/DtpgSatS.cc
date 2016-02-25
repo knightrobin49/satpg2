@@ -93,7 +93,7 @@ DtpgSatS::run(TpgNetwork& network,
   }
 
   ymuint nn = network.active_node_num();
-  ymuint max_id = network.max_node_id();
+  ymuint max_id = network.node_num();
   for (ymuint i = 0; i < nn; ++ i) {
     const TpgNode* node = network.active_node(i);
     if ( node->is_output() ) {
