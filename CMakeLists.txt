@@ -213,7 +213,7 @@ set (tpg_network_SOURCES
 # ===================================================================
 # ターゲットの設定
 # ===================================================================
-ym_add_library (satpg_common
+add_library (satpg_common
   SHARED
   ${base_SOURCES}
   ${sat_engine_SOURCES}
@@ -222,8 +222,40 @@ ym_add_library (satpg_common
   ${minpat_SOURCES}
   ${rtpg_SOURCES}
   ${tpg_network_SOURCES}
-  DESTINATION ${YM_INSTALL_LIBDIR}
+  $<TARGET_OBJECTS:ym_common>
+  $<TARGET_OBJECTS:ym_logic>
+  $<TARGET_OBJECTS:ym_cell>
+  $<TARGET_OBJECTS:ym_bnet>
+  $<TARGET_OBJECTS:ym_udgraph>
+  $<TARGET_OBJECTS:ym_mincov>
+  $<TARGET_OBJECTS:ym_sat>
   )
+
+target_compile_options ( satpg_common
+  PRIVATE "-O3" "-fPIC"
+  )
+
+target_compile_definitions ( satpg_common
+  PRIVATE "-DNDEBUG"
+  )
+
+if (ZLIB_FOUND)
+  list (APPEND libs ${ZLIB_LIBRARIES})
+endif (ZLIB_FOUND)
+
+if (BZIP2_FOUND)
+  list (APPEND libs ${BZIP2_LIBRARIES})
+endif (BZIP2_FOUND)
+
+if (LIBLZMA_FOUND)
+  list (APPEND libs ${LIBLZMA_LIBRARIES})
+endif (LIBLZMA_FOUND)
+
+if (POPT_FOUND)
+  list (APPEND libs ${POPT_LIBRARY})
+endif (POPT_FOUND)
+
+target_link_libraries ( satpg_common ${libs})
 
 
 # ===================================================================
