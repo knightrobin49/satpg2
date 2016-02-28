@@ -85,7 +85,7 @@ TpgLogicNAND2::noval() const
 // @param[in] solver SAT ソルバ
 // @param[in] lit_map 入出力とリテラルの対応マップ
 void
-TpgLodicNAND2::make_cnf(SatSolver& solver,
+TpgLogicNAND2::make_cnf(SatSolver& solver,
 			const LitMap& lit_map)
 {
   SatLiteral ilit0 = lit_map.input(0);
@@ -170,7 +170,7 @@ TpgLogicNAND3::noval() const
 // @param[in] solver SAT ソルバ
 // @param[in] lit_map 入出力とリテラルの対応マップ
 void
-TpgLodicNAND3::make_cnf(SatSolver& solver,
+TpgLogicNAND3::make_cnf(SatSolver& solver,
 			const LitMap& lit_map)
 {
   SatLiteral ilit0 = lit_map.input(0);
@@ -258,7 +258,7 @@ TpgLogicNAND4::noval() const
 // @param[in] solver SAT ソルバ
 // @param[in] lit_map 入出力とリテラルの対応マップ
 void
-TpgLodicNAND4::make_cnf(SatSolver& solver,
+TpgLogicNAND4::make_cnf(SatSolver& solver,
 			const LitMap& lit_map)
 {
   SatLiteral ilit0 = lit_map.input(0);
@@ -308,7 +308,7 @@ TpgLogicNANDN::gate_type() const
 // is_logic() が false の場合の返り値は不定
 // ない場合は kValX を返す．
 Val3
-TpgLogicNAND4::cval() const
+TpgLogicNANDN::cval() const
 {
   return kVal0;
 }
@@ -318,7 +318,7 @@ TpgLogicNAND4::cval() const
 // is_logic() が false の場合の返り値は不定
 // ない場合は kValX を返す．
 Val3
-TpgLogicNAND4::nval() const
+TpgLogicNANDN::nval() const
 {
   return kVal1;
 }
@@ -328,7 +328,7 @@ TpgLogicNAND4::nval() const
 // is_logic() が false の場合の返り値は不定
 // ない場合は kValX を返す．
 Val3
-TpgLogicNAND4::coval() const
+TpgLogicNANDN::coval() const
 {
   return kVal1;
 }
@@ -338,7 +338,7 @@ TpgLogicNAND4::coval() const
 // is_logic() が false の場合の返り値は不定
 // ない場合は kValX を返す．
 Val3
-TpgLogicNAND4::noval() const
+TpgLogicNANDN::noval() const
 {
   return kVal0;
 }
@@ -347,7 +347,7 @@ TpgLogicNAND4::noval() const
 // @param[in] solver SAT ソルバ
 // @param[in] lit_map 入出力とリテラルの対応マップ
 void
-TpgLodicNANDN::make_cnf(SatSolver& solver,
+TpgLogicNANDN::make_cnf(SatSolver& solver,
 			const LitMap& lit_map)
 {
   SatLiteral ilit0 = lit_map.input(0);

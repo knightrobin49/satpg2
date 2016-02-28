@@ -44,7 +44,7 @@ TpgLogicNOT::gate_type() const
 // @param[in] solver SAT ソルバ
 // @param[in] lit_map 入出力とリテラルの対応マップ
 void
-TpgLodicNOT::make_cnf(SatSolver& solver,
+TpgLogicNOT::make_cnf(SatSolver& solver,
 		      const LitMap& lit_map)
 {
   SatLiteral ilit = lit_map.input(0);

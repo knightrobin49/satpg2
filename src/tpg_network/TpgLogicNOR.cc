@@ -22,7 +22,7 @@ BEGIN_NAMESPACE_YM_SATPG
 // @param[in] inode0, inode1 ファンインのノード
 TpgLogicNOR2::TpgLogicNOR2(ymuint id,
 			   TpgNode* inode0,
-			   TpgNode* indoe1) :
+			   TpgNode* inode1) :
   TpgLogic2(id, inode0, inode1)
 {
 }
@@ -85,7 +85,7 @@ TpgLogicNOR2::noval() const
 // @param[in] solver SAT ソルバ
 // @param[in] lit_map 入出力とリテラルの対応マップ
 void
-TpgLodicNOR2::make_cnf(SatSolver& solver,
+TpgLogicNOR2::make_cnf(SatSolver& solver,
 		       const LitMap& lit_map)
 {
   SatLiteral ilit0 = lit_map.input(0);
@@ -170,7 +170,7 @@ TpgLogicNOR3::noval() const
 // @param[in] solver SAT ソルバ
 // @param[in] lit_map 入出力とリテラルの対応マップ
 void
-TpgLodicNOR3::make_cnf(SatSolver& solver,
+TpgLogicNOR3::make_cnf(SatSolver& solver,
 		      const LitMap& lit_map)
 {
   SatLiteral ilit0 = lit_map.input(0);
@@ -258,7 +258,7 @@ TpgLogicNOR4::noval() const
 // @param[in] solver SAT ソルバ
 // @param[in] lit_map 入出力とリテラルの対応マップ
 void
-TpgLodicNOR4::make_cnf(SatSolver& solver,
+TpgLogicNOR4::make_cnf(SatSolver& solver,
 		       const LitMap& lit_map)
 {
   SatLiteral ilit0 = lit_map.input(0);
@@ -347,7 +347,7 @@ TpgLogicNORN::noval() const
 // @param[in] solver SAT ソルバ
 // @param[in] lit_map 入出力とリテラルの対応マップ
 void
-TpgLodicNORN::make_cnf(SatSolver& solver,
+TpgLogicNORN::make_cnf(SatSolver& solver,
 		       const LitMap& lit_map)
 {
   SatLiteral ilit0 = lit_map.input(0);

@@ -59,21 +59,8 @@ public:
   // ファイルを読み込んでインスタンスを作るクラスメソッド
   //////////////////////////////////////////////////////////////////////
 
-  /// @brief blif ファイルを読み込んでインスタンスを作る．
-  /// @param[in] filename ファイル名
-  /// @param[in] cell_library セルライブラリ
-  /// @note エラーが起こったら nullptr を返す．
-  static
-  TpgNetwork*
-  read_blif(const string& filename,
-	    const CellLibrary* cell_library);
-
-  /// @brief iscas89 形式のファイルを読み込む．
-  /// @param[in] filename ファイル名
-  /// @note エラーが起こったら nullptr を返す．
-  static
-  TpgNetwork*
-  read_iscas89(const string& filename);
+  /// @brief コンストラクタ
+  TpgNetwork();
 
   /// @brief デストラクタ
   ~TpgNetwork();
@@ -168,6 +155,20 @@ public:
   // 内容を設定するための関数
   //////////////////////////////////////////////////////////////////////
 
+  /// @brief blif ファイルを読み込む．
+  /// @param[in] filename ファイル名
+  /// @param[in] cell_library セルライブラリ
+  /// @return 読み込みが成功したら true を返す．
+  bool
+  read_blif(const string& filename,
+	    const CellLibrary* cell_library = nullptr);
+
+  /// @brief iscas89 形式のファイルを読み込む．
+  /// @param[in] filename ファイル名
+  /// @return 読み込みが成功したら true を返す．
+  bool
+  read_iscas89(const string& filename);
+
   /// @brief 入力ノードを生成する．
   /// @param[in] iid 入力の番号
   /// @param[in] name ノード名
@@ -202,7 +203,12 @@ private:
   // 内部で用いられる下請け関数
   //////////////////////////////////////////////////////////////////////
 
-  /// TpgNode の TFIbits のサイズを計算する．
+  /// @brief BnNetwork から内容を設定する．
+  /// @param[in] bnnetwork もとのネットワーク
+  void
+  set(const BnNetwork& bnnetwork);
+
+  /// @brief TpgNode の TFIbits のサイズを計算する．
   ymuint
   tfibits_size() const;
 
@@ -226,15 +232,6 @@ private:
   TpgNode*
   make_prim_node(BnFuncType::Type type,
 		 const vector<TpgNode*>& fanin_list);
-
-  /// @brief ノード間の接続を行う．
-  /// @param[in] src ソースノード
-  /// @param[in] dst ディスティネーションノード
-  /// @param[in] ipos ファンイン番号
-  void
-  connect(TpgNode* src,
-	  TpgNode* dst,
-	  ymuint ipos);
 
   /// @brief TpgNode と TpgNode の対応付けを行う．
   /// @param[in] node TpgNode
@@ -313,10 +310,6 @@ private:
   //////////////////////////////////////////////////////////////////////
   // オブジェクトの生成はクラスメソッドのみが行なう．
   //////////////////////////////////////////////////////////////////////
-
-  /// @brief コンストラクタ
-  /// @param[in] bnnetwork もとのネットワーク
-  TpgNetwork(const BnNetwork& bnnetwork);
 
   /// @brief コピーコンストラクタは実装しない．
   TpgNetwork(const TpgNetwork& src);

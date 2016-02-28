@@ -87,7 +87,7 @@ private:
 
   // ファンインの配列
   // サイズは mFaninNum
-  TpgNode** mFanins;
+  TpgNode** mFaninArray;
 
   // 入力の故障の配列
   // サイズは mFaninNum * 2

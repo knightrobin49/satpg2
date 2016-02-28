@@ -98,7 +98,7 @@ TpgNode::GateType
 TpgNode::gate_type() const
 {
   ASSERT_NOT_REACHED;
-  return kGateConst0;
+  return kGateCONST0;
 }
 
 // @brief controling value を得る．

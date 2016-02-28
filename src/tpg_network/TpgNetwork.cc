@@ -370,48 +370,57 @@ END_NONAMESPACE
 // クラス TpgNetwork
 //////////////////////////////////////////////////////////////////////
 
-// @brief blif ファイルを読み込んでインスタンスを作る．
+// @brief コンストラクタ
+TpgNetwork::TpgNetwork() :
+  mAlloc(4096)
+{
+}
+
+// @brief デストラクタ
+TpgNetwork::~TpgNetwork()
+{
+  // このオブジェクトが確保したメモリは mAlloc のデストラクタが
+  // 開放してくれる．
+}
+
+// @brief blif ファイルを読み込む．
 // @param[in] filename ファイル名
 // @param[in] cell_library セルライブラリ
-// @note エラーが起こったら nullptr を返す．
-TpgNetwork*
+// @return 読み込みが成功したら true を返す．
+bool
 TpgNetwork::read_blif(const string& filename,
 		      const CellLibrary* cell_library)
 {
   BnNetwork bnnetwork;
 
   bool stat = bnnetwork.read_blif(filename, cell_library);
-  if ( !stat ) {
-    return nullptr;
+  if ( stat ) {
+    set(bnnetwork);
   }
 
-  TpgNetwork* network = new TpgNetwork(bnnetwork);
-
-  return network;
+  return stat;
 }
 
 // @brief iscas89 形式のファイルを読み込む．
 // @param[in] filename ファイル名
-// @note エラーが起こったら nullptr を返す．
-TpgNetwork*
+// @return 読み込みが成功したら true を返す．
+bool
 TpgNetwork::read_iscas89(const string& filename)
 {
   BnNetwork bnnetwork;
 
   bool stat = bnnetwork.read_iscas89(filename);
-  if ( !stat ) {
-    return nullptr;
+  if ( stat ) {
+    set(bnnetwork);
   }
 
-  TpgNetwork* network = new TpgNetwork(bnnetwork);
-
-  return network;
+  return stat;
 }
 
-// @brief コンストラクタ
+// @brief 内容を設定する．
 // @param[in] bnnetwork もとのネットワーク
-TpgNetwork::TpgNetwork(const BnNetwork& bnnetwork) :
-  mAlloc(4096)
+void
+TpgNetwork::set(const BnNetwork& bnnetwork)
 {
   //////////////////////////////////////////////////////////////////////
   // 要素数を数え，必要なメモリ領域を確保する．
@@ -485,6 +494,7 @@ TpgNetwork::TpgNetwork(const BnNetwork& bnnetwork) :
     mInputArray[i] = node;
     mNodeMap[bnnode->id()] = node;
   }
+  cout << "npi = " << npi << ", mNodeNum = " << mNodeNum << endl;
 
 
   //////////////////////////////////////////////////////////////////////
@@ -503,6 +513,7 @@ TpgNetwork::TpgNetwork(const BnNetwork& bnnetwork) :
     TpgNode* node = make_logic_node(bnnode->name(), fanin_array, bnnode->func_type());
     mNodeMap[bnnode->id()] = node;
   }
+  cout << "nl = " << nl << ", mNodeNum = " << mNodeNum << endl;
 
 
   //////////////////////////////////////////////////////////////////////
@@ -515,6 +526,9 @@ TpgNetwork::TpgNetwork(const BnNetwork& bnnetwork) :
     TpgNode* node = make_output_node(i, bnnode->name(), inode);
     mOutputArray[i] = node;
   }
+
+  cout << "mNodeNum = " << mNodeNum << endl
+       << "nn       = " << nn << endl;
 
   ASSERT_COND( mNodeNum == nn );
 
@@ -547,6 +561,7 @@ TpgNetwork::TpgNetwork(const BnNetwork& bnnetwork) :
     // これは別件だけどここで一緒にやる．
     node->mTFIbits = alloc_array<ymuint64>(mAlloc, tfibits_size());
   }
+  cout << "AA" << endl;
 
 
   //////////////////////////////////////////////////////////////////////
@@ -562,6 +577,7 @@ TpgNetwork::TpgNetwork(const BnNetwork& bnnetwork) :
       }
     }
   }
+  cout << "BB" << endl;
 
 
   //////////////////////////////////////////////////////////////////////
@@ -574,6 +590,7 @@ TpgNetwork::TpgNetwork(const BnNetwork& bnnetwork) :
     const BnNode* bnnode = bnnetwork.node(i);
     nfault += (bnnode->fanin_num() + 1) * 2;
   }
+  cout << "CC" << endl;
 
   // 故障を生成する．
   mFaultChunk = alloc_array<TpgFault>(mAlloc, nfault);
@@ -586,6 +603,7 @@ TpgNetwork::TpgNetwork(const BnNetwork& bnnetwork) :
     const BnNode* bnnode = bnnetwork.input(i);
     make_faults(bnnode, bnnetwork, en_hash);
   }
+  cout << "DD" << endl;
 
   ASSERT_COND( mFaultNum == nfault );
 
@@ -604,6 +622,7 @@ TpgNetwork::TpgNetwork(const BnNetwork& bnnetwork) :
       mRepFaults.push_back(f);
     }
   }
+  cout << "EE" << endl;
 
   check_network_connection(*this);
 
@@ -617,6 +636,7 @@ TpgNetwork::TpgNetwork(const BnNetwork& bnnetwork) :
     clear_tfimark();
     tmp_list[i] = make_pair(n, i);
   }
+  cout << "FF" << endl;
 
   sort(tmp_list.begin(), tmp_list.end(), Lt());
 
@@ -646,13 +666,6 @@ TpgNetwork::TpgNetwork(const BnNetwork& bnnetwork) :
       }
     }
   }
-}
-
-// @brief デストラクタ
-TpgNetwork::~TpgNetwork()
-{
-  // このオブジェクトが確保したメモリは mAlloc のデストラクタが
-  // 開放してくれる．
 }
 
 // @brief 一つの外部出力に関係するノードのみをアクティブにする．
@@ -912,7 +925,6 @@ TpgNetwork::make_logic_node(const char* name,
 	}
 	else {
 	  TpgNode* dummy_buff = make_prim_node(BnFuncType::kFt_BUFF, vector<TpgNode*>(1, inode));
-	  connect(inode, dummy_buff, 0);
 	  leaf_nodes[i * 2 + 0] = dummy_buff;
 	  input_map[i] = make_pair(dummy_buff, 0);
 	}

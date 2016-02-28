@@ -1,5 +1,5 @@
-#ifndef TPGLOGICN_H
-#define TPGLOGICN_H
+#ifndef TPGLOGICSIMPLE_H
+#define TPGLOGICSIMPLE_H
 
 /// @file TpgLogicN.h
 /// @brief TpgLogicN のヘッダファイル
@@ -51,4 +51,4 @@ private:
 
 END_NAMESPACE_YM_SATPG
 
-#endif // TPGLOGICN_H
+#endif // TPGLOGICSIMPLE_H

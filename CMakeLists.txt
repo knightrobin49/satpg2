@@ -46,13 +46,14 @@ include( UseCython )
 
 find_package(Gperftools)
 
-include (ym_add_library)
+include (YmUtils)
+
+ym_init ( "" )
 
 
 # ===================================================================
 # google-test は内蔵のものを使う．
 # ===================================================================
-include ( ym_use_gtest )
 ym_use_gtest ()
 
 
@@ -60,7 +61,6 @@ ym_use_gtest ()
 # CTest モジュールの読み込み
 # ===================================================================
 include (CTest)
-
 enable_testing()
 
 
@@ -72,7 +72,6 @@ configure_file(
   "${PROJECT_SOURCE_DIR}/etc/version_config.h.in"
   "${PROJECT_BINARY_DIR}/version_config.h"
   )
-
 
 
 # ===================================================================
@@ -102,6 +101,8 @@ add_subdirectory ( ym-bnet )
 add_subdirectory ( ym-udgraph )
 add_subdirectory ( ym-mincov )
 add_subdirectory ( ym-sat )
+
+add_subdirectory ( python )
 
 
 # ===================================================================
@@ -204,17 +205,35 @@ set (rtpg_SOURCES
 
 set (tpg_network_SOURCES
   src/tpg_network/TpgFault.cc
+  src/tpg_network/TpgInput.cc
+  src/tpg_network/TpgLogic.cc
+  src/tpg_network/TpgLogic0.cc
+  src/tpg_network/TpgLogic1.cc
+  src/tpg_network/TpgLogic2.cc
+  src/tpg_network/TpgLogic3.cc
+  src/tpg_network/TpgLogic4.cc
+  src/tpg_network/TpgLogicAND.cc
+  src/tpg_network/TpgLogicBUFF.cc
+  src/tpg_network/TpgLogicC0.cc
+  src/tpg_network/TpgLogicC1.cc
+  src/tpg_network/TpgLogicN.cc
+  src/tpg_network/TpgLogicNAND.cc
+  src/tpg_network/TpgLogicNOR.cc
+  src/tpg_network/TpgLogicNOT.cc
+  src/tpg_network/TpgLogicOR.cc
+  src/tpg_network/TpgLogicXNOR.cc
+  src/tpg_network/TpgLogicXOR.cc
   src/tpg_network/TpgMap.cc
   src/tpg_network/TpgNetwork.cc
   src/tpg_network/TpgNode.cc
+  src/tpg_network/TpgOutput.cc
   )
 
 
 # ===================================================================
 # ターゲットの設定
 # ===================================================================
-add_library (satpg_common
-  SHARED
+ym_add_object_library ( satpg_common
   ${base_SOURCES}
   ${sat_engine_SOURCES}
   ${dtpg_SOURCES}
@@ -222,40 +241,7 @@ add_library (satpg_common
   ${minpat_SOURCES}
   ${rtpg_SOURCES}
   ${tpg_network_SOURCES}
-  $<TARGET_OBJECTS:ym_common>
-  $<TARGET_OBJECTS:ym_logic>
-  $<TARGET_OBJECTS:ym_cell>
-  $<TARGET_OBJECTS:ym_bnet>
-  $<TARGET_OBJECTS:ym_udgraph>
-  $<TARGET_OBJECTS:ym_mincov>
-  $<TARGET_OBJECTS:ym_sat>
   )
-
-target_compile_options ( satpg_common
-  PRIVATE "-O3" "-fPIC"
-  )
-
-target_compile_definitions ( satpg_common
-  PRIVATE "-DNDEBUG"
-  )
-
-if (ZLIB_FOUND)
-  list (APPEND libs ${ZLIB_LIBRARIES})
-endif (ZLIB_FOUND)
-
-if (BZIP2_FOUND)
-  list (APPEND libs ${BZIP2_LIBRARIES})
-endif (BZIP2_FOUND)
-
-if (LIBLZMA_FOUND)
-  list (APPEND libs ${LIBLZMA_LIBRARIES})
-endif (LIBLZMA_FOUND)
-
-if (POPT_FOUND)
-  list (APPEND libs ${POPT_LIBRARY})
-endif (POPT_FOUND)
-
-target_link_libraries ( satpg_common ${libs})
 
 
 # ===================================================================

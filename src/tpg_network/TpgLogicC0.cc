@@ -20,7 +20,7 @@ BEGIN_NAMESPACE_YM_SATPG
 // @brief コンストラクタ
 // @param[in] id ID番号
 TpgLogicC0::TpgLogicC0(ymuint id) :
-  TpgLogc0(id)
+  TpgLogic0(id)
 {
 }
 
@@ -42,7 +42,7 @@ TpgLogicC0::gate_type() const
 // @param[in] solver SAT ソルバ
 // @param[in] lit_map 入出力とリテラルの対応マップ
 void
-TpgLodicC0::make_cnf(SatSolver& solver,
+TpgLogicC0::make_cnf(SatSolver& solver,
 		     const LitMap& lit_map)
 {
   solver.add_clause(~lit_map.output());

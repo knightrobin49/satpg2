@@ -566,7 +566,7 @@ SatEngine::make_node_cnf(const TpgNode* node,
     ;
   }
   else if ( node->is_output() ) {
-    make_gate_cnf(TpgNode::kGateBuff, VidLitMap(node, vid_map));
+    make_gate_cnf(TpgNode::kGateBUFF, VidLitMap(node, vid_map));
   }
   else if ( node->is_logic() ) {
     make_gate_cnf(node->gate_type(), VidLitMap(node, vid_map));
@@ -695,36 +695,36 @@ SatEngine::make_fault_cnf(const TpgFault* fault,
 
     bool inv = false;
     switch ( node->gate_type() ) {
-    case TpgNode::kGateBuff:
-    case TpgNode::kGateNot:
+    case TpgNode::kGateBUFF:
+    case TpgNode::kGateNOT:
       ASSERT_NOT_REACHED;
       break;
 
-    case TpgNode::kGateNand:
+    case TpgNode::kGateNAND:
       ASSERT_COND( fval == 1 );
       make_and_cnf(VectLitMap(ivars, ovar), true);
       break;
 
-    case TpgNode::kGateAnd:
+    case TpgNode::kGateAND:
       ASSERT_COND( fval == 1 );
       make_and_cnf(VectLitMap(ivars, ovar), false);
       break;
 
-    case TpgNode::kGateNor:
+    case TpgNode::kGateNOR:
       ASSERT_COND( fval == 0 );
       make_or_cnf(VectLitMap(ivars, ovar), true);
       break;
 
-    case TpgNode::kGateOr:
+    case TpgNode::kGateOR:
       ASSERT_COND( fval == 0 );
       make_or_cnf(VectLitMap(ivars, ovar), false);
       break;
 
-    case TpgNode::kGateXnor:
+    case TpgNode::kGateXNOR:
       inv = true;
       // わざと次に続く
 
-    case TpgNode::kGateXor:
+    case TpgNode::kGateXOR:
       if ( fval == 1 ) {
 	inv = !inv;
       }
@@ -791,12 +791,12 @@ SatEngine::make_fault_cnf_d(const TpgFault* fault,
 
     bool inv = false;
     switch ( node->gate_type() ) {
-    case TpgNode::kGateBuff:
-    case TpgNode::kGateNot:
+    case TpgNode::kGateBUFF:
+    case TpgNode::kGateNOT:
       ASSERT_NOT_REACHED;
       break;
 
-    case TpgNode::kGateNand:
+    case TpgNode::kGateNAND:
       ASSERT_COND( fval == 1 );
       for (ymuint i = 0; i < ni - 1; ++ i) {
 	add_clause(ilits[i]);
@@ -805,7 +805,7 @@ SatEngine::make_fault_cnf_d(const TpgFault* fault,
       add_clause(~oflit);
       break;
 
-    case TpgNode::kGateAnd:
+    case TpgNode::kGateAND:
       ASSERT_COND( fval == 1 );
       for (ymuint i = 0; i < ni - 1; ++ i) {
 	add_clause(ilits[i]);
@@ -814,7 +814,7 @@ SatEngine::make_fault_cnf_d(const TpgFault* fault,
       add_clause( oflit);
       break;
 
-    case TpgNode::kGateNor:
+    case TpgNode::kGateNOR:
       ASSERT_COND( fval == 0 );
       for (ymuint i = 0; i < ni - 1; ++ i) {
 	add_clause(~ilits[i]);
@@ -823,7 +823,7 @@ SatEngine::make_fault_cnf_d(const TpgFault* fault,
       add_clause( oflit);
       break;
 
-    case TpgNode::kGateOr:
+    case TpgNode::kGateOR:
       ASSERT_COND( fval == 0 );
       for (ymuint i = 0; i < ni - 1; ++ i) {
 	add_clause(~ilits[i]);
@@ -832,11 +832,11 @@ SatEngine::make_fault_cnf_d(const TpgFault* fault,
       add_clause(~oflit);
       break;
 
-    case TpgNode::kGateXnor:
+    case TpgNode::kGateXNOR:
       inv = true;
       // わざと次に続く
 
-    case TpgNode::kGateXor:
+    case TpgNode::kGateXOR:
       if ( fval == 1 ) {
 	inv = !inv;
       }
@@ -899,35 +899,35 @@ SatEngine::make_gate_cnf(TpgNode::GateType gate_type,
 			 const LitMap& litmap)
 {
   switch ( gate_type ) {
-  case TpgNode::kGateNot:
+  case TpgNode::kGateNOT:
     make_buff_cnf(mSolver, litmap.input(0), ~litmap.output());
     return;
 
-  case TpgNode::kGateBuff:
+  case TpgNode::kGateBUFF:
     make_buff_cnf(mSolver, litmap.input(0), litmap.output());
     return;
 
-  case TpgNode::kGateNand:
+  case TpgNode::kGateNAND:
     make_and_cnf(litmap, true);
     return;
 
-  case TpgNode::kGateAnd:
+  case TpgNode::kGateAND:
     make_and_cnf(litmap, false);
     return;
 
-  case TpgNode::kGateNor:
+  case TpgNode::kGateNOR:
     make_or_cnf(litmap, true);
     return;
 
-  case TpgNode::kGateOr:
+  case TpgNode::kGateOR:
     make_or_cnf(litmap, false);
     return;
 
-  case TpgNode::kGateXnor:
+  case TpgNode::kGateXNOR:
     make_xor_cnf(litmap, true);
     return;
 
-  case TpgNode::kGateXor:
+  case TpgNode::kGateXOR:
     make_xor_cnf(litmap, false);
     return;
 

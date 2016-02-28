@@ -8,6 +8,7 @@
 
 
 #include "TpgLogicXNOR.h"
+#include "ym/SatSolver.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG
@@ -84,7 +85,7 @@ TpgLogicXNOR2::noval() const
 // @param[in] solver SAT ソルバ
 // @param[in] lit_map 入出力とリテラルの対応マップ
 void
-TpgLodicXNOR2::make_cnf(SatSolver& solver,
+TpgLogicXNOR2::make_cnf(SatSolver& solver,
 			const LitMap& lit_map)
 {
   SatLiteral ilit0 = lit_map.input(0);

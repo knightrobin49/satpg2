@@ -85,7 +85,7 @@ TpgLogicOR2::noval() const
 // @param[in] solver SAT ソルバ
 // @param[in] lit_map 入出力とリテラルの対応マップ
 void
-TpgLodicOR2::make_cnf(SatSolver& solver,
+TpgLogicOR2::make_cnf(SatSolver& solver,
 		      const LitMap& lit_map)
 {
   SatLiteral ilit0 = lit_map.input(0);
@@ -170,7 +170,7 @@ TpgLogicOR3::noval() const
 // @param[in] solver SAT ソルバ
 // @param[in] lit_map 入出力とリテラルの対応マップ
 void
-TpgLodicOR3::make_cnf(SatSolver& solver,
+TpgLogicOR3::make_cnf(SatSolver& solver,
 		      const LitMap& lit_map)
 {
   SatLiteral ilit0 = lit_map.input(0);
@@ -258,7 +258,7 @@ TpgLogicOR4::noval() const
 // @param[in] solver SAT ソルバ
 // @param[in] lit_map 入出力とリテラルの対応マップ
 void
-TpgLodicOR4::make_cnf(SatSolver& solver,
+TpgLogicOR4::make_cnf(SatSolver& solver,
 		      const LitMap& lit_map)
 {
   SatLiteral ilit0 = lit_map.input(0);
@@ -347,7 +347,7 @@ TpgLogicORN::noval() const
 // @param[in] solver SAT ソルバ
 // @param[in] lit_map 入出力とリテラルの対応マップ
 void
-TpgLodicORN::make_cnf(SatSolver& solver,
+TpgLogicORN::make_cnf(SatSolver& solver,
 		      const LitMap& lit_map)
 {
   SatLiteral ilit0 = lit_map.input(0);

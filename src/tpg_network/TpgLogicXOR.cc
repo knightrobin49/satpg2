@@ -85,7 +85,7 @@ TpgLogicXOR2::noval() const
 // @param[in] solver SAT ソルバ
 // @param[in] lit_map 入出力とリテラルの対応マップ
 void
-TpgLodicXOR2::make_cnf(SatSolver& solver,
+TpgLogicXOR2::make_cnf(SatSolver& solver,
 		      const LitMap& lit_map)
 {
   SatLiteral ilit0 = lit_map.input(0);

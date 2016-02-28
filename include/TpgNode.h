@@ -40,37 +40,37 @@ public:
   //////////////////////////////////////////////////////////////////////
   enum GateType {
     /// @brief 定数0
-    kGateConst0 = 0,
+    kGateCONST0 = 0,
 
     /// @brief 定数1
-    kGateConst1 = 1,
+    kGateCONST1 = 1,
 
     /// @brief バッファ
-    kGateBuff   = 2,
+    kGateBUFF   = 2,
 
     /// @brief NOT
-    kGateNot    = 3,
+    kGateNOT    = 3,
 
     /// @brief AND
-    kGateAnd    = 4,
+    kGateAND    = 4,
 
     /// @brief NAND
-    kGateNand   = 5,
+    kGateNAND   = 5,
 
     /// @brief OR
-    kGateOr     = 6,
+    kGateOR     = 6,
 
     /// @brief NOR
-    kGateNor    = 7,
+    kGateNOR    = 7,
 
     /// @brief XOR
-    kGateXor    = 8,
+    kGateXOR    = 8,
 
     /// @brief XNOR
-    kGateXnor   = 9,
+    kGateXNOR   = 9,
 
     /// @brief 上記以外
-    kGateCplx   = 10
+    kGateCPLX   = 10
   };
 
 
