@@ -12,7 +12,7 @@
 #include "RtpgStats.h"
 #include "FaultMgr.h"
 #include "Fsim.h"
-#include "YmTclpp/TclPopt.h"
+#include "ym/TclPopt.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG

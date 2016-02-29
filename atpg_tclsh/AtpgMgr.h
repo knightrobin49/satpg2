@@ -12,8 +12,9 @@
 
 #include "satpg.h"
 
-#include "YmCell/cell_nsdef.h"
+#include "ym/ym_cell.h"
 #include "ym/Binder.h"
+#include "ym/StopWatch.h"
 #include "ym/MStopWatch.h"
 
 

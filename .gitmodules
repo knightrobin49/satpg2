@@ -19,3 +19,6 @@
 [submodule "ym-udgraph"]
 	path = ym-udgraph
 	url = git@github.com:yusuke-matsunaga/ym-udgraph.git
+[submodule "ym-tclpp"]
+	path = ym-tclpp
+	url = git@github.com:yusuke-matsunaga/ym-tclpp.git

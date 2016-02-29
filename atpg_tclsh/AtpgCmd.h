@@ -11,8 +11,7 @@
 
 
 #include "satpg.h"
-#include "YmTclpp/TclCmd.h"
-#include "YmNetworks/tgnet.h"
+#include "ym/TclCmd.h"
 #include "ym/USTime.h"
 
 

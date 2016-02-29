@@ -68,15 +68,15 @@ AtpgCmd::after_set_network()
       continue;
     }
     switch ( node->gate_type() ) {
-    case kGateBuff:
+    case TpgNode::kGateBUFF:
       ++ n_buff;
       break;
 
-    case kGateNot:
+    case TpgNode::kGateNOT:
       ++ n_not;
       break;
 
-    case kGateAnd:
+    case TpgNode::kGateAND:
       ++ n_and;
       switch ( node->fanin_num() ) {
       case 2: ++ n_and2; break;
@@ -85,7 +85,7 @@ AtpgCmd::after_set_network()
       }
       break;
 
-    case kGateNand:
+    case TpgNode::kGateNAND:
       ++ n_nand;
       switch ( node->fanin_num() ) {
       case 2: ++ n_nand2; break;
@@ -94,7 +94,7 @@ AtpgCmd::after_set_network()
       }
       break;
 
-    case kGateOr:
+    case TpgNode::kGateOR:
       ++ n_or;
       switch ( node->fanin_num() ) {
       case 2: ++ n_or2; break;
@@ -103,7 +103,7 @@ AtpgCmd::after_set_network()
       }
       break;
 
-    case kGateNor:
+    case TpgNode::kGateNOR:
       ++ n_nor;
       switch ( node->fanin_num() ) {
       case 2: ++ n_nor2; break;
@@ -112,14 +112,14 @@ AtpgCmd::after_set_network()
       }
       break;
 
-    case kGateXor:
+    case TpgNode::kGateXOR:
       ++ n_xor;
       switch ( node->fanin_num() ) {
       case 2: ++ n_xor2; break;
       }
       break;
 
-    case kGateXnor:
+    case TpgNode::kGateXNOR:
       ++ n_xnor;
       switch ( node->fanin_num() ) {
       case 2: ++ n_xnor2; break;

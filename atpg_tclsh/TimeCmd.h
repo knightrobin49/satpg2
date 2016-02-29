@@ -12,7 +12,7 @@
 // 実はこのパッケージは Magus には依存していないので汎用である．
 
 
-#include "YmTclpp/TclCmd.h"
+#include "ym/TclCmd.h"
 #include "ym/StopWatch.h"
 #include "satpg.h"
 

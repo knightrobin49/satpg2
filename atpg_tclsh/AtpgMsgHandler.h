@@ -11,7 +11,7 @@
 
 #include "satpg.h"
 #include "ym/MsgHandler.h"
-#include "YmTclpp/TclObj.h"
+#include "ym/TclObj.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG

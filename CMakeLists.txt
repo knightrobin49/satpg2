@@ -85,6 +85,7 @@ include_directories (
   ${PROJECT_SOURCE_DIR}/ym-logic/include
   ${PROJECT_SOURCE_DIR}/ym-mincov/include
   ${PROJECT_SOURCE_DIR}/ym-sat/include
+  ${PROJECT_SOURCE_DIR}/ym-tclpp/include
   ${PROJECT_SOURCE_DIR}/ym-udgraph/include
   ${PROJECT_BINARY_DIR}
   )
@@ -101,7 +102,9 @@ add_subdirectory ( ym-bnet )
 add_subdirectory ( ym-udgraph )
 add_subdirectory ( ym-mincov )
 add_subdirectory ( ym-sat )
+add_subdirectory ( ym-tclpp )
 
+add_subdirectory ( atpg_tclsh )
 add_subdirectory ( python )
 
 

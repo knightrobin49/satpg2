@@ -11,7 +11,7 @@
 #include "AtpgMgr.h"
 #include "TpgFault.h"
 #include "FaultMgr.h"
-#include "YmTclpp/TclPopt.h"
+#include "ym/TclPopt.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG

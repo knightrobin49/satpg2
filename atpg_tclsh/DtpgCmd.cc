@@ -8,7 +8,7 @@
 
 
 #include "DtpgCmd.h"
-#include "YmTclpp/TclPopt.h"
+#include "ym/TclPopt.h"
 #include "AtpgMgr.h"
 #include "TpgNetwork.h"
 #include "DtpgStats.h"
@@ -182,7 +182,7 @@ DtpgCmd::cmd_proc(TclObjVector& objv)
     xmode = mPoptX->val();
   }
 
-  BackTracer bt(_network().max_node_id());
+  BackTracer bt(_network().node_num());
 
   if ( mPoptDrop->is_specified() ) {
     dop_list.add(new_DopDrop(_fault_mgr(), _fsim3()));
