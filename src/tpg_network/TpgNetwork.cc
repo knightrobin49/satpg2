@@ -494,7 +494,6 @@ TpgNetwork::set(const BnNetwork& bnnetwork)
     mInputArray[i] = node;
     mNodeMap[bnnode->id()] = node;
   }
-  cout << "npi = " << npi << ", mNodeNum = " << mNodeNum << endl;
 
 
   //////////////////////////////////////////////////////////////////////
@@ -507,13 +506,12 @@ TpgNetwork::set(const BnNetwork& bnnetwork)
     const BnNode* bnnode = sorted_node_list[i];
     ymuint ni = bnnode->fanin_num();
     vector<TpgNode*> fanin_array(ni);
-    for (ymuint i = 0; i < ni; ++ i) {
-      fanin_array[i] = mNodeArray[bnnode->fanin_id(i)];
+    for (ymuint j = 0; j < ni; ++ j) {
+      fanin_array[j] = mNodeMap[bnnode->fanin_id(j)];
     }
     TpgNode* node = make_logic_node(bnnode->name(), fanin_array, bnnode->func_type());
     mNodeMap[bnnode->id()] = node;
   }
-  cout << "nl = " << nl << ", mNodeNum = " << mNodeNum << endl;
 
 
   //////////////////////////////////////////////////////////////////////
@@ -527,11 +525,7 @@ TpgNetwork::set(const BnNetwork& bnnetwork)
     mOutputArray[i] = node;
   }
 
-  cout << "mNodeNum = " << mNodeNum << endl
-       << "nn       = " << nn << endl;
-
   ASSERT_COND( mNodeNum == nn );
-
 
   //////////////////////////////////////////////////////////////////////
   // ファンアウト数を数える
@@ -561,7 +555,6 @@ TpgNetwork::set(const BnNetwork& bnnetwork)
     // これは別件だけどここで一緒にやる．
     node->mTFIbits = alloc_array<ymuint64>(mAlloc, tfibits_size());
   }
-  cout << "AA" << endl;
 
 
   //////////////////////////////////////////////////////////////////////
@@ -577,7 +570,6 @@ TpgNetwork::set(const BnNetwork& bnnetwork)
       }
     }
   }
-  cout << "BB" << endl;
 
 
   //////////////////////////////////////////////////////////////////////
@@ -590,7 +582,6 @@ TpgNetwork::set(const BnNetwork& bnnetwork)
     const BnNode* bnnode = bnnetwork.node(i);
     nfault += (bnnode->fanin_num() + 1) * 2;
   }
-  cout << "CC" << endl;
 
   // 故障を生成する．
   mFaultChunk = alloc_array<TpgFault>(mAlloc, nfault);
@@ -603,7 +594,6 @@ TpgNetwork::set(const BnNetwork& bnnetwork)
     const BnNode* bnnode = bnnetwork.input(i);
     make_faults(bnnode, bnnetwork, en_hash);
   }
-  cout << "DD" << endl;
 
   ASSERT_COND( mFaultNum == nfault );
 
@@ -622,7 +612,6 @@ TpgNetwork::set(const BnNetwork& bnnetwork)
       mRepFaults.push_back(f);
     }
   }
-  cout << "EE" << endl;
 
   check_network_connection(*this);
 
@@ -636,7 +625,6 @@ TpgNetwork::set(const BnNetwork& bnnetwork)
     clear_tfimark();
     tmp_list[i] = make_pair(n, i);
   }
-  cout << "FF" << endl;
 
   sort(tmp_list.begin(), tmp_list.end(), Lt());
 
