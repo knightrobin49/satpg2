@@ -54,9 +54,11 @@ protected:
 
 protected:
 
+#if 0
   /// @brief ネットワークを設定する．
   void
   set_network(TpgNetwork* network);
+#endif
 
   /// @brief TgNetwork を取り出す．
   TpgNetwork&

@@ -30,8 +30,6 @@ AtpgMgr::AtpgMgr() :
 
   mFsim = new_Fsim2();
   mFsim3 = new_Fsim3();
-
-  mNetwork = nullptr;
 }
 
 // @brief デストラクタ
@@ -41,9 +39,9 @@ AtpgMgr::~AtpgMgr()
   delete mTvMgr;
   delete mFsim;
   delete mFsim3;
-  delete mNetwork;
 }
 
+#if 0
 // @brief ネットワークを設定する．
 void
 AtpgMgr::set_network(TpgNetwork* network)
@@ -53,6 +51,7 @@ AtpgMgr::set_network(TpgNetwork* network)
 
   after_set_network();
 }
+#endif
 
 // @brief ファイル読み込みに関わる時間を得る．
 USTime
@@ -93,13 +92,13 @@ AtpgMgr::misc_time() const
 void
 AtpgMgr::after_set_network()
 {
-  mFaultMgr->set_faults(*mNetwork);
+  mFaultMgr->set_faults(mNetwork);
 
   mTvMgr->clear();
-  mTvMgr->init(mNetwork->input_num2());
+  mTvMgr->init(mNetwork.input_num2());
 
-  mFsim->set_network(*mNetwork);
-  mFsim3->set_network(*mNetwork);
+  mFsim->set_network(mNetwork);
+  mFsim3->set_network(mNetwork);
 }
 
 END_NAMESPACE_YM_SATPG

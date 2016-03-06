@@ -12,6 +12,7 @@
 
 #include "satpg.h"
 
+#include "TpgNetwork.h"
 #include "ym/ym_cell.h"
 #include "ym/Binder.h"
 #include "ym/StopWatch.h"
@@ -40,9 +41,11 @@ public:
   // 内容を取り出す関数
   //////////////////////////////////////////////////////////////////////
 
+#if 0
   /// @brief ネットワークを設定する．
   void
   set_network(TpgNetwork* network);
+#endif
 
   /// @brief TgNetwork を取り出す．
   TpgNetwork&
@@ -143,7 +146,7 @@ private:
   //////////////////////////////////////////////////////////////////////
 
   // 対象のネットワーク
-  TpgNetwork* mNetwork;
+  TpgNetwork mNetwork;
 
   // 故障マネージャ
   FaultMgr* mFaultMgr;
@@ -178,7 +181,7 @@ inline
 TpgNetwork&
 AtpgMgr::_network()
 {
-  return *mNetwork;
+  return mNetwork;
 }
 
 // @brief FaultMgr を取り出す．

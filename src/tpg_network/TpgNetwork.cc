@@ -422,6 +422,8 @@ TpgNetwork::read_iscas89(const string& filename)
 void
 TpgNetwork::set(const BnNetwork& bnnetwork)
 {
+  mAlloc.destroy();
+
   //////////////////////////////////////////////////////////////////////
   // 要素数を数え，必要なメモリ領域を確保する．
   //////////////////////////////////////////////////////////////////////
@@ -592,6 +594,10 @@ TpgNetwork::set(const BnNetwork& bnnetwork)
   }
   for (ymuint i = 0; i < npi; ++ i) {
     const BnNode* bnnode = bnnetwork.input(i);
+    make_faults(bnnode, bnnetwork, en_hash);
+  }
+  for (ymuint i = 0; i < npo; ++ i) {
+    const BnNode* bnnode = bnnetwork.output(i);
     make_faults(bnnode, bnnetwork, en_hash);
   }
 
@@ -1320,48 +1326,51 @@ TpgNetwork::make_faults(const BnNode* bnnode,
     ++ nf;
   }
 
-  const BnFuncType* func_type = bnnode->func_type();
-  ymuint ni = bnnode->fanin_num();
-  for (ymuint i = 0; i < ni; ++ i) {
-    Val3 oval0;
-    Val3 oval1;
-    if ( func_type->type() == BnFuncType::kFt_EXPR ) {
-      ymuint fid = func_type->id();
-      ASSERT_COND( en_hash.check(fid) );
-      const CplxInfo* cinfo = en_hash[fid];
-      oval0 = cinfo->mCVal[i * 2 + 0];
-      oval1 = cinfo->mCVal[i * 2 + 1];
-    }
-    else {
-      oval0 = c_val(func_type->type(), kVal0);
-      oval1 = c_val(func_type->type(), kVal1);
-    }
+  // 入力の故障を生成
+  if ( bnnode->is_logic() ) {
+    const BnFuncType* func_type = bnnode->func_type();
+    ymuint ni = bnnode->fanin_num();
+    for (ymuint i = 0; i < ni; ++ i) {
+      Val3 oval0;
+      Val3 oval1;
+      if ( func_type->type() == BnFuncType::kFt_EXPR ) {
+	ymuint fid = func_type->id();
+	ASSERT_COND( en_hash.check(fid) );
+	const CplxInfo* cinfo = en_hash[fid];
+	oval0 = cinfo->mCVal[i * 2 + 0];
+	oval1 = cinfo->mCVal[i * 2 + 1];
+      }
+      else {
+	oval0 = c_val(func_type->type(), kVal0);
+	oval1 = c_val(func_type->type(), kVal1);
+      }
 
-    const TpgFault* rep0 = nullptr;
-    if ( oval0 == kVal0 ) {
-      rep0 = of0;
-    }
-    else if ( oval0 == kVal1 ) {
-      rep0 = of1;
-    }
+      const TpgFault* rep0 = nullptr;
+      if ( oval0 == kVal0 ) {
+	rep0 = of0;
+      }
+      else if ( oval0 == kVal1 ) {
+	rep0 = of1;
+      }
 
-    const TpgFault* rep1 = nullptr;
-    if ( oval1 == kVal0 ) {
-      rep1 = of0;
-    }
-    else if ( oval1 == kVal1 ) {
-      rep1 = of1;
-    }
+      const TpgFault* rep1 = nullptr;
+      if ( oval1 == kVal0 ) {
+	rep1 = of0;
+      }
+      else if ( oval1 == kVal1 ) {
+	rep1 = of1;
+      }
 
-    const TpgNode* inode = node->input_map(i);
-    ymuint ipos = node->ipos_map(i);
-    const TpgFault* if0 = new_ifault(inode, ipos, 0, rep0);
-    const TpgFault* if1 = new_ifault(inode, ipos, 1, rep1);
-    if ( if0->is_rep() ) {
-      ++ nf;
-    }
-    if ( if1->is_rep() ) {
-      ++ nf;
+      const TpgNode* inode = node->input_map(i);
+      ymuint ipos = node->ipos_map(i);
+      const TpgFault* if0 = new_ifault(inode, ipos, 0, rep0);
+      const TpgFault* if1 = new_ifault(inode, ipos, 1, rep1);
+      if ( if0->is_rep() ) {
+	++ nf;
+      }
+      if ( if1->is_rep() ) {
+	++ nf;
+      }
     }
   }
 

@@ -253,12 +253,14 @@ AtpgCmd::after_update_faults()
 #endif
 }
 
+#if 0
 // @brief ネットワークを設定する．
 void
 AtpgCmd::set_network(TpgNetwork* network)
 {
   mMgr->set_network(network);
 }
+#endif
 
 // @brief TgNetwork を取り出す．
 TpgNetwork&
