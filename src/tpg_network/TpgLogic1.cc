@@ -56,7 +56,7 @@ TpgLogic1::input_fault(int val,
 {
   ASSERT_COND( val == 0 || val == 1 );
   ASSERT_COND( pos == 0 );
-  return mInputFaults[val];
+  return mInputFaults[val % 2];
 }
 
 // @brief このノードに関係する故障数を返す．
@@ -78,6 +78,20 @@ TpgLogic1::fault(ymuint pos) const
   else {
     return input_fault(pos - 2, 0);
   }
+}
+
+// @brief 入力の故障を設定する．
+// @param[in] val 故障値 ( 0 / 1 )
+// @param[in] pos 入力の位置番号
+// @param[in] fault 故障
+void
+TpgLogic1::set_input_fault(int val,
+			   ymuint pos,
+			   TpgFault* fault)
+{
+  ASSERT_COND( val == 0 || val == 1 );
+  ASSERT_COND( pos == 0 );
+  mInputFaults[val % 2] = fault;
 }
 
 END_NAMESPACE_YM_SATPG

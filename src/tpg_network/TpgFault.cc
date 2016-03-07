@@ -8,7 +8,10 @@
 
 
 #include "TpgFault.h"
+#include "TpgOutputFault.h"
+#include "TpgInputFault.h"
 #include "TpgNode.h"
+#include "ym/BnNode.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG
@@ -17,79 +20,25 @@ BEGIN_NAMESPACE_YM_SATPG
 // クラス TpgFault
 //////////////////////////////////////////////////////////////////////
 
-// @brief 内容を設定する．
+// @brief コンストラクタ
 // @param[in] id ID番号
-// @param[in] node 対象のゲート
-// @param[in] output 入力の故障のとき false, 出力の故障のとき true を与える．
-// @param[in] pos 故障位置
-// @param[in] val 故障値 0 か非0 で 0/1 を区別する．
+// @param[in] val 故障値
 // @param[in] rep_fault 代表故障
-void
-TpgFault::set(ymuint id,
-	      const TpgNode* node,
-	      bool output,
-	      ymuint pos,
-	      int val,
-	      const TpgFault* rep_fault)
+TpgFault::TpgFault(ymuint id,
+		   int val,
+		   const TpgFault* rep_fault) :
+  mId(id),
+  mVal(val),
+  mRepFault(rep_fault)
 {
-  mId = id;
-  mNode = node;
-
-  mPosVal = 0U;
-  if ( val ) {
-    mPosVal |= 1U;
-  }
-  if ( output ) {
-    mPosVal |= 2U;
-  }
-  mPosVal |= (pos << 3);
-
-  if ( rep_fault != nullptr ) {
-    mRepFault = rep_fault;
-  }
-  else {
+  if ( mRepFault == nullptr ) {
     mRepFault = this;
   }
 }
 
-// @brief 故障の入力側のゲートを返す．
-const TpgNode*
-TpgFault::source_node() const
+// @brief デストラクタ
+TpgFault::~TpgFault()
 {
-  if ( is_output_fault() ) {
-    return node();
-  }
-  else {
-    return node()->fanin(pos());
-  }
-}
-
-// @brief 故障の内容を表す文字列を返す．
-string
-TpgFault::str() const
-{
-  ostringstream ans;
-  if ( node()->name() == nullptr ) {
-    ans << "Node#" << node()->id();
-  }
-  else {
-    ans << node()->name();
-  }
-  ans << ":";
-  if ( is_input_fault() ) {
-    ans << "I" << pos();
-  }
-  else {
-    ans << "O";
-  }
-  ans << ":";
-  if ( val() ) {
-    ans <<"SA1";
-  }
-  else {
-    ans <<"SA0";
-  }
-  return ans.str();
 }
 
 // @brief ストリーム出力演算子
@@ -100,6 +49,208 @@ operator<<(ostream& s,
 	   const TpgFault* f)
 {
   return s << f->str();
+}
+
+
+//////////////////////////////////////////////////////////////////////
+// クラス TpgOutputFault
+//////////////////////////////////////////////////////////////////////
+
+// @brief コンストラクタ
+// @param[in] id ID番号
+// @param[in] bnnode 故障位置の BnNode
+// @param[in] tpgnode 故障位置の TpgNode
+// @param[in] val 故障値
+// @param[in] rep_fault 代表故障
+TpgOutputFault::TpgOutputFault(ymuint id,
+			       const BnNode* bnnode,
+			       const TpgNode* tpgnode,
+			       int val,
+			       const TpgFault* rep_fault) :
+  TpgFault(id, val, rep_fault),
+  mBnNode(bnnode),
+  mTpgNode(tpgnode)
+{
+}
+
+// @brief デストラクタ
+TpgOutputFault::~TpgOutputFault()
+{
+}
+
+// @brief 故障位置のゲートを返す．
+const BnNode*
+TpgOutputFault::node() const
+{
+  return mBnNode;
+}
+
+// @brief node() に対応する TpgNode を返す．
+inline
+const TpgNode*
+TpgOutputFault::tpg_node() const
+{
+  return mTpgNode;
+}
+
+// @brief 故障の入力側の TpgNode を返す．
+//
+// 出力の故障の場合には tpg_node() と同じ値を返す．
+const TpgNode*
+TpgOutputFault::tpg_inode() const
+{
+  return tpg_node();
+}
+
+// @brief 出力の故障の時 true を返す．
+bool
+TpgOutputFault::is_output_fault() const
+{
+  return true;
+}
+
+// @brief 故障位置を返す．
+ymuint
+TpgOutputFault::pos() const
+{
+  ASSERT_NOT_REACHED;
+  return 0;
+}
+
+// @brief tpg_inode 上の故障位置を返す．
+//
+// is_input_fault() == true の時のみ意味を持つ．
+ymuint
+TpgOutputFault::tpg_pos() const
+{
+  ASSERT_NOT_REACHED;
+  return 0;
+}
+
+// @brief 故障の内容を表す文字列を返す．
+string
+TpgOutputFault::str() const
+{
+  ostringstream ans;
+  if ( node()->name() == nullptr ) {
+    ans << "Node#" << node()->id();
+  }
+  else {
+    ans << node()->name();
+  }
+  ans << ":O:";
+  if ( val() ) {
+    ans <<"SA1";
+  }
+  else {
+    ans <<"SA0";
+  }
+  return ans.str();
+}
+
+
+//////////////////////////////////////////////////////////////////////
+// クラス TpgInputFault
+//////////////////////////////////////////////////////////////////////
+
+// @brief コンストラクタ
+// @param[in] id ID番号
+// @param[in] bnnode 故障位置の BnNode
+// @param[in] tpgnode 故障位置の TpgNode
+// @param[in] pos 故障の入力位置
+// @param[in] i_tpgnode 入力側の TpgNode
+// @param[in] tpg_pos i_tpgnode 上の故障位置
+// @param[in] val 故障値
+// @param[in] rep_fault 代表故障
+TpgInputFault::TpgInputFault(ymuint id,
+			     const BnNode* bnnode,
+			     const TpgNode* tpgnode,
+			     ymuint pos,
+			     const TpgNode* i_tpgnode,
+			     ymuint tpg_pos,
+			     int val,
+			     const TpgFault* rep_fault) :
+  TpgFault(id, val, rep_fault),
+  mBnNode(bnnode),
+  mTpgNode(tpgnode),
+  mPos(pos),
+  mI_TpgNode(i_tpgnode),
+  mTpgPos(tpg_pos)
+{
+}
+
+// @brief デストラクタ
+TpgInputFault::~TpgInputFault()
+{
+}
+
+// @brief 故障位置のゲートを返す．
+const BnNode*
+TpgInputFault::node() const
+{
+  return mBnNode;
+}
+
+// @brief node() に対応する TpgNode を返す．
+const TpgNode*
+TpgInputFault::tpg_node() const
+{
+  return mTpgNode;
+}
+
+// @brief 故障の入力側の TpgNode を返す．
+//
+// 出力の故障の場合には tpg_node() と同じ値を返す．
+const TpgNode*
+TpgInputFault::tpg_inode() const
+{
+  return mI_TpgNode;
+}
+
+// @brief 出力の故障の時 true を返す．
+bool
+TpgInputFault::is_output_fault() const
+{
+  return false;
+}
+
+// @brief 故障位置を返す．
+//
+// is_input_fault() == true の時のみ意味を持つ．
+ymuint
+TpgInputFault::pos() const
+{
+  return mPos;
+}
+
+// @brief tpg_inode 上の故障位置を返す．
+//
+// is_input_fault() == true の時のみ意味を持つ．
+ymuint
+TpgInputFault::tpg_pos() const
+{
+  return mTpgPos;
+}
+
+// @brief 故障の内容を表す文字列を返す．
+string
+TpgInputFault::str() const
+{
+  ostringstream ans;
+  if ( node()->name() == nullptr ) {
+    ans << "Node#" << node()->id();
+  }
+  else {
+    ans << node()->name();
+  }
+  ans << ":I" << pos() << ":";
+  if ( val() ) {
+    ans <<"SA1";
+  }
+  else {
+    ans <<"SA0";
+  }
+  return ans.str();
 }
 
 END_NAMESPACE_YM_SATPG

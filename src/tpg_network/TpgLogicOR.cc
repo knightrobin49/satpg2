@@ -282,10 +282,12 @@ TpgLogicOR4::make_cnf(SatSolver& solver,
 // @param[in] id ID番号
 // @param[in] fanin_num ファンイン数
 // @param[in] fanin_array ファンインの配列
+// @param[in] fault_array 入力の故障の配列
 TpgLogicORN::TpgLogicORN(ymuint id,
 			 ymuint fanin_num,
-			 TpgNode** fanin_array) :
-  TpgLogicN(id, fanin_num, fanin_array)
+			 TpgNode** fanin_array,
+			 TpgFault** fault_array) :
+  TpgLogicN(id, fanin_num, fanin_array, fault_array)
 {
 }
 

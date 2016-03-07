@@ -13,6 +13,7 @@
 #include "TpgNode.h"
 #include "TpgFault.h"
 #include "FaultMgr.h"
+#include "ym/BnNode.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG
@@ -36,6 +37,8 @@ AtpgCmd::~AtpgCmd()
 void
 AtpgCmd::after_set_network()
 {
+  mMgr->after_set_network();
+
   // 諸元を TCL 変数にセットしておく
   const TpgNetwork& network = _network();
   ymuint nn = network.node_num();
@@ -252,15 +255,6 @@ AtpgCmd::after_update_faults()
   }
 #endif
 }
-
-#if 0
-// @brief ネットワークを設定する．
-void
-AtpgCmd::set_network(TpgNetwork* network)
-{
-  mMgr->set_network(network);
-}
-#endif
 
 // @brief TgNetwork を取り出す．
 TpgNetwork&

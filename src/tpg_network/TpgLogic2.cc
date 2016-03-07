@@ -58,30 +58,21 @@ TpgLogic2::input_fault(int val,
 {
   ASSERT_COND( val == 0 || val == 1 );
   ASSERT_COND( pos < 2 );
-  return mInputFaults[(pos * 2) + val];
+  return mInputFaults[((pos % 2) * 2) + (val % 2)];
 }
 
-// @brief このノードに関係する故障数を返す．
-ymuint
-TpgLogic2::fault_num() const
+// @brief 入力の故障を設定する．
+// @param[in] val 故障値 ( 0 / 1 )
+// @param[in] pos 入力の位置番号
+// @param[in] fault 故障
+void
+TpgLogic2::set_input_fault(int val,
+			   ymuint pos,
+			   TpgFault* fault)
 {
-  return 6;
-}
-
-// @brief このノードに関係する故障を返す．
-// @param[in] pos 位置番号 ( 0 <= pos < fault_num() )
-const TpgFault*
-TpgLogic2::fault(ymuint pos) const
-{
-  ASSERT_COND( pos < fault_num() );
-  ymuint p1 = pos / 2;
-  ymuint val = pos % 2;
-  if ( p1 == 0 ) {
-    return output_fault(val);
-  }
-  else {
-    return input_fault(p1 - 1, val);
-  }
+  ASSERT_COND( val == 0 || val == 1 );
+  ASSERT_COND( pos < 2 );
+  mInputFaults[((pos % 2) * 2) + (val % 2)] = fault;
 }
 
 END_NAMESPACE_YM_SATPG

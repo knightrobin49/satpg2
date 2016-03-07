@@ -27,9 +27,11 @@ public:
   /// @param[in] id ID番号
   /// @param[in] fanin_num ファンイン数
   /// @param[in] fanin_array ファンインの配列
+  /// @param[in] fault_array 入力の故障の配列
   TpgLogicN(ymuint id,
 	    ymuint fanin_num,
-	    TpgNode** fanin_array);
+	    TpgNode** fanin_array,
+	    TpgFault** fault_array);
 
   /// @brief デストラクタ
   ~TpgLogicN();
@@ -59,22 +61,21 @@ public:
   input_fault(int val,
 	      ymuint pos) const;
 
-  /// @brief このノードに関係する故障数を返す．
-  virtual
-  ymuint
-  fault_num() const;
-
-  /// @brief このノードに関係する故障を返す．
-  /// @param[in] pos 位置番号 ( 0 <= pos < fault_num() )
-  virtual
-  const TpgFault*
-  fault(ymuint pos) const;
-
 
 private:
   //////////////////////////////////////////////////////////////////////
   // 内部で用いられる関数
   //////////////////////////////////////////////////////////////////////
+
+  /// @brief 入力の故障を設定する．
+  /// @param[in] val 故障値 ( 0 / 1 )
+  /// @param[in] pos 入力の位置番号
+  /// @param[in] fault 故障
+  virtual
+  void
+  set_input_fault(int val,
+		  ymuint pos,
+		  TpgFault* fault);
 
 
 private:

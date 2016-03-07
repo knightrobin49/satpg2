@@ -99,7 +99,7 @@ DtpgSatM::run_multi(const NodeSet& node_set,
       assumptions.push_back(SatLiteral(fdvar, inv));
     }
 
-    const TpgNode* fnode = f->node();
+    const TpgNode* fnode = f->tpg_node();
 
     // 故障ノードの TFO 以外の dlit を0にする．
     mTmpNodeList.clear();

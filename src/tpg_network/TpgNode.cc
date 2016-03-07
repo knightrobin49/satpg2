@@ -24,6 +24,10 @@ TpgNode::TpgNode(ymuint id) :
 {
   mName = nullptr;
   mMap = nullptr;
+  mFanoutNum = 0;
+  mFanouts = nullptr;
+  mActFanoutNum = 0;
+  mActFanouts = nullptr;
   mMarks = 0U;
 }
 
@@ -181,6 +185,17 @@ TpgNode::input_map(ymuint pos) const
   return mMap->input(pos);
 }
 
+// @brief TgNode のファンインに対応するノードを返す．
+// @param[in] pos もとの TgNode の入力の位置番号 (!!!)
+//
+// is_root() が true の時のみ意味を持つ．
+TpgNode*
+TpgNode::input_map(ymuint pos)
+{
+  ASSERT_COND( is_root() );
+  return mMap->input(pos);
+}
+
 // @brief TgNode のファンインに対応するノードのファンイン番号を返す．
 // @param[in] pos もとの TgNode の入力の位置番号 (!!!)
 //
@@ -222,20 +237,26 @@ TpgNode::input_fault(int val,
   return nullptr;
 }
 
-// @brief このノードに関係する故障数を返す．
-ymuint
-TpgNode::fault_num() const
-{
-  return 0;
-}
-
-// @brief このノードに関係する故障を返す．
-// @param[in] pos 位置番号 ( 0 <= pos < fault_num() )
-const TpgFault*
-TpgNode::fault(ymuint pos) const
+// @brief 入力の故障を設定する．
+// @param[in] val 故障値 ( 0 / 1 )
+// @param[in] pos 入力の位置番号
+// @param[in] fault 故障
+void
+TpgNode::set_input_fault(int val,
+			 ymuint pos,
+			 TpgFault* fault)
 {
   ASSERT_NOT_REACHED;
-  return nullptr;
+}
+
+// @brief 出力の故障を設定する．
+// @param[in] val 故障値 ( 0 / 1 )
+// @param[in] fault 故障
+void
+TpgNode::set_output_fault(int val,
+			  TpgFault* fault)
+{
+  ASSERT_NOT_REACHED;
 }
 
 END_NAMESPACE_YM_SATPG

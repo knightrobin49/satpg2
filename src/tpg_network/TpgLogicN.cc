@@ -20,12 +20,15 @@ BEGIN_NAMESPACE_YM_SATPG
 // @param[in] id ID番号
 // @param[in] fanin_num ファンイン数
 // @param[in] fanin_array ファンインの配列
+// @param[in] fault_array 入力の故障の配列
 TpgLogicN::TpgLogicN(ymuint id,
 		     ymuint fanin_num,
-		     TpgNode** fanin_array) :
+		     TpgNode** fanin_array,
+		     TpgFault** fault_array) :
   TpgLogic(id),
   mFaninNum(fanin_num),
-  mFaninArray(fanin_array)
+  mFaninArray(fanin_array),
+  mInputFaults(fault_array)
 {
 }
 
@@ -60,30 +63,21 @@ TpgLogicN::input_fault(int val,
 {
   ASSERT_COND( val == 0 || val == 1 );
   ASSERT_COND( pos < fanin_num() );
-  return mInputFaults[(pos * 2) + val];
+  return mInputFaults[((pos % fanin_num()) * 2) + (val % 2)];
 }
 
-// @brief このノードに関係する故障数を返す．
-ymuint
-TpgLogicN::fault_num() const
+// @brief 入力の故障を設定する．
+// @param[in] val 故障値 ( 0 / 1 )
+// @param[in] pos 入力の位置番号
+// @param[in] fault 故障
+void
+TpgLogicN::set_input_fault(int val,
+			   ymuint pos,
+			   TpgFault* fault)
 {
-  return fanin_num() * 2 + 2;
-}
-
-// @brief このノードに関係する故障を返す．
-// @param[in] pos 位置番号 ( 0 <= pos < fault_num() )
-const TpgFault*
-TpgLogicN::fault(ymuint pos) const
-{
-  ASSERT_COND( pos < fault_num() );
-  ymuint p1 = pos / 2;
-  ymuint val = pos % 2;
-  if ( p1 == 0 ) {
-    return output_fault(val);
-  }
-  else {
-    return input_fault(p1 - 1, val);
-  }
+  ASSERT_COND( val == 0 || val == 1 );
+  ASSERT_COND( pos < fanin_num() );
+  mInputFaults[((pos % fanin_num()) * 2) + (val % 2)] = fault;
 }
 
 END_NAMESPACE_YM_SATPG

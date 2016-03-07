@@ -61,12 +61,13 @@ ReadBlif::cmd_proc(TclObjVector& objv)
 
   MsgMgr::unreg_handler(&mh);
 
-  if ( !stat ) {
+  if ( stat ) {
+    after_set_network();
+  }
+  else {
     set_result(mh.msg_obj());
     return TCL_ERROR;
   }
-
-  after_set_network();
 
   return TCL_OK;
 }
@@ -116,12 +117,13 @@ ReadIscas89::cmd_proc(TclObjVector& objv)
 
   MsgMgr::unreg_handler(&mh);
 
-  if ( !stat2 ) {
+  if ( stat2 ) {
+    after_set_network();
+  }
+  else {
     set_result(mh.msg_obj());
     return TCL_ERROR;
   }
-
-  after_set_network();
 
   return TCL_OK;
 }

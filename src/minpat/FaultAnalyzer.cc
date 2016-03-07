@@ -198,24 +198,29 @@ FaultAnalyzer::init(const TpgNetwork& network,
   mOrigFidList.reserve(f_det);
   for (ymuint i = 0; i < network.active_node_num(); ++ i) {
     const TpgNode* node = network.active_node(i);
+
     ymuint ni = node->fanin_num();
     bool has_ncfault = false;
     for (ymuint j = 0; j < ni; ++ j) {
       const TpgFault* f0 = node->input_fault(0, j);
       if ( f0 != nullptr ) {
 	if ( f0->is_rep() && det_flag[f0->id()] ) {
+	  // 代表故障で検出可能なら記録する．
 	  mOrigFidList.push_back(f0->id());
 	}
 	if ( node->nval() == kVal0 && det_flag[f0->rep_fault()->id()] ) {
+	  // 非制御値の故障で検出可能なものがあることを記録する．
 	  has_ncfault = true;
 	}
       }
       const TpgFault* f1 = node->input_fault(1, j);
       if ( f1 != nullptr ) {
 	if ( f1->is_rep() && det_flag[f1->id()] ) {
+	  // 代表故障で検出可能なら記録する．
 	  mOrigFidList.push_back(f1->id());
 	}
 	if ( node->nval() == kVal1 && det_flag[f1->rep_fault()->id()] ) {
+	  // 非制御値の故障で検出可能なものがあることを記録する．
 	  has_ncfault = true;
 	}
       }
@@ -223,12 +228,14 @@ FaultAnalyzer::init(const TpgNetwork& network,
     const TpgFault* f0 = node->output_fault(0);
     if ( f0 != nullptr && f0->is_rep() && det_flag[f0->id()] ) {
       if ( node->noval() != kVal0 || !has_ncfault ) {
+	// 非制御値でないか，入力側の非制御値の故障が検出可能でない時記録する．
 	mOrigFidList.push_back(f0->id());
       }
     }
     const TpgFault* f1 = node->output_fault(1);
     if ( f1 != nullptr && f1->is_rep() && det_flag[f1->id()] ) {
       if ( node->noval() != kVal1 || !has_ncfault ) {
+	// 非制御値でないか，入力側の非制御値の故障が検出可能でない時記録する．
 	mOrigFidList.push_back(f1->id());
       }
     }
@@ -378,7 +385,7 @@ FaultAnalyzer::input_list(ymuint fid) const
 {
   ASSERT_COND( fid < mMaxFaultId );
   const TpgFault* fault = mFaultInfoArray[fid].fault();
-  return mInputListArray[fault->node()->id()];
+  return mInputListArray[fault->tpg_node()->id()];
 }
 
 // @brief 故障のTFIに含まれる入力番号のリスト返す．
@@ -388,7 +395,7 @@ FaultAnalyzer::input_list2(ymuint fid) const
 {
   ASSERT_COND( fid < mMaxFaultId );
   const TpgFault* fault = mFaultInfoArray[fid].fault();
-  return mInputList2Array[fault->node()->id()];
+  return mInputList2Array[fault->tpg_node()->id()];
 }
 
 // @brief 故障に関連するノード集合を返す．
@@ -397,7 +404,7 @@ FaultAnalyzer::node_set(ymuint fid) const
 {
   ASSERT_COND( fid < mMaxFaultId );
   const TpgFault* fault = mFaultInfoArray[fid].fault();
-  return mNodeSetArray[fault->node()->id()];
+  return mNodeSetArray[fault->tpg_node()->id()];
 }
 
 // @brief 等価故障を記録する．
@@ -485,8 +492,8 @@ FaultAnalyzer::check_dominance(ymuint f1_id,
   const TpgFault* f1 = fault(f1_id);
   const TpgFault* f2 = fault(f2_id);
 
-  const TpgNode* fnode1 = f1->node();
-  const TpgNode* fnode2 = f2->node();
+  const TpgNode* fnode1 = f1->tpg_node();
+  const TpgNode* fnode2 = f2->tpg_node();
   const TpgNode* dom_node = common_node(fnode1, fnode2);
 
   SatEngine engine(string(), string(), nullptr);

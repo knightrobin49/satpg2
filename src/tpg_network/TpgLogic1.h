@@ -74,6 +74,16 @@ private:
   // 内部で用いられる関数
   //////////////////////////////////////////////////////////////////////
 
+  /// @brief 入力の故障を設定する．
+  /// @param[in] val 故障値 ( 0 / 1 )
+  /// @param[in] pos 入力の位置番号
+  /// @param[in] fault 故障
+  virtual
+  void
+  set_input_fault(int val,
+		  ymuint pos,
+		  TpgFault* fault);
+
 
 private:
   //////////////////////////////////////////////////////////////////////

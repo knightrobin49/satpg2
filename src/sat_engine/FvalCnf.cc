@@ -76,7 +76,7 @@ FvalCnf::get_pi_suf_list(const vector<SatBool3>& sat_model,
   extractor(fault, suf_list);
 
   BackTracer backtracer(mMaxId);
-  backtracer(fault->node(), node_set, val_map, pi_suf_list);
+  backtracer(fault->tpg_node(), node_set, val_map, pi_suf_list);
 }
 
 END_NAMESPACE_YM_SATPG

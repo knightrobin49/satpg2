@@ -198,6 +198,13 @@ public:
   const TpgNode*
   input_map(ymuint pos) const;
 
+  /// @brief もとのゲートのファンインに対応するノードを返す．
+  /// @param[in] pos もとの BnNode の入力の位置番号 (!!!)
+  ///
+  /// is_root() が true の時のみ意味を持つ．
+  TpgNode*
+  input_map(ymuint pos);
+
   /// @brief BnNode のファンインに対応するノードのファンイン番号を返す．
   /// @param[in] pos もとの BnNode の入力の位置番号 (!!!)
   ///
@@ -280,14 +287,12 @@ public:
   input_fault(int val,
 	      ymuint pos) const;
 
-  /// @brief このノードに関係する故障数を返す．
-  virtual
+  /// @brief このノードに関係する代表故障数を返す．
   ymuint
   fault_num() const;
 
-  /// @brief このノードに関係する故障を返す．
+  /// @brief このノードに関係する代表故障を返す．
   /// @param[in] pos 位置番号 ( 0 <= pos < fault_num() )
-  virtual
   const TpgFault*
   fault(ymuint pos) const;
 
@@ -296,6 +301,24 @@ private:
   //////////////////////////////////////////////////////////////////////
   // 内部で用いられる下請け関数
   //////////////////////////////////////////////////////////////////////
+
+  /// @brief 入力の故障を設定する．
+  /// @param[in] val 故障値 ( 0 / 1 )
+  /// @param[in] pos 入力の位置番号
+  /// @param[in] fault 故障
+  virtual
+  void
+  set_input_fault(int val,
+		  ymuint pos,
+		  TpgFault* fault);
+
+  /// @brief 出力の故障を設定する．
+  /// @param[in] val 故障値 ( 0 / 1 )
+  /// @param[in] fault 故障
+  virtual
+  void
+  set_output_fault(int val,
+		   TpgFault* fault);
 
   /// @brief アクティブにする．
   void
@@ -312,7 +335,7 @@ private:
   //////////////////////////////////////////////////////////////////////
 
   // ID 番号
-  ymuint32 mId;
+  ymuint mId;
 
   // 名前
   const char* mName;
@@ -322,16 +345,22 @@ private:
   const TpgMap* mMap;
 
   // ファンアウト数
-  ymuint32 mFanoutNum;
+  ymuint mFanoutNum;
 
   // ファンアウトの配列
   TpgNode** mFanouts;
 
   // アクティブなファンアウト数
-  ymuint32 mActFanoutNum;
+  ymuint mActFanoutNum;
 
   // アクティブなファンアウトの配列
   TpgNode** mActFanouts;
+
+  // 代表故障数
+  ymuint mFaultNum;
+
+  // 代表故障の配列
+  const TpgFault** mFaultList;
 
   // いくつかのマークを納めるビットベクタ
   ymuint32 mMarks;
@@ -394,6 +423,24 @@ TpgNode::active_fanout(ymuint pos) const
 {
   ASSERT_COND( pos < mActFanoutNum );
   return mActFanouts[pos];
+}
+
+// @brief このノードに関係する代表故障数を返す．
+inline
+ymuint
+TpgNode::fault_num() const
+{
+  return mFaultNum;
+}
+
+// @brief このノードに関係する代表故障を返す．
+// @param[in] pos 位置番号 ( 0 <= pos < fault_num() )
+inline
+const TpgFault*
+TpgNode::fault(ymuint pos) const
+{
+  ASSERT_COND( pos < mFaultNum );
+  return mFaultList[pos % mFaultNum];
 }
 
 // @brief アクティブの場合 true を返す．

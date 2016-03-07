@@ -60,22 +60,19 @@ public:
   const TpgFault*
   output_fault(int val) const;
 
-  /// @brief このノードに関係する故障数を返す．
-  virtual
-  ymuint
-  fault_num() const;
-
-  /// @brief このノードに関係する故障を返す．
-  /// @param[in] pos 位置番号 ( 0 <= pos < fault_num() )
-  virtual
-  const TpgFault*
-  fault(ymuint pos) const;
-
 
 private:
   //////////////////////////////////////////////////////////////////////
   // 内部で用いられる関数
   //////////////////////////////////////////////////////////////////////
+
+  /// @brief 出力の故障を設定する．
+  /// @param[in] val 故障値 ( 0 / 1 )
+  /// @param[in] fault 故障
+  virtual
+  void
+  set_output_fault(int val,
+		   TpgFault* fault);
 
 
 private:
@@ -84,7 +81,7 @@ private:
   //////////////////////////////////////////////////////////////////////
 
   // 入力番号
-  ymuint32 mInputId;
+  ymuint mInputId;
 
   // 故障
   TpgFault* mFaults[2];

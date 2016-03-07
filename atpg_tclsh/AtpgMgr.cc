@@ -41,18 +41,6 @@ AtpgMgr::~AtpgMgr()
   delete mFsim3;
 }
 
-#if 0
-// @brief ネットワークを設定する．
-void
-AtpgMgr::set_network(TpgNetwork* network)
-{
-  delete mNetwork;
-  mNetwork = network;
-
-  after_set_network();
-}
-#endif
-
 // @brief ファイル読み込みに関わる時間を得る．
 USTime
 AtpgMgr::read_time() const

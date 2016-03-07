@@ -62,7 +62,7 @@ FaultMgr::set_faults(const TpgNetwork& network)
   for (ymuint i = 0; i < rep_faults.size(); ++ i) {
     const TpgFault* f = rep_faults[i];
     // ただし，外部出力に到達できない故障は検出不能となる．
-    if ( f->node()->is_active() ) {
+    if ( f->tpg_node()->is_active() ) {
       mRemainList.push_back(f);
     }
     else {

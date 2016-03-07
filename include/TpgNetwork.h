@@ -23,6 +23,7 @@
 BEGIN_NAMESPACE_YM_SATPG
 
 class TpgMap;
+class TpgNodeMap;
 
 //////////////////////////////////////////////////////////////////////
 /// @class CplxInfo TpgNetwork.h "TpgNetwork.h"
@@ -169,6 +170,17 @@ public:
   bool
   read_iscas89(const string& filename);
 
+  /// @brief BnNetwork から内容を設定する．
+  /// @param[in] bnnetwork もとのネットワーク
+  void
+  set(const BnNetwork& bnnetwork);
+
+
+private:
+  //////////////////////////////////////////////////////////////////////
+  // 内部で用いられる下請け関数
+  //////////////////////////////////////////////////////////////////////
+
   /// @brief 入力ノードを生成する．
   /// @param[in] iid 入力の番号
   /// @param[in] name ノード名
@@ -197,17 +209,6 @@ public:
 		  const vector<TpgNode*>& inode_list,
 		  const BnFuncType* func_type);
 
-
-private:
-  //////////////////////////////////////////////////////////////////////
-  // 内部で用いられる下請け関数
-  //////////////////////////////////////////////////////////////////////
-
-  /// @brief BnNetwork から内容を設定する．
-  /// @param[in] bnnetwork もとのネットワーク
-  void
-  set(const BnNetwork& bnnetwork);
-
   /// @brief TpgNode の TFIbits のサイズを計算する．
   ymuint
   tfibits_size() const;
@@ -233,13 +234,6 @@ private:
   make_prim_node(BnFuncType::Type type,
 		 const vector<TpgNode*>& fanin_list);
 
-  /// @brief TpgNode と TpgNode の対応付けを行う．
-  /// @param[in] node TpgNode
-  /// @param[in] bnnode もととなる BnNode
-  void
-  bind(TpgNode* node,
-       const BnNode* bnnode);
-
   /// @brief 名前を設定する．
   void
   set_node_name(TpgNode* node,
@@ -247,32 +241,41 @@ private:
 
   /// @brief ノードの入力と出力の故障を作る．
   /// @param[in] bnnode もととなる BnNode
-  void
+  ymuint
   make_faults(const BnNode* bnnode,
 	      const BnNetwork& bnnetwork,
+	      const TpgNodeMap&  node_map,
 	      const HashMap<ymuint, CplxInfo*>& en_hash);
 
   /// @brief 出力の故障を作る．
-  /// @param[in] node 故障位置のノード
+  /// @param[in] bnnode 故障位置の BnNode
+  /// @param[in] tpgnode 故障位置の TpgNode
   /// @param[in] val 故障値 ( 0 / 1 )
   /// @param[in] rep 代表故障
   ///
   /// 自分自身が代表故障の場合には rep に nullptr を入れる．
   const TpgFault*
-  new_ofault(const TpgNode* node,
+  new_ofault(const BnNode* bnnode,
+	     TpgNode* tpgnode,
 	     ymuint val,
 	     const TpgFault* rep);
 
   /// @brief 入力の故障を作る．
-  /// @param[in] node 故障位置のノード
+  /// @param[in] bnnode 故障位置の BnNode
+  /// @param[in] tpgnode 故障位置の TpgNode
   /// @param[in] ipos ファンイン番号 ( 0 <= ipos < node->fanin_num() )
+  /// @param[in] i_tpgnode 入力側の TpgNode
+  /// @param[in] tpgpos i_tpgnode 上の入力位置
   /// @param[in] val 故障値
   /// @param[in] rep 代表故障
   ///
   /// 自分自身が代表故障の場合には rep に nullptr を入れる．
   const TpgFault*
-  new_ifault(const TpgNode* ode,
+  new_ifault(const BnNode* bnnode,
+	     TpgNode* tpgnode,
 	     ymuint ipos,
+	     TpgNode* i_tpgnode,
+	     ymuint tpgpos,
 	     ymuint val,
 	     const TpgFault* rep);
 
@@ -282,7 +285,7 @@ private:
   /// @param[in] ipos 入力の故障の時に入力番号を表す
   /// @param[in] val 縮退している値
   /// @param[in] rep 代表故障
-  const TpgFault*
+  TpgFault*
   new_fault(const TpgNode* node,
 	    bool is_output,
 	    ymuint ipos,
@@ -342,9 +345,6 @@ private:
   // ノードの配列
   TpgNode** mNodeArray;
 
-  // BnNode->gid() をキーにした TpgNode の配列
-  TpgNode** mNodeMap;
-
   // 外部入力ノードの配列
   TpgNode** mInputArray;
 
@@ -375,7 +375,7 @@ private:
   ymuint mFaultNum;
 
   // 故障の配列
-  TpgFault* mFaultChunk;
+  TpgFault** mFaultList;
 
   // 代表故障のリスト
   vector<const TpgFault*> mRepFaults;

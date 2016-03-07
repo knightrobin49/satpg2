@@ -41,12 +41,6 @@ public:
   // 内容を取り出す関数
   //////////////////////////////////////////////////////////////////////
 
-#if 0
-  /// @brief ネットワークを設定する．
-  void
-  set_network(TpgNetwork* network);
-#endif
-
   /// @brief TgNetwork を取り出す．
   TpgNetwork&
   _network();
@@ -74,24 +68,12 @@ public:
 
 public:
   //////////////////////////////////////////////////////////////////////
-  // ネットワークを読み込む関数
+  // ネットワーク設定に関する関数
   //////////////////////////////////////////////////////////////////////
 
-  /// @brief blif 形式のファイルを読み込む．
-  /// @param[in] filename ファイル名
-  /// @param[in] cell_library セルライブラリ
-  /// @retval true 読み込みが成功した．
-  /// @retval false 読み込みが失敗した．
-  bool
-  read_blif(const string& filename,
-	    const CellLibrary* cell_library = nullptr);
-
-  /// @brief iscas89 形式のファイルを読み込む．
-  /// @param[in] filename ファイル名
-  /// @retval true 読み込みが成功した．
-  /// @retval false 読み込みが失敗した．
-  bool
-  read_iscas89(const string& filename);
+  /// @brief ネットワークが変更された時に呼ばれる関数
+  void
+  after_set_network();
 
 
 public:
@@ -134,10 +116,6 @@ private:
   //////////////////////////////////////////////////////////////////////
   // 下請け関数
   //////////////////////////////////////////////////////////////////////
-
-  /// @brief ネットワークが変更された時に呼ばれる関数
-  void
-  after_set_network();
 
 
 private:

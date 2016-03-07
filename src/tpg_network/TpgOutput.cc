@@ -88,20 +88,18 @@ TpgOutput::input_fault(int val,
   return mFaults[val];
 }
 
-// @brief このノードに関係する故障数を返す．
-ymuint
-TpgOutput::fault_num() const
+// @brief 入力の故障を設定する．
+// @param[in] val 故障値 ( 0 / 1 )
+// @param[in] pos 入力の位置番号
+// @param[in] fault 故障
+void
+TpgOutput::set_input_fault(int val,
+			   ymuint pos,
+			   TpgFault* fault)
 {
-  return 2;
-}
-
-// @brief このノードに関係する故障を返す．
-// @param[in] pos 位置番号 ( 0 <= pos < fault_num() )
-const TpgFault*
-TpgOutput::fault(ymuint pos) const
-{
-  ASSERT_COND( pos < fault_num() );
-  return mFaults[pos];
+  ASSERT_COND( val == 0 || val == 1 );
+  ASSERT_COND( pos == 0 );
+  mFaults[val % 2] = fault;
 }
 
 END_NAMESPACE_YM_SATPG

@@ -10,6 +10,7 @@
 
 #include "satpg.h"
 #include "Val3.h"
+#include "ym/ym_bnet.h"
 #include "ym/HashFunc.h"
 
 
@@ -21,14 +22,18 @@ BEGIN_NAMESPACE_YM_SATPG
 //////////////////////////////////////////////////////////////////////
 class TpgFault
 {
-  friend class TpgNetwork;
-
 public:
 
   /// @brief コンストラクタ
-  TpgFault();
+  /// @param[in] id ID番号
+  /// @param[in] val 故障値
+  /// @param[in] rep_fault 代表故障
+  TpgFault(ymuint id,
+	   int val,
+	   const TpgFault* rep_fault);
 
   /// @brief デストラクタ
+  virtual
   ~TpgFault();
 
 
@@ -41,25 +46,45 @@ public:
   ymuint
   id() const;
 
-  /// @brief 対象のゲートを返す．
-  const TpgNode*
-  node() const;
+  /// @brief 故障位置のゲートを返す．
+  virtual
+  const BnNode*
+  node() const = 0;
 
-  /// @brief 故障の入力側のゲートを返す．
+  /// @brief node() に対応する TpgNode を返す．
+  virtual
   const TpgNode*
-  source_node() const;
+  tpg_node() const = 0;
+
+  /// @brief 故障の入力側の TpgNode を返す．
+  ///
+  /// 出力の故障の場合には tpg_node() と同じ値を返す．
+  virtual
+  const TpgNode*
+  tpg_inode() const = 0;
 
   /// @brief 入力の故障の時 true を返す．
   bool
   is_input_fault() const;
 
   /// @brief 出力の故障の時 true を返す．
+  virtual
   bool
-  is_output_fault() const;
+  is_output_fault() const = 0;
 
   /// @brief 故障位置を返す．
+  ///
+  /// is_input_fault() == true の時のみ意味を持つ．
+  virtual
   ymuint
-  pos() const;
+  pos() const = 0;
+
+  /// @brief tpg_inode 上の故障位置を返す．
+  ///
+  /// is_input_fault() == true の時のみ意味を持つ．
+  virtual
+  ymuint
+  tpg_pos() const = 0;
 
   /// @brief 故障値を返す．
   /// @note 返す値は 0 か 1
@@ -71,8 +96,9 @@ public:
   val3() const;
 
   /// @brief 故障の内容を表す文字列を返す．
+  virtual
   string
-  str() const;
+  str() const = 0;
 
   /// @brief 代表故障の時 true を返す．
   bool
@@ -101,44 +127,17 @@ public:
 
 private:
   //////////////////////////////////////////////////////////////////////
-  // TpgNetwork が使用する関数
-  //////////////////////////////////////////////////////////////////////
-
-  /// @brief 内容を設定する．
-  /// @param[in] id ID番号
-  /// @param[in] node 対象のゲート
-  /// @param[in] output 入力の故障のとき false, 出力の故障のとき true を与える．
-  /// @param[in] pos 故障位置
-  /// @param[in] val 故障値 0 か非0 で 0/1 を区別する．
-  /// @param[in] rep_fault 代表故障
-  void
-  set(ymuint id,
-      const TpgNode* node,
-      bool output,
-      ymuint pos,
-      int val,
-      const TpgFault* rep_fault);
-
-
-private:
-  //////////////////////////////////////////////////////////////////////
   // データメンバ
   //////////////////////////////////////////////////////////////////////
 
   // ID番号
-  ymuint32 mId;
+  ymuint mId;
 
-  // 対象のノード
-  const TpgNode* mNode;
-
-  // 故障位置と故障値をパックしたもの
-  ymuint32 mPosVal;
+  // 故障値
+  ymuint8 mVal;
 
   // 代表故障
   const TpgFault* mRepFault;
-
-  // POモードで検出不能と判定された回数
-  ymuint32 mUntestNum;
 
   // 支配故障のリスト
   vector<const TpgFault*> mDomList;
@@ -158,32 +157,12 @@ operator<<(ostream& s,
 // インライン関数の定義
 //////////////////////////////////////////////////////////////////////
 
-// @brief コンストラクタ
-inline
-TpgFault::TpgFault()
-{
-}
-
-// @brief デストラクタ
-inline
-TpgFault::~TpgFault()
-{
-}
-
 // @brief ID番号を返す．
 inline
 ymuint
 TpgFault::id() const
 {
   return mId;
-}
-
-// @brief 対象のゲートを返す．
-inline
-const TpgNode*
-TpgFault::node() const
-{
-  return mNode;
 }
 
 // @brief 入力の故障の時 true を返す．
@@ -194,29 +173,13 @@ TpgFault::is_input_fault() const
   return !is_output_fault();
 }
 
-// @brief 出力の故障の時 true を返す．
-inline
-bool
-TpgFault::is_output_fault() const
-{
-  return static_cast<bool>((mPosVal >> 1) & 1UL);
-}
-
-// @brief 故障位置を返す．
-inline
-ymuint
-TpgFault::pos() const
-{
-  return mPosVal >> 3;
-}
-
 // @brief 故障値を返す．
 // @note 返す値は 0 か 1
 inline
 int
 TpgFault::val() const
 {
-  return static_cast<int>(mPosVal & 1UL);
+  return mVal;
 }
 
 // @brief 故障値を3値型で返す．

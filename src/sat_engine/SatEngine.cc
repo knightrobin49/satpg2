@@ -368,7 +368,7 @@ SatEngine::make_fval_cnf(FvalCnf&  fval_cnf,
 			 const NodeSet& node_set,
 			 Val3 detect)
 {
-  make_fval_cnf(fval_cnf, fault->node(), node_set, detect);
+  make_fval_cnf(fval_cnf, fault->tpg_node(), node_set, detect);
   if ( detect == kVal1 ) {
     make_fault_cnf_d(fault, fval_cnf.gvar_map(), fval_cnf.fvar_map());
   }
@@ -413,7 +413,7 @@ SatEngine::make_mval_cnf(MvalCnf& mval_cnf,
     mval_cnf.set_fault_var(i, fdvar);
     const TpgFault* f = fault_list[i];
     int fval = f->val();
-    const TpgNode* node = f->node();
+    const TpgNode* node = f->tpg_node();
 
     if ( f->is_output_fault() ) {
       mval_cnf.set_ofvar(node, fval, fdvar);
@@ -659,7 +659,7 @@ SatEngine::make_fault_cnf(const TpgFault* fault,
 			  const VidMap& gvar_map,
 			  const VidMap& fvar_map)
 {
-  const TpgNode* node = fault->node();
+  const TpgNode* node = fault->tpg_node();
   int fval = fault->val();
 
   if ( fault->is_output_fault() ) {
@@ -747,7 +747,7 @@ SatEngine::make_fault_cnf_d(const TpgFault* fault,
 			    const VidMap& gvar_map,
 			    const VidMap& fvar_map)
 {
-  const TpgNode* node = fault->node();
+  const TpgNode* node = fault->tpg_node();
   int fval = fault->val();
 
   if ( fault->is_output_fault() ) {

@@ -1,34 +1,33 @@
-#ifndef TPGLOGIC_H
-#define TPGLOGIC_H
+#ifndef TPGNODEMAP_H
+#define TPGNODEMAP_H
 
-/// @file TpgLogic.h
-/// @brief TpgLogic のヘッダファイル
+/// @file TpgNodeMap.h
+/// @brief TpgNodeMap のヘッダファイル
 /// @author Yusuke Matsunaga (松永 裕介)
 ///
 /// Copyright (C) 2016 Yusuke Matsunaga
 /// All rights reserved.
 
 
-#include "TpgNode.h"
+#include "satpg.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG
 
 //////////////////////////////////////////////////////////////////////
-/// @class TpgLogic TpgLogic.h "TpgLogic.h"
-/// @brief 論理ノードの基底クラス
+/// @class TpgNodeMap TpgNodeMap.h "TpgNodeMap.h"
+/// @brief BnNode と TpgNode の対応を記録するクラス
 //////////////////////////////////////////////////////////////////////
-class TpgLogic :
-  public TpgNode
+class TpgNodeMap
 {
 public:
 
   /// @brief コンストラクタ
-  /// @param[in] id ID番号
-  TpgLogic(ymuint id);
+  /// @param[in] max_id ノード番号の最大値 + 1
+  TpgNodeMap(ymuint max_id);
 
   /// @brief デストラクタ
-  ~TpgLogic();
+  ~TpgNodeMap();
 
 
 public:
@@ -36,16 +35,16 @@ public:
   // 外部インターフェイス
   //////////////////////////////////////////////////////////////////////
 
-  /// @brief logic タイプの時 true を返す．
-  virtual
-  bool
-  is_logic() const;
+  /// @brief 登録する．
+  /// @param[in] bnnode_id BnNode のID番号
+  /// @param[in] tpgnode TpgNode
+  void
+  reg(ymuint bnnode_id,
+      TpgNode* tpgnode);
 
-  /// @brief 出力の故障を得る．
-  /// @param[in] val 故障値 ( 0 / 1 )
-  virtual
-  const TpgFault*
-  output_fault(int val) const;
+  /// @brief 対応するノードを得る．
+  TpgNode*
+  get(ymuint bnnode_id) const;
 
 
 private:
@@ -53,25 +52,17 @@ private:
   // 内部で用いられる関数
   //////////////////////////////////////////////////////////////////////
 
-  /// @brief 出力の故障を設定する．
-  /// @param[in] val 故障値 ( 0 / 1 )
-  /// @param[in] fault 故障
-  virtual
-  void
-  set_output_fault(int val,
-		   TpgFault* fault);
-
 
 private:
   //////////////////////////////////////////////////////////////////////
   // データメンバ
   //////////////////////////////////////////////////////////////////////
 
-  // 出力の故障
-  TpgFault* mOutputFaults[2];
+  // BnNode::id() をキーにした配列
+  vector<TpgNode*> mNodeArray;
 
 };
 
 END_NAMESPACE_YM_SATPG
 
-#endif // TPGLOGIC_H
+#endif // TPGNODEMAP_H

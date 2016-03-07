@@ -58,7 +58,7 @@ void
 Extractor::operator()(const TpgFault* fault,
 		      NodeValList& assign_list)
 {
-  const TpgNode* fnode = fault->node();
+  const TpgNode* fnode = fault->tpg_node();
 
   mFconeMark.clear();
   dfs(fnode, mFconeMark);

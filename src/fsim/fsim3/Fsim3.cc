@@ -194,7 +194,7 @@ Fsim3::set_network(const TpgNetwork& network)
   mFaultArray.resize(network.max_fault_id());
   for (ymuint i = 0; i < nf; ++ i) {
     const TpgFault* f = rep_faults[i];
-    const TpgNode* node = f->node();
+    const TpgNode* node = f->tpg_node();
     SimNode* simnode = find_simnode(node);
     ymuint ipos = 0;
     SimNode* isimnode = nullptr;
@@ -316,7 +316,7 @@ Fsim3::_spsfp(const TpgFault* f)
   calc_gval();
 
   // FFR 内の故障伝搬を行う．
-  SimNode* simnode = find_simnode(f->node());
+  SimNode* simnode = find_simnode(f->tpg_node());
   PackedVal lobs;
   if ( f->is_input_fault() ) {
     ymuint ipos = f->pos();
@@ -327,7 +327,7 @@ Fsim3::_spsfp(const TpgFault* f)
   }
   clear_lobs(simnode);
 
-  SimNode* isimnode = find_simnode(f->source_node());
+  SimNode* isimnode = find_simnode(f->tpg_inode());
   PackedVal valdiff;
   if ( f->val() == 1 ) {
     valdiff = isimnode->gval_0();

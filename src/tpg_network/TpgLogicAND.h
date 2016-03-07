@@ -297,9 +297,11 @@ public:
   /// @param[in] id ID番号
   /// @param[in] fanin_num ファンイン数
   /// @param[in] fanin_array ファンインの配列
+  /// @param[in] fault_array 入力の故障の配列
   TpgLogicANDN(ymuint id,
 	       ymuint fanin_num,
-	       TpgNode** fanin_array);
+	       TpgNode** fanin_array,
+	       TpgFault** fault_array);
 
   /// @brief デストラクタ
   ~TpgLogicANDN();
