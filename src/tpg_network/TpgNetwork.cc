@@ -46,6 +46,22 @@ alloc_array(Alloc& alloc,
   return new (p) T[n];
 }
 
+// 文字列用のメモリ領域を確保する関数
+const char*
+alloc_str(Alloc& alloc,
+	  const char* src_str)
+{
+  ASSERT_COND( src_str != nullptr );
+  ymuint l = strlen(src_str);
+  void* p = alloc.get_memory(sizeof(char) * (l + 1));
+  char* d = new (p) char[l + 1];
+  for (ymuint i = 0; i < l; ++ i) {
+    d[i] = src_str[i];
+  }
+  d[l] = '\0';
+  return d;
+}
+
 // 論理式中の演算子の数を数える．
 ymuint
 count_expr(const Expr& expr)
@@ -431,9 +447,9 @@ TpgNetwork::set(const BnNetwork& bnnetwork)
   // 要素数を数え，必要なメモリ領域を確保する．
   //////////////////////////////////////////////////////////////////////
 
-  ymuint nn_orig = bnnetwork.node_num();
+  ymuint bn_nn = bnnetwork.node_num();
   ymuint nl = bnnetwork.logic_num();
-  ymuint nn = nn_orig;
+  ymuint nn = bn_nn;
   HashMap<ymuint, CplxInfo*> en_hash;
   for (ymuint i = 0; i < nl; ++ i) {
     const BnNode* bnnode = bnnetwork.logic(i);
@@ -488,7 +504,7 @@ TpgNetwork::set(const BnNetwork& bnnetwork)
 
   mNodeNum = 0;
 
-  TpgNodeMap node_map(nn_orig);
+  TpgNodeMap node_map(bn_nn);
 
   //////////////////////////////////////////////////////////////////////
   // 外部入力を作成する．
@@ -583,9 +599,11 @@ TpgNetwork::set(const BnNetwork& bnnetwork)
 
   // 全故障数を数える．
   ymuint nfault = 0;
-  for (ymuint i = 0; i < nn_orig; ++ i) {
+  for (ymuint i = 0; i < bn_nn; ++ i) {
     const BnNode* bnnode = bnnetwork.node(i);
-    nfault += (bnnode->fanin_num() + 1) * 2;
+    if ( !bnnode->is_output() ) {
+      nfault += (bnnode->fanin_num() + 1) * 2;
+    }
   }
 
   // 故障を生成する．
@@ -600,10 +618,6 @@ TpgNetwork::set(const BnNetwork& bnnetwork)
     const BnNode* bnnode = bnnetwork.input(i);
     nrep += make_faults(bnnode, bnnetwork, node_map, en_hash);
   }
-  for (ymuint i = 0; i < npo; ++ i) {
-    const BnNode* bnnode = bnnetwork.output(i);
-    nrep += make_faults(bnnode, bnnetwork, node_map, en_hash);
-  }
 
   ASSERT_COND( mFaultNum == nfault );
 
@@ -615,8 +629,6 @@ TpgNetwork::set(const BnNetwork& bnnetwork)
       mRepFaults.push_back(f);
     }
   }
-  cout << "# of faults      = " << mFaultNum << endl;
-  cout << "# of rep. faults = " << mRepFaults.size() << endl;
 
   check_network_connection(*this);
 
@@ -1414,8 +1426,9 @@ TpgNetwork::new_ofault(const BnNode* bnnode,
 		       ymuint val,
 		       const TpgFault* rep)
 {
+  const char* name = alloc_str(mAlloc, bnnode->name());
   void* p = mAlloc.get_memory(sizeof(TpgOutputFault));
-  TpgFault* f = new (p) TpgOutputFault(mFaultNum, bnnode, tpgnode, val, rep);
+  TpgFault* f = new (p) TpgOutputFault(mFaultNum, name, tpgnode, val, rep);
   tpgnode->set_output_fault(val, f);
   mFaultList[mFaultNum] = f;
   ++ mFaultNum;
@@ -1442,8 +1455,9 @@ TpgNetwork::new_ifault(const BnNode* bnnode,
 		       ymuint val,
 		       const TpgFault* rep)
 {
+  const char* name = alloc_str(mAlloc, bnnode->name());
   void* p = mAlloc.get_memory(sizeof(TpgInputFault));
-  TpgFault* f = new (p) TpgInputFault(mFaultNum, bnnode, tpgnode, ipos, i_tpgnode, tpgpos, val, rep);
+  TpgFault* f = new (p) TpgInputFault(mFaultNum, name, tpgnode, ipos, i_tpgnode, tpgpos, val, rep);
   tpgnode->set_input_fault(val, tpgpos, f);
   mFaultList[mFaultNum] = f;
   ++ mFaultNum;

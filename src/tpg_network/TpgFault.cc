@@ -11,7 +11,6 @@
 #include "TpgOutputFault.h"
 #include "TpgInputFault.h"
 #include "TpgNode.h"
-#include "ym/BnNode.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG
@@ -58,31 +57,25 @@ operator<<(ostream& s,
 
 // @brief コンストラクタ
 // @param[in] id ID番号
-// @param[in] bnnode 故障位置の BnNode
+// @param[in] node_name ノード名
 // @param[in] tpgnode 故障位置の TpgNode
 // @param[in] val 故障値
 // @param[in] rep_fault 代表故障
 TpgOutputFault::TpgOutputFault(ymuint id,
-			       const BnNode* bnnode,
+			       const char* node_name,
 			       const TpgNode* tpgnode,
 			       int val,
 			       const TpgFault* rep_fault) :
   TpgFault(id, val, rep_fault),
-  mBnNode(bnnode),
+  mNodeName(node_name),
   mTpgNode(tpgnode)
 {
+  ASSERT_COND( tpg_node() != nullptr );
 }
 
 // @brief デストラクタ
 TpgOutputFault::~TpgOutputFault()
 {
-}
-
-// @brief 故障位置のゲートを返す．
-const BnNode*
-TpgOutputFault::node() const
-{
-  return mBnNode;
 }
 
 // @brief node() に対応する TpgNode を返す．
@@ -132,13 +125,7 @@ string
 TpgOutputFault::str() const
 {
   ostringstream ans;
-  if ( node()->name() == nullptr ) {
-    ans << "Node#" << node()->id();
-  }
-  else {
-    ans << node()->name();
-  }
-  ans << ":O:";
+  ans << mNodeName << ":O:";
   if ( val() ) {
     ans <<"SA1";
   }
@@ -155,7 +142,7 @@ TpgOutputFault::str() const
 
 // @brief コンストラクタ
 // @param[in] id ID番号
-// @param[in] bnnode 故障位置の BnNode
+// @param[in] node_name ノード名
 // @param[in] tpgnode 故障位置の TpgNode
 // @param[in] pos 故障の入力位置
 // @param[in] i_tpgnode 入力側の TpgNode
@@ -163,7 +150,7 @@ TpgOutputFault::str() const
 // @param[in] val 故障値
 // @param[in] rep_fault 代表故障
 TpgInputFault::TpgInputFault(ymuint id,
-			     const BnNode* bnnode,
+			     const char* node_name,
 			     const TpgNode* tpgnode,
 			     ymuint pos,
 			     const TpgNode* i_tpgnode,
@@ -171,24 +158,19 @@ TpgInputFault::TpgInputFault(ymuint id,
 			     int val,
 			     const TpgFault* rep_fault) :
   TpgFault(id, val, rep_fault),
-  mBnNode(bnnode),
+  mNodeName(node_name),
   mTpgNode(tpgnode),
   mPos(pos),
   mI_TpgNode(i_tpgnode),
   mTpgPos(tpg_pos)
 {
+  ASSERT_COND( tpg_node() != nullptr );
+  ASSERT_COND( tpg_inode() != nullptr );
 }
 
 // @brief デストラクタ
 TpgInputFault::~TpgInputFault()
 {
-}
-
-// @brief 故障位置のゲートを返す．
-const BnNode*
-TpgInputFault::node() const
-{
-  return mBnNode;
 }
 
 // @brief node() に対応する TpgNode を返す．
@@ -237,13 +219,7 @@ string
 TpgInputFault::str() const
 {
   ostringstream ans;
-  if ( node()->name() == nullptr ) {
-    ans << "Node#" << node()->id();
-  }
-  else {
-    ans << node()->name();
-  }
-  ans << ":I" << pos() << ":";
+  ans << mNodeName << ":I" << pos() << ":";
   if ( val() ) {
     ans <<"SA1";
   }

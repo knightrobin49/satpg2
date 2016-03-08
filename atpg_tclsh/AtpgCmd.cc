@@ -166,34 +166,6 @@ AtpgCmd::after_set_network()
   set_var(varname, "cplx_num", n_cplx, varflag);
 }
 
-BEGIN_NONAMESPACE
-
-// 故障を表す TclObj を作る
-TclObj
-f2obj(const TpgFault* f)
-{
-  TclObjVector tmp(3);
-  tmp[0] = f->node()->name();
-  if ( f->is_output_fault() ) {
-    tmp[1] = "O";
-  }
-  else {
-    ostringstream buf;
-    buf << "I" << f->pos();
-    tmp[1] = buf.str();
-  }
-  if ( f->val() ) {
-    tmp[2] = "SA1";
-  }
-  else {
-    tmp[2] = "SA0";
-  }
-  // ここでTclObjVector から TclObj へ変換を行っている．
-  return tmp;
-}
-
-END_NONAMESPACE
-
 // @brief 故障リストを更新した後に呼ぶ関数
 void
 AtpgCmd::after_update_faults()

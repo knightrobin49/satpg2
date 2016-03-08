@@ -10,7 +10,7 @@
 
 #include "satpg.h"
 #include "Val3.h"
-#include "ym/ym_bnet.h"
+
 #include "ym/HashFunc.h"
 
 
@@ -46,12 +46,7 @@ public:
   ymuint
   id() const;
 
-  /// @brief 故障位置のゲートを返す．
-  virtual
-  const BnNode*
-  node() const = 0;
-
-  /// @brief node() に対応する TpgNode を返す．
+  /// @brief 故障位置に対応する TpgNode を返す．
   virtual
   const TpgNode*
   tpg_node() const = 0;

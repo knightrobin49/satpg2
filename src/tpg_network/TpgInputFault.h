@@ -26,7 +26,7 @@ public:
 
   /// @brief コンストラクタ
   /// @param[in] id ID番号
-  /// @param[in] bnnode 故障位置の BnNode
+  /// @param[in] node_name ノード名
   /// @param[in] tpgnode 故障位置の TpgNode
   /// @param[in] pos 故障の入力位置
   /// @param[in] i_tpgnode 入力側の TpgNode
@@ -34,7 +34,7 @@ public:
   /// @param[in] val 故障値
   /// @param[in] rep_fault 代表故障
   TpgInputFault(ymuint id,
-		const BnNode* bnnode,
+		const char* node_name,
 		const TpgNode* tpgnode,
 		ymuint pos,
 		const TpgNode* i_tpgnode,
@@ -51,11 +51,6 @@ public:
   //////////////////////////////////////////////////////////////////////
   // read-only のメソッド
   //////////////////////////////////////////////////////////////////////
-
-  /// @brief 故障位置のゲートを返す．
-  virtual
-  const BnNode*
-  node() const;
 
   /// @brief node() に対応する TpgNode を返す．
   virtual
@@ -99,8 +94,8 @@ private:
   // データメンバ
   //////////////////////////////////////////////////////////////////////
 
-  // 対象の BnNode
-  const BnNode* mBnNode;
+  // ノード名
+  const char* mNodeName;
 
   // 対象の TpgNode
   const TpgNode* mTpgNode;
