@@ -25,9 +25,11 @@ public:
 
   /// @brief コンストラクタ
   /// @param[in] id ID番号
+  /// @param[in] name 名前
   /// @param[in] output_id 出力番号
   /// @param[in] fanin ファンインのノード
   TpgOutput(ymuint id,
+	    const char* name,
 	    ymuint output_id,
 	    TpgNode* fanin);
 
@@ -80,10 +82,18 @@ public:
 	      ymuint pos) const;
 
 
-private:
+public:
   //////////////////////////////////////////////////////////////////////
   // 内部で用いられる関数
   //////////////////////////////////////////////////////////////////////
+
+  /// @brief 出力番号2をセットする．
+  /// @param[in] id セットする番号
+  ///
+  /// 出力ノード以外では無効
+  virtual
+  void
+  set_output_id2(ymuint id);
 
   /// @brief 入力の故障を設定する．
   /// @param[in] val 故障値 ( 0 / 1 )
@@ -102,10 +112,10 @@ private:
   //////////////////////////////////////////////////////////////////////
 
   // 出力番号
-  ymuint32 mOutputId;
+  ymuint mOutputId;
 
   // 出力番号2
-  ymuint32 mOutputId2;
+  ymuint mOutputId2;
 
   // ファンイン
   TpgNode* mFanin;

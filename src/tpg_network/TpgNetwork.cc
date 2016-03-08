@@ -12,16 +12,6 @@
 #include "TpgNodeMap.h"
 #include "TpgInput.h"
 #include "TpgOutput.h"
-#include "TpgLogicC0.h"
-#include "TpgLogicC1.h"
-#include "TpgLogicBUFF.h"
-#include "TpgLogicNOT.h"
-#include "TpgLogicAND.h"
-#include "TpgLogicNAND.h"
-#include "TpgLogicOR.h"
-#include "TpgLogicNOR.h"
-#include "TpgLogicXOR.h"
-#include "TpgLogicXNOR.h"
 #include "TpgFault.h"
 #include "TpgOutputFault.h"
 #include "TpgInputFault.h"
@@ -51,7 +41,10 @@ const char*
 alloc_str(Alloc& alloc,
 	  const char* src_str)
 {
-  ASSERT_COND( src_str != nullptr );
+  if ( src_str == nullptr ) {
+    return nullptr;
+  }
+
   ymuint l = strlen(src_str);
   void* p = alloc.get_memory(sizeof(char) * (l + 1));
   char* d = new (p) char[l + 1];
@@ -269,60 +262,6 @@ struct Lt
   }
 
 };
-
-// TFIbits の clear を行う．
-void
-TFIbits_clear(ymuint64* bits,
-	      ymuint size)
-{
-  for (ymuint i = 0; i < size; ++ i) {
-    bits[i] = 0UL;
-  }
-}
-
-// TFIbits をコピーする．
-void
-TFIbits_copy(ymuint64* dst_bits,
-	     const ymuint64* src_bits,
-	     ymuint size)
-{
-  for (ymuint i = 0; i < size; ++ i) {
-    dst_bits[i] = src_bits[i];
-  }
-}
-
-// TFIbits のすべてのビットをセットする．
-void
-TFIbits_set_all(ymuint64* bits,
-		ymuint size)
-{
-  for (ymuint i = 0; i < size; ++ i) {
-    bits[i] = 0xFFFFFFFFFFFFFFFFUL;
-  }
-}
-
-// TFIbits の set を行う．
-inline
-void
-TFIbits_set(ymuint64* bits,
-	    ymuint pos)
-{
-  ymuint blk = pos / 64;
-  ymuint sft = pos % 64;
-  bits[blk] |= (1UL << sft);
-}
-
-// TFIbits の bitwise-OR を行う．
-inline
-void
-TFIbits_or(ymuint64* dst_bits,
-	   ymuint64* src_bits,
-	   ymuint size)
-{
-  for (ymuint i = 0; i < size; ++ i) {
-    dst_bits[i] |= src_bits[i];
-  }
-}
 
 END_NONAMESPACE
 
@@ -553,12 +492,13 @@ TpgNetwork::set(const BnNetwork& bnnetwork)
   //////////////////////////////////////////////////////////////////////
   // ファンアウト数を数える
   //////////////////////////////////////////////////////////////////////
+  vector<ymuint> nfo_array(mNodeNum, 0);
   for (ymuint i = 0; i < mNodeNum; ++ i) {
     TpgNode* node = mNodeArray[i];
     if ( node->is_logic() || node->is_output() ) {
       for (ymuint j = 0; j < node->fanin_num(); ++ j) {
 	TpgNode* inode = node->fanin(j);
-	++ inode->mFanoutNum;
+	++ nfo_array[inode->id()];
       }
     }
   }
@@ -568,14 +508,14 @@ TpgNetwork::set(const BnNetwork& bnnetwork)
   //////////////////////////////////////////////////////////////////////
   for (ymuint i = 0; i < mNodeNum; ++ i) {
     TpgNode* node = mNodeArray[i];
-    ymuint nfo = node->mFanoutNum;
-    node->mFanouts = alloc_array<TpgNode*>(mAlloc, nfo);
-    node->mActFanoutNum = 0;
-    node->mActFanouts = alloc_array<TpgNode*>(mAlloc, nfo);
-    node->mFanoutNum = 0;
+    ymuint nfo = nfo_array[node->id()];
+    nfo_array[node->id()] = 0;
+    TpgNode** fo_array = alloc_array<TpgNode*>(mAlloc, nfo);
+    TpgNode** act_fo_array = alloc_array<TpgNode*>(mAlloc, nfo);
+    node->set_fanout_num(nfo, fo_array, act_fo_array);
 
     // これは別件だけどここで一緒にやる．
-    node->mTFIbits = alloc_array<ymuint64>(mAlloc, tfibits_size());
+    node->set_tfibits(alloc_array<ymuint64>(mAlloc, tfibits_size()));
   }
 
   //////////////////////////////////////////////////////////////////////
@@ -586,8 +526,9 @@ TpgNetwork::set(const BnNetwork& bnnetwork)
     if ( node->is_logic() || node->is_output() ) {
       for (ymuint j = 0; j < node->fanin_num(); ++ j) {
 	TpgNode* inode = node->fanin(j);
-	inode->mFanouts[inode->mFanoutNum] = node;
-	++ inode->mFanoutNum;
+	ymuint& fo_pos = nfo_array[inode->id()];
+	inode->set_fanout(fo_pos, node);
+	++ fo_pos;
       }
     }
   }
@@ -648,7 +589,7 @@ TpgNetwork::set(const BnNetwork& bnnetwork)
   for (ymuint i = 0; i < output_num2(); ++ i) {
     TpgNode* onode = mOutputArray[tmp_list[i].second];
     mOutputArray2[i] = onode;
-    onode->mFanoutNum = i;
+    onode->set_output_id2(i);
   }
 
   // 全部アクティブにしておく．
@@ -657,17 +598,17 @@ TpgNetwork::set(const BnNetwork& bnnetwork)
   // TFIbits を作る．
   for (ymuint i = 0; i < mNodeNum; ++ i) {
     TpgNode* node = mNodeArray[mNodeNum - i - 1];
-    TFIbits_clear(node->mTFIbits, tfibits_size());
+    node->tfibits_clear(tfibits_size());
     if ( node->is_output() ) {
       // 外部出力の場合は自分自身の番号をセットする．
-      TFIbits_set(node->mTFIbits, node->output_id2());
+      node->tfibits_bitset(node->output_id2());
     }
     else {
       // ファンアウト先の TFIbits の OR をとる．
       ymuint nfo = node->fanout_num();
       for (ymuint i = 0; i < nfo; ++ i) {
 	TpgNode* onode = node->fanout(i);
-	TFIbits_or(node->mTFIbits, onode->mTFIbits, tfibits_size());
+	node->tfibits_or(onode, tfibits_size());
       }
     }
   }
@@ -797,7 +738,7 @@ TpgNetwork::activate_sub()
     }
     if ( tmp_folist.empty() ) {
       ASSERT_COND( node->is_output() );
-      node->mActFanoutNum = 0;
+      node->set_active_fanouts(tmp_folist);
       level_array[node->id()] = 0;
     }
     else {
@@ -806,13 +747,12 @@ TpgNetwork::activate_sub()
       ymuint min_level = level_array[tmp_folist[0]->id()];
       for (ymuint i = 0; i < act_nfo; ++ i) {
 	TpgNode* onode = tmp_folist[i];
-	node->mActFanouts[i] = onode;
 	ymuint olevel = level_array[onode->id()];
 	if ( min_level > olevel ) {
 	  min_level = olevel;
 	}
       }
-      node->mActFanoutNum = act_nfo;
+      node->set_active_fanouts(tmp_folist);
       level_array[node->id()] = min_level + 1;
     }
   }
@@ -823,7 +763,7 @@ TpgNetwork::activate_sub()
     ymuint nfo = node->active_fanout_num();
     if ( nfo == 0 ) {
       ASSERT_COND( node->is_output() );
-      node->mImmDom = nullptr;
+      node->set_imm_dom(nullptr);
     }
     else {
       TpgNode* node0 = node->active_fanout(0);
@@ -833,7 +773,7 @@ TpgNetwork::activate_sub()
 	  break;
 	}
       }
-      node->mImmDom = node0;
+      node->set_imm_dom(node0);
     }
   }
 
@@ -870,12 +810,11 @@ TpgNode*
 TpgNetwork::make_input_node(ymuint iid,
 			    const char* name)
 {
+  const char* d_name = alloc_str(mAlloc, name);
   void* p = mAlloc.get_memory(sizeof(TpgInput));
-  TpgNode* node = new (p) TpgInput(mNodeNum, iid);
+  TpgNode* node = new (p) TpgInput(mNodeNum, d_name, iid);
   mNodeArray[mNodeNum] = node;
   ++ mNodeNum;
-
-  set_node_name(node, name);
 
   return node;
 }
@@ -890,12 +829,11 @@ TpgNetwork::make_output_node(ymuint oid,
 			     const char* name,
 			     TpgNode* inode)
 {
+  const char* d_name = alloc_str(mAlloc, name);
   void* p = mAlloc.get_memory(sizeof(TpgOutput));
-  TpgNode* node = new (p) TpgOutput(mNodeNum, oid, inode);
+  TpgNode* node = new (p) TpgOutput(mNodeNum, d_name, oid, inode);
   mNodeArray[mNodeNum] = node;
   ++ mNodeNum;
-
-  set_node_name(node, name);
 
   return node;
 }
@@ -911,72 +849,87 @@ TpgNetwork::make_logic_node(const char* name,
 			    const BnFuncType* func_type)
 {
   TpgNode* node = nullptr;
+  const char* d_name = alloc_str(mAlloc, name);
 
-  if ( func_type->type() == BnFuncType::kFt_EXPR ) {
-    ymuint ni = inode_list.size();
-    Expr expr = func_type->expr();
-    // expr の内容を表す TpgNode の木を作る．
-    vector<TpgNode*> leaf_nodes(ni * 2, nullptr);
-    vector<pair<TpgNode*, ymuint> > input_map(ni);
-    for (ymuint i = 0; i < ni; ++ i) {
-      ymuint p_num = expr.litnum(VarId(i), false);
-      ymuint n_num = expr.litnum(VarId(i), true);
-      TpgNode* inode = inode_list[i];
-      if ( n_num == 0 ) {
-	if ( p_num == 1 ) {
-	  leaf_nodes[i * 2 + 0] = inode;
-	  // ダミー
-	  input_map[i] = make_pair(static_cast<TpgNode*>(nullptr), 0);
+  TpgNode::GateType type;
+  switch ( func_type->type() ) {
+  case BnFuncType::kFt_C0:   type = TpgNode::kGateCONST0; break;
+  case BnFuncType::kFt_C1:   type = TpgNode::kGateCONST1; break;
+  case BnFuncType::kFt_BUFF: type = TpgNode::kGateBUFF;   break;
+  case BnFuncType::kFt_NOT:  type = TpgNode::kGateNOT;    break;
+  case BnFuncType::kFt_AND:  type = TpgNode::kGateAND;    break;
+  case BnFuncType::kFt_NAND: type = TpgNode::kGateNAND;   break;
+  case BnFuncType::kFt_OR:   type = TpgNode::kGateOR;     break;
+  case BnFuncType::kFt_NOR:  type = TpgNode::kGateNOR;    break;
+  case BnFuncType::kFt_XOR:  type = TpgNode::kGateXOR;    break;
+  case BnFuncType::kFt_XNOR: type = TpgNode::kGateXNOR;   break;
+  case BnFuncType::kFt_EXPR:
+    {
+      ymuint ni = inode_list.size();
+      Expr expr = func_type->expr();
+      // expr の内容を表す TpgNode の木を作る．
+      vector<TpgNode*> leaf_nodes(ni * 2, nullptr);
+      TpgNode** inode_array = alloc_array<TpgNode*>(mAlloc, ni);
+      ymuint* ipos_array = alloc_array<ymuint>(mAlloc, ni);
+      for (ymuint i = 0; i < ni; ++ i) {
+	ymuint p_num = expr.litnum(VarId(i), false);
+	ymuint n_num = expr.litnum(VarId(i), true);
+	TpgNode* inode = inode_list[i];
+	if ( n_num == 0 ) {
+	  if ( p_num == 1 ) {
+	    leaf_nodes[i * 2 + 0] = inode;
+	    // ダミー
+	    inode_array[i] = nullptr;
+	    ipos_array[i] = 0;
+	  }
+	  else {
+	    TpgNode* dummy_buff = make_prim_node(nullptr, TpgNode::kGateBUFF, vector<TpgNode*>(1, inode));
+	    leaf_nodes[i * 2 + 0] = dummy_buff;
+	    inode_array[i] = dummy_buff;
+	    ipos_array[i] = 0;
+	  }
 	}
 	else {
-	  TpgNode* dummy_buff = make_prim_node(BnFuncType::kFt_BUFF, vector<TpgNode*>(1, inode));
-	  leaf_nodes[i * 2 + 0] = dummy_buff;
-	  input_map[i] = make_pair(dummy_buff, 0);
+	  if ( p_num > 0 ) {
+	    TpgNode* dummy_buff = make_prim_node(nullptr, TpgNode::kGateBUFF, vector<TpgNode*>(1, inode));
+	    inode = dummy_buff;
+	  }
+
+	  TpgNode* not_gate = make_prim_node(nullptr, TpgNode::kGateNOT, vector<TpgNode*>(1, inode));
+	  leaf_nodes[i * 2 + 1] = not_gate;
+
+	  if ( p_num > 0 ) {
+	    inode_array[i] = inode;
+	    ipos_array[i] = 0;
+	  }
+	  else {
+	    inode_array[i] = not_gate;
+	    ipos_array[i] = 0;
+	  }
 	}
       }
-      else {
-	if ( p_num > 0 ) {
-	  TpgNode* dummy_buff = make_prim_node(BnFuncType::kFt_BUFF, vector<TpgNode*>(1, inode));
-	  inode = dummy_buff;
-	}
 
-	TpgNode* not_gate = make_prim_node(BnFuncType::kFt_NOT, vector<TpgNode*>(1, inode));
-	leaf_nodes[i * 2 + 1] = not_gate;
+      node = make_cplx_node(d_name, expr, leaf_nodes, inode_array, ipos_array);
 
-	if ( p_num > 0 ) {
-	  input_map[i] = make_pair(inode, 0);
-	}
-	else {
-	  input_map[i] = make_pair(not_gate, 0);
-	}
-      }
+      void* p = mAlloc.get_memory(sizeof(TpgMap));
+      TpgMap* tmap = new (p) TpgMap(inode_array, ipos_array);
+      node->set_tmap(tmap);
+
+      return node;
     }
-
-    node = make_cplx_node(expr, leaf_nodes, input_map);
-
-    void* p = mAlloc.get_memory(sizeof(TpgCplxMap));
-    TpgCplxMap* tmap = new (p) TpgCplxMap();
-    tmap->mInputNodeArray = alloc_array<TpgNode*>(mAlloc, ni);
-    tmap->mInputPosArray = alloc_array<ymuint>(mAlloc, ni);
-    for (ymuint i = 0; i < ni; ++ i) {
-      tmap->mInputNodeArray[i] = input_map[i].first;
-      tmap->mInputPosArray[i] = input_map[i].second;
-    }
-    node->mMap = tmap;
-  }
-  else {
-    node = make_prim_node(func_type->type(), inode_list);
-
-    void* p = mAlloc.get_memory(sizeof(TpgPrimMap));
-    node->mMap = new (p) TpgPrimMap(node);
+    break;
+  default:
+    ASSERT_NOT_REACHED;
+    break;
   }
 
-  set_node_name(node, name);
+  node = make_prim_node(d_name, type, inode_list);
 
   return node;
 }
 
 // @brief 論理式から TpgNode の木を生成する．
+// @param[in] name ノード名
 // @param[in] expr 式
 // @param[in] leaf_nodes 式のリテラルに対応するノードの配列
 // @param[in] input_map ファンインの対応関係を収める配列
@@ -985,9 +938,11 @@ TpgNetwork::make_logic_node(const char* name,
 // leaf_nodes は 変数番号 * 2 + (0/1) に
 // 該当する変数の肯定/否定のリテラルが入っている．
 TpgNode*
-TpgNetwork::make_cplx_node(const Expr& expr,
+TpgNetwork::make_cplx_node(const char* name,
+			   const Expr& expr,
 			   const vector<TpgNode*>& leaf_nodes,
-			   vector<pair<TpgNode*, ymuint> >& input_map)
+			   TpgNode** inode_array,
+			   ymuint* ipos_array)
 {
   if ( expr.is_posiliteral() ) {
     ymuint iid = expr.varid().val();
@@ -998,15 +953,15 @@ TpgNetwork::make_cplx_node(const Expr& expr,
     return leaf_nodes[iid * 2 + 1];
   }
 
-  BnFuncType::Type gate_type;
+  TpgNode::GateType gate_type;
   if ( expr.is_and() ) {
-    gate_type = BnFuncType::kFt_AND;
+    gate_type = TpgNode::kGateAND;
   }
   else if ( expr.is_or() ) {
-    gate_type = BnFuncType::kFt_OR;
+    gate_type = TpgNode::kGateOR;
   }
   else if ( expr.is_xor() ) {
-    gate_type = BnFuncType::kFt_XOR;
+    gate_type = TpgNode::kGateXOR;
   }
   else {
     ASSERT_NOT_REACHED;
@@ -1016,20 +971,21 @@ TpgNetwork::make_cplx_node(const Expr& expr,
   vector<TpgNode*> fanins(nc);
   for (ymuint i = 0; i < nc; ++ i) {
     const Expr& expr1 = expr.child(i);
-    TpgNode* inode = make_cplx_node(expr1, leaf_nodes, input_map);
+    TpgNode* inode = make_cplx_node(nullptr, expr1, leaf_nodes, inode_array, ipos_array);
     fanins[i] = inode;
   }
   // fanins[] を確保するオーバーヘッドがあるが，
   // 子供のノードよりも先に親のノードを確保するわけには行かない．
-  TpgNode* node = make_prim_node(gate_type, fanins);
+  TpgNode* node = make_prim_node(name, gate_type, fanins);
 
   for (ymuint i = 0; i < nc; ++ i) {
     // 美しくないけどスマートなやり方を思いつかない．
     const Expr& expr1 = expr.child(i);
     if ( expr1.is_posiliteral() ) {
       ymuint iid = expr1.varid().val();
-      if ( input_map[iid].first == nullptr ) {
-	input_map[iid] = make_pair(node, i);
+      if ( inode_array[iid] == nullptr ) {
+	inode_array[iid] = node;
+	ipos_array[iid] = i;
       }
     }
   }
@@ -1038,262 +994,56 @@ TpgNetwork::make_cplx_node(const Expr& expr,
 }
 
 // @brief 組み込み型の論理ゲートを生成する．
+// @param[in] name ノード名
 // @param[in] type ゲートの型
 // @param[in] ni ファンイン数
 // @return 生成したノードを返す．
 TpgNode*
-TpgNetwork::make_prim_node(BnFuncType::Type type,
+TpgNetwork::make_prim_node(const char* name,
+			   TpgNode::GateType type,
 			   const vector<TpgNode*>& inode_list)
 {
-  void* p = nullptr;
-  TpgNode* node = nullptr;
-
   ymuint ni = inode_list.size();
-  switch ( type ) {
-  case BnFuncType::kFt_C0:
-    p = mAlloc.get_memory(sizeof(TpgLogicC0));
-    node = new (p) TpgLogicC0(mNodeNum);
-    break;
-
-  case BnFuncType::kFt_C1:
-    p = mAlloc.get_memory(sizeof(TpgLogicC1));
-    node = new (p) TpgLogicC1(mNodeNum);
-    break;
-
-  case BnFuncType::kFt_BUFF:
-    p = mAlloc.get_memory(sizeof(TpgLogicBUFF));
-    node = new (p) TpgLogicBUFF(mNodeNum, inode_list[0]);
-    break;
-
-  case BnFuncType::kFt_NOT:
-    p = mAlloc.get_memory(sizeof(TpgLogicNOT));
-    node = new (p) TpgLogicNOT(mNodeNum, inode_list[0]);
-    break;
-
-  case BnFuncType::kFt_AND:
-    switch ( ni ) {
-    case 2:
-      p = mAlloc.get_memory(sizeof(TpgLogicAND2));
-      node = new (p) TpgLogicAND2(mNodeNum,
-				  inode_list[0], inode_list[1]);
-      break;
-
-    case 3:
-      p = mAlloc.get_memory(sizeof(TpgLogicAND3));
-      node = new (p) TpgLogicAND3(mNodeNum,
-				  inode_list[0], inode_list[1],
-				  inode_list[2]);
-      break;
-
-    case 4:
-      p = mAlloc.get_memory(sizeof(TpgLogicAND4));
-      node = new (p) TpgLogicAND4(mNodeNum,
-				  inode_list[0], inode_list[1],
-				  inode_list[2], inode_list[3]);
-      break;
-
-    default:
-      {
-	TpgNode** fanin_array = alloc_array<TpgNode*>(mAlloc, ni);
-	for (ymuint i = 0; i < ni; ++ i) {
-	  fanin_array[i] = inode_list[i];
-	}
-	TpgFault** fault_array = alloc_array<TpgFault*>(mAlloc, ni * 2);
-	p = mAlloc.get_memory(sizeof(TpgLogicANDN));
-	node = new (p) TpgLogicANDN(mNodeNum, ni, fanin_array, fault_array);
+  if ( ni > 2 ) {
+    // 2入力以上の XOR/XNOR ゲートを2入力に分解する．
+    if ( type == TpgNode::kGateXOR ) {
+      vector<TpgNode*> tmp_list(2);
+      tmp_list[0] = inode_list[0];
+      tmp_list[1] = inode_list[1];
+      TpgNode* tmp_node = make_prim_node(nullptr, type, tmp_list);
+      for (ymuint i = 2; i < ni; ++ i) {
+	tmp_list[0] = tmp_node;
+	tmp_list[1] = inode_list[i];
+	const char* tmp_name = (i == ni - 1) ? name : nullptr;
+	tmp_node = make_prim_node(tmp_name, type, tmp_list);
       }
-      break;
+      return tmp_node;
     }
-    break;
-
-  case BnFuncType::kFt_NAND:
-    switch ( ni ) {
-    case 2:
-      p = mAlloc.get_memory(sizeof(TpgLogicNAND2));
-      node = new (p) TpgLogicNAND2(mNodeNum,
-				   inode_list[0], inode_list[1]);
-      break;
-
-    case 3:
-      p = mAlloc.get_memory(sizeof(TpgLogicNAND3));
-      node = new (p) TpgLogicNAND3(mNodeNum,
-				   inode_list[0], inode_list[1],
-				   inode_list[2]);
-      break;
-
-    case 4:
-      p = mAlloc.get_memory(sizeof(TpgLogicNAND4));
-      node = new (p) TpgLogicNAND4(mNodeNum,
-				   inode_list[0], inode_list[1],
-				   inode_list[2], inode_list[3]);
-      break;
-
-    default:
-      {
-	TpgNode** fanin_array = alloc_array<TpgNode*>(mAlloc, ni);
-	for (ymuint i = 0; i < ni; ++ i) {
-	  fanin_array[i] = inode_list[i];
+    else if ( type == TpgNode::kGateXNOR ) {
+      vector<TpgNode*> tmp_list(2);
+      tmp_list[0] = inode_list[0];
+      tmp_list[1] = inode_list[1];
+      TpgNode* tmp_node = make_prim_node(nullptr, TpgNode::kGateXOR, tmp_list);
+      for (ymuint i = 2; i < ni; ++ i) {
+	tmp_list[0] = tmp_node;
+	tmp_list[1] = inode_list[i];
+	if ( i < ni - 1 ) {
+	  tmp_node = make_prim_node(nullptr, TpgNode::kGateXOR, tmp_list);
 	}
-	TpgFault** fault_array = alloc_array<TpgFault*>(mAlloc, ni * 2);
-	p = mAlloc.get_memory(sizeof(TpgLogicNANDN));
-	node = new (p) TpgLogicNANDN(mNodeNum, ni, fanin_array, fault_array);
-      }
-      break;
-    }
-    break;
-
-  case BnFuncType::kFt_OR:
-    switch ( ni ) {
-    case 2:
-      p = mAlloc.get_memory(sizeof(TpgLogicOR2));
-      node = new (p) TpgLogicOR2(mNodeNum,
-				 inode_list[0], inode_list[1]);
-      break;
-
-    case 3:
-      p = mAlloc.get_memory(sizeof(TpgLogicOR3));
-      node = new (p) TpgLogicOR3(mNodeNum,
-				 inode_list[0], inode_list[1],
-				 inode_list[2]);
-      break;
-
-    case 4:
-      p = mAlloc.get_memory(sizeof(TpgLogicOR4));
-      node = new (p) TpgLogicOR4(mNodeNum,
-				 inode_list[0], inode_list[1],
-				 inode_list[2], inode_list[3]);
-      break;
-
-    default:
-      {
-	TpgNode** fanin_array = alloc_array<TpgNode*>(mAlloc, ni);
-	for (ymuint i = 0; i < ni; ++ i) {
-	  fanin_array[i] = inode_list[i];
+	else {
+	  tmp_node = make_prim_node(name, TpgNode::kGateXNOR, tmp_list);
 	}
-	TpgFault** fault_array = alloc_array<TpgFault*>(mAlloc, ni * 2);
-	p = mAlloc.get_memory(sizeof(TpgLogicORN));
-	node = new (p) TpgLogicORN(mNodeNum, ni, fanin_array, fault_array);
       }
-      break;
+      return tmp_node;
     }
-    break;
-
-  case BnFuncType::kFt_NOR:
-    switch ( ni ) {
-    case 2:
-      p = mAlloc.get_memory(sizeof(TpgLogicNOR2));
-      node = new (p) TpgLogicNOR2(mNodeNum,
-				  inode_list[0], inode_list[1]);
-      break;
-
-    case 3:
-      p = mAlloc.get_memory(sizeof(TpgLogicNOR3));
-      node = new (p) TpgLogicNOR3(mNodeNum,
-				  inode_list[0], inode_list[1],
-				  inode_list[2]);
-      break;
-
-    case 4:
-      p = mAlloc.get_memory(sizeof(TpgLogicNOR4));
-      node = new (p) TpgLogicNOR4(mNodeNum,
-				  inode_list[0], inode_list[1],
-				  inode_list[2], inode_list[3]);
-      break;
-
-    default:
-      {
-	TpgNode** fanin_array = alloc_array<TpgNode*>(mAlloc, ni);
-	for (ymuint i = 0; i < ni; ++ i) {
-	  fanin_array[i] = inode_list[i];
-	}
-	TpgFault** fault_array = alloc_array<TpgFault*>(mAlloc, ni * 2);
-	p = mAlloc.get_memory(sizeof(TpgLogicNORN));
-	node = new (p) TpgLogicNORN(mNodeNum, ni, fanin_array, fault_array);
-      }
-      break;
-    }
-    break;
-
-  case BnFuncType::kFt_XOR:
-    switch ( ni ) {
-    case 2:
-      p = mAlloc.get_memory(sizeof(TpgLogicXOR2));
-      node = new (p) TpgLogicXOR2(mNodeNum,
-				  inode_list[0], inode_list[1]);
-      break;
-
-    default: // 2入力XORの木に分解する．
-      {
-	vector<TpgNode*> tmp_list(2);
-	tmp_list[0] = inode_list[0];
-	tmp_list[1] = inode_list[1];
-	TpgNode* tmp_node = make_prim_node(BnFuncType::kFt_XOR, tmp_list);
-	for (ymuint i = 2; i < ni; ++ i) {
-	  tmp_list[0] = tmp_node;
-	  tmp_list[1] = inode_list[i];
-	  tmp_node = make_prim_node(BnFuncType::kFt_XOR, tmp_list);
-	}
-	node = tmp_node;
-      }
-      break;
-    }
-    break;
-
-  case BnFuncType::kFt_XNOR:
-    switch ( ni ) {
-    case 2:
-      p = mAlloc.get_memory(sizeof(TpgLogicXNOR2));
-      node = new TpgLogicXNOR2(mNodeNum,
-			       inode_list[0], inode_list[1]);
-      break;
-
-    default: // 2入力XORの木に分解する．
-      // ただし最後だけ XNOR にする．
-      {
-	vector<TpgNode*> tmp_list(2);
-	tmp_list[0] = inode_list[0];
-	tmp_list[1] = inode_list[1];
-	TpgNode* tmp_node = make_prim_node(BnFuncType::kFt_XOR, tmp_list);
-	for (ymuint i = 2; i < ni; ++ i) {
-	  tmp_list[0] = tmp_node;
-	  tmp_list[1] = inode_list[i];
-	  if ( i < ni - 1 ) {
-	    tmp_node = make_prim_node(BnFuncType::kFt_XOR, tmp_list);
-	  }
-	  else {
-	    tmp_node = make_prim_node(BnFuncType::kFt_XNOR, tmp_list);
-	  }
-	}
-	node = tmp_node;
-      }
-      break;
-    }
-    break;
-
-  default:
-    ASSERT_NOT_REACHED;
-    break;
   }
+
+  TpgNode* node = TpgNode::new_primitive(mAlloc, mNodeNum, name, type, inode_list);
+
   mNodeArray[mNodeNum] = node;
   ++ mNodeNum;
 
   return node;
-}
-
-// @brief 名前を設定する．
-void
-TpgNetwork::set_node_name(TpgNode* node,
-			  const char* src_name)
-{
-  char* dst_name = nullptr;
-  if ( src_name != nullptr ) {
-    ymuint len = strlen(src_name) + 1;
-    dst_name = alloc_array<char>(mAlloc, len);
-    for (ymuint i = 0; i < len; ++ i) {
-      dst_name[i] = src_name[i];
-    }
-  }
-  node->mName = dst_name;
 }
 
 ymuint
@@ -1404,11 +1154,11 @@ TpgNetwork::make_faults(const BnNode* bnnode,
 
   // 代表故障を mFaultList に入れる．
   ymuint nf = fault_list.size();
-  node->mFaultNum = nf;
-  node->mFaultList = alloc_array<const TpgFault*>(mAlloc, nf);
+  const TpgFault** f_list = alloc_array<const TpgFault*>(mAlloc, nf);
   for (ymuint i = 0; i < nf; ++ i) {
-    node->mFaultList[i] = fault_list[i];
+    f_list[i] = fault_list[i];
   }
+  node->set_fault_list(nf, f_list);
 
   return nf;
 }

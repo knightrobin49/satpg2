@@ -18,8 +18,10 @@ BEGIN_NAMESPACE_YM_SATPG
 
 // @brief コンストラクタ
 // @param[in] id ID番号
-TpgLogic0::TpgLogic0(ymuint id) :
-  TpgLogic(id)
+// @param[in] name 名前
+TpgLogic0::TpgLogic0(ymuint id,
+		     const char* name) :
+  TpgLogic(id, name)
 {
 }
 

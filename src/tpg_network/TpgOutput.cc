@@ -18,12 +18,14 @@ BEGIN_NAMESPACE_YM_SATPG
 
 // @brief コンストラクタ
 // @param[in] id ID番号
+// @param[in] name 名前
 // @param[in] output_id 出力番号
 // @param[in] fanin ファンインのノード
 TpgOutput::TpgOutput(ymuint id,
+		     const char* name,
 		     ymuint output_id,
 		     TpgNode* fanin) :
-  TpgNode(id),
+  TpgNode(id, name),
   mOutputId(output_id),
   mFanin(fanin)
 {
@@ -86,6 +88,16 @@ TpgOutput::input_fault(int val,
   ASSERT_COND( val == 0 || val == 1 );
   ASSERT_COND( pos == 0 );
   return mFaults[val];
+}
+
+// @brief 出力番号2をセットする．
+// @param[in] id セットする番号
+//
+// 出力ノード以外では無効
+void
+TpgOutput::set_output_id2(ymuint id)
+{
+  mOutputId2 = id;
 }
 
 // @brief 入力の故障を設定する．

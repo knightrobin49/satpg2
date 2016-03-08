@@ -19,10 +19,12 @@ BEGIN_NAMESPACE_YM_SATPG
 
 // @brief コンストラクタ
 // @param[in] id ID番号
+// @param[in] name 名前
 // @param[in] inode ファンインのノード
 TpgLogicNOT::TpgLogicNOT(ymuint id,
+			 const char* name,
 			 TpgNode* inode) :
-  TpgLogic1(id, inode)
+  TpgLogic1(id, name, inode)
 {
 }
 

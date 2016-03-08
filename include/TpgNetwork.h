@@ -214,6 +214,7 @@ private:
   tfibits_size() const;
 
   /// @brief 論理式から TpgNode の木を生成する．
+  /// @param[in] name ノード名
   /// @param[in] expr 式
   /// @param[in] leaf_nodes 式のリテラルに対応するノードの配列
   /// @param[in] input_map ファンインの対応関係を収める配列
@@ -222,22 +223,21 @@ private:
   /// leaf_nodes は 変数番号 * 2 + (0/1) に
   /// 該当する変数の肯定/否定のリテラルが入っている．
   TpgNode*
-  make_cplx_node(const Expr& expr,
+  make_cplx_node(const char* name,
+		 const Expr& expr,
 		 const vector<TpgNode*>& leaf_nodes,
-		 vector<pair<TpgNode*, ymuint> >& input_map);
+		 TpgNode** inode_array,
+		 ymuint* ipos_array);
 
   /// @brief 組み込み型の論理ゲートを生成する．
+  /// @param[in] name ノード名
   /// @param[in] type ゲートの型
   /// @param[in] fanin_list ファンインのリスト
   /// @return 生成したノードを返す．
   TpgNode*
-  make_prim_node(BnFuncType::Type type,
+  make_prim_node(const char* name,
+		 TpgNode::GateType type,
 		 const vector<TpgNode*>& fanin_list);
-
-  /// @brief 名前を設定する．
-  void
-  set_node_name(TpgNode* node,
-		const char* src_name);
 
   /// @brief ノードの入力と出力の故障を作る．
   /// @param[in] bnnode もととなる BnNode

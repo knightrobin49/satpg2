@@ -19,11 +19,13 @@ BEGIN_NAMESPACE_YM_SATPG
 
 // @brief コンストラクタ
 // @param[in] id ID番号
+// @param[in] name 名前
 // @param[in] inode0, inode1 ファンインのノード
 TpgLogicAND2::TpgLogicAND2(ymuint id,
+			   const char* name,
 			   TpgNode* inode0,
 			   TpgNode* inode1) :
-  TpgLogic2(id, inode0, inode1)
+  TpgLogic2(id, name, inode0, inode1)
 {
 }
 
@@ -103,12 +105,14 @@ TpgLogicAND2::make_cnf(SatSolver& solver,
 
 // @brief コンストラクタ
 // @param[in] id ID番号
+// @param[in] name 名前
 // @param[in] inode0, inode1, inode2 ファンインのノード
 TpgLogicAND3::TpgLogicAND3(ymuint id,
+			   const char* name,
 			   TpgNode* inode0,
 			   TpgNode* inode1,
 			   TpgNode* inode2) :
-  TpgLogic3(id, inode0, inode1, inode2)
+  TpgLogic3(id, name, inode0, inode1, inode2)
 {
 }
 
@@ -190,13 +194,15 @@ TpgLogicAND3::make_cnf(SatSolver& solver,
 
 // @brief コンストラクタ
 // @param[in] id ID番号
+// @param[in] name 名前
 // @param[in] inode0, inode1, inode2, inode3 ファンインのノード
 TpgLogicAND4::TpgLogicAND4(ymuint id,
+			   const char* name,
 			   TpgNode* inode0,
 			   TpgNode* inode1,
 			   TpgNode* inode2,
 			   TpgNode* inode3) :
-  TpgLogic4(id, inode0, inode1, inode2, inode3)
+  TpgLogic4(id, name, inode0, inode1, inode2, inode3)
 {
 }
 
@@ -280,14 +286,16 @@ TpgLogicAND4::make_cnf(SatSolver& solver,
 
 // @brief コンストラクタ
 // @param[in] id ID番号
+// @param[in] name 名前
 // @param[in] fanin_num ファンイン数
 // @param[in] fanin_array ファンインの配列
 // @param[in] fault_array 入力の故障の配列
 TpgLogicANDN::TpgLogicANDN(ymuint id,
+			   const char* name,
 			   ymuint fanin_num,
 			   TpgNode** fanin_array,
 			   TpgFault** fault_array) :
-  TpgLogicN(id, fanin_num, fanin_array, fault_array)
+  TpgLogicN(id, name, fanin_num, fanin_array, fault_array)
 {
 }
 

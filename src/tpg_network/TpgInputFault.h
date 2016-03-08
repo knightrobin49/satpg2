@@ -20,8 +20,6 @@ BEGIN_NAMESPACE_YM_SATPG
 class TpgInputFault :
   public TpgFault
 {
-  friend class TpgNetwork;
-
 public:
 
   /// @brief コンストラクタ

@@ -18,13 +18,15 @@ BEGIN_NAMESPACE_YM_SATPG
 
 // @brief コンストラクタ
 // @param[in] id ID番号
+// @param[in] name 名前
 // @param[in] inode0, inode1, inode2, inode3 ファンインのノード
 TpgLogic4::TpgLogic4(ymuint id,
+		     const char* name,
 		     TpgNode* inode0,
 		     TpgNode* inode1,
 		     TpgNode* inode2,
 		     TpgNode* inode3) :
-  TpgLogic(id)
+  TpgLogic(id, name)
 {
   mFanins[0] = inode0;
   mFanins[1] = inode1;

@@ -12,6 +12,7 @@
 #include "satpg.h"
 #include "LitMap.h"
 #include "Val3.h"
+#include "ym/Alloc.h"
 #include "ym/ym_sat.h"
 
 
@@ -31,8 +32,6 @@ class TpgMap;
 //////////////////////////////////////////////////////////////////////
 class TpgNode
 {
-  friend class TpgNetwork;
-
 public:
 
   //////////////////////////////////////////////////////////////////////
@@ -76,9 +75,26 @@ public:
 
 public:
 
+  /// @brief 組み込み型の論理ゲートを生成する．
+  /// @param[in] alloc メモリアロケータ
+  /// @param[in] id ID番号
+  /// @param[in] name ノード名
+  /// @param[in] type ゲートの型
+  /// @param[in] inode_list ファンインのリスト
+  /// @return 生成したノードを返す．
+  static
+  TpgNode*
+  new_primitive(Alloc& alloc,
+		ymuint id,
+		const char* name,
+		GateType type,
+		const vector<TpgNode*>& inode_list);
+
   /// @brief コンストラクタ
   /// @param[in] id ID番号
-  TpgNode(ymuint id);
+  /// @param[in] name 名前
+  TpgNode(ymuint id,
+	  const char* name);
 
   /// @brief デストラクタ
   virtual
@@ -179,6 +195,7 @@ public:
   Val3
   noval() const;
 
+#if 0
   /// @brief 根のノードの時 true を返す．
   ///
   /// is_logic() が true の時のみ意味を持つ．
@@ -190,6 +207,7 @@ public:
   /// is_logic() が true の時のみ意味を持つ．
   bool
   is_internal() const;
+#endif
 
   /// @brief もとのゲートのファンインに対応するノードを返す．
   /// @param[in] pos もとの BnNode の入力の位置番号 (!!!)
@@ -297,10 +315,73 @@ public:
   fault(ymuint pos) const;
 
 
-private:
+public:
   //////////////////////////////////////////////////////////////////////
   // 内部で用いられる下請け関数
   //////////////////////////////////////////////////////////////////////
+
+  /// @brief 出力番号2をセットする．
+  /// @param[in] id セットする番号
+  ///
+  /// 出力ノード以外では無効
+  virtual
+  void
+  set_output_id2(ymuint id);
+
+  /// @brief ファンアウト用の配列を初期化する．
+  /// @param[in] nfo ファンアウト数
+  /// @param[in] fo_array ファンアウト用の配列
+  /// @param[in] act_fo_array アクティブなファンアウト用の配列
+  void
+  set_fanout_num(ymuint nfo,
+		 TpgNode** fo_array,
+		 TpgNode** act_fo_array);
+
+  /// @brief ファンアウトを設定する．
+  /// @param[in] pos 位置番号 ( 0 <= pos < fanout_num() )
+  /// @param[in] fo_node ファンアウト先のノード
+  void
+  set_fanout(ymuint pos,
+	     TpgNode* fo_node);
+
+  /// @brief アクティブなファンアウト配列を設定する．
+  /// @param[in] act_fanouts ファンアウト配列のソース
+  void
+  set_active_fanouts(const vector<TpgNode*>& act_fanouts);
+
+  /// @brief TpgMap をセットする．
+  /// @param[in] tmap セットする TpgMap
+  void
+  set_tmap(TpgMap* tmap);
+
+  /// @brief TFIbits 用の配列をセットする．
+  /// @param[in] tfibits セットする配列
+  void
+  set_tfibits(ymuint64* tfibits);
+
+  /// @brief TFIbits をクリアする．
+  /// @param[in] tfibits_size TFIbits のサイズ
+  void
+  tfibits_clear(ymuint tfibits_size);
+
+  /// @brief TFIbits 上のビットをセットする．
+  /// @param[in] bitpos ビット位置
+  void
+  tfibits_bitset(ymuint bitpos);
+
+  /// @brief TFIbits のORを取る．
+  /// @param[in] src_node オペランドのノード
+  /// @param[in] tfibits_size TFIbits のサイズ
+  ///
+  /// 結果は自身の TFIbits に代入される．
+  void
+  tfibits_or(TpgNode* src_node,
+	     ymuint tfibits_size);
+
+  /// @brief immediate dominator をセットする．
+  /// @param[in] dom dominator ノード
+  void
+  set_imm_dom(TpgNode* dom);
 
   /// @brief 入力の故障を設定する．
   /// @param[in] val 故障値 ( 0 / 1 )
@@ -319,6 +400,11 @@ private:
   void
   set_output_fault(int val,
 		   TpgFault* fault);
+
+  /// @brief 代表故障のリストをセットする．
+  void
+  set_fault_list(ymuint nf,
+		 const TpgFault** fault_list);
 
   /// @brief アクティブにする．
   void

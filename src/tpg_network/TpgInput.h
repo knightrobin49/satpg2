@@ -25,8 +25,10 @@ public:
 
   /// @brief コンストラクタ
   /// @param[in] id ID番号
+  /// @param[in] name 名前
   /// @param[in] input_id 入力番号
   TpgInput(ymuint id,
+	   const char* name,
 	   ymuint input_id);
 
   /// @brief デストラクタ

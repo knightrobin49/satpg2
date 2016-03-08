@@ -25,7 +25,9 @@ public:
 
   /// @brief コンストラクタ
   /// @param[in] id ID番号
-  TpgLogic0(ymuint id);
+  /// @param[in] name 名前
+  TpgLogic0(ymuint id,
+	    const char* name);
 
   /// @brief デストラクタ
   ~TpgLogic0();

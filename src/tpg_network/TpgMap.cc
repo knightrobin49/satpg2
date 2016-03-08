@@ -13,56 +13,28 @@
 BEGIN_NAMESPACE_YM_SATPG
 
 //////////////////////////////////////////////////////////////////////
-// クラス TpgPrimMap
+// クラス TpgMap
 //////////////////////////////////////////////////////////////////////
 
 // @brief コンストラクタ
-// @param[in] node 根のノード
-TpgPrimMap::TpgPrimMap(TpgNode* node) :
-  mNode(node)
+// @param[in] inode_array 入力のノードの配列
+// @param[in] ipos_array 入力のファンイン番号の配列
+TpgMap::TpgMap(TpgNode** inode_array,
+	       ymuint* ipos_array) :
+  mInputNodeArray(inode_array),
+  mInputPosArray(ipos_array)
 {
 }
 
 // @brief デストラクタ
-TpgPrimMap::~TpgPrimMap()
+TpgMap::~TpgMap()
 {
 }
 
 // @brief 入力に対応するノードを得る．
 // @param[in] ipos 入力の位置番号
 TpgNode*
-TpgPrimMap::input(ymuint ipos) const
-{
-  return mNode;
-}
-
-// @brief 入力に対応するノードのファンイン番号を得る．
-// @param[in] ipos 入力の位置番号
-ymuint
-TpgPrimMap::input_pos(ymuint ipos) const
-{
-  return ipos;
-}
-
-
-//////////////////////////////////////////////////////////////////////
-// クラス TpgCplxMap
-//////////////////////////////////////////////////////////////////////
-
-// @brief コンストラクタ
-TpgCplxMap::TpgCplxMap()
-{
-}
-
-// @brief デストラクタ
-TpgCplxMap::~TpgCplxMap()
-{
-}
-
-// @brief 入力に対応するノードを得る．
-// @param[in] ipos 入力の位置番号
-TpgNode*
-TpgCplxMap::input(ymuint ipos) const
+TpgMap::input(ymuint ipos) const
 {
   return mInputNodeArray[ipos];
 }
@@ -70,7 +42,7 @@ TpgCplxMap::input(ymuint ipos) const
 // @brief 入力に対応するノードのファンイン番号を得る．
 // @param[in] ipos 入力の位置番号
 ymuint
-TpgCplxMap::input_pos(ymuint ipos) const
+TpgMap::input_pos(ymuint ipos) const
 {
   return mInputPosArray[ipos];
 }

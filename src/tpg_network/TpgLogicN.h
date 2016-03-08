@@ -25,10 +25,12 @@ public:
 
   /// @brief コンストラクタ
   /// @param[in] id ID番号
+  /// @param[in] name 名前
   /// @param[in] fanin_num ファンイン数
   /// @param[in] fanin_array ファンインの配列
   /// @param[in] fault_array 入力の故障の配列
   TpgLogicN(ymuint id,
+	    const char* name,
 	    ymuint fanin_num,
 	    TpgNode** fanin_array,
 	    TpgFault** fault_array);

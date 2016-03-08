@@ -28,8 +28,10 @@ public:
 
   /// @brief コンストラクタ
   /// @param[in] id ID番号
+  /// @param[in] name 名前
   /// @param[in] inode0, inode1 ファンインのノード
   TpgLogicNAND2(ymuint id,
+		const char* name,
 		TpgNode* inode0,
 		TpgNode* inode1);
 
@@ -116,8 +118,10 @@ public:
 
   /// @brief コンストラクタ
   /// @param[in] id ID番号
+  /// @param[in] name 名前
   /// @param[in] inode0, inode1, inode2 ファンインのノード
   TpgLogicNAND3(ymuint id,
+		const char* name,
 		TpgNode* inode0,
 		TpgNode* inode1,
 		TpgNode* inode2);
@@ -205,8 +209,10 @@ public:
 
   /// @brief コンストラクタ
   /// @param[in] id ID番号
+  /// @param[in] name 名前
   /// @param[in] inode0, inode1, inode2, inode3 ファンインのノード
   TpgLogicNAND4(ymuint id,
+		const char* name,
 		TpgNode* inode0,
 		TpgNode* inode1,
 		TpgNode* inode2,
@@ -295,10 +301,12 @@ public:
 
   /// @brief コンストラクタ
   /// @param[in] id ID番号
+  /// @param[in] name 名前
   /// @param[in] fanin_num ファンイン数
   /// @param[in] fanin_array ファンインの配列
   /// @param[in] fault_array 入力の故障の配列
   TpgLogicNANDN(ymuint id,
+		const char* name,
 		ymuint fanin_num,
 		TpgNode** fanin_array,
 		TpgFault** fault_array);
