@@ -12,6 +12,7 @@
 #include "satpg.h"
 #include "Val3.h"
 #include "TpgNode.h"
+#include "TpgNodeInfo.h"
 #include "ym/ym_bnet.h"
 #include "ym/ym_cell.h"
 #include "ym/ym_logic.h"
@@ -24,30 +25,6 @@ BEGIN_NAMESPACE_YM_SATPG
 
 class TpgMap;
 class TpgNodeMap;
-
-//////////////////////////////////////////////////////////////////////
-/// @class CplxInfo TpgNetwork.h "TpgNetwork.h"
-/// @brief cplx_logic 用の情報を格納するクラス
-//////////////////////////////////////////////////////////////////////
-struct CplxInfo
-{
-  /// @brief コンストラクタ
-  /// @param[in] node_num ノード数
-  /// @param[in] fanin_num ファンイン数
-  CplxInfo(ymuint node_num,
-	   ymuint fanin_num) :
-    mExtraNodeCount(node_num),
-    mCVal(fanin_num * 2) { }
-
-  // 根のノード以外に必要となるノード数
-  ymuint mExtraNodeCount;
-
-  // 制御値を納める配列
-  // pos 番目の 0 が mCVal[pos * 2 + 0] に対応する．
-  vector<Val3> mCVal;
-
-};
-
 
 //////////////////////////////////////////////////////////////////////
 /// @class TpgNetwork TpgNetwork.h "TpgNetwork.h"
@@ -193,26 +170,15 @@ public:
 		   const char* name,
 		   TpgNode* inode);
 
-  /// @brief 組み込み型の論理ノードを生成する．
+  /// @brief 論理ノードを生成する．
   /// @param[in] name ノード名
-  /// @param[in] gate_type ゲートの種類
-  /// @param[in] inode_list ファンインのリスト
+  /// @param[in] node_info 論理関数の情報
+  /// @param[in] fanin_list ファンインのリスト
   /// @return 生成したノードを返す．
   TpgNode*
   make_logic_node(const char* name,
-		  GateType gate_type,
-		  const vector<TpgNode*>& inode_list);
-
-  /// @brief 複合型の論理ノードを生成する．
-  /// @param[in] name ノード名
-  /// @param[in] expr ノードの論理式
-  /// @param[in] inode_list ファンインのリスト
-  /// @return 生成したノードを返す．
-  TpgNode*
-  make_logic_node(const char* name,
-		  const Expr& expr,
-		  const CplxInfo* cinfo,
-		  const vector<TpgNode*>& inode_list);
+		  const TpgNodeInfo* node_info,
+		  const vector<TpgNode*>& fanin_list);
 
 
 private:
@@ -223,6 +189,32 @@ private:
   /// @brief TpgNode の TFIbits のサイズを計算する．
   ymuint
   tfibits_size() const;
+
+  /// @brief 論理式から TpgNode の木を生成する．
+  /// @param[in] name ノード名
+  /// @param[in] expr 式
+  /// @param[in] leaf_nodes 式のリテラルに対応するノードの配列
+  /// @param[in] input_map ファンインの対応関係を収める配列
+  /// @return 生成したノードを返す．
+  ///
+  /// leaf_nodes は 変数番号 * 2 + (0/1) に
+  /// 該当する変数の肯定/否定のリテラルが入っている．
+  TpgNode*
+  make_cplx_node(const char* name,
+		 const Expr& expr,
+		 const vector<TpgNode*>& leaf_nodes,
+		 TpgNode** inode_array,
+		 ymuint* ipos_array);
+
+  /// @brief 組み込み型の論理ゲートを生成する．
+  /// @param[in] name ノード名
+  /// @param[in] type ゲートの型
+  /// @param[in] fanin_list ファンインのリスト
+  /// @return 生成したノードを返す．
+  TpgNode*
+  make_prim_node(const char* name,
+		 GateType type,
+		 const vector<TpgNode*>& fanin_list);
 
   /// @brief 出力の故障を作る．
   /// @param[in] name 故障位置のノード名
@@ -237,19 +229,17 @@ private:
   /// @param[in] name 故障位置のノード名
   /// @param[in] ipos 故障位置のファンイン番号
   /// @param[in] node 故障位置のノード
-  /// @param[in] inode 入力側のノード
   /// @param[in] inode_pos node 上の入力位置
   /// @param[in] val 故障値
   /// @param[in] rep 代表故障
   ///
-  /// プリミティブ型の場合は node:ipos と inode:inode_pos は同一だが
+  /// プリミティブ型の場合は ipos と inode_pos は同一だが
   /// 複合型の場合には異なる．
   const TpgFault*
   new_ifault(const char* name,
 	     int val,
 	     ymuint ipos,
 	     TpgNode* node,
-	     TpgNode* inode,
 	     ymuint inode_pos,
 	     const TpgFault* rep);
 
@@ -286,38 +276,6 @@ private:
   /// @brief 代入演算子も実装しない．
   const TpgNetwork&
   operator=(const TpgNetwork& src);
-
-
-private:
-  //////////////////////////////////////////////////////////////////////
-  // 内部で用いられる下請け関数
-  //////////////////////////////////////////////////////////////////////
-
-  /// @brief 論理式から TpgNode の木を生成する．
-  /// @param[in] name ノード名
-  /// @param[in] expr 式
-  /// @param[in] leaf_nodes 式のリテラルに対応するノードの配列
-  /// @param[in] input_map ファンインの対応関係を収める配列
-  /// @return 生成したノードを返す．
-  ///
-  /// leaf_nodes は 変数番号 * 2 + (0/1) に
-  /// 該当する変数の肯定/否定のリテラルが入っている．
-  TpgNode*
-  make_cplx_node(const char* name,
-		 const Expr& expr,
-		 const vector<TpgNode*>& leaf_nodes,
-		 TpgNode** inode_array,
-		 ymuint* ipos_array);
-
-  /// @brief 組み込み型の論理ゲートを生成する．
-  /// @param[in] name ノード名
-  /// @param[in] type ゲートの型
-  /// @param[in] fanin_list ファンインのリスト
-  /// @return 生成したノードを返す．
-  TpgNode*
-  make_prim_node(const char* name,
-		 GateType type,
-		 const vector<TpgNode*>& fanin_list);
 
 
 private:
@@ -371,9 +329,6 @@ private:
 
   // 全故障数
   ymuint mFaultNum;
-
-  // 故障の配列
-  TpgFault** mFaultList;
 
   // 代表故障のリスト
   vector<const TpgFault*> mRepFaults;

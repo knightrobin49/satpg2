@@ -229,6 +229,7 @@ set (tpg_network_SOURCES
   src/tpg_network/TpgMap.cc
   src/tpg_network/TpgNetwork.cc
   src/tpg_network/TpgNode.cc
+  src/tpg_network/TpgNodeInfo.cc
   src/tpg_network/TpgNodeMap.cc
   src/tpg_network/TpgOutput.cc
   )
