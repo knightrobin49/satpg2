@@ -34,7 +34,7 @@ TpgLogicC1::~TpgLogicC1()
 // @brief ゲートタイプを得る．
 //
 // is_logic() が false の場合の返り値は不定
-TpgNode::GateType
+GateType
 TpgLogicC1::gate_type() const
 {
   return kGateCONST1;

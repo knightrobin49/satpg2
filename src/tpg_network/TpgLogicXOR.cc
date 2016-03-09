@@ -37,7 +37,7 @@ TpgLogicXOR2::~TpgLogicXOR2()
 // @brief ゲートタイプを得る．
 //
 // is_logic() が false の場合の返り値は不定
-TpgNode::GateType
+GateType
 TpgLogicXOR2::gate_type() const
 {
   return kGateXOR;

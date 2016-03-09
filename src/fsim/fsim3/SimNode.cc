@@ -48,23 +48,23 @@ SimNode::new_input(ymuint32 id)
 // @brief ノードを生成するクラスメソッド
 SimNode*
 SimNode::new_node(ymuint32 id,
-		  TpgNode::GateType type,
+		  GateType type,
 		  const vector<SimNode*>& inputs)
 {
   SimNode* node = nullptr;
   ymuint ni = inputs.size();
   switch ( type ) {
-  case TpgNode::kGateBUFF:
+  case kGateBUFF:
     ASSERT_COND(ni == 1 );
     node = new SnBuff(id, inputs);
     break;
 
-  case TpgNode::kGateNOT:
+  case kGateNOT:
     ASSERT_COND(ni == 1 );
     node = new SnNot(id, inputs);
     break;
 
-  case TpgNode::kGateAND:
+  case kGateAND:
     switch ( ni ) {
     case 2:  node = new SnAnd2(id, inputs); break;
     case 3:  node = new SnAnd3(id, inputs); break;
@@ -73,7 +73,7 @@ SimNode::new_node(ymuint32 id,
     }
     break;
 
-  case TpgNode::kGateNAND:
+  case kGateNAND:
     switch ( ni ) {
     case 2:  node = new SnNand2(id, inputs); break;
     case 3:  node = new SnNand3(id, inputs); break;
@@ -82,7 +82,7 @@ SimNode::new_node(ymuint32 id,
     }
     break;
 
-  case TpgNode::kGateOR:
+  case kGateOR:
     switch ( ni ) {
     case 2:  node = new SnOr2(id, inputs); break;
     case 3:  node = new SnOr3(id, inputs); break;
@@ -91,7 +91,7 @@ SimNode::new_node(ymuint32 id,
     }
     break;
 
-  case TpgNode::kGateNOR:
+  case kGateNOR:
     switch ( ni ) {
     case 2:  node = new SnNor2(id, inputs); break;
     case 3:  node = new SnNor3(id, inputs); break;
@@ -100,14 +100,14 @@ SimNode::new_node(ymuint32 id,
     }
     break;
 
-  case TpgNode::kGateXOR:
+  case kGateXOR:
     switch ( ni ) {
     case 2:  node = new SnXor2(id, inputs); break;
     default: node = new SnXor(id, inputs);  break;
     }
     break;
 
-  case TpgNode::kGateXNOR:
+  case kGateXNOR:
     switch ( ni ) {
     case 2:  node = new SnXnor2(id, inputs); break;
     default: node = new SnXnor(id, inputs);  break;

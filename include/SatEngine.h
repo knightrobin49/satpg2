@@ -270,7 +270,7 @@ private:
   /// @param[in] gate_type ゲートの種類
   /// @param[in] litmap 入出力のリテラルを保持するクラス
   void
-  make_gate_cnf(TpgNode::GateType gate_type,
+  make_gate_cnf(GateType gate_type,
 		const LitMap& litmap);
 
   /// @brief 多入力 AND ゲートの入出力の関係を表す CNF 式を生成する．

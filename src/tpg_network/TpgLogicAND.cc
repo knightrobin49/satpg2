@@ -37,7 +37,7 @@ TpgLogicAND2::~TpgLogicAND2()
 // @brief ゲートタイプを得る．
 //
 // is_logic() が false の場合の返り値は不定
-TpgNode::GateType
+GateType
 TpgLogicAND2::gate_type() const
 {
   return kGateAND;
@@ -124,7 +124,7 @@ TpgLogicAND3::~TpgLogicAND3()
 // @brief ゲートタイプを得る．
 //
 // is_logic() が false の場合の返り値は不定
-TpgNode::GateType
+GateType
 TpgLogicAND3::gate_type() const
 {
   return kGateAND;
@@ -214,7 +214,7 @@ TpgLogicAND4::~TpgLogicAND4()
 // @brief ゲートタイプを得る．
 //
 // is_logic() が false の場合の返り値は不定
-TpgNode::GateType
+GateType
 TpgLogicAND4::gate_type() const
 {
   return kGateAND;
@@ -307,7 +307,7 @@ TpgLogicANDN::~TpgLogicANDN()
 // @brief ゲートタイプを得る．
 //
 // is_logic() が false の場合の返り値は不定
-TpgNode::GateType
+GateType
 TpgLogicANDN::gate_type() const
 {
   return kGateAND;

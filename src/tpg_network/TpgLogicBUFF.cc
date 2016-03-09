@@ -36,7 +36,7 @@ TpgLogicBUFF::~TpgLogicBUFF()
 // @brief ゲートタイプを得る．
 //
 // is_logic() が false の場合の返り値は不定
-TpgNode::GateType
+GateType
 TpgLogicBUFF::gate_type() const
 {
   return kGateBUFF;

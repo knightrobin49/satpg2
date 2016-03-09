@@ -32,6 +32,45 @@ END_NAMESPACE_YM
 BEGIN_NAMESPACE_YM_SATPG
 
 //////////////////////////////////////////////////////////////////////
+/// @brief 論理ゲートの種類を表す列挙型
+//////////////////////////////////////////////////////////////////////
+enum GateType {
+  /// @brief 定数0
+  kGateCONST0 = 0,
+
+  /// @brief 定数1
+  kGateCONST1 = 1,
+
+  /// @brief バッファ
+  kGateBUFF   = 2,
+
+  /// @brief NOT
+  kGateNOT    = 3,
+
+  /// @brief AND
+  kGateAND    = 4,
+
+  /// @brief NAND
+  kGateNAND   = 5,
+
+  /// @brief OR
+  kGateOR     = 6,
+
+  /// @brief NOR
+  kGateNOR    = 7,
+
+  /// @brief XOR
+  kGateXOR    = 8,
+
+  /// @brief XNOR
+  kGateXNOR   = 9,
+
+  /// @brief 上記以外
+  kGateCPLX   = 10
+};
+
+
+//////////////////////////////////////////////////////////////////////
 /// @brief タイマーのモード
 //////////////////////////////////////////////////////////////////////
 enum {

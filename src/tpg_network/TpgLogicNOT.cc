@@ -36,7 +36,7 @@ TpgLogicNOT::~TpgLogicNOT()
 // @brief ゲートタイプを得る．
 //
 // is_logic() が false の場合の返り値は不定
-TpgNode::GateType
+GateType
 TpgLogicNOT::gate_type() const
 {
   return kGateNOT;

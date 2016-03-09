@@ -50,7 +50,7 @@ public:
   static
   SimNode*
   new_node(ymuint32 id,
-	   TpgNode::GateType type,
+	   GateType type,
 	   const vector<SimNode*>& inputs);
 
 

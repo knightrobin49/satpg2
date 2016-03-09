@@ -111,7 +111,7 @@ Fsim2::set_network(const TpgNetwork& network)
       }
 
       // 出力の論理を表す SimNode を作る．
-      TpgNode::GateType type = tpgnode->gate_type();
+      GateType type = tpgnode->gate_type();
       node = make_node(type, inputs);
     }
     // 対応表に登録しておく．
@@ -692,7 +692,7 @@ Fsim2::make_input()
 
 // @brief 単純な logic ノードを作る．
 SimNode*
-Fsim2::make_node(TpgNode::GateType type,
+Fsim2::make_node(GateType type,
 		 const vector<SimNode*>& inputs)
 {
   ymuint32 id = mNodeArray.size();

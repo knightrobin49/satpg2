@@ -24,7 +24,7 @@ class TpgMap;
 /// @class TpgNode TpgNode.h "TpgNode.h"
 /// @brief SATPG 用のノードを表すクラス
 ///
-/// 基本的には一つの TpgNode 一つのゲートに対応しているが，
+/// 基本的には一つの BnNode に対応しているが，
 /// もとのゲートが組み込み型でない場合には複数の TpgNode を組み合わ
 /// せてもとのゲートを表す．
 /// そのため，場合によってはファンインの故障を表すための仮想的な
@@ -32,47 +32,6 @@ class TpgMap;
 //////////////////////////////////////////////////////////////////////
 class TpgNode
 {
-public:
-
-  //////////////////////////////////////////////////////////////////////
-  /// @brief 論理ゲートの種類を表す列挙型
-  //////////////////////////////////////////////////////////////////////
-  enum GateType {
-    /// @brief 定数0
-    kGateCONST0 = 0,
-
-    /// @brief 定数1
-    kGateCONST1 = 1,
-
-    /// @brief バッファ
-    kGateBUFF   = 2,
-
-    /// @brief NOT
-    kGateNOT    = 3,
-
-    /// @brief AND
-    kGateAND    = 4,
-
-    /// @brief NAND
-    kGateNAND   = 5,
-
-    /// @brief OR
-    kGateOR     = 6,
-
-    /// @brief NOR
-    kGateNOR    = 7,
-
-    /// @brief XOR
-    kGateXOR    = 8,
-
-    /// @brief XNOR
-    kGateXNOR   = 9,
-
-    /// @brief 上記以外
-    kGateCPLX   = 10
-  };
-
-
 public:
 
   /// @brief 組み込み型の論理ゲートを生成する．
@@ -194,20 +153,6 @@ public:
   virtual
   Val3
   noval() const;
-
-#if 0
-  /// @brief 根のノードの時 true を返す．
-  ///
-  /// is_logic() が true の時のみ意味を持つ．
-  bool
-  is_root() const;
-
-  /// @brief 内部ノードの時 true を返す．
-  ///
-  /// is_logic() が true の時のみ意味を持つ．
-  bool
-  is_internal() const;
-#endif
 
   /// @brief もとのゲートのファンインに対応するノードを返す．
   /// @param[in] pos もとの BnNode の入力の位置番号 (!!!)
@@ -477,9 +422,6 @@ inline
 ymuint
 TpgNode::fanout_num() const
 {
-  if ( is_output() ) {
-    return 0;
-  }
   return mFanoutNum;
 }
 

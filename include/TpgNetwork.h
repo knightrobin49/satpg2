@@ -175,12 +175,6 @@ public:
   void
   set(const BnNetwork& bnnetwork);
 
-
-private:
-  //////////////////////////////////////////////////////////////////////
-  // 内部で用いられる下請け関数
-  //////////////////////////////////////////////////////////////////////
-
   /// @brief 入力ノードを生成する．
   /// @param[in] iid 入力の番号
   /// @param[in] name ノード名
@@ -199,46 +193,37 @@ private:
 		   const char* name,
 		   TpgNode* inode);
 
-  /// @brief 論理ノードを生成する．
+  /// @brief 組み込み型の論理ノードを生成する．
   /// @param[in] name ノード名
+  /// @param[in] gate_type ゲートの種類
   /// @param[in] inode_list ファンインのリスト
-  /// @param[in] func_type ノードの論理関数
   /// @return 生成したノードを返す．
   TpgNode*
   make_logic_node(const char* name,
-		  const vector<TpgNode*>& inode_list,
-		  const BnFuncType* func_type);
+		  GateType gate_type,
+		  const vector<TpgNode*>& inode_list);
+
+  /// @brief 複合型の論理ノードを生成する．
+  /// @param[in] name ノード名
+  /// @param[in] expr ノードの論理式
+  /// @param[in] inode_list ファンインのリスト
+  /// @return 生成したノードを返す．
+  TpgNode*
+  make_logic_node(const char* name,
+		  const Expr& expr,
+		  const vector<TpgNode*>& inode_list);
+
+
+private:
+  //////////////////////////////////////////////////////////////////////
+  // 内部で用いられる下請け関数
+  //////////////////////////////////////////////////////////////////////
 
   /// @brief TpgNode の TFIbits のサイズを計算する．
   ymuint
   tfibits_size() const;
 
-  /// @brief 論理式から TpgNode の木を生成する．
-  /// @param[in] name ノード名
-  /// @param[in] expr 式
-  /// @param[in] leaf_nodes 式のリテラルに対応するノードの配列
-  /// @param[in] input_map ファンインの対応関係を収める配列
-  /// @return 生成したノードを返す．
-  ///
-  /// leaf_nodes は 変数番号 * 2 + (0/1) に
-  /// 該当する変数の肯定/否定のリテラルが入っている．
-  TpgNode*
-  make_cplx_node(const char* name,
-		 const Expr& expr,
-		 const vector<TpgNode*>& leaf_nodes,
-		 TpgNode** inode_array,
-		 ymuint* ipos_array);
-
-  /// @brief 組み込み型の論理ゲートを生成する．
-  /// @param[in] name ノード名
-  /// @param[in] type ゲートの型
-  /// @param[in] fanin_list ファンインのリスト
-  /// @return 生成したノードを返す．
-  TpgNode*
-  make_prim_node(const char* name,
-		 TpgNode::GateType type,
-		 const vector<TpgNode*>& fanin_list);
-
+#if 0
   /// @brief ノードの入力と出力の故障を作る．
   /// @param[in] bnnode もととなる BnNode
   ymuint
@@ -278,19 +263,33 @@ private:
 	     ymuint tpgpos,
 	     ymuint val,
 	     const TpgFault* rep);
+#else
 
-  /// @brief 故障を生成する．
-  /// @param[in] node 対象のノード
-  /// @param[in] is_output 出力の故障のときに true とするフラグ
-  /// @param[in] ipos 入力の故障の時に入力番号を表す
-  /// @param[in] val 縮退している値
-  /// @param[in] rep 代表故障
-  TpgFault*
-  new_fault(const TpgNode* node,
-	    bool is_output,
-	    ymuint ipos,
-	    ymuint val,
-	    const TpgFault* rep);
+  /// @brief 出力の故障を作る．
+  /// @param[in] name 故障位置のノード名
+  /// @param[in] node 故障位置のノード
+  /// @param[in] val 故障値 ( 0 / 1 )
+  const TpgFault*
+  new_ofault(const char* name,
+	     TpgNode* node,
+	     int val);
+
+  /// @brief 入力の故障を作る．
+  /// @param[in] name 故障位置のノード名
+  /// @param[in] node 故障位置のノード
+  /// @param[in] ipos ファンイン番号 ( 0 <= ipos < node->fanin_num() )
+  /// @param[in] inode 入力側のノード
+  /// @param[in] inode_pos inode 上の入力位置
+  /// @param[in] val 故障値
+  const TpgFault*
+  new_ifault(const char* name,
+	     TpgNode* node,
+	     ymuint ipos,
+	     TpgNode* inode,
+	     ymuint inode_pos,
+	     int val);
+
+#endif
 
   /// @brief ノードの TFI にマークをつける．
   /// @note 結果は mTmpMark[node->id()] に格納される．
@@ -320,6 +319,38 @@ private:
   /// @brief 代入演算子も実装しない．
   const TpgNetwork&
   operator=(const TpgNetwork& src);
+
+
+private:
+  //////////////////////////////////////////////////////////////////////
+  // 内部で用いられる下請け関数
+  //////////////////////////////////////////////////////////////////////
+
+  /// @brief 論理式から TpgNode の木を生成する．
+  /// @param[in] name ノード名
+  /// @param[in] expr 式
+  /// @param[in] leaf_nodes 式のリテラルに対応するノードの配列
+  /// @param[in] input_map ファンインの対応関係を収める配列
+  /// @return 生成したノードを返す．
+  ///
+  /// leaf_nodes は 変数番号 * 2 + (0/1) に
+  /// 該当する変数の肯定/否定のリテラルが入っている．
+  TpgNode*
+  make_cplx_node(const char* name,
+		 const Expr& expr,
+		 const vector<TpgNode*>& leaf_nodes,
+		 TpgNode** inode_array,
+		 ymuint* ipos_array);
+
+  /// @brief 組み込み型の論理ゲートを生成する．
+  /// @param[in] name ノード名
+  /// @param[in] type ゲートの型
+  /// @param[in] fanin_list ファンインのリスト
+  /// @return 生成したノードを返す．
+  TpgNode*
+  make_prim_node(const char* name,
+		 GateType type,
+		 const vector<TpgNode*>& fanin_list);
 
 
 private:

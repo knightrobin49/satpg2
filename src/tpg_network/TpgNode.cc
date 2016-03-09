@@ -345,7 +345,7 @@ TpgNode::is_logic() const
 }
 
 // @brief ゲートタイプを得る．
-TpgNode::GateType
+GateType
 TpgNode::gate_type() const
 {
   ASSERT_NOT_REACHED;

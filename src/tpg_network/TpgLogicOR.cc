@@ -37,7 +37,7 @@ TpgLogicOR2::~TpgLogicOR2()
 // @brief ゲートタイプを得る．
 //
 // is_logic() が false の場合の返り値は不定
-TpgNode::GateType
+GateType
 TpgLogicOR2::gate_type() const
 {
   return kGateOR;
@@ -124,7 +124,7 @@ TpgLogicOR3::~TpgLogicOR3()
 // @brief ゲートタイプを得る．
 //
 // is_logic() が false の場合の返り値は不定
-TpgNode::GateType
+GateType
 TpgLogicOR3::gate_type() const
 {
   return kGateOR;
@@ -214,7 +214,7 @@ TpgLogicOR4::~TpgLogicOR4()
 // @brief ゲートタイプを得る．
 //
 // is_logic() が false の場合の返り値は不定
-TpgNode::GateType
+GateType
 TpgLogicOR4::gate_type() const
 {
   return kGateOR;
@@ -307,7 +307,7 @@ TpgLogicORN::~TpgLogicORN()
 // @brief ゲートタイプを得る．
 //
 // is_logic() が false の場合の返り値は不定
-TpgNode::GateType
+GateType
 TpgLogicORN::gate_type() const
 {
   return kGateOR;

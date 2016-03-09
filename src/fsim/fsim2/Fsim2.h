@@ -160,7 +160,7 @@ private:
 
   /// @brief logic ノードを作る．
   SimNode*
-  make_node(TpgNode::GateType type,
+  make_node(GateType type,
 	    const vector<SimNode*>& inputs);
 
 

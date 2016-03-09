@@ -37,7 +37,7 @@ TpgLogicNAND2::~TpgLogicNAND2()
 // @brief ゲートタイプを得る．
 //
 // is_logic() が false の場合の返り値は不定
-TpgNode::GateType
+GateType
 TpgLogicNAND2::gate_type() const
 {
   return kGateNAND;
@@ -124,7 +124,7 @@ TpgLogicNAND3::~TpgLogicNAND3()
 // @brief ゲートタイプを得る．
 //
 // is_logic() が false の場合の返り値は不定
-TpgNode::GateType
+GateType
 TpgLogicNAND3::gate_type() const
 {
   return kGateNAND;
@@ -214,7 +214,7 @@ TpgLogicNAND4::~TpgLogicNAND4()
 // @brief ゲートタイプを得る．
 //
 // is_logic() が false の場合の返り値は不定
-TpgNode::GateType
+GateType
 TpgLogicNAND4::gate_type() const
 {
   return kGateNAND;
@@ -307,7 +307,7 @@ TpgLogicNANDN::~TpgLogicNANDN()
 // @brief ゲートタイプを得る．
 //
 // is_logic() が false の場合の返り値は不定
-TpgNode::GateType
+GateType
 TpgLogicNANDN::gate_type() const
 {
   return kGateNAND;
