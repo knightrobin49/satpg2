@@ -90,6 +90,18 @@ TpgOutput::input_fault(int val,
   return mFaults[val];
 }
 
+// @brief 入力の故障を得る．
+// @param[in] val 故障値 ( 0 / 1 )
+// @param[in] pos 入力の位置番号
+TpgFault*
+TpgOutput::input_fault(int val,
+		       ymuint pos)
+{
+  ASSERT_COND( val == 0 || val == 1 );
+  ASSERT_COND( pos == 0 );
+  return mFaults[val];
+}
+
 // @brief 出力番号2をセットする．
 // @param[in] id セットする番号
 //

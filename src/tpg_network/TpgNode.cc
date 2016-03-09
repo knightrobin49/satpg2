@@ -387,26 +387,6 @@ TpgNode::noval() const
   return kValX;
 }
 
-#if 0
-// @brief 値のノードの時 true を返す．
-//
-// is_logic() が true の時のみ意味を持つ．
-bool
-TpgNode::is_root() const
-{
-  return mMap != nullptr;
-}
-
-// @brief 内部ノードの時 true を返す．
-//
-// is_logic() が true の時のみ意味を持つ．
-bool
-TpgNode::is_internal() const
-{
-  return !is_root();
-}
-#endif
-
 // @brief ファンイン数を得る．
 ymuint
 TpgNode::fanin_num() const
@@ -491,6 +471,26 @@ TpgNode::output_fault(int val) const
 const TpgFault*
 TpgNode::input_fault(int val,
 		     ymuint pos) const
+{
+  ASSERT_NOT_REACHED;
+  return nullptr;
+}
+
+// @brief 出力の故障を得る．
+// @param[in] val 故障値 ( 0 / 1 )
+TpgFault*
+TpgNode::output_fault(int val)
+{
+  ASSERT_NOT_REACHED;
+  return nullptr;
+}
+
+// @brief 入力の故障を得る．
+// @param[in] val 故障値 ( 0 / 1 )
+// @param[in] pos 入力の位置番号
+TpgFault*
+TpgNode::input_fault(int val,
+		     ymuint pos)
 {
   ASSERT_NOT_REACHED;
   return nullptr;

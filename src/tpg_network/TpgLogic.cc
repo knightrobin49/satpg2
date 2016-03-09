@@ -46,6 +46,15 @@ TpgLogic::output_fault(int val) const
   return mOutputFaults[val % 2];
 }
 
+// @brief 出力の故障を得る．
+// @param[in] val 故障値 ( 0 / 1 )
+TpgFault*
+TpgLogic::output_fault(int val)
+{
+  ASSERT_COND( val == 0 || val == 1 );
+  return mOutputFaults[val % 2];
+}
+
 // @brief 出力の故障を設定する．
 // @param[in] val 故障値 ( 0 / 1 )
 // @param[in] fault 故障

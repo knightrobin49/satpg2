@@ -72,7 +72,7 @@ public:
   /// is_input_fault() == true の時のみ意味を持つ．
   virtual
   ymuint
-  pos() const = 0;
+  fault_pos() const = 0;
 
   /// @brief tpg_inode 上の故障位置を返す．
   ///
@@ -113,6 +113,11 @@ public:
   //////////////////////////////////////////////////////////////////////
   // 微妙な関数
   //////////////////////////////////////////////////////////////////////
+
+  /// @brief 代表故障を設定する．
+  /// @param[in] rep 代表故障
+  void
+  set_rep(const TpgFault* rep);
 
   /// @brief 故障の支配関係を設定する．
   /// @param[in] dom_f 支配する故障
@@ -205,6 +210,15 @@ const TpgFault*
 TpgFault::rep_fault() const
 {
   return mRepFault;
+}
+
+// @brief 代表故障を設定する．
+// @param[in] rep 代表故障
+inline
+void
+TpgFault::set_rep(const TpgFault* rep)
+{
+  mRepFault = rep;
 }
 
 // @brief 支配故障のリストを返す．

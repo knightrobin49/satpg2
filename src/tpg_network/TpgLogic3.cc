@@ -65,6 +65,18 @@ TpgLogic3::input_fault(int val,
   return mInputFaults[((pos % 3) * 2) + (val % 2)];
 }
 
+// @brief 入力の故障を得る．
+// @param[in] val 故障値 ( 0 / 1 )
+// @param[in] pos 入力の位置番号
+TpgFault*
+TpgLogic3::input_fault(int val,
+		       ymuint pos)
+{
+  ASSERT_COND( val == 0 || val == 1 );
+  ASSERT_COND( pos < 3 );
+  return mInputFaults[((pos % 3) * 2) + (val % 2)];
+}
+
 // @brief 入力の故障を設定する．
 // @param[in] val 故障値 ( 0 / 1 )
 // @param[in] pos 入力の位置番号

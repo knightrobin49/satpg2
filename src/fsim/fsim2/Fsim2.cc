@@ -193,8 +193,8 @@ Fsim2::set_network(const TpgNetwork& network)
     ymuint ipos = 0;
     SimNode* isimnode = nullptr;
     if ( f->is_input_fault() ) {
-      ipos = f->pos();
-      const TpgNode* inode = node->fanin(f->pos());
+      ipos = f->tpg_pos();
+      const TpgNode* inode = node->fanin(ipos);
       isimnode = find_simnode(inode);
     }
     else {
@@ -520,7 +520,7 @@ Fsim2::_spsfp(const TpgFault* f)
   SimNode* simnode = find_simnode(f->tpg_node());
   PackedVal lobs;
   if ( f->is_input_fault() ) {
-    ymuint ipos = f->pos();
+    ymuint ipos = f->tpg_pos();
     lobs = simnode->calc_lobs() & simnode->calc_gobs2(ipos);
   }
   else {

@@ -419,7 +419,7 @@ SatEngine::make_mval_cnf(MvalCnf& mval_cnf,
       mval_cnf.set_ofvar(node, fval, fdvar);
     }
     else {
-      ymuint pos = f->pos();
+      ymuint pos = f->tpg_pos();
       mval_cnf.set_ifvar(node, pos, fval, fdvar);
     }
   }
@@ -677,7 +677,7 @@ SatEngine::make_fault_cnf(const TpgFault* fault,
     // 入力の故障の場合
     // 故障値は非制御値のはずなので，
     // side input だけのゲートを仮定する．
-    ymuint fpos = fault->pos();
+    ymuint fpos = fault->tpg_pos();
     // fpos 以外の入力を ivars[] に入れる．
     ymuint ni = node->fanin_num();
     vector<SatVarId> ivars;
@@ -750,6 +750,10 @@ SatEngine::make_fault_cnf_d(const TpgFault* fault,
   const TpgNode* node = fault->tpg_node();
   int fval = fault->val();
 
+  if ( node->is_output() ) {
+    return;
+  }
+
   if ( fault->is_output_fault() ) {
     // 出力の故障の場合
     // ただ単に故障値を固定するだけ．
@@ -768,7 +772,7 @@ SatEngine::make_fault_cnf_d(const TpgFault* fault,
     // 入力の故障の場合
     // 故障値は非制御値のはずなので，
     // side input だけのゲートを仮定する．
-    ymuint fpos = fault->pos();
+    ymuint fpos = fault->tpg_pos();
     // fpos 以外の入力を ivars[] に入れる．
     ymuint ni = node->fanin_num();
     vector<SatVarId> ivars;

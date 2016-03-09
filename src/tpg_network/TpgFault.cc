@@ -30,9 +30,6 @@ TpgFault::TpgFault(ymuint id,
   mVal(val),
   mRepFault(rep_fault)
 {
-  if ( mRepFault == nullptr ) {
-    mRepFault = this;
-  }
 }
 
 // @brief デストラクタ
@@ -57,18 +54,18 @@ operator<<(ostream& s,
 
 // @brief コンストラクタ
 // @param[in] id ID番号
-// @param[in] node_name ノード名
-// @param[in] tpgnode 故障位置の TpgNode
+// @param[in] name 故障位置のノード名
 // @param[in] val 故障値
+// @param[in] node 故障位置のノード
 // @param[in] rep_fault 代表故障
 TpgOutputFault::TpgOutputFault(ymuint id,
-			       const char* node_name,
-			       const TpgNode* tpgnode,
+			       const char* name,
 			       int val,
+			       const TpgNode* node,
 			       const TpgFault* rep_fault) :
   TpgFault(id, val, rep_fault),
-  mNodeName(node_name),
-  mTpgNode(tpgnode)
+  mNodeName(name),
+  mTpgNode(node)
 {
   ASSERT_COND( tpg_node() != nullptr );
 }
@@ -104,7 +101,7 @@ TpgOutputFault::is_output_fault() const
 
 // @brief 故障位置を返す．
 ymuint
-TpgOutputFault::pos() const
+TpgOutputFault::fault_pos() const
 {
   ASSERT_NOT_REACHED;
   return 0;
@@ -142,26 +139,26 @@ TpgOutputFault::str() const
 
 // @brief コンストラクタ
 // @param[in] id ID番号
-// @param[in] node_name ノード名
-// @param[in] tpgnode 故障位置の TpgNode
-// @param[in] pos 故障の入力位置
-// @param[in] i_tpgnode 入力側の TpgNode
-// @param[in] tpg_pos i_tpgnode 上の故障位置
+// @param[in] name ノード名
 // @param[in] val 故障値
+// @param[in] pos 故障の入力位置
+// @param[in] node 故障位置の TpgNode
+// @param[in] inode 入力側の TpgNode
+// @param[in] tpg_pos node 上の故障位置
 // @param[in] rep_fault 代表故障
 TpgInputFault::TpgInputFault(ymuint id,
-			     const char* node_name,
-			     const TpgNode* tpgnode,
-			     ymuint pos,
-			     const TpgNode* i_tpgnode,
-			     ymuint tpg_pos,
+			     const char* name,
 			     int val,
+			     ymuint pos,
+			     const TpgNode* node,
+			     const TpgNode* inode,
+			     ymuint tpg_pos,
 			     const TpgFault* rep_fault) :
   TpgFault(id, val, rep_fault),
-  mNodeName(node_name),
-  mTpgNode(tpgnode),
+  mNodeName(name),
+  mTpgNode(node),
   mPos(pos),
-  mI_TpgNode(i_tpgnode),
+  mI_TpgNode(inode),
   mTpgPos(tpg_pos)
 {
   ASSERT_COND( tpg_node() != nullptr );
@@ -200,7 +197,7 @@ TpgInputFault::is_output_fault() const
 //
 // is_input_fault() == true の時のみ意味を持つ．
 ymuint
-TpgInputFault::pos() const
+TpgInputFault::fault_pos() const
 {
   return mPos;
 }
@@ -219,7 +216,7 @@ string
 TpgInputFault::str() const
 {
   ostringstream ans;
-  ans << mNodeName << ":I" << pos() << ":";
+  ans << mNodeName << ":I" << fault_pos() << ":";
   if ( val() ) {
     ans <<"SA1";
   }

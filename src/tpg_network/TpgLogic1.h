@@ -59,16 +59,13 @@ public:
   input_fault(int val,
 	      ymuint pos) const;
 
-  /// @brief このノードに関係する故障数を返す．
+  /// @brief 入力の故障を得る．
+  /// @param[in] val 故障値 ( 0 / 1 )
+  /// @param[in] pos 入力の位置番号
   virtual
-  ymuint
-  fault_num() const;
-
-  /// @brief このノードに関係する故障を返す．
-  /// @param[in] pos 位置番号 ( 0 <= pos < fault_num() )
-  virtual
-  const TpgFault*
-  fault(ymuint pos) const;
+  TpgFault*
+  input_fault(int val,
+	      ymuint pos);
 
 
 private:

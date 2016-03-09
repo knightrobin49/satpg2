@@ -211,6 +211,7 @@ public:
   TpgNode*
   make_logic_node(const char* name,
 		  const Expr& expr,
+		  const CplxInfo* cinfo,
 		  const vector<TpgNode*>& inode_list);
 
 
@@ -223,73 +224,39 @@ private:
   ymuint
   tfibits_size() const;
 
-#if 0
-  /// @brief ノードの入力と出力の故障を作る．
-  /// @param[in] bnnode もととなる BnNode
-  ymuint
-  make_faults(const BnNode* bnnode,
-	      const BnNetwork& bnnetwork,
-	      const TpgNodeMap&  node_map,
-	      const HashMap<ymuint, CplxInfo*>& en_hash);
-
-  /// @brief 出力の故障を作る．
-  /// @param[in] bnnode 故障位置の BnNode
-  /// @param[in] tpgnode 故障位置の TpgNode
-  /// @param[in] val 故障値 ( 0 / 1 )
-  /// @param[in] rep 代表故障
-  ///
-  /// 自分自身が代表故障の場合には rep に nullptr を入れる．
-  const TpgFault*
-  new_ofault(const BnNode* bnnode,
-	     TpgNode* tpgnode,
-	     ymuint val,
-	     const TpgFault* rep);
-
-  /// @brief 入力の故障を作る．
-  /// @param[in] bnnode 故障位置の BnNode
-  /// @param[in] tpgnode 故障位置の TpgNode
-  /// @param[in] ipos ファンイン番号 ( 0 <= ipos < node->fanin_num() )
-  /// @param[in] i_tpgnode 入力側の TpgNode
-  /// @param[in] tpgpos i_tpgnode 上の入力位置
-  /// @param[in] val 故障値
-  /// @param[in] rep 代表故障
-  ///
-  /// 自分自身が代表故障の場合には rep に nullptr を入れる．
-  const TpgFault*
-  new_ifault(const BnNode* bnnode,
-	     TpgNode* tpgnode,
-	     ymuint ipos,
-	     TpgNode* i_tpgnode,
-	     ymuint tpgpos,
-	     ymuint val,
-	     const TpgFault* rep);
-#else
-
   /// @brief 出力の故障を作る．
   /// @param[in] name 故障位置のノード名
-  /// @param[in] node 故障位置のノード
   /// @param[in] val 故障値 ( 0 / 1 )
+  /// @param[in] node 故障位置のノード
   const TpgFault*
   new_ofault(const char* name,
-	     TpgNode* node,
-	     int val);
+	     int val,
+	     TpgNode* node);
 
   /// @brief 入力の故障を作る．
   /// @param[in] name 故障位置のノード名
+  /// @param[in] ipos 故障位置のファンイン番号
   /// @param[in] node 故障位置のノード
-  /// @param[in] ipos ファンイン番号 ( 0 <= ipos < node->fanin_num() )
   /// @param[in] inode 入力側のノード
-  /// @param[in] inode_pos inode 上の入力位置
+  /// @param[in] inode_pos node 上の入力位置
   /// @param[in] val 故障値
+  /// @param[in] rep 代表故障
+  ///
+  /// プリミティブ型の場合は node:ipos と inode:inode_pos は同一だが
+  /// 複合型の場合には異なる．
   const TpgFault*
   new_ifault(const char* name,
-	     TpgNode* node,
+	     int val,
 	     ymuint ipos,
+	     TpgNode* node,
 	     TpgNode* inode,
 	     ymuint inode_pos,
-	     int val);
+	     const TpgFault* rep);
 
-#endif
+  /// @brief 代表故障を設定する．
+  /// @param[in] node 対象のノード
+  ymuint
+  set_rep_faults(TpgNode* node);
 
   /// @brief ノードの TFI にマークをつける．
   /// @note 結果は mTmpMark[node->id()] に格納される．
@@ -492,6 +459,15 @@ TpgNetwork::output2(ymuint pos) const
 {
   ASSERT_COND( pos < output_num2() );
   return mOutputArray2[pos];
+}
+
+// @brief ノードを得る．
+inline
+const TpgNode*
+TpgNetwork::node(ymuint pos) const
+{
+  ASSERT_COND( pos < mNodeNum );
+  return mNodeArray[pos];
 }
 
 // @brief 代表故障のリストを得る．

@@ -239,6 +239,20 @@ public:
   /// @brief 出力の故障を得る．
   /// @param[in] val 故障値 ( 0 / 1 )
   virtual
+  TpgFault*
+  output_fault(int val);
+
+  /// @brief 入力の故障を得る．
+  /// @param[in] val 故障値 ( 0 / 1 )
+  /// @param[in] pos 入力の位置番号
+  virtual
+  TpgFault*
+  input_fault(int val,
+	      ymuint pos);
+
+  /// @brief 出力の故障を得る．
+  /// @param[in] val 故障値 ( 0 / 1 )
+  virtual
   const TpgFault*
   output_fault(int val) const;
 
@@ -328,6 +342,14 @@ public:
   void
   set_imm_dom(TpgNode* dom);
 
+  /// @brief 出力の故障を設定する．
+  /// @param[in] val 故障値 ( 0 / 1 )
+  /// @param[in] fault 故障
+  virtual
+  void
+  set_output_fault(int val,
+		   TpgFault* fault);
+
   /// @brief 入力の故障を設定する．
   /// @param[in] val 故障値 ( 0 / 1 )
   /// @param[in] pos 入力の位置番号
@@ -337,14 +359,6 @@ public:
   set_input_fault(int val,
 		  ymuint pos,
 		  TpgFault* fault);
-
-  /// @brief 出力の故障を設定する．
-  /// @param[in] val 故障値 ( 0 / 1 )
-  /// @param[in] fault 故障
-  virtual
-  void
-  set_output_fault(int val,
-		   TpgFault* fault);
 
   /// @brief 代表故障のリストをセットする．
   void

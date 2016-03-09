@@ -61,25 +61,16 @@ TpgLogic1::input_fault(int val,
   return mInputFaults[val % 2];
 }
 
-// @brief このノードに関係する故障数を返す．
-ymuint
-TpgLogic1::fault_num() const
+// @brief 入力の故障を得る．
+// @param[in] val 故障値 ( 0 / 1 )
+// @param[in] pos 入力の位置番号
+TpgFault*
+TpgLogic1::input_fault(int val,
+		       ymuint pos)
 {
-  return 4;
-}
-
-// @brief このノードに関係する故障を返す．
-// @param[in] pos 位置番号 ( 0 <= pos < fault_num() )
-const TpgFault*
-TpgLogic1::fault(ymuint pos) const
-{
-  ASSERT_COND( pos < fault_num() );
-  if ( pos < 2 ) {
-    return output_fault(pos);
-  }
-  else {
-    return input_fault(pos - 2, 0);
-  }
+  ASSERT_COND( val == 0 || val == 1 );
+  ASSERT_COND( pos == 0 );
+  return mInputFaults[val % 2];
 }
 
 // @brief 入力の故障を設定する．

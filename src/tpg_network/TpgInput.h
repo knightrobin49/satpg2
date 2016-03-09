@@ -62,6 +62,12 @@ public:
   const TpgFault*
   output_fault(int val) const;
 
+  /// @brief 出力の故障を得る．
+  /// @param[in] val 故障値 ( 0 / 1 )
+  virtual
+  TpgFault*
+  output_fault(int val);
+
 
 private:
   //////////////////////////////////////////////////////////////////////

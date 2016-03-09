@@ -24,20 +24,20 @@ public:
 
   /// @brief コンストラクタ
   /// @param[in] id ID番号
-  /// @param[in] node_name ノード名
-  /// @param[in] tpgnode 故障位置の TpgNode
-  /// @param[in] pos 故障の入力位置
-  /// @param[in] i_tpgnode 入力側の TpgNode
-  /// @param[in] tpg_pos i_tpgnode 上の故障位置
+  /// @param[in] name ノード名
   /// @param[in] val 故障値
+  /// @param[in] pos 故障の入力位置
+  /// @param[in] node 故障位置の TpgNode
+  /// @param[in] inode 入力側の TpgNode
+  /// @param[in] tpg_pos node 上の故障位置
   /// @param[in] rep_fault 代表故障
   TpgInputFault(ymuint id,
-		const char* node_name,
-		const TpgNode* tpgnode,
-		ymuint pos,
-		const TpgNode* i_tpgnode,
-		ymuint tpg_pos,
+		const char* name,
 		int val,
+		ymuint pos,
+		const TpgNode* node,
+		const TpgNode* inode,
+		ymuint tpg_pos,
 		const TpgFault* rep_fault);
 
   /// @brief デストラクタ
@@ -72,7 +72,7 @@ public:
   /// is_input_fault() == true の時のみ意味を持つ．
   virtual
   ymuint
-  pos() const;
+  fault_pos() const;
 
   /// @brief tpg_inode 上の故障位置を返す．
   ///
