@@ -49,6 +49,10 @@ public:
   FaultStatus
   status(const TpgFault* fault) const;
 
+  /// @brief 代表故障のリストを得る．
+  const vector<const TpgFault*>&
+  rep_list() const;
+
   /// @brief 検出済みの代表故障のリストを得る．
   const vector<const TpgFault*>&
   det_list() const;
@@ -114,6 +118,9 @@ private:
   // 故障の状態を保持する配列
   vector<FaultStatus> mStatusArray;
 
+  // 代表故障のリスト
+  vector<const TpgFault*> mRepList;
+
   // 検出済みの故障を保持しておくリスト
   mutable
   vector<const TpgFault*> mDetList;
@@ -144,6 +151,14 @@ FaultMgr::status(const TpgFault* fault) const
 {
   ASSERT_COND( fault->id() < mStatusArray.size() );
   return mStatusArray[fault->id()];
+}
+
+// @brief 代表故障のリストを得る．
+inline
+const vector<const TpgFault*>&
+FaultMgr::rep_list() const
+{
+  return mRepList;
 }
 
 // @brief 検出済みの代表故障のリストを得る．

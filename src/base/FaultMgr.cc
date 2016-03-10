@@ -45,29 +45,25 @@ FaultMgr::set_faults(const TpgNetwork& network)
 {
   clear();
 
-  const vector<const TpgFault*>& rep_faults = network.rep_faults();
-
-  ymuint max_id = 0;
-  for (ymuint i = 0; i < rep_faults.size(); ++ i) {
-    const TpgFault* f = rep_faults[i];
-    if ( max_id < f->id() ) {
-      max_id = f->id();
-    }
-  }
-  ++ max_id;
-
+  ymuint max_id = network.max_fault_id();
   mStatusArray.resize(max_id, kFsUndetected);
 
-  // 最初はすべての故障が mRemainList に属する．
-  for (ymuint i = 0; i < rep_faults.size(); ++ i) {
-    const TpgFault* f = rep_faults[i];
-    // ただし，外部出力に到達できない故障は検出不能となる．
-    if ( f->tpg_node()->is_active() ) {
-      mRemainList.push_back(f);
-    }
-    else {
-      mUntestList.push_back(f);
-      set_status(f, kFsUntestable);
+  // 各ノードの故障を mRemainList に入れる．
+  // ただし外部出力に到達可能でない故障は mUntestList に入れる．
+  ymuint nn = network.node_num();
+  for (ymuint i = 0; i < nn; ++ i) {
+    const TpgNode* node = network.node(i);
+    ymuint nf = node->fault_num();
+    for (ymuint j = 0; j < nf; ++ j) {
+      const TpgFault* fault = node->fault(j);
+      mRepList.push_back(fault);
+      if ( fault->tpg_node()->is_active() ) {
+	mRemainList.push_back(fault);
+      }
+      else {
+	mUntestList.push_back(fault);
+	set_status(fault, kFsUntestable);
+      }
     }
   }
 }

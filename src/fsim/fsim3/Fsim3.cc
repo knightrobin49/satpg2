@@ -79,8 +79,11 @@ Fsim3::set_network(const TpgNetwork& network)
   mInputArray.resize(ni);
   mOutputArray.resize(no);
 
+  ymuint nf = 0;
   for (ymuint i = 0; i < nn; ++ i) {
     const TpgNode* tpgnode = mNetwork->node(i);
+    nf += tpgnode->fault_num();
+
     SimNode* node = nullptr;
 
     if ( tpgnode->is_input() ) {
@@ -188,27 +191,31 @@ Fsim3::set_network(const TpgNetwork& network)
   //////////////////////////////////////////////////////////////////////
   // 故障リストの設定
   //////////////////////////////////////////////////////////////////////
-  const vector<const TpgFault*>& rep_faults = network.rep_faults();
-  ymuint nf = rep_faults.size();
   mSimFaults.resize(nf);
   mFaultArray.resize(network.max_fault_id());
-  for (ymuint i = 0; i < nf; ++ i) {
-    const TpgFault* f = rep_faults[i];
-    const TpgNode* node = f->tpg_node();
-    SimNode* simnode = find_simnode(node);
-    ymuint ipos = 0;
-    SimNode* isimnode = nullptr;
-    if ( f->is_input_fault() ) {
-      ipos = f->tpg_pos();
-      const TpgNode* inode = node->fanin(ipos);
-      isimnode = find_simnode(inode);
+  ymuint fid = 0;
+  for (ymuint i = 0; i < nn; ++ i) {
+    const TpgNode* tpgnode = network.node(i);
+    ymuint nf1 = tpgnode->fault_num();
+    for (ymuint j = 0; j < nf1; ++ j) {
+      const TpgFault* fault = tpgnode->fault(j);
+      const TpgNode* node = fault->tpg_node();
+      SimNode* simnode = find_simnode(node);
+      ymuint ipos = 0;
+      SimNode* isimnode = nullptr;
+      if ( fault->is_input_fault() ) {
+	ipos = fault->tpg_pos();
+	const TpgNode* inode = node->fanin(ipos);
+	isimnode = find_simnode(inode);
+      }
+      else {
+	isimnode = simnode;
+      }
+      mSimFaults[fid].set(fault, simnode, ipos, isimnode);
+      SimFault* ff = &mSimFaults[fid];
+      mFaultArray[fault->id()] = ff;
+      ++ fid;
     }
-    else {
-      isimnode = simnode;
-    }
-    mSimFaults[i].set(f, simnode, ipos, isimnode);
-    SimFault* ff = &mSimFaults[i];
-    mFaultArray[f->id()] = ff;
   }
 }
 

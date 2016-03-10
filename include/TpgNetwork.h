@@ -90,10 +90,6 @@ public:
   TpgNode*
   output2(ymuint pos) const;
 
-  /// @brief 代表故障のリストを得る．
-  const vector<const TpgFault*>&
-  rep_faults() const;
-
   /// @brief 故障IDの最大値+1を返す．
   ymuint
   max_fault_id() const;
@@ -245,16 +241,8 @@ private:
 
   /// @brief 代表故障を設定する．
   /// @param[in] node 対象のノード
-  /// @return 代表故障の個数を返す．
-  ymuint
-  set_rep_faults(TpgNode* node);
-
-  /// @brief FFR 内の代表故障を集める．
-  /// @param[in] node ノード
-  /// @param[out] f_list 故障を格納するリスト
   void
-  get_ffr_faults(TpgNode* node,
-		 vector<const TpgFault*>& f_list);
+  set_rep_faults(TpgNode* node);
 
   /// @brief ノードの TFI にマークをつける．
   /// @note 結果は mTmpMark[node->id()] に格納される．
@@ -337,9 +325,6 @@ private:
 
   // 全故障数
   ymuint mFaultNum;
-
-  // 代表故障のリスト
-  vector<const TpgFault*> mRepFaults;
 
 };
 
@@ -431,14 +416,6 @@ TpgNetwork::node(ymuint pos) const
 {
   ASSERT_COND( pos < mNodeNum );
   return mNodeArray[pos];
-}
-
-// @brief 代表故障のリストを得る．
-inline
-const vector<const TpgFault*>&
-TpgNetwork::rep_faults() const
-{
-  return mRepFaults;
 }
 
 // @brief 故障IDの最大値+1を返す．

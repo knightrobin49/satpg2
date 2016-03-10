@@ -275,17 +275,10 @@ TpgNetwork::set(const BnNetwork& bnnetwork)
     mTmpMark[i] = false;
   }
 
-  mNodeNum = 0;
-
+  // BnNode::id() をキーにして TpgNode* を格納するマップ
   TpgNodeMap node_map(bn_nn);
 
-  // 全故障数を数える．
-  ymuint nfault = 0;
-  for (ymuint i = 0; i < bn_nn; ++ i) {
-    const BnNode* bnnode = bnnetwork.node(i);
-    nfault += (bnnode->fanin_num() + 1) * 2;
-  }
-
+  mNodeNum = 0;
   mFaultNum = 0;
 
   //////////////////////////////////////////////////////////////////////
@@ -344,7 +337,6 @@ TpgNetwork::set(const BnNetwork& bnnetwork)
   }
 
   ASSERT_COND( mNodeNum == nn );
-  ASSERT_COND( mFaultNum == nfault );
 
 
   //////////////////////////////////////////////////////////////////////
@@ -389,49 +381,42 @@ TpgNetwork::set(const BnNetwork& bnnetwork)
     }
   }
 
+  // 接続が正しいかチェックする．
   check_network_connection(*this);
 
 
   //////////////////////////////////////////////////////////////////////
-  // 代表故障のリストを作る．
+  // 代表故障を求める．
   //////////////////////////////////////////////////////////////////////
-  ymuint nrep = 0;
   for (ymuint i = 0; i < mNodeNum; ++ i) {
     // ノードごとに代表故障を設定する．
     // この処理は出力側から行う必要がある．
     TpgNode* node = mNodeArray[mNodeNum - i - 1];
-    nrep += set_rep_faults(node);
+    set_rep_faults(node);
   }
 
-  // 全代表故障のリストを作る．
-  // FFR 内の代表故障を FFR の根のノードに集める．
-  mRepFaults.reserve(nrep);
-  for (ymuint i = 0; i < mNodeNum; ++ i) {
-    TpgNode* node = mNodeArray[i];
 
-    // 代表故障を TpgNode::mFaultList に入れる．
-    ymuint nf = node->fault_num();
-    for (ymuint i = 0; i < nf; ++ i) {
-      const TpgFault* f = node->fault(i);
-      mRepFaults.push_back(f);
-    }
-  }
-
+  //////////////////////////////////////////////////////////////////////
   // TFI のサイズの昇順に並べた出力順を
   // mOutputArray2 に記録する．
-  vector<pair<ymuint, ymuint> > tmp_list(output_num2());
-  for (ymuint i = 0; i < output_num2(); ++ i) {
+  //////////////////////////////////////////////////////////////////////
+  vector<pair<ymuint, ymuint> > tmp_list(npo);
+  for (ymuint i = 0; i < npo; ++ i) {
     TpgNode* onode = output(i);
+    // onode の TFI のノード数を計算する．
     tfimark(onode);
     ymuint n = mTmpNodeNum;
     clear_tfimark();
     tmp_list[i] = make_pair(n, i);
   }
 
+  // TFI のサイズの昇順にソートする．
   sort(tmp_list.begin(), tmp_list.end(), Lt());
 
-  for (ymuint i = 0; i < output_num2(); ++ i) {
-    TpgNode* onode = mOutputArray[tmp_list[i].second];
+  // tmp_list の順に mOutputArray2 にセットする．
+  for (ymuint i = 0; i < npo; ++ i) {
+    ymuint opos = tmp_list[i].second;
+    TpgNode* onode = mOutputArray[opos];
     mOutputArray2[i] = onode;
     onode->set_output_id2(i);
   }
@@ -975,11 +960,9 @@ TpgNetwork::new_ifault(const char* name,
 
 // @brief 代表故障を設定する．
 // @param[in] node 対象のノード
-ymuint
+void
 TpgNetwork::set_rep_faults(TpgNode* node)
 {
-  // node に関係する代表故障の数
-  ymuint nf = 0;
   vector<const TpgFault*> fault_list;
 
   if ( node->fanout_num() == 1 ) {
@@ -1016,7 +999,6 @@ TpgNetwork::set_rep_faults(TpgNode* node)
       if ( rep0 == nullptr ) {
 	of0->set_rep(of0);
 	fault_list.push_back(of0);
-	++ nf;
       }
       else {
 	of0->set_rep(rep0->rep_fault());
@@ -1029,7 +1011,6 @@ TpgNetwork::set_rep_faults(TpgNode* node)
       if ( rep1 == nullptr ) {
 	of1->set_rep(of1);
 	fault_list.push_back(of1);
-	++ nf;
       }
       else {
 	of1->set_rep(rep1->rep_fault());
@@ -1045,7 +1026,6 @@ TpgNetwork::set_rep_faults(TpgNode* node)
       if ( rep0 == nullptr ) {
 	if0->set_rep(if0);
 	fault_list.push_back(if0);
-	++ nf;
       }
       else {
 	if0->set_rep(rep0->rep_fault());
@@ -1058,7 +1038,6 @@ TpgNetwork::set_rep_faults(TpgNode* node)
       if ( rep1 == nullptr ) {
 	if1->set_rep(if1);
 	fault_list.push_back(if1);
-	++ nf;
       }
       else {
 	if1->set_rep(rep1->rep_fault());
@@ -1067,53 +1046,13 @@ TpgNetwork::set_rep_faults(TpgNode* node)
   }
 
   // 代表故障を TpgNode::mFaultList に入れる．
+  ymuint nf = fault_list.size();
   const TpgFault** f_list = alloc_array<const TpgFault*>(mAlloc, nf);
   for (ymuint i = 0; i < nf; ++ i) {
     const TpgFault* f = fault_list[i];
     f_list[i] = f;
   }
   node->set_fault_list(nf, f_list);
-
-  return nf;
-}
-
-// @brief FFR 内の代表故障を集める．
-// @param[in] node ノード
-// @param[out] f_list 故障を格納するリスト
-void
-TpgNetwork::get_ffr_faults(TpgNode* node,
-			   vector<const TpgFault*>& f_list)
-{
-  // node 上の代表故障を f_list に入れる．
-  if ( !node->is_output() ) {
-    const TpgFault* f0 = node->output_fault(0);
-    if ( f0 != nullptr && f0->is_rep() ) {
-      f_list.push_back(f0);
-    }
-    const TpgFault* f1 = node->output_fault(1);
-    if ( f1 != nullptr && f1->is_rep() ) {
-      f_list.push_back(f1);
-    }
-  }
-  ymuint ni = node->fanin_num();
-  for (ymuint i = 0; i < ni; ++ i) {
-    const TpgFault* f0 = node->input_fault(0, i);
-    if ( f0 != nullptr && f0->is_rep() ) {
-      f_list.push_back(f0);
-    }
-    const TpgFault* f1 = node->input_fault(1, i);
-    if ( f1 != nullptr && f1->is_rep() ) {
-      f_list.push_back(f1);
-    }
-  }
-
-  // ファンインが同じ FFR なら再起する．
-  for (ymuint i = 0; i < ni; ++ i) {
-    TpgNode* inode = node->fanin(i);
-    if ( inode->fanout_num() == 1 ) {
-      get_ffr_faults(inode, f_list);
-    }
-  }
 }
 
 // @brief TpgNetwork の内容を出力する関数

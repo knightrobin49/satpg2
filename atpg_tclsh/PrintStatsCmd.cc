@@ -70,7 +70,7 @@ PrintStatsCmd::cmd_proc(TclObjVector& objv)
 
   FaultMgr& fmgr = _fault_mgr();
 
-  fprintf(stdout, "#A: # of total faults       = %7lu\n", _network().rep_faults().size());
+  fprintf(stdout, "#A: # of total faults       = %7lu\n", fmgr.rep_list().size());
   fprintf(stdout, "#B: # of detected faults    = %7lu\n", fmgr.det_list().size());
   fprintf(stdout, "#C: # of redundant faults   = %7lu\n", fmgr.untest_list().size());
   fprintf(stdout, "#D: # of undetected faults  = %7lu\n", fmgr.remain_list().size());

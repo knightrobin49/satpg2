@@ -176,7 +176,7 @@ AtpgCmd::after_update_faults()
   const vector<const TpgFault*>& remain_list = fault_mgr.remain_list();
   const vector<const TpgFault*>& untest_list = fault_mgr.untest_list();
   ymuint n_all = _network().max_fault_id();
-  ymuint n_rep = _network().rep_faults().size();
+  ymuint n_rep = fault_mgr.rep_list().size();
   ymuint n_remain = remain_list.size();
   ymuint n_untest = untest_list.size();
   ymuint n_det = n_rep - n_remain - n_untest;
