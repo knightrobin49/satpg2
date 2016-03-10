@@ -1,13 +1,13 @@
 ﻿
-/// @file DtpgSatS.cc
-/// @brief DtpgSatS の実装ファイル
+/// @file DtpgSatF.cc
+/// @brief DtpgSatF の実装ファイル
 /// @author Yusuke Matsunaga (松永 裕介)
 ///
 /// Copyright (C) 2005-2010, 2012-2014 Yusuke Matsunaga
 /// All rights reserved.
 
 
-#include "DtpgSatS.h"
+#include "DtpgSatF.h"
 #include "DtpgStats.h"
 #include "GvalCnf.h"
 #include "FvalCnf.h"
@@ -29,18 +29,18 @@ BEGIN_NAMESPACE_YM_SATPG
 // @param[in] dop パタンが求められた時に実行されるファンクタ
 // @param[in] uop 検出不能と判定された時に実行されるファンクタ
 DtpgEngine*
-new_DtpgSatS(const string& sat_type,
+new_DtpgSatF(const string& sat_type,
 	     const string& sat_option,
 	     ostream* sat_outp,
 	     BackTracer& bt,
 	     DetectOp& dop,
 	     UntestOp& uop)
 {
-  return new DtpgSatS(sat_type, sat_option, sat_outp, bt, dop, uop);
+  return new DtpgSatF(sat_type, sat_option, sat_outp, bt, dop, uop);
 }
 
 // @brief コンストラクタ
-DtpgSatS::DtpgSatS(const string& sat_type,
+DtpgSatF::DtpgSatF(const string& sat_type,
 		   const string& sat_option,
 		   ostream* sat_outp,
 		   BackTracer& bt,
@@ -51,7 +51,7 @@ DtpgSatS::DtpgSatS(const string& sat_type,
 }
 
 // @brief デストラクタ
-DtpgSatS::~DtpgSatS()
+DtpgSatF::~DtpgSatF()
 {
 }
 
@@ -62,7 +62,7 @@ DtpgSatS::~DtpgSatS()
 // @param[in] fault_list 対象の故障リスト
 // @param[out] stats 結果を格納する構造体
 void
-DtpgSatS::run(TpgNetwork& network,
+DtpgSatF::run(TpgNetwork& network,
 	      FaultMgr& fmgr,
 	      Fsim& fsim,
 	      const vector<const TpgFault*>& fault_list,

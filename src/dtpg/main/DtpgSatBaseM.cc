@@ -57,16 +57,8 @@ DtpgSatBaseM::run(TpgNetwork& network,
 
   ymuint max_id = network.node_num();
 
-  // 故障番号の最大値を求める．
-  ymuint max_fault_id = 0;
-  for (ymuint i = 0; i < fault_list.size(); ++ i) {
-    const TpgFault* fault = fault_list[i];
-    ymuint fid = fault->id();
-    if ( max_fault_id < fid ) {
-      max_fault_id = fid;
-    }
-  }
-  ++ max_fault_id;
+  // 故障番号の最大値
+  ymuint max_fault_id = network.max_fault_id();
 
   // fault_list に含まれる故障に印をつける．
   mFaultMark.clear();
@@ -114,14 +106,12 @@ DtpgSatBaseM::dfs_mffc(const TpgNode* node,
     }
   }
 
-  if ( !node->is_output() ) {
-    mFaultNodeList.push_back(node);
-    ymuint nf = node->fault_num();
-    for (ymuint i = 0; i < nf; ++ i) {
-      const TpgFault* f = node->fault(i);
-      if ( mFaultMark[f->id()] && fmgr.status(f) == kFsUndetected ) {
-	mFaultList.push_back(f);
-      }
+  mFaultNodeList.push_back(node);
+  ymuint nf = node->fault_num();
+  for (ymuint i = 0; i < nf; ++ i) {
+    const TpgFault* f = node->fault(i);
+    if ( mFaultMark[f->id()] && fmgr.status(f) == kFsUndetected ) {
+      mFaultList.push_back(f);
     }
   }
 }

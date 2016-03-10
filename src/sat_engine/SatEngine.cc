@@ -645,6 +645,9 @@ SatEngine::make_fnode_cnf(const TpgNode* node,
     add_clause( glit, ~output);
     add_clause(~glit,  output);
   }
+  else if ( node->is_output() ) {
+    ASSERT_NOT_REACHED;
+  }
   else {
     make_gate_cnf(node->gate_type(), VectLitMap(ivars, ovar));
   }
