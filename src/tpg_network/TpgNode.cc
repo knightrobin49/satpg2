@@ -275,6 +275,8 @@ TpgNode::TpgNode(ymuint id,
   mFanouts = nullptr;
   mActFanoutNum = 0;
   mActFanouts = nullptr;
+  mFaultNum = 0;
+  mFaultList = nullptr;
   mMarks = 0U;
 }
 

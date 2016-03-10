@@ -245,8 +245,16 @@ private:
 
   /// @brief 代表故障を設定する．
   /// @param[in] node 対象のノード
+  /// @return 代表故障の個数を返す．
   ymuint
   set_rep_faults(TpgNode* node);
+
+  /// @brief FFR 内の代表故障を集める．
+  /// @param[in] node ノード
+  /// @param[out] f_list 故障を格納するリスト
+  void
+  get_ffr_faults(TpgNode* node,
+		 vector<const TpgFault*>& f_list);
 
   /// @brief ノードの TFI にマークをつける．
   /// @note 結果は mTmpMark[node->id()] に格納される．

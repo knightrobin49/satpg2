@@ -398,17 +398,21 @@ TpgNetwork::set(const BnNetwork& bnnetwork)
   ymuint nrep = 0;
   for (ymuint i = 0; i < mNodeNum; ++ i) {
     // ノードごとに代表故障を設定する．
+    // この処理は出力側から行う必要がある．
     TpgNode* node = mNodeArray[mNodeNum - i - 1];
     nrep += set_rep_faults(node);
   }
 
   // 全代表故障のリストを作る．
+  // FFR 内の代表故障を FFR の根のノードに集める．
   mRepFaults.reserve(nrep);
   for (ymuint i = 0; i < mNodeNum; ++ i) {
-    TpgNode* node = mNodeArray[mNodeNum - i - 1];
+    TpgNode* node = mNodeArray[i];
+
+    // 代表故障を TpgNode::mFaultList に入れる．
     ymuint nf = node->fault_num();
-    for (ymuint j = 0; j < nf; ++ j) {
-      const TpgFault* f = node->fault(j);
+    for (ymuint i = 0; i < nf; ++ i) {
+      const TpgFault* f = node->fault(i);
       mRepFaults.push_back(f);
     }
   }
@@ -699,6 +703,7 @@ TpgNetwork::make_logic_node(const char* src_name,
   GateType gate_type = node_info->gate_type();
   TpgNode* node = nullptr;
   if ( gate_type != kGateCPLX ) {
+    // 組み込み型の場合．
     node = make_prim_node(name, gate_type, fanin_list);
   }
   else {
@@ -707,7 +712,9 @@ TpgNetwork::make_logic_node(const char* src_name,
     inode_array = alloc_array<TpgNode*>(mAlloc, ni);
     ipos_array = alloc_array<ymuint>(mAlloc, ni);
 
-    // expr の内容を表す TpgNode の木を作る．
+    // 論理式の葉(リテラル)に対応するノードを入れる配列．
+    // pos * 2 + 0: 肯定のリテラル
+    // pos * 2 + 1: 否定のリテラルに対応する．
     vector<TpgNode*> leaf_nodes(ni * 2, nullptr);
     for (ymuint i = 0; i < ni; ++ i) {
       ymuint p_num = expr.litnum(VarId(i), false);
@@ -715,24 +722,34 @@ TpgNetwork::make_logic_node(const char* src_name,
       TpgNode* inode = fanin_list[i];
       if ( n_num == 0 ) {
 	if ( p_num == 1 ) {
+	  // 肯定のリテラルが1回だけ現れている場合
+	  // 本当のファンインを直接つなぐ
 	  leaf_nodes[i * 2 + 0] = inode;
 	  // ダミー
+	  // 実際の内容は make_cplx_node() で設定される．
 	  inode_array[i] = nullptr;
 	  ipos_array[i] = 0;
 	}
 	else {
+	  // 肯定のリテラルが2回以上現れている場合
+	  // ブランチの故障に対応するためにダミーのバッファをつくる．
 	  TpgNode* dummy_buff = make_prim_node(nullptr, kGateBUFF, vector<TpgNode*>(1, inode));
 	  leaf_nodes[i * 2 + 0] = dummy_buff;
+	  // このバッファの入力が故障位置となる．
 	  inode_array[i] = dummy_buff;
 	  ipos_array[i] = 0;
 	}
       }
       else {
 	if ( p_num > 0 ) {
+	  // 肯定と否定のリテラルがともに現れる場合
+	  // ブランチの故障に対応するためにダミーのバッファを作る．
 	  TpgNode* dummy_buff = make_prim_node(nullptr, kGateBUFF, vector<TpgNode*>(1, inode));
 	  inode = dummy_buff;
+	  leaf_nodes[i * 2 + 0] = dummy_buff;
 	}
 
+	// 否定のリテラルに対応するNOTゲートを作る．
 	TpgNode* not_gate = make_prim_node(nullptr, kGateNOT, vector<TpgNode*>(1, inode));
 	leaf_nodes[i * 2 + 1] = not_gate;
 
@@ -747,8 +764,10 @@ TpgNetwork::make_logic_node(const char* src_name,
       }
     }
 
+    // expr の内容を表す TpgNode の木を作る．
     node = make_cplx_node(name, expr, leaf_nodes, inode_array, ipos_array);
 
+    // 元のゲートの入力との対応関係を作る．
     void* p = mAlloc.get_memory(sizeof(TpgMap));
     TpgMap* tmap = new (p) TpgMap(inode_array, ipos_array);
     node->set_tmap(tmap);
@@ -827,17 +846,21 @@ TpgNetwork::make_cplx_node(const char* name,
     ASSERT_NOT_REACHED;
   }
 
+  // 子供の論理式を表すノード(の木)を作る．
   ymuint nc = expr.child_num();
   vector<TpgNode*> fanins(nc);
   for (ymuint i = 0; i < nc; ++ i) {
     const Expr& expr1 = expr.child(i);
     TpgNode* inode = make_cplx_node(nullptr, expr1, leaf_nodes, inode_array, ipos_array);
+    ASSERT_COND( inode != nullptr );
     fanins[i] = inode;
   }
   // fanins[] を確保するオーバーヘッドがあるが，
   // 子供のノードよりも先に親のノードを確保するわけには行かない．
   TpgNode* node = make_prim_node(name, gate_type, fanins);
 
+  // オペランドがリテラルの場合，inode_array[], ipos_array[]
+  // の設定を行う．
   for (ymuint i = 0; i < nc; ++ i) {
     // 美しくないけどスマートなやり方を思いつかない．
     const Expr& expr1 = expr.child(i);
@@ -955,7 +978,8 @@ TpgNetwork::new_ifault(const char* name,
 ymuint
 TpgNetwork::set_rep_faults(TpgNode* node)
 {
-  // node に関係する代表故障のリスト
+  // node に関係する代表故障の数
+  ymuint nf = 0;
   vector<const TpgFault*> fault_list;
 
   if ( node->fanout_num() == 1 ) {
@@ -992,6 +1016,7 @@ TpgNetwork::set_rep_faults(TpgNode* node)
       if ( rep0 == nullptr ) {
 	of0->set_rep(of0);
 	fault_list.push_back(of0);
+	++ nf;
       }
       else {
 	of0->set_rep(rep0->rep_fault());
@@ -1004,6 +1029,7 @@ TpgNetwork::set_rep_faults(TpgNode* node)
       if ( rep1 == nullptr ) {
 	of1->set_rep(of1);
 	fault_list.push_back(of1);
+	++ nf;
       }
       else {
 	of1->set_rep(rep1->rep_fault());
@@ -1019,6 +1045,7 @@ TpgNetwork::set_rep_faults(TpgNode* node)
       if ( rep0 == nullptr ) {
 	if0->set_rep(if0);
 	fault_list.push_back(if0);
+	++ nf;
       }
       else {
 	if0->set_rep(rep0->rep_fault());
@@ -1031,21 +1058,62 @@ TpgNetwork::set_rep_faults(TpgNode* node)
       if ( rep1 == nullptr ) {
 	if1->set_rep(if1);
 	fault_list.push_back(if1);
+	++ nf;
       }
       else {
 	if1->set_rep(rep1->rep_fault());
       }
     }
   }
+
   // 代表故障を TpgNode::mFaultList に入れる．
-  ymuint nf = fault_list.size();
   const TpgFault** f_list = alloc_array<const TpgFault*>(mAlloc, nf);
   for (ymuint i = 0; i < nf; ++ i) {
-    f_list[i] = fault_list[i];
+    const TpgFault* f = fault_list[i];
+    f_list[i] = f;
   }
   node->set_fault_list(nf, f_list);
 
   return nf;
+}
+
+// @brief FFR 内の代表故障を集める．
+// @param[in] node ノード
+// @param[out] f_list 故障を格納するリスト
+void
+TpgNetwork::get_ffr_faults(TpgNode* node,
+			   vector<const TpgFault*>& f_list)
+{
+  // node 上の代表故障を f_list に入れる．
+  if ( !node->is_output() ) {
+    const TpgFault* f0 = node->output_fault(0);
+    if ( f0 != nullptr && f0->is_rep() ) {
+      f_list.push_back(f0);
+    }
+    const TpgFault* f1 = node->output_fault(1);
+    if ( f1 != nullptr && f1->is_rep() ) {
+      f_list.push_back(f1);
+    }
+  }
+  ymuint ni = node->fanin_num();
+  for (ymuint i = 0; i < ni; ++ i) {
+    const TpgFault* f0 = node->input_fault(0, i);
+    if ( f0 != nullptr && f0->is_rep() ) {
+      f_list.push_back(f0);
+    }
+    const TpgFault* f1 = node->input_fault(1, i);
+    if ( f1 != nullptr && f1->is_rep() ) {
+      f_list.push_back(f1);
+    }
+  }
+
+  // ファンインが同じ FFR なら再起する．
+  for (ymuint i = 0; i < ni; ++ i) {
+    TpgNode* inode = node->fanin(i);
+    if ( inode->fanout_num() == 1 ) {
+      get_ffr_faults(inode, f_list);
+    }
+  }
 }
 
 // @brief TpgNetwork の内容を出力する関数
