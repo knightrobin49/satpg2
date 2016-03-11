@@ -594,6 +594,14 @@ TpgNode::tfibits_or(TpgNode* src_node,
   }
 }
 
+// @brief FFR の根のノードをセットする．
+// @param[in] root 根のノード
+void
+TpgNode::set_ffr_root(TpgNode* root)
+{
+  mFfrRoot = root;
+}
+
 // @brief immediate dominator をセットする．
 // @param[in] dom dominator ノード
 void

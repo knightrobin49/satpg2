@@ -62,6 +62,15 @@ TpgOutput::output_id2() const
   return mOutputId2;
 }
 
+// @brief ゲートタイプを得る．
+//
+// is_logic() が false の場合の返り値は不定
+GateType
+TpgOutput::gate_type() const
+{
+  return kGateBUFF;
+}
+
 // @brief ファンイン数を得る．
 ymuint
 TpgOutput::fanin_num() const

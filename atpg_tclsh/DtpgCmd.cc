@@ -52,6 +52,8 @@ DtpgCmd::DtpgCmd(AtpgMgr* mgr) :
 				"single2 mode <INT>");
   mPoptSingle3 = new TclPopt(this, "single3",
 			     "single3 mode");
+  mPoptFFR = new TclPopt(this, "ffr",
+			 "FFR mode");
   mPoptMulti = new TclPopt(this, "multi",
 			   "multi mode");
   mPoptMulti2 = new TclPoptInt(this, "multi2",
@@ -150,6 +152,9 @@ DtpgCmd::cmd_proc(TclObjVector& objv)
   else if ( mPoptSingle3->is_specified() ) {
     engine_type = "single3";
   }
+  else if ( mPoptFFR->is_specified() ) {
+    engine_type = "ffr";
+  }
   else if ( mPoptMulti->is_specified() ) {
     engine_type = "multi";
   }
@@ -199,6 +204,9 @@ DtpgCmd::cmd_proc(TclObjVector& objv)
   DtpgEngine* engine = nullptr;
   if ( engine_type == "single" ) {
     engine = new_DtpgSatS(sat_type, sat_option, outp, bt, dop_list, uop_list);
+  }
+  else if ( engine_type == "ffr" ) {
+    engine = new_DtpgSatF(sat_type, sat_option, outp, bt, dop_list, uop_list);
   }
   else if ( engine_type == "multi" ) {
     engine = new_DtpgSatM(sat_type, sat_option, outp, bt, dop_list, uop_list);

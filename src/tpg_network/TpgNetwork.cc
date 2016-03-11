@@ -384,6 +384,7 @@ TpgNetwork::set(const BnNetwork& bnnetwork)
   // 接続が正しいかチェックする．
   check_network_connection(*this);
 
+
   //////////////////////////////////////////////////////////////////////
   // 代表故障を求める．
   //////////////////////////////////////////////////////////////////////
@@ -582,6 +583,23 @@ TpgNetwork::activate_sub()
       }
       node->set_active_fanouts(tmp_folist);
       level_array[node->id()] = min_level + 1;
+    }
+  }
+
+  // FFR の情報をセットする．
+  for (ymuint i = 0; i < mActNodeNum; ++ i) {
+    TpgNode* node = mActNodeArray[mActNodeNum - i - 1];
+    ymuint nfo = node->active_fanout_num();
+    if ( nfo == 0 ) {
+      ASSERT_COND( node->is_output() );
+      node->set_ffr_root(node);
+    }
+    else if ( nfo == 1 ) {
+      TpgNode* onode = node->active_fanout(0);
+      node->set_ffr_root(onode->ffr_root());
+    }
+    else {
+      node->set_ffr_root(node);
     }
   }
 

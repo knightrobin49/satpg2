@@ -212,6 +212,12 @@ public:
   bool
   is_in_TFI_of(ymuint pos) const;
 
+  /// @brief FFR の根のノードを得る．
+  ///
+  /// 自分が根の場合には自分自身を返す．
+  TpgNode*
+  ffr_root() const;
+
   /// @brief 直近の dominator を得る．
   TpgNode*
   imm_dom() const;
@@ -337,6 +343,11 @@ public:
   tfibits_or(TpgNode* src_node,
 	     ymuint tfibits_size);
 
+  /// @brief FFR の根のノードをセットする．
+  /// @param[in] root 根のノード
+  void
+  set_ffr_root(TpgNode* root);
+
   /// @brief immediate dominator をセットする．
   /// @param[in] dom dominator ノード
   void
@@ -412,6 +423,9 @@ private:
 
   // TFIマークを表すビットアレイ
   ymuint64* mTFIbits;
+
+  // FFR の根のノード
+  TpgNode* mFfrRoot;
 
   // immediate dominator
   TpgNode* mImmDom;
@@ -517,6 +531,16 @@ TpgNode::is_in_TFI_of(ymuint pos) const
   ymuint blk = pos / 64;
   ymuint sft = pos % 64;
   return static_cast<bool>((mTFIbits[blk] >> sft) & 1U);
+}
+
+// @brief FFR の根のノードを得る．
+//
+// 自分が根の場合には自分自身を返す．
+inline
+TpgNode*
+TpgNode::ffr_root() const
+{
+  return mFfrRoot;
 }
 
 // @brief 直近の dominator を得る．

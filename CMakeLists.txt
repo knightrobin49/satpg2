@@ -152,6 +152,7 @@ set (dtpg_SOURCES
   src/dtpg/main/DtpgSatBaseM.cc
   src/dtpg/main/DtpgSatS.cc
   src/dtpg/main/DtpgSatM.cc
+  src/dtpg/main/DtpgSatF.cc
 
   src/dtpg/uop/UopBase.cc
   src/dtpg/uop/UopDummy.cc

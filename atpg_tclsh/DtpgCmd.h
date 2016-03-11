@@ -73,6 +73,9 @@ private:
   // single3 オプションの解析用オブジェクト
   TclPopt* mPoptSingle3;
 
+  // ffr オプションの解析用オブジェクト
+  TclPopt* mPoptFFR;
+
   // multi オプションの解析用オブジェクト
   TclPopt* mPoptMulti;
 

@@ -87,6 +87,22 @@ new_DtpgSatS(const string& sat_type,
 	     DetectOp& dop,
 	     UntestOp& uop);
 
+
+/// @brief FFR エンジンを作る．
+/// @param[in] sat_type SATソルバの種類を表す文字列
+/// @param[in] sat_option SATソルバに渡すオプション文字列
+/// @param[in] sat_outp SATソルバ用の出力ストリーム
+/// @param[in] bt バックトレーサー
+/// @param[in] dop パタンが求められた時に実行されるファンクタ
+/// @param[in] uop 検出不能と判定された時に実行されるファンクタ
+DtpgEngine*
+new_DtpgSatF(const string& sat_type,
+	     const string& sat_option,
+	     ostream* sat_outp,
+	     BackTracer& bt,
+	     DetectOp& dop,
+	     UntestOp& uop);
+
 /// @brief Single2 エンジンを作る．
 /// @param[in] th_val しきい値
 /// @param[in] sat_type SATソルバの種類を表す文字列
