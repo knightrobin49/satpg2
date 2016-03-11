@@ -453,7 +453,7 @@ TpgNode::ipos_map(ymuint pos) const
 // @param[in] lit_map 入出力とリテラルの対応マップ
 void
 TpgNode::make_cnf(SatSolver& solver,
-		  const LitMap& lit_map)
+		  const LitMap& lit_map) const
 {
   ASSERT_NOT_REACHED;
 }

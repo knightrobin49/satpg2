@@ -52,6 +52,16 @@ TpgInput::input_id() const
   return mInputId;
 }
 
+// @brief 入出力の関係を表す CNF 式を生成する．
+// @param[in] solver SAT ソルバ
+// @param[in] lit_map 入出力とリテラルの対応マップ
+void
+TpgInput::make_cnf(SatSolver& solver,
+		   const LitMap& lit_map) const
+{
+  // なにもしない．
+}
+
 // @brief 出力の故障を得る．
 // @param[in] val 故障値 ( 0 / 1 )
 const TpgFault*

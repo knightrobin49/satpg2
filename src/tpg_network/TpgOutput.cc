@@ -8,6 +8,7 @@
 
 
 #include "TpgOutput.h"
+#include "ym/SatSolver.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG
@@ -85,6 +86,19 @@ TpgOutput::fanin(ymuint pos) const
 {
   ASSERT_COND( pos == 0 );
   return mFanin;
+}
+
+// @brief 入出力の関係を表す CNF 式を生成する．
+// @param[in] solver SAT ソルバ
+// @param[in] lit_map 入出力とリテラルの対応マップ
+void
+TpgOutput::make_cnf(SatSolver& solver,
+		    const LitMap& lit_map) const
+{
+  SatLiteral ilit = lit_map.input(0);
+  SatLiteral olit = lit_map.output();
+  solver.add_clause( ilit, ~olit);
+  solver.add_clause(~ilit,  olit);
 }
 
 // @brief 入力の故障を得る．

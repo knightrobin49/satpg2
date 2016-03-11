@@ -80,6 +80,14 @@ public:
   TpgNode*
   fanin(ymuint pos) const;
 
+  /// @brief 入出力の関係を表す CNF 式を生成する．
+  /// @param[in] solver SAT ソルバ
+  /// @param[in] lit_map 入出力とリテラルの対応マップ
+  virtual
+  void
+  make_cnf(SatSolver& solver,
+	   const LitMap& lit_map) const;
+
   /// @brief 入力の故障を得る．
   /// @param[in] val 故障値 ( 0 / 1 )
   /// @param[in] pos 入力の位置番号

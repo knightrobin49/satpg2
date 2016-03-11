@@ -47,7 +47,7 @@ TpgLogicBUFF::gate_type() const
 // @param[in] lit_map 入出力とリテラルの対応マップ
 void
 TpgLogicBUFF::make_cnf(SatSolver& solver,
-		       const LitMap& lit_map)
+		       const LitMap& lit_map) const
 {
   SatLiteral ilit = lit_map.input(0);
   SatLiteral olit = lit_map.output();

@@ -562,18 +562,7 @@ void
 SatEngine::make_node_cnf(const TpgNode* node,
 			 const VidMap& vid_map)
 {
-  if ( node->is_input() ) {
-    ;
-  }
-  else if ( node->is_output() ) {
-    make_gate_cnf(kGateBUFF, VidLitMap(node, vid_map));
-  }
-  else if ( node->is_logic() ) {
-    make_gate_cnf(node->gate_type(), VidLitMap(node, vid_map));
-  }
-  else {
-    ASSERT_NOT_REACHED;
-  }
+  node->make_cnf(mSolver, VidLitMap(node, vid_map));
 }
 
 // @brief 故障回路のノードの入出力の関係を表す CNF を作る．
@@ -649,7 +638,7 @@ SatEngine::make_fnode_cnf(const TpgNode* node,
     ASSERT_NOT_REACHED;
   }
   else {
-    make_gate_cnf(node->gate_type(), VectLitMap(ivars, ovar));
+    node->make_cnf(mSolver, VectLitMap(ivars, ovar));
   }
 }
 
@@ -896,53 +885,6 @@ SatEngine::make_dchain_cnf(const TpgNode* node,
     }
     tmp_lits_end();
   }
-}
-
-// @brief ゲートの入出力の関係を表す CNF を作る．
-// @param[in] gate_type ゲートの種類
-// @param[in] litmap 入出力のリテラルを保持するクラス
-void
-SatEngine::make_gate_cnf(GateType gate_type,
-			 const LitMap& litmap)
-{
-  switch ( gate_type ) {
-  case kGateNOT:
-    make_buff_cnf(mSolver, litmap.input(0), ~litmap.output());
-    return;
-
-  case kGateBUFF:
-    make_buff_cnf(mSolver, litmap.input(0), litmap.output());
-    return;
-
-  case kGateNAND:
-    make_and_cnf(litmap, true);
-    return;
-
-  case kGateAND:
-    make_and_cnf(litmap, false);
-    return;
-
-  case kGateNOR:
-    make_or_cnf(litmap, true);
-    return;
-
-  case kGateOR:
-    make_or_cnf(litmap, false);
-    return;
-
-  case kGateXNOR:
-    make_xor_cnf(litmap, true);
-    return;
-
-  case kGateXOR:
-    make_xor_cnf(litmap, false);
-    return;
-
-  default:
-    break;
-  }
-
-  ASSERT_NOT_REACHED;
 }
 
 // @brief 故障挿入回路を表す CNF 式を作る．

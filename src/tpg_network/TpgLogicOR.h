@@ -89,7 +89,7 @@ public:
   virtual
   void
   make_cnf(SatSolver& solver,
-	   const LitMap& lit_map);
+	   const LitMap& lit_map) const;
 
 
 private:
@@ -180,7 +180,7 @@ public:
   virtual
   void
   make_cnf(SatSolver& solver,
-	   const LitMap& lit_map);
+	   const LitMap& lit_map) const;
 
 
 private:
@@ -272,7 +272,7 @@ public:
   virtual
   void
   make_cnf(SatSolver& solver,
-	   const LitMap& lit_map);
+	   const LitMap& lit_map) const;
 
 
 private:
@@ -365,7 +365,7 @@ public:
   virtual
   void
   make_cnf(SatSolver& solver,
-	   const LitMap& lit_map);
+	   const LitMap& lit_map) const;
 
 
 private:

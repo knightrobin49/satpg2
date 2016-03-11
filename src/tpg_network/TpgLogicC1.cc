@@ -45,9 +45,10 @@ TpgLogicC1::gate_type() const
 // @param[in] lit_map 入出力とリテラルの対応マップ
 void
 TpgLogicC1::make_cnf(SatSolver& solver,
-		     const LitMap& lit_map)
+		     const LitMap& lit_map) const
 {
-  solver.add_clause(lit_map.output());
+  SatLiteral olit = lit_map.output();
+  solver.add_clause(olit);
 }
 
 END_NAMESPACE_YM_SATPG
