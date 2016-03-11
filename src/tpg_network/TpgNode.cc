@@ -553,47 +553,6 @@ TpgNode::set_tmap(TpgMap* tmap)
   mMap = tmap;
 }
 
-// @brief TFIbits 用の配列をセットする．
-void
-TpgNode::set_tfibits(ymuint64* tfibits)
-{
-  mTFIbits = tfibits;
-}
-
-// @brief TFIbits をクリアする．
-// @param[in] tfibits_size TFIbits のサイズ
-void
-TpgNode::tfibits_clear(ymuint tfibits_size)
-{
-  for (ymuint i = 0; i < tfibits_size; ++ i) {
-    mTFIbits[i] = 0UL;
-  }
-}
-
-// @brief TFIbits 上のビットをセットする．
-// @param[in] bitpos ビット位置
-void
-TpgNode::tfibits_bitset(ymuint bitpos)
-{
-  ymuint blk = bitpos / 64;
-  ymuint sft = bitpos % 64;
-  mTFIbits[blk] |= (1UL << sft);
-}
-
-// @brief TFIbits のORを取る．
-// @param[in] src_node オペランドのノード
-// @param[in] tfibits_size TFIbits のサイズ
-//
-// 結果は自身の TFIbits に代入される．
-void
-TpgNode::tfibits_or(TpgNode* src_node,
-		    ymuint tfibits_size)
-{
-  for (ymuint i = 0; i < tfibits_size; ++ i) {
-    mTFIbits[i] |= src_node->mTFIbits[i];
-  }
-}
-
 // @brief FFR の根のノードをセットする．
 // @param[in] root 根のノード
 void

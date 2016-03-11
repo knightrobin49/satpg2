@@ -212,6 +212,10 @@ private:
 		 GateType type,
 		 const vector<TpgNode*>& fanin_list);
 
+  /// @brief ファンアウト情報の設定を行う．
+  void
+  set_fanouts();
+
   /// @brief 出力の故障を作る．
   /// @param[in] name 故障位置のノード名
   /// @param[in] val 故障値 ( 0 / 1 )

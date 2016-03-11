@@ -208,10 +208,6 @@ public:
   bool
   is_active() const;
 
-  /// @brief pos 番目のPOのTFIに含まれている時 true を返す．
-  bool
-  is_in_TFI_of(ymuint pos) const;
-
   /// @brief FFR の根のノードを得る．
   ///
   /// 自分が根の場合には自分自身を返す．
@@ -319,30 +315,6 @@ public:
   void
   set_tmap(TpgMap* tmap);
 
-  /// @brief TFIbits 用の配列をセットする．
-  /// @param[in] tfibits セットする配列
-  void
-  set_tfibits(ymuint64* tfibits);
-
-  /// @brief TFIbits をクリアする．
-  /// @param[in] tfibits_size TFIbits のサイズ
-  void
-  tfibits_clear(ymuint tfibits_size);
-
-  /// @brief TFIbits 上のビットをセットする．
-  /// @param[in] bitpos ビット位置
-  void
-  tfibits_bitset(ymuint bitpos);
-
-  /// @brief TFIbits のORを取る．
-  /// @param[in] src_node オペランドのノード
-  /// @param[in] tfibits_size TFIbits のサイズ
-  ///
-  /// 結果は自身の TFIbits に代入される．
-  void
-  tfibits_or(TpgNode* src_node,
-	     ymuint tfibits_size);
-
   /// @brief FFR の根のノードをセットする．
   /// @param[in] root 根のノード
   void
@@ -420,9 +392,6 @@ private:
 
   // いくつかのマークを納めるビットベクタ
   ymuint32 mMarks;
-
-  // TFIマークを表すビットアレイ
-  ymuint64* mTFIbits;
 
   // FFR の根のノード
   TpgNode* mFfrRoot;
@@ -521,16 +490,6 @@ void
 TpgNode::clear_active()
 {
   mMarks &= ~1U;
-}
-
-// @brief pos 番目のPOのTFIに含まれている時 true を返す．
-inline
-bool
-TpgNode::is_in_TFI_of(ymuint pos) const
-{
-  ymuint blk = pos / 64;
-  ymuint sft = pos % 64;
-  return static_cast<bool>((mTFIbits[blk] >> sft) & 1U);
 }
 
 // @brief FFR の根のノードを得る．

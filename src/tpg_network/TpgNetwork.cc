@@ -117,64 +117,6 @@ struct Lt
 
 END_NONAMESPACE
 
-BEGIN_NONAMESPACE
-
-void
-check_network_connection(const TpgNetwork& network)
-{
-  // fanin/fanout の sanity check
-  bool error = false;
-
-  ymuint nn = network.node_num();
-  for (ymuint i = 0; i < nn; ++ i) {
-    const TpgNode* node = network.node(i);
-    ymuint nfi = node->fanin_num();
-    for (ymuint j = 0; j < nfi; ++ j) {
-      const TpgNode* inode = node->fanin(j);
-      ymuint nfo = inode->fanout_num();
-      bool found = false;
-      for (ymuint k = 0; k < nfo; ++ k) {
-	if ( inode->fanout(k) == node ) {
-	  found = true;
-	  break;
-	}
-      }
-      if ( !found ) {
-	error = true;
-	cout << "Error: inode(" << inode->id() << ") is a fanin of "
-	     << "node(" << node->id() << "), but "
-	     << "node(" << node->id() << ") is not a fanout of "
-	     << "inode(" << inode->id() << ")" << endl;
-      }
-    }
-    ymuint nfo = node->fanout_num();
-    for (ymuint j = 0; j < nfo; ++ j) {
-      const TpgNode* onode = node->fanout(j);
-      ymuint nfi = onode->fanin_num();
-      bool found = false;
-      for (ymuint k = 0; k < nfi; ++ k) {
-	if ( onode->fanin(k) == node ) {
-	  found = true;
-	  break;
-	}
-      }
-      if ( !found ) {
-	error = true;
-	cout << "Error: onode(" << onode->id() << ") is a fanout of "
-	     << "node(" << node->id() << "), but "
-	     << "node(" << node->id() << ") is not a fanin of "
-	     << "onode(" << onode->id() << ")" << endl;
-      }
-    }
-  }
-  if ( error ) {
-    cout << "network connectivity check failed" << endl;
-    abort();
-  }
-}
-
-END_NONAMESPACE
-
 
 //////////////////////////////////////////////////////////////////////
 // クラス TpgNetwork
@@ -234,16 +176,15 @@ TpgNetwork::set(const BnNetwork& bnnetwork)
 {
   mAlloc.destroy();
 
-  //////////////////////////////////////////////////////////////////////
-  // 要素数を数え，必要なメモリ領域を確保する．
-  //////////////////////////////////////////////////////////////////////
-
   ymuint bn_nn = bnnetwork.node_num();
   ymuint nl = bnnetwork.logic_num();
   ymuint nn = bn_nn;
 
-  TpgNodeInfoMgr node_info_mgr;
 
+  //////////////////////////////////////////////////////////////////////
+  // NodeInfoMgr にノードの論理関数を登録する．
+  //////////////////////////////////////////////////////////////////////
+  TpgNodeInfoMgr node_info_mgr;
   for (ymuint i = 0; i < nl; ++ i) {
     const BnNode* bnnode = bnnetwork.logic(i);
     const BnFuncType* func_type = bnnode->func_type();
@@ -254,6 +195,10 @@ TpgNetwork::set(const BnNetwork& bnnetwork)
     }
   }
 
+
+  //////////////////////////////////////////////////////////////////////
+  // 要素数を数え，必要なメモリ領域を確保する．
+  //////////////////////////////////////////////////////////////////////
   mInputNum = bnnetwork.input_num();
   mOutputNum = bnnetwork.output_num();
   mFFNum = bnnetwork.dff_num();
@@ -281,6 +226,7 @@ TpgNetwork::set(const BnNetwork& bnnetwork)
   mNodeNum = 0;
   mFaultNum = 0;
 
+
   //////////////////////////////////////////////////////////////////////
   // 外部入力を作成する．
   //////////////////////////////////////////////////////////////////////
@@ -303,13 +249,9 @@ TpgNetwork::set(const BnNetwork& bnnetwork)
     const BnNode* bnnode = sorted_node_list[i];
     ymuint ni = bnnode->fanin_num();
 
-    vector<TpgNode*> fanin_array(ni);
-    for (ymuint j = 0; j < ni; ++ j) {
-      fanin_array[j] = node_map.get(bnnode->fanin_id(j));
-    }
+    // BnFuncType から TpgNodeInfo を作る．
     const BnFuncType* func_type = bnnode->func_type();
     GateType gate_type = conv_to_gate_type(func_type->type());
-
     const TpgNodeInfo* node_info;
     if ( gate_type == kGateCPLX ) {
       node_info = node_info_mgr.complex_type(func_type->id(), ni, func_type->expr());
@@ -318,8 +260,14 @@ TpgNetwork::set(const BnNetwork& bnnetwork)
       node_info = node_info_mgr.simple_type(gate_type);
     }
 
+    // ファンインのノードを取ってくる．
+    vector<TpgNode*> fanin_array(ni);
+    for (ymuint j = 0; j < ni; ++ j) {
+      fanin_array[j] = node_map.get(bnnode->fanin_id(j));
+    }
     TpgNode* node = make_logic_node(bnnode->name(), node_info, fanin_array);
 
+    // ノードを登録する．
     node_map.reg(bnnode->id(), node);
   }
 
@@ -339,50 +287,8 @@ TpgNetwork::set(const BnNetwork& bnnetwork)
   ASSERT_COND( mNodeNum == nn );
 
 
-  //////////////////////////////////////////////////////////////////////
-  // ファンアウト数を数える
-  //////////////////////////////////////////////////////////////////////
-  vector<ymuint> nfo_array(mNodeNum, 0);
-  for (ymuint i = 0; i < mNodeNum; ++ i) {
-    TpgNode* node = mNodeArray[i];
-    ymuint ni = node->fanin_num();
-    for (ymuint j = 0; j < ni; ++ j) {
-      TpgNode* inode = node->fanin(j);
-      ++ nfo_array[inode->id()];
-    }
-  }
-
-  //////////////////////////////////////////////////////////////////////
-  // ファンアウト用の配列を確保する．
-  //////////////////////////////////////////////////////////////////////
-  for (ymuint i = 0; i < mNodeNum; ++ i) {
-    TpgNode* node = mNodeArray[i];
-    ymuint nfo = nfo_array[node->id()];
-    nfo_array[node->id()] = 0;
-    TpgNode** fo_array = alloc_array<TpgNode*>(mAlloc, nfo);
-    TpgNode** act_fo_array = alloc_array<TpgNode*>(mAlloc, nfo);
-    node->set_fanout_num(nfo, fo_array, act_fo_array);
-
-    // これは別件だけどここで一緒にやる．
-    node->set_tfibits(alloc_array<ymuint64>(mAlloc, tfibits_size()));
-  }
-
-  //////////////////////////////////////////////////////////////////////
-  // ファンアウトをセットする．
-  //////////////////////////////////////////////////////////////////////
-  for (ymuint i = 0; i < mNodeNum; ++ i) {
-    TpgNode* node = mNodeArray[i];
-    ymuint ni = node->fanin_num();
-    for (ymuint j = 0; j < ni; ++ j) {
-      TpgNode* inode = node->fanin(j);
-      ymuint& fo_pos = nfo_array[inode->id()];
-      inode->set_fanout(fo_pos, node);
-      ++ fo_pos;
-    }
-  }
-
-  // 接続が正しいかチェックする．
-  check_network_connection(*this);
+  // ファンアウトの情報をセットする．
+  set_fanouts();
 
 
   //////////////////////////////////////////////////////////////////////
@@ -423,24 +329,6 @@ TpgNetwork::set(const BnNetwork& bnnetwork)
 
   // 全部アクティブにしておく．
   activate_all();
-
-  // TFIbits を作る．
-  for (ymuint i = 0; i < mNodeNum; ++ i) {
-    TpgNode* node = mNodeArray[mNodeNum - i - 1];
-    node->tfibits_clear(tfibits_size());
-    if ( node->is_output() ) {
-      // 外部出力の場合は自分自身の番号をセットする．
-      node->tfibits_bitset(node->output_id2());
-    }
-    else {
-      // ファンアウト先の TFIbits の OR をとる．
-      ymuint nfo = node->fanout_num();
-      for (ymuint i = 0; i < nfo; ++ i) {
-	TpgNode* onode = node->fanout(i);
-	node->tfibits_or(onode, tfibits_size());
-      }
-    }
-  }
 }
 
 // @brief 一つの外部出力に関係するノードのみをアクティブにする．
@@ -929,6 +817,110 @@ TpgNetwork::make_prim_node(const char* name,
   ++ mNodeNum;
 
   return node;
+}
+
+BEGIN_NONAMESPACE
+
+void
+check_network_connection(const TpgNetwork& network)
+{
+  // fanin/fanout の sanity check
+  bool error = false;
+
+  ymuint nn = network.node_num();
+  for (ymuint i = 0; i < nn; ++ i) {
+    const TpgNode* node = network.node(i);
+    ymuint nfi = node->fanin_num();
+    for (ymuint j = 0; j < nfi; ++ j) {
+      const TpgNode* inode = node->fanin(j);
+      ymuint nfo = inode->fanout_num();
+      bool found = false;
+      for (ymuint k = 0; k < nfo; ++ k) {
+	if ( inode->fanout(k) == node ) {
+	  found = true;
+	  break;
+	}
+      }
+      if ( !found ) {
+	error = true;
+	cout << "Error: inode(" << inode->id() << ") is a fanin of "
+	     << "node(" << node->id() << "), but "
+	     << "node(" << node->id() << ") is not a fanout of "
+	     << "inode(" << inode->id() << ")" << endl;
+      }
+    }
+    ymuint nfo = node->fanout_num();
+    for (ymuint j = 0; j < nfo; ++ j) {
+      const TpgNode* onode = node->fanout(j);
+      ymuint nfi = onode->fanin_num();
+      bool found = false;
+      for (ymuint k = 0; k < nfi; ++ k) {
+	if ( onode->fanin(k) == node ) {
+	  found = true;
+	  break;
+	}
+      }
+      if ( !found ) {
+	error = true;
+	cout << "Error: onode(" << onode->id() << ") is a fanout of "
+	     << "node(" << node->id() << "), but "
+	     << "node(" << node->id() << ") is not a fanin of "
+	     << "onode(" << onode->id() << ")" << endl;
+      }
+    }
+  }
+  if ( error ) {
+    cout << "network connectivity check failed" << endl;
+    abort();
+  }
+}
+
+END_NONAMESPACE
+
+void
+TpgNetwork::set_fanouts()
+{
+  //////////////////////////////////////////////////////////////////////
+  // ファンアウト数を数える
+  //////////////////////////////////////////////////////////////////////
+  vector<ymuint> nfo_array(mNodeNum, 0);
+  for (ymuint i = 0; i < mNodeNum; ++ i) {
+    TpgNode* node = mNodeArray[i];
+    ymuint ni = node->fanin_num();
+    for (ymuint j = 0; j < ni; ++ j) {
+      TpgNode* inode = node->fanin(j);
+      ++ nfo_array[inode->id()];
+    }
+  }
+
+  //////////////////////////////////////////////////////////////////////
+  // ファンアウト用の配列を確保する．
+  //////////////////////////////////////////////////////////////////////
+  for (ymuint i = 0; i < mNodeNum; ++ i) {
+    TpgNode* node = mNodeArray[i];
+    ymuint nfo = nfo_array[node->id()];
+    nfo_array[node->id()] = 0;
+    TpgNode** fo_array = alloc_array<TpgNode*>(mAlloc, nfo);
+    TpgNode** act_fo_array = alloc_array<TpgNode*>(mAlloc, nfo);
+    node->set_fanout_num(nfo, fo_array, act_fo_array);
+  }
+
+  //////////////////////////////////////////////////////////////////////
+  // ファンアウトをセットする．
+  //////////////////////////////////////////////////////////////////////
+  for (ymuint i = 0; i < mNodeNum; ++ i) {
+    TpgNode* node = mNodeArray[i];
+    ymuint ni = node->fanin_num();
+    for (ymuint j = 0; j < ni; ++ j) {
+      TpgNode* inode = node->fanin(j);
+      ymuint& fo_pos = nfo_array[inode->id()];
+      inode->set_fanout(fo_pos, node);
+      ++ fo_pos;
+    }
+  }
+
+  // 接続が正しいかチェックする．
+  check_network_connection(*this);
 }
 
 // @brief 出力の故障を作る．

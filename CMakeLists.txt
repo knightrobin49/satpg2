@@ -117,6 +117,7 @@ set (base_SOURCES
   src/base/NodeSet.cc
   src/base/NodeValList.cc
   src/base/TestVector.cc
+  src/base/TfiBits.cc
   src/base/TvMgr.cc
   )
 
