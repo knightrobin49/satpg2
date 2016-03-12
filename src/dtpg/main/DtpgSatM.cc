@@ -70,7 +70,7 @@ DtpgSatM::run_multi(const NodeSet& node_set,
 
   ymuint max_id = node_set.max_id();
 
-  MvalCnf mval_cnf(max_id);
+  MvalCnf mval_cnf(engine.solver(), max_id);
 
   engine.make_mval_cnf(mval_cnf, flist, fnode_list, node_set);
 

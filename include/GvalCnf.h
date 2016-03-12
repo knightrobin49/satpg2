@@ -12,6 +12,7 @@
 #include "satpg.h"
 #include "GenVidMap.h"
 #include "TpgNode.h"
+#include "ym/SatSolver.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG
@@ -25,8 +26,10 @@ class GvalCnf
 public:
 
   /// @brief コンストラクタ
+  /// @param[in] solver SAT ソルバ
   /// @param[in] max_node_id ノード番号の最大値
-  GvalCnf(ymuint max_node_id);
+  GvalCnf(SatSolver& solver,
+	  ymuint max_node_id);
 
   /// @brief デストラクタ
   ~GvalCnf();
@@ -72,6 +75,33 @@ public:
   set_var(const TpgNode* node,
 	  SatVarId var);
 
+  /// @brief 割当リストに従って値を固定する．
+  /// @param[in] assignment 割当リスト
+  void
+  add_assignments(const NodeValList& assignment);
+
+  /// @brief 割当リストの否定の節を加える．
+  /// @param[in] assignment 割当リスト
+  void
+  add_negation(const NodeValList& assignment);
+
+  /// @brief 割当リストに対応する仮定を追加する．
+  /// @param[in] assign_list 割当リスト
+  /// @param[out] assumptions 仮定を表すリテラルのリスト
+  void
+  add_assumption(const NodeValList& assign_list,
+		 vector<SatLiteral>& assumptions);
+
+  /// @brief NodeSet に含まれるノードの CNF を作る．
+  /// @param[in] node_set ノード集合
+  void
+  make_cnf(const NodeSet& node_set);
+
+  /// @brief node の TFI の CNF を作る．
+  /// @param[in] node 対象のノード
+  void
+  make_cnf(const TpgNode* node);
+
 
 private:
   //////////////////////////////////////////////////////////////////////
@@ -83,6 +113,9 @@ private:
   //////////////////////////////////////////////////////////////////////
   // データメンバ
   //////////////////////////////////////////////////////////////////////
+
+  // SAT ソルバ
+  SatSolver& mSolver;
 
   // ノード番号の最大値
   ymuint mMaxId;

@@ -252,9 +252,9 @@ FaultAnalyzer::analyze_fault(const TpgFault* fault,
 
   fi.mFault = fault;
 
-  GvalCnf gval_cnf(mMaxNodeId);
-  FvalCnf fval_cnf(mMaxNodeId, gval_cnf);
   SatEngine engine(string(), string(), nullptr);
+  GvalCnf gval_cnf(engine.solver(), mMaxNodeId);
+  FvalCnf fval_cnf(mMaxNodeId, gval_cnf);
 
   engine.make_fval_cnf(fval_cnf, fault, node_set(f_id), kVal1);
 
@@ -482,11 +482,11 @@ FaultAnalyzer::check_dominance(ymuint f1_id,
   const TpgNode* dom_node = common_node(fnode1, fnode2);
 
   SatEngine engine(string(), string(), nullptr);
-  GvalCnf gval_cnf(mMaxNodeId);
+  GvalCnf gval_cnf(engine.solver(), mMaxNodeId);
 
   // f1 の必要条件を追加する．
   const NodeValList& ma_list1 = fi1.mandatory_assignment();
-  engine.add_assignments(gval_cnf, ma_list1);
+  gval_cnf.add_assignments(ma_list1);
 
   if ( dom_node != nullptr ) {
     // 伝搬経路に共通な dominator がある時
@@ -538,7 +538,7 @@ FaultAnalyzer::check_dominance(ymuint f1_id,
 
   if ( verify_dom_check ) {
     SatEngine engine(string(), string(), nullptr);
-    GvalCnf gval_cnf(mMaxNodeId);
+    GvalCnf gval_cnf(engine.solver(), mMaxNodeId);
 
     // f1 を検出する CNF を生成
     FvalCnf fval_cnf1(mMaxNodeId, gval_cnf);

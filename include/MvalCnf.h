@@ -24,8 +24,10 @@ class MvalCnf
 public:
 
   /// @brief コンストラクタ
+  /// @param[in] solver SAT ソルバ
   /// @param[in] max_node_id ノード番号の最大値
-  MvalCnf(ymuint max_node_id);
+  MvalCnf(SatSolver& solver,
+	  ymuint max_node_id);
 
   /// @brief デストラクタ
   ~MvalCnf();

@@ -199,9 +199,9 @@ MinPatDsatur::get_next_fault(FgMgr& fgmgr,
       ymuint slack = max2 - max_satur;
       FaultStruct& fs = mFaultStructList[max2_pos];
 
-      GvalCnf gval_cnf(mMaxNodeId);
-      FvalCnf fval_cnf(mMaxNodeId, gval_cnf);
       SatEngine engine(string(), string(), nullptr);
+      GvalCnf gval_cnf(engine.solver(), mMaxNodeId);
+      FvalCnf fval_cnf(mMaxNodeId, gval_cnf);
 
       ymuint fid = fs.mFaultId;
       const TpgFault* fault = analyzer().fault(fid);

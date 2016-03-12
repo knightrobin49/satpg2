@@ -512,7 +512,7 @@ DomChecker::get_dom_faults1(const vector<ymuint>& src_list,
     const TpgFault* f1 = mAnalyzer.fault(f1_id);
 
     SatEngine engine(string(), string(), nullptr);
-    GvalCnf gval_cnf(mMaxNodeId);
+    GvalCnf gval_cnf(engine.solver(), mMaxNodeId);
 
     // f1 を検出しない CNF を作成
     FvalCnf fval_cnf(mMaxNodeId, gval_cnf);

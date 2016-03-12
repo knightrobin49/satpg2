@@ -231,10 +231,10 @@ ConflictChecker::analyze_conflict(ymuint f1_id,
   const NodeValList& ma_list1 = fi1.mandatory_assignment();
 
   SatEngine engine(string(), string(), nullptr);
-  GvalCnf gval_cnf(mMaxNodeId);
+  GvalCnf gval_cnf(engine.solver(), mMaxNodeId);
 
   // f1 を検出する CNF を生成
-  engine.add_assignments(gval_cnf, ma_list1);
+  gval_cnf.add_assignments(ma_list1);
   if ( !fi1.single_cube() ) {
     FvalCnf fval_cnf(mMaxNodeId, gval_cnf);
     const TpgFault* f1 = mAnalyzer.fault(f1_id);
@@ -293,11 +293,11 @@ ConflictChecker::analyze_conflict(ymuint f1_id,
     ++ mConflictStats.conf4_check_count;
     {
       SatEngine engine(string(), string(), nullptr);
-      GvalCnf gval_cnf(mMaxNodeId);
+      GvalCnf gval_cnf(engine.solver(), mMaxNodeId);
 
       // f1 を検出する CNF を生成
       const FaultInfo& fi1 = mAnalyzer.fault_info(f1_id);
-      engine.add_assignments(gval_cnf, fi1.mandatory_assignment());
+      gval_cnf.add_assignments(fi1.mandatory_assignment());
       if ( !fi1.single_cube() ) {
 	FvalCnf fval_cnf1(mMaxNodeId, gval_cnf);
 	const TpgFault* f1 = mAnalyzer.fault(f1_id);
@@ -307,7 +307,7 @@ ConflictChecker::analyze_conflict(ymuint f1_id,
 
       // f2 を検出する CNF を生成
       const FaultInfo& fi2 = mAnalyzer.fault_info(f2_id);
-      engine.add_assignments(gval_cnf, fi2.mandatory_assignment());
+      gval_cnf.add_assignments(fi2.mandatory_assignment());
       FvalCnf fval_cnf2(mMaxNodeId, gval_cnf);
       const TpgFault* f2 = mAnalyzer.fault(f2_id);
       const NodeSet& node_set2 = mAnalyzer.node_set(f2_id);

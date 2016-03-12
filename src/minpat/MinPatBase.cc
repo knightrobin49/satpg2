@@ -334,9 +334,8 @@ MinPatBase::make_testvector(TpgNetwork& network,
 			    const NodeValList& suf_list,
 			    TestVector* tv)
 {
-  GvalCnf gval_cnf(mMaxNodeId);
-
   SatEngine engine(string(), string(), nullptr);
+  GvalCnf gval_cnf(engine.solver(), mMaxNodeId);
 
   vector<SatBool3> sat_model;
   SatBool3 sat_ans = engine.check_sat(gval_cnf, suf_list, sat_model);

@@ -55,6 +55,10 @@ public:
   // 外部インターフェイス
   //////////////////////////////////////////////////////////////////////
 
+  /// @brief SATソルバを返す．
+  SatSolver&
+  solver();
+
   /// @brief NodeSet の内容に応じて正常回路のCNFを作る．
   /// @param[in] gval_cnf 正常回路用のデータ構造
   /// @param[in] node_set 対象のノード集合
@@ -125,20 +129,6 @@ public:
   void
   add_diff_clause(SatVarId var1,
 		  SatVarId var2);
-
-  /// @brief 割当リストに従って値を固定する．
-  /// @param[in] gval_cnf 正常回路用のデータ構造
-  /// @param[in] assignment 割当リスト
-  void
-  add_assignments(GvalCnf& gval_cnf,
-		  const NodeValList& assignment);
-
-  /// @brief 割当リストの否定の節を加える．
-  /// @param[in] gval_cnf 正常回路用のデータ構造
-  /// @param[in] assignment 割当リスト
-  void
-  add_negation(GvalCnf& gval_cnf,
-	       const NodeValList& assignment);
 
   /// @brief 割当リストのもとでチェックを行う．
   /// @param[in] gval_cnf 正常回路用のデータ構造
@@ -340,15 +330,6 @@ private:
   void
   tmp_lits_end();
 
-  /// @brief 割当リストに対応する仮定を追加する．
-  /// @param[in] assumptions 仮定を表すリテラルのリスト
-  /// @param[in] gval_cnf 正常回路用のデータ構造
-  /// @param[in] assign_list 割当リスト
-  void
-  add_assumption(vector<SatLiteral>& assumptions,
-		 GvalCnf& gval_cnf,
-		 const NodeValList& assign_list);
-
   /// @brief 変数を追加する．
   /// @return 新しい変数番号を返す．
   /// @note 変数番号は 0 から始まる．
@@ -417,6 +398,14 @@ private:
 //////////////////////////////////////////////////////////////////////
 // インライン関数の定義
 //////////////////////////////////////////////////////////////////////
+
+// @brief SATソルバを返す．
+inline
+SatSolver&
+SatEngine::solver()
+{
+  return mSolver;
+}
 
 // @brief 節の作成用の作業領域の使用を開始する．
 // @param[in] exp_size 予想されるサイズ
@@ -543,42 +532,6 @@ SatEngine::solve(const vector<SatLiteral>& assumptions,
   sat_stats -= prev_stats;
 
   return ans;
-}
-
-// @brief 割当リストのもとでチェックを行う．
-// @param[in] gval_cnf 正常回路用のデータ構造
-// @param[in] assign_list 割当リスト
-// @param[out] sat_model SATの場合の解
-inline
-SatBool3
-SatEngine::check_sat(GvalCnf& gval_cnf,
-		     const NodeValList& assign_list,
-		     vector<SatBool3>& sat_model)
-{
-  vector<SatLiteral> assumptions;
-
-  add_assumption(assumptions, gval_cnf, assign_list);
-
-  return check_sat(assumptions, sat_model);
-}
-
-// @brief 割当リストのもとでチェックを行う．
-// @param[in] gval_cnf 正常回路用のデータ構造
-// @param[in] assign_list1, assign_list2 割当リスト
-// @param[out] sat_model SATの場合の解
-inline
-SatBool3
-SatEngine::check_sat(GvalCnf& gval_cnf,
-		     const NodeValList& assign_list1,
-		     const NodeValList& assign_list2,
-		     vector<SatBool3>& sat_model)
-{
-  vector<SatLiteral> assumptions;
-
-  add_assumption(assumptions, gval_cnf, assign_list1);
-  add_assumption(assumptions, gval_cnf, assign_list2);
-
-  return check_sat(assumptions, sat_model);
 }
 
 // @brief 割当リストのもとでチェックを行う．

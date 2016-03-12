@@ -204,57 +204,6 @@ SatEngine::~SatEngine()
 {
 }
 
-// @brief NodeSet の内容に応じて正常回路のCNFを作る．
-// @param[in] gval_cnf 正常回路用のデータ構造
-// @param[in] node_set 対象のノード集合
-//
-// 具体的には tfo_tfi_node() を対象にする．
-void
-SatEngine::make_gval_cnf(GvalCnf& gval_cnf,
-			 const NodeSet& node_set)
-{
-  ymuint n = node_set.tfo_tfi_size();
-  for (ymuint i = 0; i < n; ++ i) {
-    const TpgNode* node = node_set.tfo_tfi_node(i);
-    if ( gval_cnf.mark(node) ) {
-      continue;
-    }
-    SatVarId gvar = new_var();
-    gval_cnf.set_var(node, gvar);
-  }
-  for (ymuint i = 0; i < n; ++ i) {
-    const TpgNode* node = node_set.tfo_tfi_node(i);
-    if ( gval_cnf.mark(node) ) {
-      continue;
-    }
-    gval_cnf.set_mark(node);
-    make_node_cnf(node, gval_cnf.var_map());
-  }
-}
-
-// @brief ノードのTFI全体の正常回路のCNFを作る．
-// @param[in] gval_cnf 正常回路用のデータ構造
-// @param[in] node ノード
-void
-SatEngine::make_gval_cnf(GvalCnf& gval_cnf,
-			 const TpgNode* node)
-{
-  if ( gval_cnf.mark(node) ) {
-    return;
-  }
-  gval_cnf.set_mark(node);
-
-  ymuint ni = node->fanin_num();
-  for (ymuint i = 0; i < ni; ++ i) {
-    const TpgNode* inode = node->fanin(i);
-    make_gval_cnf(gval_cnf, inode);
-  }
-
-  SatVarId gvar = new_var();
-  gval_cnf.set_var(node, gvar);
-  make_node_cnf(node, gval_cnf.var_map());
-}
-
 // @brief 故障回路のCNFを作る．
 // @param[in] fval_cnf 故障回路用のデータ構造
 // @param[in] src_node 故障位置のノード
@@ -270,7 +219,7 @@ SatEngine::make_fval_cnf(FvalCnf&  fval_cnf,
 			 const NodeSet& node_set,
 			 Val3 detect)
 {
-  make_gval_cnf(fval_cnf.gval_cnf(), node_set);
+  fval_cnf.gval_cnf().make_cnf(node_set);
 
   const TpgNode* dom_node = node_set.dom_node();
 
@@ -485,74 +434,38 @@ SatEngine::add_diff_clause(SatVarId var1,
   add_clause(~lit1, ~lit2);
 }
 
-// @brief 割当リストに従って値を固定する．
+// @brief 割当リストのもとでチェックを行う．
 // @param[in] gval_cnf 正常回路用のデータ構造
 // @param[in] assign_list 割当リスト
-void
-SatEngine::add_assignments(GvalCnf& gval_cnf,
-			   const NodeValList& assign_list)
+// @param[out] sat_model SATの場合の解
+SatBool3
+SatEngine::check_sat(GvalCnf& gval_cnf,
+		     const NodeValList& assign_list,
+		     vector<SatBool3>& sat_model)
 {
-  ymuint n = assign_list.size();
-  for (ymuint i = 0; i < n; ++ i) {
-    NodeVal nv = assign_list[i];
-    const TpgNode* node = nv.node();
-    make_gval_cnf(gval_cnf, node);
-    SatLiteral alit(gval_cnf.var(node), false);
-    if ( nv.val() ) {
-      add_clause(alit);
-    }
-    else {
-      add_clause(~alit);
-    }
-  }
+  vector<SatLiteral> assumptions;
+
+  gval_cnf.add_assumption(assign_list, assumptions);
+
+  return check_sat(assumptions, sat_model);
 }
 
-// @brief 割当リストの否定の節を加える．
+// @brief 割当リストのもとでチェックを行う．
 // @param[in] gval_cnf 正常回路用のデータ構造
-// @param[in] assign_list 割当リスト
-void
-SatEngine::add_negation(GvalCnf& gval_cnf,
-			const NodeValList& assign_list)
+// @param[in] assign_list1, assign_list2 割当リスト
+// @param[out] sat_model SATの場合の解
+SatBool3
+SatEngine::check_sat(GvalCnf& gval_cnf,
+		     const NodeValList& assign_list1,
+		     const NodeValList& assign_list2,
+		     vector<SatBool3>& sat_model)
 {
-  ymuint n = assign_list.size();
-  tmp_lits_begin(n);
-  for (ymuint i = 0; i < n; ++ i) {
-    NodeVal nv = assign_list[i];
-    const TpgNode* node = nv.node();
-    make_gval_cnf(gval_cnf, node);
-    SatLiteral alit(gval_cnf.var(node), false);
-    if ( nv.val() ) {
-      tmp_lits_add(~alit);
-    }
-    else {
-      tmp_lits_add( alit);
-    }
-  }
-  tmp_lits_end();
-}
+  vector<SatLiteral> assumptions;
 
-// @brief 割当リストに対応する仮定を追加する．
-// @param[in] assumptions 仮定を表すリテラルのリスト
-// @param[in] gval_cnf 正常回路用のデータ構造
-// @param[in] assign_list 割当リスト
-void
-SatEngine::add_assumption(vector<SatLiteral>& assumptions,
-			  GvalCnf& gval_cnf,
-			  const NodeValList& assign_list)
-{
-  ymuint n = assign_list.size();
-  for (ymuint i = 0; i < n; ++ i) {
-    NodeVal nv = assign_list[i];
-    const TpgNode* node = nv.node();
-    make_gval_cnf(gval_cnf, node);
-    SatLiteral alit(gval_cnf.var(node), false);
-    if ( nv.val() ) {
-      assumptions.push_back(alit);
-    }
-    else {
-      assumptions.push_back(~alit);
-    }
-  }
+  gval_cnf.add_assumption(assign_list1, assumptions);
+  gval_cnf.add_assumption(assign_list2, assumptions);
+
+  return check_sat(assumptions, sat_model);
 }
 
 // @brief ノードの入出力の関係を表すCNFを作る．

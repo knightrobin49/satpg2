@@ -153,7 +153,7 @@ FgMgrBase::find_dom_group(ymuint fid,
 			  vector<ymuint>& gid_list)
 {
   SatEngine engine(string(), string(), nullptr);
-  GvalCnf gval_cnf(max_node_id());
+  GvalCnf gval_cnf(engine.solver(), max_node_id());
   FvalCnf fval_cnf(max_node_id(), gval_cnf);
 
   // fault が見つからない条件を作る．
@@ -200,13 +200,13 @@ FgMgrBase::find_group(ymuint fid0,
   ymuint first_gid = group_num();
 
   SatEngine engine0(string(), string(), nullptr);
-  GvalCnf gval_cnf0(max_node_id());
+  GvalCnf gval_cnf0(engine0.solver(), max_node_id());
 
   const FaultInfo& fi0 = _fault_info(fid0);
 
   // fi0 の必要割当を追加
   const NodeValList ma_list0 = fi0.mandatory_assignment();
-  engine0.add_assignments(gval_cnf0, ma_list0);
+  gval_cnf0.add_assignments(ma_list0);
 
   if ( !fi0.single_cube() ) {
     // fault を検出する CNF を生成
@@ -250,12 +250,12 @@ FgMgrBase::find_group(ymuint fid0,
 
     // 簡易検査ではわからなかったので正式に調べる．
     SatEngine engine(string(), string(), nullptr);
-    GvalCnf gval_cnf(max_node_id());
+    GvalCnf gval_cnf(engine.solver(), max_node_id());
 
     // fid0 の必要割当を追加
-    engine.add_assignments(gval_cnf, ma_list0);
+    gval_cnf.add_assignments(ma_list0);
     // グループの必要割当を追加
-    engine.add_assignments(gval_cnf, mandatory_assignment(gid));
+    gval_cnf.add_assignments(mandatory_assignment(gid));
 
     ymuint fnum = 0;
 
@@ -321,13 +321,13 @@ FgMgrBase::find_group2(ymuint fid0,
   local_timer.start();
 
   SatEngine engine0(string(), string(), nullptr);
-  GvalCnf gval_cnf0(max_node_id());
+  GvalCnf gval_cnf0(engine0.solver(), max_node_id());
 
   const FaultInfo& fi0 = _fault_info(fid0);
 
   // fi0 の必要割当を追加
   const NodeValList ma_list0 = fi0.mandatory_assignment();
-  engine0.add_assignments(gval_cnf0, ma_list0);
+  gval_cnf0.add_assignments(ma_list0);
 
   FvalCnf fval_cnf0(max_node_id(), gval_cnf0);
   if ( !fi0.single_cube() ) {
@@ -378,12 +378,12 @@ FgMgrBase::find_group2(ymuint fid0,
 
     // 簡易検査ではわからなかったので正式に調べる．
     SatEngine engine(string(), string(), nullptr);
-    GvalCnf gval_cnf(max_node_id());
+    GvalCnf gval_cnf(engine.solver(), max_node_id());
 
     // fid0 の必要割当を追加
-    engine.add_assignments(gval_cnf, ma_list0);
+    gval_cnf.add_assignments(ma_list0);
     // グループの必要割当を追加
-    engine.add_assignments(gval_cnf, mandatory_assignment(gid));
+    gval_cnf.add_assignments(mandatory_assignment(gid));
 
     ymuint fnum = 0;
 
@@ -477,15 +477,15 @@ FgMgrBase::add_fault(ymuint gid,
   }
 
   SatEngine engine(string(), string(), nullptr);
-  GvalCnf gval_cnf(max_node_id());
+  GvalCnf gval_cnf(engine.solver(), max_node_id());
 
   // fid0 の必要割当を追加
   const NodeValList& ma_list0 = fi0.mandatory_assignment();
-  engine.add_assignments(gval_cnf, ma_list0);
+  gval_cnf.add_assignments(ma_list0);
 
   // グループの必要割当を追加
   const NodeValList& group_ma_list = mandatory_assignment(gid);
-  engine.add_assignments(gval_cnf, group_ma_list);
+  gval_cnf.add_assignments(group_ma_list);
 
   FvalCnf fval_cnf0(max_node_id(), gval_cnf);
 

@@ -17,10 +17,12 @@ BEGIN_NAMESPACE_YM_SATPG
 //////////////////////////////////////////////////////////////////////
 
 // @brief コンストラクタ
+// @param[in] solver SAT ソルバ
 // @param[in] max_node_id ノード番号の最大値
-MvalCnf::MvalCnf(ymuint max_node_id) :
+MvalCnf::MvalCnf(SatSolver& solver,
+		 ymuint max_node_id) :
   mMaxId(max_node_id),
-  mGvalCnf(max_node_id),
+  mGvalCnf(solver, max_node_id),
   mFvarMap(max_node_id),
   mDvarMap(max_node_id),
   mFdMapArray(max_node_id, nullptr)
