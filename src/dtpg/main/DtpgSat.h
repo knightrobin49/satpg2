@@ -23,8 +23,6 @@
 
 BEGIN_NAMESPACE_YM_SATPG
 
-class SatEngine;
-
 //////////////////////////////////////////////////////////////////////
 /// @class DtpgSat DtpgSat.h "DtpgSat.h"
 /// @brief DtpgSat の実装用の基底クラス
@@ -118,9 +116,9 @@ protected:
   timer_stop();
 
   /// @brief 一つの SAT問題を解く．
-  /// @param[in] engine SAT エンジン
+  /// @param[in] solver SATソルバ
   SatBool3
-  solve(SatEngine& engine,
+  solve(SatSolver& solver,
 	const vector<SatLiteral>& assumptions,
 	const TpgFault* fault,
 	const NodeSet& node_set,

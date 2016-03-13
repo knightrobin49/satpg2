@@ -122,10 +122,10 @@ set (base_SOURCES
   )
 
 set (sat_engine_SOURCES
-  src/sat_engine/SatEngine.cc
   src/sat_engine/VidLitMap.cc
   src/sat_engine/GvalCnf.cc
   src/sat_engine/FvalCnf.cc
+  src/sat_engine/FvalCnfBase.cc
   src/sat_engine/MvalCnf.cc
   src/sat_engine/Extractor.cc
   src/sat_engine/LitMap.cc

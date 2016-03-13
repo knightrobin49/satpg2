@@ -12,7 +12,6 @@
 #include "GvalCnf.h"
 #include "FvalCnf.h"
 #include "NodeSet.h"
-#include "SatEngine.h"
 #include "TpgFault.h"
 #include "TpgNetwork.h"
 #include "FaultMgr.h"
@@ -91,6 +90,15 @@ DtpgSatS::run(TpgNetwork& network,
     NodeSet node_set;
     node_set.mark_region(max_id, node);
 
+    cnf_begin();
+
+    GvalCnf gval_cnf(max_id, sat_type(), sat_option(), sat_outp());
+    FvalCnf fval_cnf(gval_cnf);
+
+    fval_cnf.make_cnf(node, node_set, kVal1);
+
+    cnf_end();
+
     ymuint nf = node->fault_num();
     for (ymuint i = 0; i < nf; ++ i) {
       const TpgFault* fault = node->fault(i);
@@ -98,18 +106,14 @@ DtpgSatS::run(TpgNetwork& network,
 	continue;
       }
 
-      cnf_begin();
-
-      SatEngine engine(sat_type(), sat_option(), sat_outp());
-      GvalCnf gval_cnf(engine.solver(), max_id);
-      FvalCnf fval_cnf(max_id, gval_cnf);
-
-      engine.make_fval_cnf(fval_cnf, fault, node_set, kVal1);
-
-      cnf_end();
-
       // 故障に対するテスト生成を行なう．
-      solve(engine, vector<SatLiteral>(), fault, node_set, fval_cnf.gvar_map(), fval_cnf.fvar_map());
+      NodeValList assignment;
+      gval_cnf.add_fault_condition(fault, assignment);
+
+      vector<SatLiteral> assumptions;
+      gval_cnf.conv_to_assumption(assignment, assumptions);
+
+      solve(gval_cnf.solver(), assumptions, fault, node_set, fval_cnf.gvar_map(), fval_cnf.fvar_map());
     }
   }
 

@@ -12,7 +12,6 @@
 #include "NodeSet.h"
 #include "GvalCnf.h"
 #include "FvalCnf.h"
-#include "SatEngine.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG
@@ -152,18 +151,17 @@ FgMgrBase::find_dom_group(ymuint fid,
 			  bool first_hit,
 			  vector<ymuint>& gid_list)
 {
-  SatEngine engine(string(), string(), nullptr);
-  GvalCnf gval_cnf(engine.solver(), max_node_id());
-  FvalCnf fval_cnf(max_node_id(), gval_cnf);
+  GvalCnf gval_cnf(max_node_id(), string(), string(), nullptr);
+  FvalCnf fval_cnf(gval_cnf);
 
   // fault が見つからない条件を作る．
-  engine.make_fval_cnf(fval_cnf, _fault(fid), _node_set(fid), kVal0);
+  fval_cnf.make_cnf(_fault(fid), _node_set(fid), kVal0);
 
   ymuint first_gid = group_num();
   for (ymuint i = 0; i < group_list.size(); ++ i) {
     ymuint gid = group_list[i];
     const NodeValList& suf_list0 = sufficient_assignment(gid);
-    if ( engine.check_sat(gval_cnf, suf_list0) == kB3False ) {
+    if ( gval_cnf.check_sat(suf_list0) == kB3False ) {
       // suf_lib0 のもとでは必ず見つかるということ．
       if ( first_gid == group_num() ) {
 	first_gid = gid;
@@ -199,8 +197,7 @@ FgMgrBase::find_group(ymuint fid0,
 
   ymuint first_gid = group_num();
 
-  SatEngine engine0(string(), string(), nullptr);
-  GvalCnf gval_cnf0(engine0.solver(), max_node_id());
+  GvalCnf gval_cnf0(max_node_id(), string(), string(), nullptr);
 
   const FaultInfo& fi0 = _fault_info(fid0);
 
@@ -210,8 +207,8 @@ FgMgrBase::find_group(ymuint fid0,
 
   if ( !fi0.single_cube() ) {
     // fault を検出する CNF を生成
-    FvalCnf fval_cnf0(max_node_id(), gval_cnf0);
-    engine0.make_fval_cnf(fval_cnf0, _fault(fid0), _node_set(fid0), kVal1);
+    FvalCnf fval_cnf0(gval_cnf0);
+    fval_cnf0.make_cnf(_fault(fid0), _node_set(fid0), kVal1);
   }
 
   for (ymuint i = 0; i < group_list.size(); ++ i) {
@@ -223,7 +220,7 @@ FgMgrBase::find_group(ymuint fid0,
 
     { // グループの十分割当が成り立っていたら両立している．
       const NodeValList& suf_list1 = sufficient_assignment(gid);
-      if ( engine0.check_sat(gval_cnf0, suf_list1) == kB3True ) {
+      if ( gval_cnf0.check_sat(suf_list1) == kB3True ) {
 	if ( first_gid == group_num() ) {
 	  first_gid = gid;
 	  if ( first_hit ) {
@@ -240,7 +237,7 @@ FgMgrBase::find_group(ymuint fid0,
 
     { // グループの必要割当が成り立たなかったら衝突している．
       const NodeValList& ma_list1 = mandatory_assignment(gid);
-      if ( engine0.check_sat(gval_cnf0, ma_list1) == kB3False ) {
+      if ( gval_cnf0.check_sat(ma_list1) == kB3False ) {
 	add_conflict_cache(gid, fid0);
 	continue;
       }
@@ -249,8 +246,7 @@ FgMgrBase::find_group(ymuint fid0,
     ++ mCheckCount;
 
     // 簡易検査ではわからなかったので正式に調べる．
-    SatEngine engine(string(), string(), nullptr);
-    GvalCnf gval_cnf(engine.solver(), max_node_id());
+    GvalCnf gval_cnf(max_node_id(), string(), string(), nullptr);
 
     // fid0 の必要割当を追加
     gval_cnf.add_assignments(ma_list0);
@@ -261,8 +257,8 @@ FgMgrBase::find_group(ymuint fid0,
 
     if ( !fi0.single_cube() ) {
       // fid0 を検出する条件を追加
-      FvalCnf fval_cnf0(max_node_id(), gval_cnf);
-      engine.make_fval_cnf(fval_cnf0, _fault(fid0), _node_set(fid0), kVal1);
+      FvalCnf fval_cnf0(gval_cnf);
+      fval_cnf0.make_cnf(_fault(fid0), _node_set(fid0), kVal1);
       ++ fnum;
     }
 
@@ -272,8 +268,8 @@ FgMgrBase::find_group(ymuint fid0,
       const FaultInfo& fi1 = _fault_info(fid1);
       if ( !fi1.single_cube() ) {
 	// fid1 の検出条件を生成
-	FvalCnf fval_cnf1(max_node_id(), gval_cnf);
-	engine.make_fval_cnf(fval_cnf1, _fault(fid1), _node_set(fid1), kVal1);
+	FvalCnf fval_cnf1(gval_cnf);
+	fval_cnf1.make_cnf(_fault(fid1), _node_set(fid1), kVal1);
 	++ fnum;
       }
     }
@@ -284,7 +280,7 @@ FgMgrBase::find_group(ymuint fid0,
     }
     ++ mMnum;
 
-    if ( engine.check_sat() == kB3True ) {
+    if ( gval_cnf.check_sat() == kB3True ) {
       ++ mFoundCount;
       if ( first_gid == group_num() ) {
 	first_gid = gid;
@@ -320,8 +316,7 @@ FgMgrBase::find_group2(ymuint fid0,
   StopWatch local_timer;
   local_timer.start();
 
-  SatEngine engine0(string(), string(), nullptr);
-  GvalCnf gval_cnf0(engine0.solver(), max_node_id());
+  GvalCnf gval_cnf0(max_node_id(), string(), string(), nullptr);
 
   const FaultInfo& fi0 = _fault_info(fid0);
 
@@ -329,10 +324,10 @@ FgMgrBase::find_group2(ymuint fid0,
   const NodeValList ma_list0 = fi0.mandatory_assignment();
   gval_cnf0.add_assignments(ma_list0);
 
-  FvalCnf fval_cnf0(max_node_id(), gval_cnf0);
+  FvalCnf fval_cnf0(gval_cnf0);
   if ( !fi0.single_cube() ) {
     // fault を検出する CNF を生成
-    engine0.make_fval_cnf(fval_cnf0, _fault(fid0), _node_set(fid0), kVal1);
+    fval_cnf0.make_cnf(_fault(fid0), _node_set(fid0), kVal1);
   }
 
   ymuint ans_gid = group_num();
@@ -346,7 +341,7 @@ FgMgrBase::find_group2(ymuint fid0,
     { // グループの十分割当が成り立っていたら両立している．
       const NodeValList& suf_list1 = sufficient_assignment(gid);
       vector<SatBool3> sat_model;
-      if ( engine0.check_sat(gval_cnf0, suf_list1, sat_model) == kB3True ) {
+      if ( gval_cnf0.check_sat(suf_list1, sat_model) == kB3True ) {
 	FaultGroup* fg = _fault_group(gid);
 	if ( fi0.single_cube() ) {
 	  const NodeValList& pi_suf_list = fi0.pi_sufficient_assignment();
@@ -368,7 +363,7 @@ FgMgrBase::find_group2(ymuint fid0,
 
     { // グループの必要割当が成り立たなかったら衝突している．
       const NodeValList& ma_list1 = mandatory_assignment(gid);
-      if ( engine0.check_sat(gval_cnf0, ma_list1) == kB3False ) {
+      if ( gval_cnf0.check_sat(ma_list1) == kB3False ) {
 	add_conflict_cache(gid, fid0);
 	continue;
       }
@@ -377,8 +372,7 @@ FgMgrBase::find_group2(ymuint fid0,
     ++ mCheckCount;
 
     // 簡易検査ではわからなかったので正式に調べる．
-    SatEngine engine(string(), string(), nullptr);
-    GvalCnf gval_cnf(engine.solver(), max_node_id());
+    GvalCnf gval_cnf(max_node_id(), string(), string(), nullptr);
 
     // fid0 の必要割当を追加
     gval_cnf.add_assignments(ma_list0);
@@ -387,21 +381,21 @@ FgMgrBase::find_group2(ymuint fid0,
 
     ymuint fnum = 0;
 
-    FvalCnf fval_cnf0(max_node_id(), gval_cnf);
+    FvalCnf fval_cnf0(gval_cnf);
     if ( !fi0.single_cube() ) {
       // fid0 を検出する条件を追加
-      engine.make_fval_cnf(fval_cnf0, _fault(fid0), _node_set(fid0), kVal1);
+      fval_cnf0.make_cnf(_fault(fid0), _node_set(fid0), kVal1);
       ++ fnum;
     }
 
     ymuint nf = fault_num(gid);
-    vector<FvalCnf> fval_cnf_array(nf, FvalCnf(max_node_id(), gval_cnf));
+    vector<FvalCnf> fval_cnf_array(nf, FvalCnf(gval_cnf));
     for (ymuint i = 0; i < nf; ++ i) {
       ymuint fid1 = fault_id(gid, i);
       const FaultInfo& fi1 = _fault_info(fid1);
       if ( !fi1.single_cube() ) {
 	// fid1 の検出条件を生成
-	engine.make_fval_cnf(fval_cnf_array[i], _fault(fid1), _node_set(fid1), kVal1);
+	fval_cnf_array[i].make_cnf(_fault(fid1), _node_set(fid1), kVal1);
 	++ fnum;
       }
     }
@@ -413,7 +407,7 @@ FgMgrBase::find_group2(ymuint fid0,
     ++ mMnum;
 
     vector<SatBool3> sat_model;
-    if ( engine.check_sat(sat_model) == kB3True ) {
+    if ( gval_cnf.check_sat(sat_model) == kB3True ) {
       ++ mFoundCount;
 
       FaultGroup* fg = _fault_group(gid);
@@ -476,8 +470,7 @@ FgMgrBase::add_fault(ymuint gid,
     return;
   }
 
-  SatEngine engine(string(), string(), nullptr);
-  GvalCnf gval_cnf(engine.solver(), max_node_id());
+  GvalCnf gval_cnf(max_node_id(), string(), string(), nullptr);
 
   // fid0 の必要割当を追加
   const NodeValList& ma_list0 = fi0.mandatory_assignment();
@@ -487,28 +480,28 @@ FgMgrBase::add_fault(ymuint gid,
   const NodeValList& group_ma_list = mandatory_assignment(gid);
   gval_cnf.add_assignments(group_ma_list);
 
-  FvalCnf fval_cnf0(max_node_id(), gval_cnf);
+  FvalCnf fval_cnf0(gval_cnf);
 
   ymuint fnum = 0;
   if ( !fi0.single_cube() ) {
     // fid0 を検出する条件を追加
-    engine.make_fval_cnf(fval_cnf0, _fault(fid0), _node_set(fid0), kVal1);
+    fval_cnf0.make_cnf(_fault(fid0), _node_set(fid0), kVal1);
     ++ fnum;
   }
 
-  vector<FvalCnf> fval_cnf_array(nf, FvalCnf(max_node_id(), gval_cnf));
+  vector<FvalCnf> fval_cnf_array(nf, FvalCnf(gval_cnf));
   for (ymuint i = 0; i < nf; ++ i) {
     ymuint fid1 = fg->fault_id(i);
     const FaultInfo& fi1 = _fault_info(fid1);
     // fault を検出する条件を追加
     if ( !fi1.single_cube() ) {
-      engine.make_fval_cnf(fval_cnf_array[i], _fault(fid1), _node_set(fid1), kVal1);
+      fval_cnf_array[i].make_cnf(_fault(fid1), _node_set(fid1), kVal1);
       ++ fnum;
     }
   }
 
   vector<SatBool3> sat_model;
-  SatBool3 sat_ans = engine.check_sat(sat_model);
+  SatBool3 sat_ans = gval_cnf.check_sat(sat_model);
   ASSERT_COND( sat_ans == kB3True );
 
   // 既存の故障の十分割当も更新する．

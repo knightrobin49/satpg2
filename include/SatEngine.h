@@ -59,54 +59,6 @@ public:
   SatSolver&
   solver();
 
-  /// @brief NodeSet の内容に応じて正常回路のCNFを作る．
-  /// @param[in] gval_cnf 正常回路用のデータ構造
-  /// @param[in] node_set 対象のノード集合
-  ///
-  /// 具体的には tfo_tfi_node() を対象にする．
-  void
-  make_gval_cnf(GvalCnf& gval_cnf,
-		const NodeSet& node_set);
-
-  /// @brief ノードのTFI全体の正常回路のCNFを作る．
-  /// @param[in] gval_cnf 正常回路用のデータ構造
-  /// @param[in] node ノード
-  void
-  make_gval_cnf(GvalCnf& gval_cnf,
-		const TpgNode* node);
-
-  /// @brief 故障回路のCNFを作る．
-  /// @param[in] fval_cnf 故障回路用のデータ構造
-  /// @param[in] src_node 故障位置のノード
-  /// @param[in] node_set 故障に関係するノード集合
-  /// @param[in] detect 検出条件
-  ///
-  /// detect = kVal0: 検出しないCNFを作る．
-  ///        = kVal1: 検出するCNFを作る．
-  ///        = kValX: fd_var() で制御するCNFを作る．
-  void
-  make_fval_cnf(FvalCnf& fval_cnf,
-		const TpgNode* src_node,
-		const NodeSet& node_set,
-		Val3 detect);
-
-  /// @brief 故障回路のCNFを作る．
-  /// @param[in] fval_cnf 故障回路用のデータ構造
-  /// @param[in] fault 故障
-  /// @param[in] node_set 故障に関係するノード集合
-  /// @param[in] detect 検出条件
-  ///
-  /// detect = kVal0: 検出しないCNFを作る．
-  ///        = kVal1: 検出するCNFを作る．
-  ///        = kValX: fd_var() で制御するCNFを作る．
-  ///
-  /// 内部で make_fval_cnf(src_node) と make_fault_cnf() を呼んでいる．
-  void
-  make_fval_cnf(FvalCnf& fval_cnf,
-		const TpgFault* fault,
-		const NodeSet& node_set,
-		Val3 detect);
-
   /// @brief 複数故障検出回路のCNFを作る．
   /// @param[in] mval_cnf 故障回路用のデータ構造
   /// @param[in] fault_list 故障リスト
@@ -117,81 +69,6 @@ public:
 		const vector<const TpgFault*>& fault_list,
 		const vector<const TpgNode*>& fnode_list,
 		const NodeSet& node_set);
-
-  /// @brief 2つの変数の値が等しいという制約を追加する．
-  /// @param[in] var1, var2 変数番号
-  void
-  add_eq_clause(SatVarId var1,
-		SatVarId var2);
-
-  /// @brief 2つの変数の値が異なるという制約を追加する．
-  /// @param[in] var1, var2 変数番号
-  void
-  add_diff_clause(SatVarId var1,
-		  SatVarId var2);
-
-  /// @brief 割当リストのもとでチェックを行う．
-  /// @param[in] gval_cnf 正常回路用のデータ構造
-  /// @param[in] assign_list 割当リスト
-  /// @param[out] sat_model SATの場合の解
-  SatBool3
-  check_sat(GvalCnf& gval_cnf,
-	    const NodeValList& assign_list,
-	    vector<SatBool3>& sat_model);
-
-  /// @brief 割当リストのもとでチェックを行う．
-  /// @param[in] gval_cnf 正常回路用のデータ構造
-  /// @param[in] assign_list 割当リスト
-  ///
-  /// こちらは結果のみを返す．
-  SatBool3
-  check_sat(GvalCnf& gval_cnf,
-	    const NodeValList& assign_list);
-
-  /// @brief 割当リストのもとでチェックを行う．
-  /// @param[in] gval_cnf 正常回路用のデータ構造
-  /// @param[in] assign_list1, assign_list2 割当リスト
-  /// @param[out] sat_model SATの場合の解
-  SatBool3
-  check_sat(GvalCnf& gval_cnf,
-	    const NodeValList& assign_list1,
-	    const NodeValList& assign_list2,
-	    vector<SatBool3>& sat_model);
-
-  /// @brief 割当リストのもとでチェックを行う．
-  /// @param[in] gval_cnf 正常回路用のデータ構造
-  /// @param[in] assign_list1, assign_list2 割当リスト
-  ///
-  /// こちらは結果のみを返す．
-  SatBool3
-  check_sat(GvalCnf& gval_cnf,
-	    const NodeValList& assign_list1,
-	    const NodeValList& assign_list2);
-
-  /// @brief SAT 問題を解く．
-  /// @param[in] assumptions 仮定を表すリテラルのリスト
-  /// @param[out] sat_model SATの場合の解
-  SatBool3
-  check_sat(const vector<SatLiteral>& assumptions,
-	    vector<SatBool3>& sat_model);
-
-  /// @brief SAT 問題を解く．
-  /// @param[out] sat_model SATの場合の解
-  SatBool3
-  check_sat(vector<SatBool3>& sat_model);
-
-  /// @brief SAT 問題を解く．
-  /// @param[in] assumptions 仮定を表すリテラルのリスト
-  ///
-  /// こちらは結果のみを返す．
-  SatBool3
-  check_sat(const vector<SatLiteral>& assumptions);
-
-  /// @brief SAT 問題を解く．
-  ///
-  /// こちらは結果のみを返す．
-  SatBool3
-  check_sat();
 
   /// @brief SAT 問題を解く．
   /// @param[in] assumptions 仮定を表すリテラルのリスト
@@ -222,26 +99,6 @@ private:
   void
   make_fnode_cnf(const TpgNode* node,
 		 const MvalCnf& mval_cnf);
-
-  /// @brief 故障箇所の関係を表す CNF を作る．
-  /// @param[in] fault 対象の故障
-  /// @param[in] gvar_map 正常値の変数マップ
-  /// @param[in] fvar_map 故障値の変数マップ
-  void
-  make_fault_cnf(const TpgFault* fault,
-		 const VidMap& gvar_map,
-		 const VidMap& fvar_map);
-
-  /// @brief 故障箇所の関係を表す CNF を作る．
-  /// @param[in] fault 対象の故障
-  /// @param[in] gvar_map 正常値の変数マップ
-  /// @param[in] fvar_map 故障値の変数マップ
-  ///
-  /// こちらは fault を検出する条件を追加するバージョン
-  void
-  make_fault_cnf_d(const TpgFault* fault,
-		   const VidMap& gvar_map,
-		   const VidMap& fvar_map);
 
   /// @brief 故障伝搬条件を表すCNFを作る．
   /// @param[in] node 対象のノード
@@ -532,78 +389,6 @@ SatEngine::solve(const vector<SatLiteral>& assumptions,
   sat_stats -= prev_stats;
 
   return ans;
-}
-
-// @brief 割当リストのもとでチェックを行う．
-// @param[in] gval_cnf 正常回路用のデータ構造
-// @param[in] assign_list 割当リスト
-//
-// こちらは結果のみを返す．
-inline
-SatBool3
-SatEngine::check_sat(GvalCnf& gval_cnf,
-		     const NodeValList& assign_list)
-{
-  vector<SatBool3> model;
-  return check_sat(gval_cnf, assign_list, model);
-}
-
-// @brief 割当リストのもとでチェックを行う．
-// @param[in] gval_cnf 正常回路用のデータ構造
-// @param[in] assign_list1, assign_list2 割当リスト
-//
-// こちらは結果のみを返す．
-inline
-SatBool3
-SatEngine::check_sat(GvalCnf& gval_cnf,
-		     const NodeValList& assign_list1,
-		     const NodeValList& assign_list2)
-{
-  vector<SatBool3> model;
-  return check_sat(gval_cnf, assign_list1, assign_list2, model);
-}
-
-// @brief SAT 問題を解く．
-// @param[in] assumptions 仮定を表すリテラルのリスト
-// @param[out] sat_model SATの場合の解
-inline
-SatBool3
-SatEngine::check_sat(const vector<SatLiteral>& assumptions,
-		     vector<SatBool3>& sat_model)
-{
-  return mSolver.solve(assumptions, sat_model);
-}
-
-// @brief SAT 問題を解く．
-// @param[out] sat_model SATの場合の解
-inline
-SatBool3
-SatEngine::check_sat(vector<SatBool3>& sat_model)
-{
-  return check_sat(vector<SatLiteral>(), sat_model);
-}
-
-// @brief SAT 問題を解く．
-// @param[in] assumptions 仮定を表すリテラルのリスト
-//
-// こちらは結果のみを返す．
-inline
-SatBool3
-SatEngine::check_sat(const vector<SatLiteral>& assumptions)
-{
-  vector<SatBool3> model;
-  return check_sat(assumptions, model);
-}
-
-// @brief SAT 問題を解く．
-//
-// こちらは結果のみを返す．
-inline
-SatBool3
-SatEngine::check_sat()
-{
-  vector<SatBool3> model;
-  return check_sat(vector<SatLiteral>(), model);
 }
 
 END_NAMESPACE_YM_SATPG

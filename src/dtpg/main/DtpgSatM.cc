@@ -64,15 +64,12 @@ DtpgSatM::run_multi(const NodeSet& node_set,
 {
   cnf_begin();
 
-  SatEngine engine(sat_type(), sat_option(), sat_outp());
-
-  ymuint nf = flist.size();
-
   ymuint max_id = node_set.max_id();
 
-  MvalCnf mval_cnf(engine.solver(), max_id);
+  GvalCnf gval_cnf(max_id, sat_type(), sat_option(), sat_outp());
+  MvalCnf mval_cnf(gval_cnf);
 
-  engine.make_mval_cnf(mval_cnf, flist, fnode_list, node_set);
+  mval_cnf.make_cnf(flist, fnode_list, node_set);
 
   cnf_end();
 
@@ -80,6 +77,7 @@ DtpgSatM::run_multi(const NodeSet& node_set,
   mMarkArray.resize(max_id, false);
 
   // 個々の故障に対するテスト生成を行なう．
+  ymuint nf = flist.size();
   for (ymuint i = 0; i < nf; ++ i) {
     const TpgFault* f = flist[i];
 
@@ -137,7 +135,7 @@ DtpgSatM::run_multi(const NodeSet& node_set,
       assumptions.push_back(dlit);
     }
 
-    solve(engine, assumptions, f, node_set, mval_cnf.gvar_map(), mval_cnf.fvar_map());
+    solve(gval_cnf.solver(), assumptions, f, node_set, mval_cnf.gvar_map(), mval_cnf.fvar_map());
   }
 }
 

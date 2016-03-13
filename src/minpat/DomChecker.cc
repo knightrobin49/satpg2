@@ -19,7 +19,6 @@
 
 #include "GvalCnf.h"
 #include "FvalCnf.h"
-#include "SatEngine.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG
@@ -511,12 +510,11 @@ DomChecker::get_dom_faults1(const vector<ymuint>& src_list,
 
     const TpgFault* f1 = mAnalyzer.fault(f1_id);
 
-    SatEngine engine(string(), string(), nullptr);
-    GvalCnf gval_cnf(engine.solver(), mMaxNodeId);
+    GvalCnf gval_cnf(mMaxNodeId, string(), string(), nullptr);
 
     // f1 を検出しない CNF を作成
-    FvalCnf fval_cnf(mMaxNodeId, gval_cnf);
-    engine.make_fval_cnf(fval_cnf, f1, mAnalyzer.node_set(f1_id), kVal0);
+    FvalCnf fval_cnf(gval_cnf);
+    fval_cnf.make_cnf(f1, mAnalyzer.node_set(f1_id), kVal0);
 
     for (ymuint i2 = 0; i2 < cand_list.size(); ++ i2) {
       ymuint f2_id = cand_list[i2];
@@ -530,7 +528,7 @@ DomChecker::get_dom_faults1(const vector<ymuint>& src_list,
       ++ stats.mSingleSat;
 
       // これが f2 の十分割当のもとで成り立ったら支配しない
-      if ( engine.check_sat(gval_cnf, fi2.sufficient_assignment()) == kB3True ) {
+      if ( gval_cnf.check_sat(fi2.sufficient_assignment()) == kB3True ) {
 	if ( print_dom_detail ) {
 	  cout << "NODOM(1) " << f1_id << " " << f2_id << endl;
 	}

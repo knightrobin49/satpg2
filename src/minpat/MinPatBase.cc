@@ -16,7 +16,6 @@
 #include "Verifier.h"
 #include "GvalCnf.h"
 #include "FvalCnf.h"
-#include "SatEngine.h"
 #include "NodeSet.h"
 #include "ModelValMap.h"
 
@@ -334,11 +333,10 @@ MinPatBase::make_testvector(TpgNetwork& network,
 			    const NodeValList& suf_list,
 			    TestVector* tv)
 {
-  SatEngine engine(string(), string(), nullptr);
-  GvalCnf gval_cnf(engine.solver(), mMaxNodeId);
+  GvalCnf gval_cnf(mMaxNodeId, string(), string(), nullptr);
 
   vector<SatBool3> sat_model;
-  SatBool3 sat_ans = engine.check_sat(gval_cnf, suf_list, sat_model);
+  SatBool3 sat_ans = gval_cnf.check_sat(suf_list, sat_model);
   ASSERT_COND ( sat_ans == kB3True );
 
   const VidMap& var_map = gval_cnf.var_map();

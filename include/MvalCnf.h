@@ -9,7 +9,7 @@
 /// All rights reserved.
 
 
-#include "satpg.h"
+#include "FvalCnfBase.h"
 #include "GvalCnf.h"
 
 
@@ -19,15 +19,14 @@ BEGIN_NAMESPACE_YM_SATPG
 /// @class MvalCnf MvalCnf.h "MvalCnf.h"
 /// @brief 複数の故障検出用CNFを作るクラス
 //////////////////////////////////////////////////////////////////////
-class MvalCnf
+class MvalCnf :
+  public FvalCnfBase
 {
 public:
 
   /// @brief コンストラクタ
-  /// @param[in] solver SAT ソルバ
-  /// @param[in] max_node_id ノード番号の最大値
-  MvalCnf(SatSolver& solver,
-	  ymuint max_node_id);
+  /// @param[in] gval_cnf 正常回路のCNFを作るクラス
+  MvalCnf(GvalCnf& gval_cnf);
 
   /// @brief デストラクタ
   ~MvalCnf();
@@ -37,50 +36,6 @@ public:
   //////////////////////////////////////////////////////////////////////
   // 外部インターフェイス
   //////////////////////////////////////////////////////////////////////
-
-  /// @brief 初期化する．
-  /// @param[in] max_node_id ノード番号の最大値
-  void
-  init(ymuint max_node_id);
-
-  /// @brief ノード番号の最大値を返す．
-  ymuint
-  max_node_id() const;
-
-  /// @brief 正常回路のCNFを生成するクラスを返す．
-  GvalCnf&
-  gval_cnf();
-
-  /// @brief 正常回路のCNFを生成するクラスを返す．
-  const GvalCnf&
-  gval_cnf() const;
-
-  /// @brief 正常回路の変数マップを得る．
-  const VidMap&
-  gvar_map() const;
-
-  /// @brief 故障回路の変数マップを得る．
-  const VidMap&
-  fvar_map() const;
-
-  /// @brief 伝搬条件の変数マップを得る．
-  const VidMap&
-  dvar_map() const;
-
-  /// @brief 正常値の変数を得る．
-  /// @param[in] node ノード
-  SatVarId
-  gvar(const TpgNode* node) const;
-
-  /// @brief 故障値の変数を得る．
-  /// @param[in] node ノード
-  SatVarId
-  fvar(const TpgNode* node) const;
-
-  /// @brief 伝搬値の変数を得る．
-  /// @param[in] node ノード
-  SatVarId
-  dvar(const TpgNode* node) const;
 
   /// @brief 故障に対応した変数を得る．
   /// @param[in] pos 位置
@@ -106,27 +61,6 @@ public:
   ifvar(const TpgNode* node,
 	ymuint pos,
 	int fval) const;
-
-  /// @brief ノードに正常値用の変数番号を割り当てる．
-  /// @param[in] node ノード
-  /// @param[in] gvar 正常値の変数番号
-  void
-  set_gvar(const TpgNode* node,
-	   SatVarId gvar);
-
-  /// @brief ノードに故障値用の変数番号を割り当てる．
-  /// @param[in] node ノード
-  /// @param[in] fvar 故障値の変数番号
-  void
-  set_fvar(const TpgNode* node,
-	   SatVarId fvar);
-
-  /// @brief ノードに伝搬値用の変数番号を割り当てる．
-  /// @param[in] node ノード
-  /// @param[in] dvar 伝搬値の変数番号
-  void
-  set_dvar(const TpgNode* node,
-	   SatVarId dvar);
 
   /// @brief 故障数をセットする．
   /// @param[in] num 故障数
@@ -157,6 +91,66 @@ public:
 	    ymuint pos,
 	    int fval,
 	    SatVarId fdvar);
+
+  /// @brief 複数故障検出回路のCNFを作る．
+  /// @param[in] fault_list 故障リスト
+  /// @param[in] fnode_list 故障を持つノードのリスト
+  /// @param[in] node_set 故障に関係するノード集合
+  void
+  make_cnf(const vector<const TpgFault*>& fault_list,
+	   const vector<const TpgNode*>& fnode_list,
+	   const NodeSet& node_set);
+
+
+private:
+  //////////////////////////////////////////////////////////////////////
+  // 内部で用いられる関数
+  //////////////////////////////////////////////////////////////////////
+
+  /// @brief 故障回路のノードの入出力の関係を表す CNF を作る．
+  /// @param[in] engine SAT エンジン
+  /// @param[in] node 対象のノード
+  void
+  make_fnode_cnf(const TpgNode* node);
+
+  /// @brief 0縮退故障挿入回路の CNF を作る．
+  /// @param[in] ivar 入力の変数
+  /// @param[in] cvar 故障制御変数
+  /// @param[in] ovar 出力の変数
+  ///
+  /// 通常は ovar <=> ivar だが
+  /// cvar = 1 の時は ovar = 0 となる．
+  void
+  make_flt0_cnf(SatVarId ivar,
+		SatVarId cvar,
+		SatVarId ovar);
+
+  /// @brief 1縮退故障挿入回路の CNF を作る．
+  /// @param[in] ivar 入力の変数
+  /// @param[in] cvar 故障制御変数
+  /// @param[in] ovar 出力の変数
+  ///
+  /// 通常は ovar <=> ivar だが
+  /// cvar = 1 の時は ovar = 1 となる．
+  void
+  make_flt1_cnf(SatVarId ivar,
+		SatVarId cvar,
+		SatVarId ovar);
+
+  /// @brief 0/1縮退故障挿入回路の CNF を作る．
+  /// @param[in] ivar 入力の変数
+  /// @param[in] c0var 0縮退故障制御変数
+  /// @param[in] c1var 1縮退故障制御変数
+  /// @param[in] ovar 出力の変数
+  ///
+  /// 通常は ovar <=> ivar だが
+  /// c0var = 1 の時は ovar = 0 となる．
+  /// c1var = 1 の時は ovar = 1 となる．
+  void
+  make_flt01_cnf(SatVarId ivar,
+		 SatVarId c0var,
+		 SatVarId c1var,
+		 SatVarId ovar);
 
 
 private:
@@ -203,18 +197,6 @@ private:
   // データメンバ
   //////////////////////////////////////////////////////////////////////
 
-  // ノード番号の最大値
-  ymuint mMaxId;
-
-  // 正常回路のCNFを作るクラス
-  GvalCnf mGvalCnf;
-
-  // 故障値の変数マップ
-  GenVidMap mFvarMap;
-
-  // 故障伝搬値の変数マップ
-  GenVidMap mDvarMap;
-
   // 故障検出用の変数マップ配列
   // サイズは mMaxId
   vector<FdMap*> mFdMapArray;
@@ -229,81 +211,6 @@ private:
 // インライン関数の定義
 //////////////////////////////////////////////////////////////////////
 
-// @brief ノード番号の最大値を返す．
-inline
-ymuint
-MvalCnf::max_node_id() const
-{
-  return mMaxId;
-}
-
-// @brief 正常回路のCNFを生成するクラスを返す．
-inline
-GvalCnf&
-MvalCnf::gval_cnf()
-{
-  return mGvalCnf;
-}
-
-// @brief 正常回路のCNFを生成するクラスを返す．
-inline
-const GvalCnf&
-MvalCnf::gval_cnf() const
-{
-  return mGvalCnf;
-}
-
-// @brief 正常回路の変数マップを得る．
-inline
-const VidMap&
-MvalCnf::gvar_map() const
-{
-  return mGvalCnf.var_map();
-}
-
-// @brief 故障回路の変数マップを得る．
-inline
-const VidMap&
-MvalCnf::fvar_map() const
-{
-  return mFvarMap;
-}
-
-// @brief 伝搬条件の変数マップを得る．
-inline
-const VidMap&
-MvalCnf::dvar_map() const
-{
-  return mDvarMap;
-}
-
-// @brief 正常値の変数を得る．
-// @param[in] node ノード
-inline
-SatVarId
-MvalCnf::gvar(const TpgNode* node) const
-{
-  return mGvalCnf.var(node);
-}
-
-// @brief 故障値の変数を得る．
-// @param[in] node ノード
-inline
-SatVarId
-MvalCnf::fvar(const TpgNode* node) const
-{
-  return mFvarMap(node);
-}
-
-// @brief 伝搬値の変数を得る．
-// @param[in] node ノード
-inline
-SatVarId
-MvalCnf::dvar(const TpgNode* node) const
-{
-  return mDvarMap(node);
-}
-
 // @brief 故障に対応した変数を得る．
 // @param[in] pos 位置
 inline
@@ -312,39 +219,6 @@ MvalCnf::fault_var(ymuint pos) const
 {
   ASSERT_COND( pos < mFaultVarArray.size() );
   return mFaultVarArray[pos];
-}
-
-// @brief ノードに正常値用の変数番号を割り当てる．
-// @param[in] node ノード
-// @param[in] gvar 正常値の変数番号
-inline
-void
-MvalCnf::set_gvar(const TpgNode* node,
-		  SatVarId gvar)
-{
-  mGvalCnf.set_var(node, gvar);
-}
-
-// @brief ノードに故障値用の変数番号を割り当てる．
-// @param[in] node ノード
-// @param[in] fvar 故障値の変数番号
-inline
-void
-MvalCnf::set_fvar(const TpgNode* node,
-		  SatVarId fvar)
-{
-  mFvarMap.set_vid(node, fvar);
-}
-
-// @brief ノードに伝搬値用の変数番号を割り当てる．
-// @param[in] node ノード
-// @param[in] dvar 伝搬値の変数番号
-inline
-void
-MvalCnf::set_dvar(const TpgNode* node,
-		  SatVarId dvar)
-{
-  mDvarMap.set_vid(node, dvar);
 }
 
 // @brief 故障数をセットする．

@@ -15,9 +15,10 @@
 #include "TpgFault.h"
 #include "BackTracer.h"
 #include "NodeValList.h"
-#include "SatEngine.h"
-#include "ym/SatStats.h"
 #include "ModelValMap.h"
+#include "ym/SatSolver.h"
+#include "ym/SatStats.h"
+#include "ym/StopWatch.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG
@@ -142,17 +143,30 @@ DtpgSat::timer_stop()
 
 // @brief 一つの SAT問題を解く．
 SatBool3
-DtpgSat::solve(SatEngine& engine,
+DtpgSat::solve(SatSolver& solver,
 	       const vector<SatLiteral>& assumptions,
 	       const TpgFault* fault,
 	       const NodeSet& node_set,
 	       const VidMap& gvar_map,
 	       const VidMap& fvar_map)
 {
+  StopWatch timer;
+
+  SatStats prev_stats;
+  solver.get_stats(prev_stats);
+
+  timer.reset();
+  timer.start();
+
   vector<SatBool3> model;
+  SatBool3 ans = solver.solve(assumptions, model);
+
+  timer.stop();
+  USTime time = timer.time();
+
   SatStats sat_stats;
-  USTime time;
-  SatBool3 ans = engine.solve(assumptions, model, sat_stats, time);
+  solver.get_stats(sat_stats);
+  sat_stats -= prev_stats;
 
   if ( ans == kB3True ) {
     // パタンが求まった．

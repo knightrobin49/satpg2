@@ -10,7 +10,7 @@
 #include "GvalCnf.h"
 #include "NodeSet.h"
 #include "NodeValList.h"
-#include "SatEngine.h"
+#include "TpgFault.h"
 #include "TpgNode.h"
 #include "VidLitMap.h"
 
@@ -22,11 +22,15 @@ BEGIN_NAMESPACE_YM_SATPG
 //////////////////////////////////////////////////////////////////////
 
 // @brief コンストラクタ
-// @param[in] solver SAT ソルバ
 // @param[in] max_node_id ノード番号の最大値
-GvalCnf::GvalCnf(SatSolver& solver,
-		 ymuint max_node_id) :
-  mSolver(solver),
+// @param[in] sat_type SATソルバの種類を表す文字列
+// @param[in] sat_option SATソルバに渡すオプション文字列
+// @param[in] sat_outp SATソルバ用の出力ストリーム
+GvalCnf::GvalCnf(ymuint max_node_id,
+		 const string& sat_type,
+		 const string& sat_option,
+		 ostream* sat_outp) :
+  mSolver(sat_type, sat_option, sat_outp),
   mMaxId(max_node_id),
   mMark(max_node_id, false),
   mVarMap(max_node_id)
@@ -38,15 +42,67 @@ GvalCnf::~GvalCnf()
 {
 }
 
-// @brief 初期化する．
-// @param[in] max_node_id ノード番号の最大値
+// @brief 故障の検出条件を割当リストに追加する．
+// @param[in] fault 故障
+// @param[out] assignment 割当リスト
 void
-GvalCnf::init(ymuint max_node_id)
+GvalCnf::add_fault_condition(const TpgFault* fault,
+			     NodeValList& assignment)
 {
-  mMaxId = max_node_id;
-  mMark.clear();
-  mMark.resize(max_node_id, false);
-  mVarMap.init(max_node_id);
+  // 故障の活性化条件
+  const TpgNode* inode = fault->tpg_inode();
+  // 0縮退故障の時 1にする．
+  bool val = (fault->val() == 0);
+  assignment.add(inode, val);
+
+  if ( fault->is_input_fault() ) {
+    // 故障の伝搬条件
+    const TpgNode* onode = fault->tpg_node();
+    Val3 nval = onode->nval();
+    if ( nval != kValX ) {
+      bool val = (nval == kVal1);
+      // inode -> onode の伝搬条件
+      ymuint ni = onode->fanin_num();
+      for (ymuint i = 0; i < ni; ++ i) {
+	const TpgNode* inode1 = onode->fanin(i);
+	if ( inode1 == inode ) {
+	  continue;
+	}
+	assignment.add(inode1, val);
+      }
+    }
+  }
+}
+
+// @brief FFR内の故障の伝搬条件を割当リストに追加する．
+// @param[in] root_node FFRの根のノード
+// @param[in] fault 故障
+// @param[out] assignment 割当リスト
+void
+GvalCnf::add_ffr_condition(const TpgNode* root_node,
+			   const TpgFault* fault,
+			   NodeValList& assignment)
+{
+  add_fault_condition(fault, assignment);
+
+  // 故障の伝搬条件
+  for (const TpgNode* node = fault->tpg_node(); node != root_node; node = node->active_fanout(0)) {
+    ASSERT_COND( node->active_fanout_num() == 1 );
+    const TpgNode* onode = node->active_fanout(0);
+    Val3 nval = onode->nval();
+    if ( nval == kValX ) {
+      continue;
+    }
+    bool val = (nval == kVal1);
+    ymuint ni = onode->fanin_num();
+    for (ymuint i = 0; i < ni; ++ i) {
+      const TpgNode* inode = onode->fanin(i);
+      if ( inode == node ) {
+	continue;
+      }
+      assignment.add(inode, val);
+    }
+  }
 }
 
 // @brief 割当リストに従って値を固定する．
@@ -91,16 +147,18 @@ GvalCnf::add_negation(const NodeValList& assignment)
   mSolver.add_clause(tmp_lits);
 }
 
-// @brief 割当リストに対応する仮定を追加する．
-// @param[in] assignment 割当リスト
+// @brief 割当リストを仮定のリテラルに変換する．
+// @param[in] assign_list 割当リスト
 // @param[out] assumptions 仮定を表すリテラルのリスト
+//
+// 必要に応じて使われているリテラルに関するCNFを追加する．
 void
-GvalCnf::add_assumption(const NodeValList& assignment,
-			vector<SatLiteral>& assumptions)
+GvalCnf::conv_to_assumption(const NodeValList& assign_list,
+			    vector<SatLiteral>& assumptions)
 {
-  ymuint n = assignment.size();
+  ymuint n = assign_list.size();
   for (ymuint i = 0; i < n; ++ i) {
-    NodeVal nv = assignment[i];
+    NodeVal nv = assign_list[i];
     const TpgNode* node = nv.node();
     make_cnf(node);
     SatLiteral alit(var(node), false);
@@ -157,6 +215,43 @@ GvalCnf::make_cnf(const TpgNode* node)
   set_var(node, gvar);
 
   node->make_cnf(mSolver, VidLitMap(node, var_map()));
+}
+
+// @brief チェックを行う．
+// @param[out] sat_model SATの場合の解
+SatBool3
+GvalCnf::check_sat(vector<SatBool3>& sat_model)
+{
+  return mSolver.solve(sat_model);
+}
+
+// @brief 割当リストのもとでチェックを行う．
+// @param[in] assign_list 割当リスト
+// @param[out] sat_model SATの場合の解
+SatBool3
+GvalCnf::check_sat(const NodeValList& assign_list,
+		   vector<SatBool3>& sat_model)
+{
+  vector<SatLiteral> assumptions;
+  conv_to_assumption(assign_list, assumptions);
+
+  return mSolver.solve(assumptions, sat_model);
+}
+
+// @brief 割当リストのもとでチェックを行う．
+// @param[in] assign_list1, assign_list2 割当リスト
+// @param[out] sat_model SATの場合の解
+SatBool3
+GvalCnf::check_sat(const NodeValList& assign_list1,
+		   const NodeValList& assign_list2,
+		   vector<SatBool3>& sat_model)
+{
+  vector<SatLiteral> assumptions;
+
+  conv_to_assumption(assign_list1, assumptions);
+  conv_to_assumption(assign_list2, assumptions);
+
+  return mSolver.solve(assumptions, sat_model);
 }
 
 END_NAMESPACE_YM_SATPG

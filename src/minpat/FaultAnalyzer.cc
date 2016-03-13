@@ -20,7 +20,6 @@
 
 #include "GvalCnf.h"
 #include "FvalCnf.h"
-#include "SatEngine.h"
 
 #include "ym/RandGen.h"
 #include "ym/StopWatch.h"
@@ -252,14 +251,13 @@ FaultAnalyzer::analyze_fault(const TpgFault* fault,
 
   fi.mFault = fault;
 
-  SatEngine engine(string(), string(), nullptr);
-  GvalCnf gval_cnf(engine.solver(), mMaxNodeId);
-  FvalCnf fval_cnf(mMaxNodeId, gval_cnf);
+  GvalCnf gval_cnf(mMaxNodeId, string(), string(), nullptr);
+  FvalCnf fval_cnf(gval_cnf);
 
-  engine.make_fval_cnf(fval_cnf, fault, node_set(f_id), kVal1);
+  fval_cnf.make_cnf(fault, node_set(f_id), kVal1);
 
   vector<SatBool3> sat_model;
-  SatBool3 sat_stat = engine.check_sat(sat_model);
+  SatBool3 sat_stat = gval_cnf.check_sat(sat_model);
   if ( sat_stat == kB3True ) {
     NodeValList& suf_list = fi.mSufficientAssignment;
     NodeValList& pi_suf_list = fi.mPiSufficientAssignment;
@@ -296,7 +294,7 @@ FaultAnalyzer::analyze_fault(const TpgFault* fault,
       const TpgNode* node = nv.node();
       bool val = nv.val();
       list1.add(node, !val);
-      if ( engine.check_sat(gval_cnf, list1) == kB3False ) {
+      if ( gval_cnf.check_sat(list1) == kB3False ) {
 	// node の値を反転したら検出できなかった．
 	// -> この割当は必須割当
 	ma_list.add(node, val);
@@ -481,8 +479,7 @@ FaultAnalyzer::check_dominance(ymuint f1_id,
   const TpgNode* fnode2 = f2->tpg_node();
   const TpgNode* dom_node = common_node(fnode1, fnode2);
 
-  SatEngine engine(string(), string(), nullptr);
-  GvalCnf gval_cnf(engine.solver(), mMaxNodeId);
+  GvalCnf gval_cnf(mMaxNodeId, string(), string(), nullptr);
 
   // f1 の必要条件を追加する．
   const NodeValList& ma_list1 = fi1.mandatory_assignment();
@@ -505,52 +502,52 @@ FaultAnalyzer::check_dominance(ymuint f1_id,
     node_set2.mark_region2(mMaxNodeId, fnode2, dom_node);
 
     // dom_node から出力までの故障伝搬条件を作る．
-    FvalCnf fval_cnf0(mMaxNodeId, gval_cnf);
-    engine.make_fval_cnf(fval_cnf0, dom_node, node_set0, kVal1);
-    engine.add_diff_clause(fval_cnf0.gvar(dom_node), fval_cnf0.fvar(dom_node));
+    FvalCnf fval_cnf0(gval_cnf);
+    fval_cnf0.make_cnf(dom_node, node_set0, kVal1);
+
+    fval_cnf0.add_diff_clause(dom_node);
 
     // f1 を検出する条件を追加する．
-    FvalCnf fval_cnf1(mMaxNodeId, gval_cnf);
-    engine.make_fval_cnf(fval_cnf1, f1, node_set1, kVal1);
+    FvalCnf fval_cnf1(gval_cnf);
+    fval_cnf1.make_cnf(f1, node_set1, kVal1);
 
     // f2 を検出しない条件を追加する．
-    FvalCnf fval_cnf2(mMaxNodeId, gval_cnf);
-    engine.make_fval_cnf(fval_cnf2, f2, node_set2, kVal0);
+    FvalCnf fval_cnf2(gval_cnf);
+    fval_cnf2.make_cnf(f2, node_set2, kVal0);
   }
   else {
     if ( !fi1.single_cube() ) {
       // f1 を検出する CNF を生成
-      FvalCnf fval_cnf1(mMaxNodeId, gval_cnf);
+      FvalCnf fval_cnf1(gval_cnf);
       const NodeSet& node_set1 = node_set(f1_id);
-      engine.make_fval_cnf(fval_cnf1, f1, node_set1, kVal1);
+      fval_cnf1.make_cnf(f1, node_set1, kVal1);
     }
 
     // f2 を検出しない CNF を生成
-    FvalCnf fval_cnf2(mMaxNodeId, gval_cnf);
+    FvalCnf fval_cnf2(gval_cnf);
     const NodeSet& node_set2 = node_set(f2_id);
-    engine.make_fval_cnf(fval_cnf2, f2, node_set2, kVal0);
+    fval_cnf2.make_cnf(f2, node_set2, kVal0);
   }
 
-  SatBool3 sat_stat = engine.check_sat();
+  SatBool3 sat_stat = gval_cnf.check_sat();
 
   timer.stop();
   USTime time = timer.time();
 
   if ( verify_dom_check ) {
-    SatEngine engine(string(), string(), nullptr);
-    GvalCnf gval_cnf(engine.solver(), mMaxNodeId);
+    GvalCnf gval_cnf(mMaxNodeId, string(), string(), nullptr);
 
     // f1 を検出する CNF を生成
-    FvalCnf fval_cnf1(mMaxNodeId, gval_cnf);
+    FvalCnf fval_cnf1(gval_cnf);
     const NodeSet& node_set1 = node_set(f1_id);
-    engine.make_fval_cnf(fval_cnf1, f1, node_set1, kVal1);
+    fval_cnf1.make_cnf(f1, node_set1, kVal1);
 
     // f2 を検出しない CNF を生成
-    FvalCnf fval_cnf2(mMaxNodeId, gval_cnf);
+    FvalCnf fval_cnf2(gval_cnf);
     const NodeSet& node_set2 = node_set(f2_id);
-    engine.make_fval_cnf(fval_cnf2, f2, node_set2, kVal0);
+    fval_cnf2.make_cnf(f2, node_set2, kVal0);
 
-    SatBool3 sat_stat2 = engine.check_sat();
+    SatBool3 sat_stat2 = gval_cnf.check_sat();
     if ( sat_stat != sat_stat2 ) {
       cout << "ERROR in check_dominance(" << f1 << ", " << f2 << ")" << endl
 	   << "  sat_stat  = " << sat_stat << endl

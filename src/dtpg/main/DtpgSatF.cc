@@ -12,7 +12,6 @@
 #include "GvalCnf.h"
 #include "FvalCnf.h"
 #include "NodeSet.h"
-#include "SatEngine.h"
 #include "TpgFault.h"
 #include "TpgNetwork.h"
 #include "FaultMgr.h"
@@ -81,57 +80,6 @@ get_ffr_faults(const TpgNode* node,
   }
 }
 
-void
-get_ffr_condition(const TpgNode* root_node,
-		  const TpgFault* fault,
-		  const VidMap& gvar_map,
-		  vector<SatLiteral>& assumption)
-{
-  // 故障の活性化条件
-  const TpgNode* inode = fault->tpg_inode();
-  bool inv = (fault->val() == 1);
-  SatLiteral lit0(gvar_map(inode), inv);
-  assumption.push_back(lit0);
-
-  if ( fault->is_input_fault() ) {
-    const TpgNode* node = fault->tpg_node();
-    Val3 nval = node->nval();
-    if ( nval != kValX ) {
-      bool inv = (nval == kVal0);
-      // inode -> node の伝搬条件
-      ymuint ni = node->fanin_num();
-      for (ymuint i = 0; i < ni; ++ i) {
-	if ( i == fault->tpg_pos() ) {
-	  continue;
-	}
-	const TpgNode* inode1 = node->fanin(i);
-	SatLiteral lit1(gvar_map(inode1), inv);
-	assumption.push_back(lit1);
-      }
-    }
-  }
-
-  // 故障の伝搬条件
-  for (const TpgNode* node = fault->tpg_node(); node != root_node; node = node->active_fanout(0)) {
-    ASSERT_COND( node->active_fanout_num() == 1 );
-    const TpgNode* onode = node->active_fanout(0);
-    Val3 nval = onode->nval();
-    if ( nval == kValX ) {
-      continue;
-    }
-    bool inv = (nval == kVal0);
-    ymuint ni = onode->fanin_num();
-    for (ymuint i = 0; i < ni; ++ i) {
-      const TpgNode* inode = onode->fanin(i);
-      if ( inode == node ) {
-	continue;
-      }
-      SatLiteral lit1(gvar_map(inode), inv);
-      assumption.push_back(lit1);
-    }
-  }
-}
-
 END_NONAMESPACE
 
 // @brief テスト生成を行なう．
@@ -183,11 +131,10 @@ DtpgSatF::run(TpgNetwork& network,
 
     cnf_begin();
 
-    SatEngine engine(sat_type(), sat_option(), sat_outp());
-    GvalCnf gval_cnf(engine.solver(), max_id);
-    FvalCnf fval_cnf(max_id, gval_cnf);
+    GvalCnf gval_cnf(max_id, sat_type(), sat_option(), sat_outp());
+    FvalCnf fval_cnf(gval_cnf);
 
-    engine.make_fval_cnf(fval_cnf, node, node_set, kVal1);
+    fval_cnf.make_cnf(node, node_set, kVal1);
 
     cnf_end();
 
@@ -199,11 +146,14 @@ DtpgSatF::run(TpgNetwork& network,
       }
 
       // FFR 内の故障活性化&伝搬条件を求める．
+      NodeValList assignment;
+      gval_cnf.add_ffr_condition(node, fault, assignment);
+
       vector<SatLiteral> assumption;
-      get_ffr_condition(node, fault, fval_cnf.gvar_map(), assumption);
+      gval_cnf.conv_to_assumption(assignment, assumption);
 
       // 故障に対するテスト生成を行なう．
-      solve(engine, assumption, fault, node_set, fval_cnf.gvar_map(), fval_cnf.fvar_map());
+      solve(gval_cnf.solver(), assumption, fault, node_set, fval_cnf.gvar_map(), fval_cnf.fvar_map());
     }
   }
 

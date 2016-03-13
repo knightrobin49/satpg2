@@ -19,7 +19,6 @@
 
 #include "GvalCnf.h"
 #include "FvalCnf.h"
-#include "SatEngine.h"
 
 #include "ym/RandGen.h"
 #include "ym/StopWatch.h"
@@ -230,16 +229,15 @@ ConflictChecker::analyze_conflict(ymuint f1_id,
   const NodeValList& suf_list1 = fi1.sufficient_assignment();
   const NodeValList& ma_list1 = fi1.mandatory_assignment();
 
-  SatEngine engine(string(), string(), nullptr);
-  GvalCnf gval_cnf(engine.solver(), mMaxNodeId);
+  GvalCnf gval_cnf(mMaxNodeId, string(), string(), nullptr);
 
   // f1 を検出する CNF を生成
   gval_cnf.add_assignments(ma_list1);
   if ( !fi1.single_cube() ) {
-    FvalCnf fval_cnf(mMaxNodeId, gval_cnf);
+    FvalCnf fval_cnf(gval_cnf);
     const TpgFault* f1 = mAnalyzer.fault(f1_id);
     const NodeSet& node_set1 = mAnalyzer.node_set(f1_id);
-    engine.make_fval_cnf(fval_cnf, f1, node_set1, kVal1);
+    fval_cnf.make_cnf(f1, node_set1, kVal1);
   }
 
   conf_list.reserve(f2_list.size());
@@ -255,7 +253,7 @@ ConflictChecker::analyze_conflict(ymuint f1_id,
     const NodeValList& ma_list2 = fi2.mandatory_assignment();
 
     mConflictStats.int2_timer.start();
-    SatBool3 sat_stat = engine.check_sat(gval_cnf, suf_list2);
+    SatBool3 sat_stat = gval_cnf.check_sat(suf_list2);
     if ( sat_stat == kB3True ) {
       // f2 の十分割当のもとで f1 が検出できれば f1 と f2 はコンフリクトしない．
       ++ mConflictStats.int2_count;
@@ -275,7 +273,7 @@ ConflictChecker::analyze_conflict(ymuint f1_id,
     }
 
     mConflictStats.conf3_timer.start();
-    if ( engine.check_sat(gval_cnf, ma_list2) == kB3False ) {
+    if ( gval_cnf.check_sat(ma_list2) == kB3False ) {
       // f2 の必要割当のもとで f1 が検出できなければ f1 と f2 はコンフリクトしている．
       ++ mConflictStats.conf_count;
       ++ mConflictStats.conf3_count;
@@ -292,28 +290,27 @@ ConflictChecker::analyze_conflict(ymuint f1_id,
     mConflictStats.conf4_timer.start();
     ++ mConflictStats.conf4_check_count;
     {
-      SatEngine engine(string(), string(), nullptr);
-      GvalCnf gval_cnf(engine.solver(), mMaxNodeId);
+      GvalCnf gval_cnf(mMaxNodeId, string(), string(), nullptr);
 
       // f1 を検出する CNF を生成
       const FaultInfo& fi1 = mAnalyzer.fault_info(f1_id);
       gval_cnf.add_assignments(fi1.mandatory_assignment());
       if ( !fi1.single_cube() ) {
-	FvalCnf fval_cnf1(mMaxNodeId, gval_cnf);
+	FvalCnf fval_cnf1(gval_cnf);
 	const TpgFault* f1 = mAnalyzer.fault(f1_id);
 	const NodeSet& node_set1 = mAnalyzer.node_set(f1_id);
-	engine.make_fval_cnf(fval_cnf1, f1, node_set1, kVal1);
+	fval_cnf1.make_cnf(f1, node_set1, kVal1);
       }
 
       // f2 を検出する CNF を生成
       const FaultInfo& fi2 = mAnalyzer.fault_info(f2_id);
       gval_cnf.add_assignments(fi2.mandatory_assignment());
-      FvalCnf fval_cnf2(mMaxNodeId, gval_cnf);
+      FvalCnf fval_cnf2(gval_cnf);
       const TpgFault* f2 = mAnalyzer.fault(f2_id);
       const NodeSet& node_set2 = mAnalyzer.node_set(f2_id);
-      engine.make_fval_cnf(fval_cnf2, f2, node_set2, kVal1);
+      fval_cnf2.make_cnf(f2, node_set2, kVal1);
 
-      SatBool3 sat_stat = engine.check_sat();
+      SatBool3 sat_stat = gval_cnf.check_sat();
       if ( sat_stat == kB3False ) {
 	++ mConflictStats.conf_count;
 	++ mConflictStats.conf4_count;

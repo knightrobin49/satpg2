@@ -26,10 +26,14 @@ class GvalCnf
 public:
 
   /// @brief コンストラクタ
-  /// @param[in] solver SAT ソルバ
   /// @param[in] max_node_id ノード番号の最大値
-  GvalCnf(SatSolver& solver,
-	  ymuint max_node_id);
+  /// @param[in] sat_type SATソルバの種類を表す文字列
+  /// @param[in] sat_option SATソルバに渡すオプション文字列
+  /// @param[in] sat_outp SATソルバ用の出力ストリーム
+  GvalCnf(ymuint max_node_id,
+	  const string& sat_type,
+	  const string& sat_option,
+	  ostream* sat_outp);
 
   /// @brief デストラクタ
   ~GvalCnf();
@@ -40,10 +44,9 @@ public:
   // 外部インターフェイス
   //////////////////////////////////////////////////////////////////////
 
-  /// @brief 初期化する．
-  /// @param[in] max_node_id ノード番号の最大値
-  void
-  init(ymuint max_node_id);
+  /// @brief SATソルバを返す．
+  SatSolver&
+  solver();
 
   /// @brief ノード番号の最大値を返す．
   ymuint
@@ -58,22 +61,28 @@ public:
   SatVarId
   var(const TpgNode* node) const;
 
-  /// @brief ノードのマークを調べる．
-  /// @param[in] node ノード
-  bool
-  mark(const TpgNode* node) const;
-
-  /// @brief ノードにマークをつける．
-  /// @param[in] node ノード
-  void
-  set_mark(const TpgNode* node);
-
   /// @brief ノードに正常値用の変数番号を割り当てる．
   /// @param[in] node ノード
   /// @param[in] var 変数番号
   void
   set_var(const TpgNode* node,
 	  SatVarId var);
+
+  /// @brief 故障の検出条件を割当リストに追加する．
+  /// @param[in] fault 故障
+  /// @param[out] assignment 割当リスト
+  void
+  add_fault_condition(const TpgFault* fault,
+		      NodeValList& assignment);
+
+  /// @brief FFR内の故障の伝搬条件を割当リストに追加する．
+  /// @param[in] root_node FFRの根のノード
+  /// @param[in] fault 故障
+  /// @param[out] assignment 割当リスト
+  void
+  add_ffr_condition(const TpgNode* root_node,
+		    const TpgFault* fault,
+		    NodeValList& assignment);
 
   /// @brief 割当リストに従って値を固定する．
   /// @param[in] assignment 割当リスト
@@ -85,12 +94,14 @@ public:
   void
   add_negation(const NodeValList& assignment);
 
-  /// @brief 割当リストに対応する仮定を追加する．
+  /// @brief 割当リストを仮定のリテラルに変換する．
   /// @param[in] assign_list 割当リスト
   /// @param[out] assumptions 仮定を表すリテラルのリスト
+  ///
+  /// 必要に応じて使われているリテラルに関するCNFを追加する．
   void
-  add_assumption(const NodeValList& assign_list,
-		 vector<SatLiteral>& assumptions);
+  conv_to_assumption(const NodeValList& assign_list,
+		     vector<SatLiteral>& assumptions);
 
   /// @brief NodeSet に含まれるノードの CNF を作る．
   /// @param[in] node_set ノード集合
@@ -102,11 +113,63 @@ public:
   void
   make_cnf(const TpgNode* node);
 
+  /// @brief チェックを行う．
+  /// @param[out] sat_model SATの場合の解
+  SatBool3
+  check_sat(vector<SatBool3>& sat_model);
+
+  /// @brief チェックを行う．
+  ///
+  /// こちらは結果のみを返す．
+  SatBool3
+  check_sat();
+
+  /// @brief 割当リストのもとでチェックを行う．
+  /// @param[in] assign_list 割当リスト
+  /// @param[out] sat_model SATの場合の解
+  SatBool3
+  check_sat(const NodeValList& assign_list,
+	    vector<SatBool3>& sat_model);
+
+  /// @brief 割当リストのもとでチェックを行う．
+  /// @param[in] assign_list 割当リスト
+  ///
+  /// こちらは結果のみを返す．
+  SatBool3
+  check_sat(const NodeValList& assign_list);
+
+  /// @brief 割当リストのもとでチェックを行う．
+  /// @param[in] assign_list1, assign_list2 割当リスト
+  /// @param[out] sat_model SATの場合の解
+  SatBool3
+  check_sat(const NodeValList& assign_list1,
+	    const NodeValList& assign_list2,
+	    vector<SatBool3>& sat_model);
+
+  /// @brief 割当リストのもとでチェックを行う．
+  /// @param[in] assign_list1, assign_list2 割当リスト
+  /// @param[in] assign_list1, assign_list2 割当リスト
+  ///
+  /// こちらは結果のみを返す．
+  SatBool3
+  check_sat(const NodeValList& assign_list1,
+	    const NodeValList& assign_list2);
+
 
 private:
   //////////////////////////////////////////////////////////////////////
   // 内部で用いられる関数
   //////////////////////////////////////////////////////////////////////
+
+  /// @brief ノードのマークを調べる．
+  /// @param[in] node ノード
+  bool
+  mark(const TpgNode* node) const;
+
+  /// @brief ノードにマークをつける．
+  /// @param[in] node ノード
+  void
+  set_mark(const TpgNode* node);
 
 
 private:
@@ -115,7 +178,7 @@ private:
   //////////////////////////////////////////////////////////////////////
 
   // SAT ソルバ
-  SatSolver& mSolver;
+  SatSolver mSolver;
 
   // ノード番号の最大値
   ymuint mMaxId;
@@ -132,6 +195,14 @@ private:
 //////////////////////////////////////////////////////////////////////
 // インライン関数の定義
 //////////////////////////////////////////////////////////////////////
+
+// @brief SATソルバを返す．
+inline
+SatSolver&
+GvalCnf::solver()
+{
+  return mSolver;
+}
 
 // @brief ノード番号の最大値を返す．
 inline
@@ -185,6 +256,43 @@ GvalCnf::set_var(const TpgNode* node,
 		 SatVarId var)
 {
   mVarMap.set_vid(node, var);
+}
+
+// @brief チェックを行う．
+//
+// こちらは結果のみを返す．
+inline
+SatBool3
+GvalCnf::check_sat()
+{
+  vector<SatBool3> model;
+  return check_sat(model);
+}
+
+// @brief 割当リストのもとでチェックを行う．
+// @param[in] assign_list 割当リスト
+//
+// こちらは結果のみを返す．
+inline
+SatBool3
+GvalCnf::check_sat(const NodeValList& assign_list)
+{
+  vector<SatBool3> model;
+  return check_sat(assign_list, model);
+}
+
+// @brief 割当リストのもとでチェックを行う．
+// @param[in] gval_cnf 正常回路用のデータ構造
+// @param[in] assign_list1, assign_list2 割当リスト
+//
+// こちらは結果のみを返す．
+inline
+SatBool3
+GvalCnf::check_sat(const NodeValList& assign_list1,
+		   const NodeValList& assign_list2)
+{
+  vector<SatBool3> model;
+  return check_sat(assign_list1, assign_list2, model);
 }
 
 END_NAMESPACE_YM_SATPG
