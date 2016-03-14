@@ -46,37 +46,38 @@ public:
   ymuint
   id() const;
 
-  /// @brief 故障位置に対応する TpgNode を返す．
-  virtual
-  const TpgNode*
-  tpg_node() const = 0;
-
   /// @brief 故障の入力側の TpgNode を返す．
-  ///
-  /// 出力の故障の場合には tpg_node() と同じ値を返す．
   virtual
   const TpgNode*
   tpg_inode() const = 0;
 
-  /// @brief 入力の故障の時 true を返す．
-  bool
-  is_input_fault() const;
+  /// @brief 故障の出力側の TpgNode を返す．
+  ///
+  /// is_stem_fault() == true の時は tpg_inode() と同じになる．
+  virtual
+  const TpgNode*
+  tpg_onode() const = 0;
 
-  /// @brief 出力の故障の時 true を返す．
+  /// @brief ステムの故障の時 true を返す．
   virtual
   bool
-  is_output_fault() const = 0;
+  is_stem_fault() const = 0;
 
-  /// @brief 故障位置を返す．
+  /// @brief ブランチの故障の時 true を返す．
+  bool
+  is_branch_fault() const;
+
+  /// @brief ブランチの入力位置を返す．
   ///
-  /// is_input_fault() == true の時のみ意味を持つ．
+  /// is_branch_fault() == true の時のみ意味を持つ．
   virtual
   ymuint
   fault_pos() const = 0;
 
-  /// @brief tpg_inode 上の故障位置を返す．
+  /// @brief tpg_onode 上の故障位置を返す．
   ///
-  /// is_input_fault() == true の時のみ意味を持つ．
+  /// is_branch_fault() == true の時のみ意味を持つ．
+  /// tpg_onode(tpg_pos()) == tpg_inode() が成り立つ．
   virtual
   ymuint
   tpg_pos() const = 0;
@@ -165,12 +166,12 @@ TpgFault::id() const
   return mId;
 }
 
-// @brief 入力の故障の時 true を返す．
+// @brief ブランチの故障の時 true を返す．
 inline
 bool
-TpgFault::is_input_fault() const
+TpgFault::is_branch_fault() const
 {
-  return !is_output_fault();
+  return !is_stem_fault();
 }
 
 // @brief 故障値を返す．

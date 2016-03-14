@@ -71,7 +71,7 @@ FvalCnf::get_pi_suf_list(const vector<SatBool3>& sat_model,
   extractor(fault, suf_list);
 
   BackTracer backtracer(max_node_id());
-  backtracer(fault->tpg_node(), node_set, val_map, pi_suf_list);
+  backtracer(fault->tpg_onode(), node_set, val_map, pi_suf_list);
 }
 
 // @brief 故障回路のCNFを作る．
@@ -185,7 +185,7 @@ FvalCnf::make_cnf(const TpgFault* fault,
 		  const NodeSet& node_set,
 		  Val3 detect)
 {
-  make_cnf(fault->tpg_node(), node_set, detect);
+  make_cnf(fault->tpg_onode(), node_set, detect);
 
   NodeValList assign_list;
   gval_cnf().add_fault_condition(fault, assign_list);

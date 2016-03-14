@@ -57,7 +57,7 @@ FaultMgr::set_faults(const TpgNetwork& network)
     for (ymuint j = 0; j < nf; ++ j) {
       const TpgFault* fault = node->fault(j);
       mRepList.push_back(fault);
-      if ( fault->tpg_node()->is_active() ) {
+      if ( fault->tpg_onode()->is_active() ) {
 	mRemainList.push_back(fault);
       }
       else {

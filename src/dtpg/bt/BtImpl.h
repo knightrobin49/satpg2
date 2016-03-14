@@ -12,6 +12,7 @@
 #include "BackTracer.h"
 #include "NodeValList.h"
 #include "ValMap.h"
+#include "TpgNode.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG
@@ -101,6 +102,10 @@ BtImpl::record_value(const TpgNode* node,
   }
   else if ( v == kVal1 ) {
     assign_list.add(node, true);
+  }
+  {
+    const char* val_str = (v == kVal0) ? "0" : "1";
+    cout << "record_value(" << node->name() << ":" << val_str << ")" << endl;
   }
 }
 

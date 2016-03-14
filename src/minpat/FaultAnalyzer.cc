@@ -376,7 +376,7 @@ FaultAnalyzer::input_list(ymuint fid) const
 {
   ASSERT_COND( fid < mMaxFaultId );
   const TpgFault* fault = mFaultInfoArray[fid].fault();
-  return mInputListArray[fault->tpg_node()->id()];
+  return mInputListArray[fault->tpg_inode()->id()];
 }
 
 // @brief 故障のTFIに含まれる入力番号のリスト返す．
@@ -386,7 +386,7 @@ FaultAnalyzer::input_list2(ymuint fid) const
 {
   ASSERT_COND( fid < mMaxFaultId );
   const TpgFault* fault = mFaultInfoArray[fid].fault();
-  return mInputList2Array[fault->tpg_node()->id()];
+  return mInputList2Array[fault->tpg_inode()->id()];
 }
 
 // @brief 故障に関連するノード集合を返す．
@@ -395,7 +395,7 @@ FaultAnalyzer::node_set(ymuint fid) const
 {
   ASSERT_COND( fid < mMaxFaultId );
   const TpgFault* fault = mFaultInfoArray[fid].fault();
-  return mNodeSetArray[fault->tpg_node()->id()];
+  return mNodeSetArray[fault->tpg_inode()->id()];
 }
 
 // @brief 等価故障を記録する．
@@ -483,8 +483,8 @@ FaultAnalyzer::check_dominance(ymuint f1_id,
   const TpgFault* f1 = fault(f1_id);
   const TpgFault* f2 = fault(f2_id);
 
-  const TpgNode* fnode1 = f1->tpg_node();
-  const TpgNode* fnode2 = f2->tpg_node();
+  const TpgNode* fnode1 = f1->tpg_inode();
+  const TpgNode* fnode2 = f2->tpg_inode();
   const TpgNode* dom_node = common_node(fnode1, fnode2);
 
   GvalCnf gval_cnf(mMaxNodeId, string(), string(), nullptr);

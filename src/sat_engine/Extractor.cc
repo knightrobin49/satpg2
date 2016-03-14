@@ -17,6 +17,7 @@ BEGIN_NAMESPACE_YM_SATPG
 
 BEGIN_NONAMESPACE
 
+// node の TFO にマークをつける．
 void
 dfs(const TpgNode* node,
     HashSet<ymuint>& mark)
@@ -58,8 +59,9 @@ void
 Extractor::operator()(const TpgFault* fault,
 		      NodeValList& assign_list)
 {
-  const TpgNode* fnode = fault->tpg_node();
+  const TpgNode* fnode = fault->tpg_onode();
 
+  // fnode の TFO (fault cone) に印をつける．
   mFconeMark.clear();
   dfs(fnode, mFconeMark);
 
@@ -67,13 +69,15 @@ Extractor::operator()(const TpgFault* fault,
   const TpgNode* spo = find_sensitized_output(fnode);
   ASSERT_COND( spo != nullptr );
 
+  cout << "find_sensitized_output() = " << spo->name() << endl;
+
   // その経路の side input の値を記録する．
   mRecorded.clear();
   assign_list.clear();
 
   mRecorded.add(fnode->id());
   record_node(fnode, assign_list);
-  if ( fault->is_input_fault() ) {
+  if ( fault->is_branch_fault() ) {
     ymuint ni = fnode->fanin_num();
     for (ymuint i = 0; i < ni; ++ i) {
       const TpgNode* inode = fnode->fanin(i);
@@ -244,6 +248,7 @@ Extractor::record_node(const TpgNode* node,
 {
   bool val = (mValMap.gval(node) == kVal1);
   assign_list.add(node, val);
+  cout << "  record_node(" << node->name() << ": " << val << ")" << endl;
 }
 
 END_NAMESPACE_YM_SATPG

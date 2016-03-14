@@ -104,6 +104,23 @@ MinPatBase::run(TpgNetwork& network,
 
   init(fid_list, tvmgr, fsim2);
 
+  {
+    ymuint nf = fid_list.size();
+    for (ymuint i = 0; i < nf; ++ i) {
+      ymuint fid = fid_list[i];
+      const FaultInfo& fi = mAnalyzer.fault_info(fid);
+      const TpgFault* fault = mAnalyzer.fault(fid);
+      TestVector* tv = fi.testvector();
+      Verifier verifier;
+      bool stat = verifier.check(fsim2, vector<const TpgFault*>(1, fault), vector<TestVector*>(1, tv));
+      if ( !stat ) {
+	cout << "ERROR!: " << fault->str() << endl;
+	abort();
+      }
+
+    }
+  }
+
   if ( false ) {
     vector<ymuint> dom_fid_list = this->fid_list();
     sort(dom_fid_list.begin(), dom_fid_list.end());
@@ -202,7 +219,7 @@ MinPatBase::run(TpgNetwork& network,
       ymuint gid = fgmgr.new_group(fid);
       group_list.push_back(gid);
     }
-    {
+    { // debug 2016/03/14
       ymuint nf = fgmgr.fault_num(gid);
       vector<const TpgFault*> f_list(nf);
       for (ymuint i = 0; i < nf; ++ i) {

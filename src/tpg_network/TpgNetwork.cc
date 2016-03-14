@@ -14,8 +14,8 @@
 #include "TpgInput.h"
 #include "TpgOutput.h"
 #include "TpgFault.h"
-#include "TpgOutputFault.h"
-#include "TpgInputFault.h"
+#include "TpgStemFault.h"
+#include "TpgBranchFault.h"
 #include "TpgMap.h"
 #include "ym/BnFuncType.h"
 #include "ym/BnNetwork.h"
@@ -932,8 +932,8 @@ TpgNetwork::new_ofault(const char* name,
 		       int val,
 		       TpgNode* node)
 {
-  void* p = mAlloc.get_memory(sizeof(TpgOutputFault));
-  TpgFault* f = new (p) TpgOutputFault(mFaultNum, name, val, node, nullptr);
+  void* p = mAlloc.get_memory(sizeof(TpgStemFault));
+  TpgFault* f = new (p) TpgStemFault(mFaultNum, name, val, node, nullptr);
   node->set_output_fault(val, f);
   ++ mFaultNum;
 
@@ -959,8 +959,8 @@ TpgNetwork::new_ifault(const char* name,
 		       const TpgFault* rep)
 {
   TpgNode* inode = node->fanin(inode_pos);
-  void* p = mAlloc.get_memory(sizeof(TpgInputFault));
-  TpgFault* f = new (p) TpgInputFault(mFaultNum, name, val, ipos, node, inode, inode_pos, rep);
+  void* p = mAlloc.get_memory(sizeof(TpgBranchFault));
+  TpgFault* f = new (p) TpgBranchFault(mFaultNum, name, val, ipos, node, inode, inode_pos, rep);
   node->set_input_fault(val, inode_pos, f);
   ++ mFaultNum;
 

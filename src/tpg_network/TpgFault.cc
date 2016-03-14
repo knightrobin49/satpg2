@@ -8,8 +8,8 @@
 
 
 #include "TpgFault.h"
-#include "TpgOutputFault.h"
-#include "TpgInputFault.h"
+#include "TpgStemFault.h"
+#include "TpgBranchFault.h"
 #include "TpgNode.h"
 
 
@@ -49,7 +49,7 @@ operator<<(ostream& s,
 
 
 //////////////////////////////////////////////////////////////////////
-// クラス TpgOutputFault
+// クラス TpgStemFault
 //////////////////////////////////////////////////////////////////////
 
 // @brief コンストラクタ
@@ -58,50 +58,49 @@ operator<<(ostream& s,
 // @param[in] val 故障値
 // @param[in] node 故障位置のノード
 // @param[in] rep_fault 代表故障
-TpgOutputFault::TpgOutputFault(ymuint id,
-			       const char* name,
-			       int val,
-			       const TpgNode* node,
-			       const TpgFault* rep_fault) :
+TpgStemFault::TpgStemFault(ymuint id,
+			   const char* name,
+			   int val,
+			   const TpgNode* node,
+			   const TpgFault* rep_fault) :
   TpgFault(id, val, rep_fault),
   mNodeName(name),
   mTpgNode(node)
 {
-  ASSERT_COND( tpg_node() != nullptr );
+  ASSERT_COND( tpg_inode() != nullptr );
 }
 
 // @brief デストラクタ
-TpgOutputFault::~TpgOutputFault()
+TpgStemFault::~TpgStemFault()
 {
 }
 
-// @brief node() に対応する TpgNode を返す．
-inline
+// @brief 故障の入力側の TpgNode を返す．
 const TpgNode*
-TpgOutputFault::tpg_node() const
+TpgStemFault::tpg_inode() const
 {
   return mTpgNode;
 }
 
-// @brief 故障の入力側の TpgNode を返す．
+// @brief 故障の出力側の TpgNode を返す．
 //
-// 出力の故障の場合には tpg_node() と同じ値を返す．
+// is_branch_fault() == true の時のみ意味を持つ．
 const TpgNode*
-TpgOutputFault::tpg_inode() const
+TpgStemFault::tpg_onode() const
 {
-  return tpg_node();
+  return mTpgNode;
 }
 
-// @brief 出力の故障の時 true を返す．
+// @brief ステムの故障の時 true を返す．
 bool
-TpgOutputFault::is_output_fault() const
+TpgStemFault::is_stem_fault() const
 {
   return true;
 }
 
-// @brief 故障位置を返す．
+// @brief ブランチの入力位置を返す．
 ymuint
-TpgOutputFault::fault_pos() const
+TpgStemFault::fault_pos() const
 {
   ASSERT_NOT_REACHED;
   return 0;
@@ -111,7 +110,7 @@ TpgOutputFault::fault_pos() const
 //
 // is_input_fault() == true の時のみ意味を持つ．
 ymuint
-TpgOutputFault::tpg_pos() const
+TpgStemFault::tpg_pos() const
 {
   ASSERT_NOT_REACHED;
   return 0;
@@ -119,7 +118,7 @@ TpgOutputFault::tpg_pos() const
 
 // @brief 故障の内容を表す文字列を返す．
 string
-TpgOutputFault::str() const
+TpgStemFault::str() const
 {
   ostringstream ans;
   ans << mNodeName << ":O:";
@@ -134,7 +133,7 @@ TpgOutputFault::str() const
 
 
 //////////////////////////////////////////////////////////////////////
-// クラス TpgInputFault
+// クラス TpgBranchFault
 //////////////////////////////////////////////////////////////////////
 
 // @brief コンストラクタ
@@ -142,78 +141,76 @@ TpgOutputFault::str() const
 // @param[in] name ノード名
 // @param[in] val 故障値
 // @param[in] pos 故障の入力位置
-// @param[in] node 故障位置の TpgNode
+// @param[in] onode 出力側の TpgNode
 // @param[in] inode 入力側の TpgNode
 // @param[in] tpg_pos node 上の故障位置
 // @param[in] rep_fault 代表故障
-TpgInputFault::TpgInputFault(ymuint id,
-			     const char* name,
-			     int val,
-			     ymuint pos,
-			     const TpgNode* node,
-			     const TpgNode* inode,
-			     ymuint tpg_pos,
-			     const TpgFault* rep_fault) :
+TpgBranchFault::TpgBranchFault(ymuint id,
+			       const char* name,
+			       int val,
+			       ymuint pos,
+			       const TpgNode* onode,
+			       const TpgNode* inode,
+			       ymuint tpg_pos,
+			       const TpgFault* rep_fault) :
   TpgFault(id, val, rep_fault),
   mNodeName(name),
-  mTpgNode(node),
+  mOnode(onode),
   mPos(pos),
-  mI_TpgNode(inode),
+  mInode(inode),
   mTpgPos(tpg_pos)
 {
-  ASSERT_COND( tpg_node() != nullptr );
+  ASSERT_COND( tpg_onode() != nullptr );
   ASSERT_COND( tpg_inode() != nullptr );
 }
 
 // @brief デストラクタ
-TpgInputFault::~TpgInputFault()
+TpgBranchFault::~TpgBranchFault()
 {
-}
-
-// @brief node() に対応する TpgNode を返す．
-const TpgNode*
-TpgInputFault::tpg_node() const
-{
-  return mTpgNode;
 }
 
 // @brief 故障の入力側の TpgNode を返す．
-//
-// 出力の故障の場合には tpg_node() と同じ値を返す．
 const TpgNode*
-TpgInputFault::tpg_inode() const
+TpgBranchFault::tpg_inode() const
 {
-  return mI_TpgNode;
+  return mInode;
 }
 
-// @brief 出力の故障の時 true を返す．
+// @brief 故障の出力側の TpgNode を返す．
+const TpgNode*
+TpgBranchFault::tpg_onode() const
+{
+  return mOnode;
+}
+
+// @brief ステムの故障の時 true を返す．
 bool
-TpgInputFault::is_output_fault() const
+TpgBranchFault::is_stem_fault() const
 {
   return false;
 }
 
-// @brief 故障位置を返す．
+// @brief ブランチの入力位置を返す．
 //
-// is_input_fault() == true の時のみ意味を持つ．
+// is_branch_fault() == true の時のみ意味を持つ．
 ymuint
-TpgInputFault::fault_pos() const
+TpgBranchFault::fault_pos() const
 {
   return mPos;
 }
 
 // @brief tpg_inode 上の故障位置を返す．
 //
-// is_input_fault() == true の時のみ意味を持つ．
+// is_branch_fault() == true の時のみ意味を持つ．
 ymuint
-TpgInputFault::tpg_pos() const
+TpgBranchFault::tpg_pos() const
 {
   return mTpgPos;
 }
 
 // @brief 故障の内容を表す文字列を返す．
 string
-TpgInputFault::str() const
+TpgBranchFault::str() const
 {
   ostringstream ans;
   ans << mNodeName << ":I" << fault_pos() << ":";

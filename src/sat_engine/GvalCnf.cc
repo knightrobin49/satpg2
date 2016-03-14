@@ -55,9 +55,9 @@ GvalCnf::add_fault_condition(const TpgFault* fault,
   bool val = (fault->val() == 0);
   assignment.add(inode, val);
 
-  if ( fault->is_input_fault() ) {
+  if ( fault->is_branch_fault() ) {
     // 故障の伝搬条件
-    const TpgNode* onode = fault->tpg_node();
+    const TpgNode* onode = fault->tpg_onode();
     Val3 nval = onode->nval();
     if ( nval != kValX ) {
       bool val = (nval == kVal1);
@@ -86,7 +86,7 @@ GvalCnf::add_ffr_condition(const TpgNode* root_node,
   add_fault_condition(fault, assignment);
 
   // 故障の伝搬条件
-  for (const TpgNode* node = fault->tpg_node(); node != root_node; node = node->active_fanout(0)) {
+  for (const TpgNode* node = fault->tpg_onode(); node != root_node; node = node->active_fanout(0)) {
     ASSERT_COND( node->active_fanout_num() == 1 );
     const TpgNode* onode = node->active_fanout(0);
     Val3 nval = onode->nval();

@@ -156,12 +156,12 @@ MvalCnf::make_cnf(const vector<const TpgFault*>& fault_list,
     set_fault_var(i, fdvar);
     const TpgFault* f = fault_list[i];
     int fval = f->val();
-    const TpgNode* node = f->tpg_node();
-
-    if ( f->is_output_fault() ) {
+    if ( f->is_stem_fault() ) {
+      const TpgNode* node = f->tpg_inode();
       set_ofvar(node, fval, fdvar);
     }
     else {
+      const TpgNode* node = f->tpg_onode();
       ymuint pos = f->tpg_pos();
       set_ifvar(node, pos, fval, fdvar);
     }

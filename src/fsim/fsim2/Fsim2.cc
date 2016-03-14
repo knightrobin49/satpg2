@@ -193,11 +193,11 @@ Fsim2::set_network(const TpgNetwork& network)
     ymuint nf1 = tpgnode->fault_num();
     for (ymuint j = 0; j < nf1; ++ j) {
       const TpgFault* fault = tpgnode->fault(j);
-      const TpgNode* tpgnode = fault->tpg_node();
+      const TpgNode* tpgnode = fault->tpg_onode();
       SimNode* simnode = find_simnode(tpgnode);
-      ymuint ipos = 0;
       SimNode* isimnode = nullptr;
-      if ( fault->is_input_fault() ) {
+      ymuint ipos = 0;
+      if ( fault->is_branch_fault() ) {
 	ipos = fault->tpg_pos();
 	const TpgNode* inode = tpgnode->fanin(ipos);
 	isimnode = find_simnode(inode);
@@ -524,16 +524,18 @@ Fsim2::_spsfp(const TpgFault* f)
   }
 
   // FFR 内の故障伝搬を行う．
-  SimNode* simnode = find_simnode(f->tpg_node());
   PackedVal lobs;
-  if ( f->is_input_fault() ) {
+  if ( f->is_branch_fault() ) {
+    SimNode* simnode = find_simnode(f->tpg_onode());
     ymuint ipos = f->tpg_pos();
     lobs = simnode->calc_lobs() & simnode->calc_gobs2(ipos);
+    clear_lobs(simnode);
   }
   else {
+    SimNode* simnode = find_simnode(f->tpg_inode());
     lobs = simnode->calc_lobs();
+    clear_lobs(simnode);
   }
-  clear_lobs(simnode);
 
   SimNode* isimnode = find_simnode(f->tpg_inode());
   PackedVal valdiff = isimnode->gval();
@@ -547,7 +549,7 @@ Fsim2::_spsfp(const TpgFault* f)
     return false;
   }
 
-  SimNode* root = simnode->ffr()->root();
+  SimNode* root = isimnode->ffr()->root();
   if ( root->is_output() ) {
     return (lobs != kPvAll0);
   }
@@ -614,7 +616,7 @@ Fsim2::ffr_simulate(SimFFR* ffr)
     PackedVal lobs = simnode->calc_lobs();
     PackedVal valdiff = ff->mInode->gval();
     const TpgFault* f = ff->mOrigF;
-    if ( f->is_input_fault() ) {
+    if ( f->is_branch_fault() ) {
       // 入力の故障
       ymuint ipos = ff->mIpos;
       lobs &= simnode->calc_gobs2(ipos);
