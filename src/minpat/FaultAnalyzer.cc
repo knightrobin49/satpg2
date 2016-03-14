@@ -20,6 +20,7 @@
 
 #include "GvalCnf.h"
 #include "FvalCnf.h"
+#include "ModelValMap.h"
 
 #include "ym/RandGen.h"
 #include "ym/StopWatch.h"
@@ -254,6 +255,9 @@ SatBool3
 FaultAnalyzer::analyze_fault(const TpgFault* fault,
 			     TvMgr& tvmgr)
 {
+  cout << endl
+       << "analyze_fault(" << fault->str() << ")" << endl;
+
   ymuint f_id = fault->id();
   FaultInfo& fi = mFaultInfoArray[f_id];
 
@@ -267,6 +271,26 @@ FaultAnalyzer::analyze_fault(const TpgFault* fault,
   vector<SatBool3> sat_model;
   SatBool3 sat_stat = gval_cnf.check_sat(sat_model);
   if ( sat_stat == kB3True ) {
+    {
+      ModelValMap val_map(fval_cnf.gvar_map(), fval_cnf.fvar_map(), sat_model);
+      for (ymuint i = 0; i < node_set(f_id).tfo_tfi_size(); ++ i) {
+	const TpgNode* node = node_set(f_id).tfo_tfi_node(i);
+	if ( node->is_output() ) {
+	  cout << "*";
+	}
+	cout << node->name() << ": ";
+	if ( i < node_set(f_id).tfo_size() ) {
+	  Val3 gval = val_map.gval(node);
+	  Val3 fval = val_map.fval(node);
+	  cout << gval << "/" << fval;
+	}
+	else {
+	  Val3 gval = val_map.gval(node);
+	  cout << gval;
+	}
+	cout << endl;
+      }
+    }
     // 割当結果から十分割当を求める．
     NodeValList& suf_list = fi.mSufficientAssignment;
     NodeValList& pi_suf_list = fi.mPiSufficientAssignment;

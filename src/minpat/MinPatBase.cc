@@ -111,6 +111,7 @@ MinPatBase::run(TpgNetwork& network,
       const FaultInfo& fi = mAnalyzer.fault_info(fid);
       const TpgFault* fault = mAnalyzer.fault(fid);
       TestVector* tv = fi.testvector();
+      cout << fault->str() << ": " << tv->bin_str() << endl;
       Verifier verifier;
       bool stat = verifier.check(fsim2, vector<const TpgFault*>(1, fault), vector<TestVector*>(1, tv));
       if ( !stat ) {
