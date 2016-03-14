@@ -138,7 +138,7 @@ FgMgrBase::delete_group(ymuint gid)
 
 // @brief 新たな条件なしで追加できる既存グループを見つける．
 // @param[in] fid 対象の故障番号
-// @param[in] group_list 探索最小のグループ番号のリスト
+// @param[in] group_list 探索対象のグループ番号のリスト
 // @param[in] first_hit 最初のグループのみを求めるとき true にするフラグ
 // @param[out] gid_list 対象のグループ番号を収めるリスト
 // @return 最初のグループ番号を返す．
@@ -177,7 +177,7 @@ FgMgrBase::find_dom_group(ymuint fid,
 
 // @brief 追加できる既存グループを見つける．
 // @param[in] fid0 対象の故障番号
-// @param[in] group_list 探索最小のグループ番号のリスト
+// @param[in] group_list 探索対象のグループ番号のリスト
 // @param[in] fast 高速ヒューリスティック
 // @param[in] first_hit 最初のグループのみを求めるとき true にするフラグ
 // @param[out] gid_list 対象のグループ番号を収めるリスト
@@ -303,7 +303,7 @@ FgMgrBase::find_group(ymuint fid0,
 
 // @brief 追加できる既存グループを見つけて追加する．
 // @param[in] fid 対象の故障番号
-// @param[in] group_list 探索最小のグループ番号のリスト
+// @param[in] group_list 探索対象のグループ番号のリスト
 // @param[in] fast 高速ヒューリスティック
 // @return 見つかったグループ番号を返す．
 //
@@ -450,6 +450,7 @@ FgMgrBase::find_group2(ymuint fid0,
   return ans_gid;
 }
 
+#if 0
 // @brief 既存のグループに故障を追加する．
 // @param[in] gid グループ番号 ( 0 <= gid < group_num() )
 // @param[in] fid0 故障番号
@@ -537,6 +538,7 @@ FgMgrBase::add_fault(ymuint gid,
     fg->add_fault(fid0, suf_list, ma_list0, pi_suf_list);
   }
 }
+#endif
 
 // @brief 新しいグループを作る．
 // @return グループを返す．

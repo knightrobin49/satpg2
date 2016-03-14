@@ -78,7 +78,7 @@ public:
 
   /// @brief 新たな条件なしで追加できる既存グループを見つける．
   /// @param[in] fid 対象の故障番号
-  /// @param[in] group_list 探索最小のグループ番号のリスト
+  /// @param[in] group_list 探索対象のグループ番号のリスト
   /// @param[in] first_hit 最初のグループのみを求めるとき true にするフラグ
   /// @param[out] gid_list 対象のグループ番号を収めるリスト
   /// @return 最初のグループ番号を返す．
@@ -94,7 +94,7 @@ public:
 
   /// @brief 新たな条件なしで追加できる既存グループを見つける．
   /// @param[in] fid 対象の故障番号
-  /// @param[in] group_list 探索最小のグループ番号のリスト
+  /// @param[in] group_list 探索対象のグループ番号のリスト
   /// @return 最初のグループ番号を返す．
   ///
   /// 見つからない場合は group_num() を返す．
@@ -104,7 +104,7 @@ public:
 
   /// @brief 追加できる既存グループを見つける．
   /// @param[in] fid 対象の故障番号
-  /// @param[in] group_list 探索最小のグループ番号のリスト
+  /// @param[in] group_list 探索対象のグループ番号のリスト
   /// @param[in] fast 高速ヒューリスティック
   /// @param[in] first_hit 最初のグループのみを求めるとき true にするフラグ
   /// @param[out] gid_list 対象のグループ番号を収めるリスト
@@ -122,7 +122,7 @@ public:
 
   /// @brief 追加できる既存グループを見つける．
   /// @param[in] fid 対象の故障番号
-  /// @param[in] group_list 探索最小のグループ番号のリスト
+  /// @param[in] group_list 探索対象のグループ番号のリスト
   /// @param[in] fast 高速ヒューリスティック
   /// @return 最初のグループ番号を返す．
   ///
@@ -134,7 +134,7 @@ public:
 
   /// @brief 追加できる既存グループを見つけて追加する．
   /// @param[in] fid 対象の故障番号
-  /// @param[in] group_list 探索最小のグループ番号のリスト
+  /// @param[in] group_list 探索対象のグループ番号のリスト
   /// @param[in] fast 高速ヒューリスティック
   /// @return 見つかったグループ番号を返す．
   ///
@@ -145,6 +145,7 @@ public:
 	      const vector<ymuint>& group_list,
 	      bool fast) = 0;
 
+#if 0
   /// @brief 既存のグループに故障を追加する．
   /// @param[in] gid グループ番号 ( 0 <= gid < group_num() )
   /// @param[in] fid 故障番号
@@ -152,6 +153,7 @@ public:
   void
   add_fault(ymuint gid,
 	    ymuint fid) = 0;
+#endif
 
   /// @brief 故障を取り除く
   /// @param[in] gid グループ番号 ( 0 <= gid < group_num() )
@@ -210,7 +212,7 @@ public:
 
 // @brief 新たな条件なしで追加できる既存グループを見つける．
 // @param[in] fid 対象の故障番号
-// @param[in] group_list 探索最小のグループ番号のリスト
+// @param[in] group_list 探索対象のグループ番号のリスト
 // @return 最初のグループ番号を返す．
 //
 // 見つからない場合は group_num() を返す．
@@ -225,7 +227,7 @@ FgMgr::find_dom_group(ymuint fid,
 
 // @brief 追加できる既存グループを見つける．
 // @param[in] fid 対象の故障番号
-// @param[in] group_list 探索最小のグループ番号のリスト
+// @param[in] group_list 探索対象のグループ番号のリスト
 // @param[in] fast 高速ヒューリスティック
 // @return 最初のグループ番号を返す．
 //

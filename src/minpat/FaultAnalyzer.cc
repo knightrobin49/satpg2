@@ -131,13 +131,12 @@ FaultAnalyzer::init(const TpgNetwork& network,
     }
 
     const TpgNode* node = network.active_node(i);
-    if ( node->is_output() ) {
-      continue;
-    }
 
+    // 故障箇所の TFI of TFI を node_set に記録する．
     NodeSet& node_set = mNodeSetArray[node->id()];
     node_set.mark_region(mMaxNodeId, node);
 
+    // そのうちの外部入力を ImputListArray に入れる．
     vector<ymuint>& input_list = mInputListArray[node->id()];
     for (ymuint j = 0; j < node_set.tfo_tfi_size(); ++ j) {
       const TpgNode* node1 = node_set.tfo_tfi_node(j);
@@ -182,7 +181,7 @@ FaultAnalyzer::init(const TpgNetwork& network,
   mOrigFidList.reserve(f_det);
   for (ymuint i = 0; i < network.active_node_num(); ++ i) {
     const TpgNode* node = network.active_node(i);
-
+#if 0
     ymuint ni = node->fanin_num();
     bool has_ncfault = false;
     for (ymuint j = 0; j < ni; ++ j) {
@@ -223,6 +222,15 @@ FaultAnalyzer::init(const TpgNetwork& network,
 	mOrigFidList.push_back(f1->id());
       }
     }
+#else
+    ymuint nf = node->fault_num();
+    for (ymuint j = 0; j < nf; ++ j) {
+      const TpgFault* fault = node->fault(j);
+      if ( det_flag[fault->id()] ) {
+	mOrigFidList.push_back(fault->id());
+      }
+    }
+#endif
   }
 
   local_timer.stop();
@@ -259,9 +267,9 @@ FaultAnalyzer::analyze_fault(const TpgFault* fault,
   vector<SatBool3> sat_model;
   SatBool3 sat_stat = gval_cnf.check_sat(sat_model);
   if ( sat_stat == kB3True ) {
+    // 割当結果から十分割当を求める．
     NodeValList& suf_list = fi.mSufficientAssignment;
     NodeValList& pi_suf_list = fi.mPiSufficientAssignment;
-
     fval_cnf.get_pi_suf_list(sat_model, fault, node_set(f_id), suf_list, pi_suf_list);
 
     // テストベクタを作る．

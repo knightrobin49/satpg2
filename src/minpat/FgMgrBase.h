@@ -138,6 +138,7 @@ public:
 	      const vector<ymuint>& group_list,
 	      bool fast);
 
+#if 0
   /// @brief 既存のグループに故障を追加する．
   /// @param[in] gid グループ番号 ( 0 <= gid < group_num() )
   /// @param[in] fid 故障番号
@@ -145,6 +146,7 @@ public:
   void
   add_fault(ymuint gid,
 	    ymuint fid);
+#endif
 
   /// @brief 故障を取り除く
   /// @param[in] gid グループ番号 ( 0 <= gid < group_num() )

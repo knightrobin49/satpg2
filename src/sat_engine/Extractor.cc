@@ -81,7 +81,7 @@ Extractor::operator()(const TpgFault* fault,
     }
   }
 
-  record_sensitized_node(spo->fanin(0), assign_list);
+  record_sensitized_node(spo, assign_list);
 
   assign_list.sort();
 
