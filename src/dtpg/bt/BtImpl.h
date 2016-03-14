@@ -103,10 +103,6 @@ BtImpl::record_value(const TpgNode* node,
   else if ( v == kVal1 ) {
     assign_list.add(node, true);
   }
-  {
-    const char* val_str = (v == kVal0) ? "0" : "1";
-    cout << "record_value(" << node->name() << ":" << val_str << ")" << endl;
-  }
 }
 
 END_NAMESPACE_YM_SATPG

@@ -279,7 +279,9 @@ TpgNetwork::set(const BnNetwork& bnnetwork)
   for (ymuint i = 0; i < npo; ++ i) {
     const BnNode* bnnode = bnnetwork.output(i);
     TpgNode* inode = node_map.get(bnnode->inode_id());
-    TpgNode* node = make_output_node(i, bnnode->name(), inode);
+    string buf = "*";
+    buf += bnnode->name();
+    TpgNode* node = make_output_node(i, buf.c_str(), inode);
     mOutputArray[i] = node;
     node_map.reg(bnnode->id(), node);
   }

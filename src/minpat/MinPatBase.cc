@@ -104,24 +104,6 @@ MinPatBase::run(TpgNetwork& network,
 
   init(fid_list, tvmgr, fsim2);
 
-  {
-    ymuint nf = fid_list.size();
-    for (ymuint i = 0; i < nf; ++ i) {
-      ymuint fid = fid_list[i];
-      const FaultInfo& fi = mAnalyzer.fault_info(fid);
-      const TpgFault* fault = mAnalyzer.fault(fid);
-      TestVector* tv = fi.testvector();
-      cout << fault->str() << ": " << tv->bin_str() << endl;
-      Verifier verifier;
-      bool stat = verifier.check(fsim2, vector<const TpgFault*>(1, fault), vector<TestVector*>(1, tv));
-      if ( !stat ) {
-	cout << "ERROR!: " << fault->str() << endl;
-	abort();
-      }
-
-    }
-  }
-
   if ( false ) {
     vector<ymuint> dom_fid_list = this->fid_list();
     sort(dom_fid_list.begin(), dom_fid_list.end());
@@ -176,8 +158,7 @@ MinPatBase::run(TpgNetwork& network,
 	cout << " " << f->str();
       }
       cout << endl;
-      //const NodeValList& suf_list = fgmgr.sufficient_assignment(gid);
-      const NodeValList& suf_list = fgmgr.pi_sufficient_assignment(gid);
+      const NodeValList& suf_list = fgmgr.sufficient_assignment(gid);
       cout << "suf-list: ";
       for (ymuint i = 0; i < suf_list.size(); ++ i) {
 	const TpgNode* node = suf_list[i].node();
@@ -187,6 +168,7 @@ MinPatBase::run(TpgNetwork& network,
       cout << endl;
       TestVector* tv = tvmgr.new_vector();
       make_testvector(network, suf_list, tv);
+      cout << "tv = " << tv->bin_str() << endl;
       Verifier verifier;
       bool stat = verifier.check(fsim2, f_list, vector<TestVector*>(1, tv));
       tvmgr.delete_vector(tv);
@@ -235,8 +217,7 @@ MinPatBase::run(TpgNetwork& network,
 	cout << " " << f->str();
       }
       cout << endl;
-      //const NodeValList& suf_list = fgmgr.sufficient_assignment(gid);
-      const NodeValList& suf_list = fgmgr.pi_sufficient_assignment(gid);
+      const NodeValList& suf_list = fgmgr.sufficient_assignment(gid);
       cout << "suf-list: ";
       for (ymuint i = 0; i < suf_list.size(); ++ i) {
 	const TpgNode* node = suf_list[i].node();
@@ -246,6 +227,7 @@ MinPatBase::run(TpgNetwork& network,
       cout << endl;
       TestVector* tv = tvmgr.new_vector();
       make_testvector(network, suf_list, tv);
+      cout << "tv = " << tv->bin_str() << endl;
       Verifier verifier;
       bool stat = verifier.check(fsim2, f_list, vector<TestVector*>(1, tv));
       tvmgr.delete_vector(tv);
@@ -308,8 +290,7 @@ MinPatBase::run(TpgNetwork& network,
   tv_list.reserve(new_ng);
   for (ymuint i = 0; i < new_ng; ++ i) {
     ymuint gid = group_list[i];
-    //const NodeValList& suf_list = fgmgr.sufficient_assignment(gid);
-    const NodeValList& suf_list = fgmgr.pi_sufficient_assignment(gid);
+    const NodeValList& suf_list = fgmgr.sufficient_assignment(gid);
     TestVector* tv = tvmgr.new_vector();
     make_testvector(network, suf_list, tv);
     tv_list.push_back(tv);
@@ -438,7 +419,7 @@ MinPatBase::make_testvector(TpgNetwork& network,
 			    const NodeValList& suf_list,
 			    TestVector* tv)
 {
-#if 0
+#if 1
   GvalCnf gval_cnf(mMaxNodeId, string(), string(), nullptr);
 
   vector<SatBool3> sat_model;

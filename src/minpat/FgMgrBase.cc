@@ -12,6 +12,7 @@
 #include "NodeSet.h"
 #include "GvalCnf.h"
 #include "FvalCnf.h"
+#include "TpgFault.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG
@@ -313,6 +314,8 @@ FgMgrBase::find_group2(ymuint fid0,
 		       const vector<ymuint>& group_list,
 		       bool fast)
 {
+  cout << "find_group2(" << _fault(fid0)->str() << ")" << endl;
+
   StopWatch local_timer;
   local_timer.start();
 
@@ -323,6 +326,15 @@ FgMgrBase::find_group2(ymuint fid0,
   // fi0 の必要割当を追加
   const NodeValList ma_list0 = fi0.mandatory_assignment();
   gval_cnf0.add_assignments(ma_list0);
+
+  {
+    cout << "  MA assignment: ";
+    for (ymuint i = 0; i < ma_list0.size(); ++ i) {
+      NodeVal nv = ma_list0[i];
+      cout << " " << nv.node()->name() << ":" << nv.val();
+    }
+    cout << endl;
+  }
 
   FvalCnf fval_cnf0(gval_cnf0);
   if ( !fi0.single_cube() ) {
@@ -340,8 +352,17 @@ FgMgrBase::find_group2(ymuint fid0,
 
     { // グループの十分割当が成り立っていたら両立している．
       const NodeValList& suf_list1 = sufficient_assignment(gid);
+      {
+	cout << "  Group#" << gid << " suf assignment: ";
+	for (ymuint i = 0; i < suf_list1.size(); ++ i) {
+	  NodeVal nv = suf_list1[i];
+	  cout << " " << nv.node()->name() << ":" << nv.val();
+	}
+	cout << endl;
+      }
       vector<SatBool3> sat_model;
       if ( gval_cnf0.check_sat(suf_list1, sat_model) == kB3True ) {
+	cout << "  fast check OK" << endl;
 	FaultGroup* fg = _fault_group(gid);
 	if ( fi0.single_cube() ) {
 	  const NodeValList& pi_suf_list = fi0.pi_sufficient_assignment();
@@ -409,6 +430,8 @@ FgMgrBase::find_group2(ymuint fid0,
     vector<SatBool3> sat_model;
     if ( gval_cnf.check_sat(sat_model) == kB3True ) {
       ++ mFoundCount;
+
+      cout << "Group#" << gid << " is compatible" << endl;
 
       FaultGroup* fg = _fault_group(gid);
 
@@ -791,6 +814,19 @@ FgMgrBase::FaultGroup::update()
     mSufList.merge(mFaultDataList[i].mSufList);
     mMaList.merge(mFaultDataList[i].mMaList);
   }
+
+  cout << "suf list    = ";
+  for (ymuint i = 0; i < mSufList.size(); ++ i) {
+    NodeVal nv = mSufList[i];
+    cout << " " << nv.node()->name() << ":" << nv.val();
+  }
+  cout << endl;
+  cout << "PI suf list = ";
+  for (ymuint i = 0; i < mMaList.size(); ++ i) {
+    NodeVal nv = mMaList[i];
+    cout << " " << nv.node()->name() << ":" << nv.val();
+  }
+  cout << endl;
 }
 
 

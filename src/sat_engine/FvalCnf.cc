@@ -69,9 +69,11 @@ FvalCnf::get_pi_suf_list(const vector<SatBool3>& sat_model,
 
   Extractor extractor(val_map);
   extractor(fault, suf_list);
+  suf_list.sort();
 
   BackTracer backtracer(max_node_id());
   backtracer(fault->tpg_onode(), node_set, val_map, pi_suf_list);
+  pi_suf_list.sort();
 }
 
 // @brief 故障回路のCNFを作る．

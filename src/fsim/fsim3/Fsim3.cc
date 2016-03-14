@@ -93,8 +93,9 @@ Fsim3::set_network(const TpgNetwork& network)
     }
     else if ( tpgnode->is_output() ) {
       // 外部出力に対応する SimNode の生成
-      // 実際には外部出力のファンインに対応するノードに出力の印をつけるだけ．
-      node = find_simnode(tpgnode->fanin(0));
+      SimNode* inode = find_simnode(tpgnode->fanin(0));
+      // 実際にはバッファタイプのノードに出力の印をつけるだけ．
+      node = make_node(kGateBUFF, vector<SimNode*>(1, inode));
       node->set_output();
       mOutputArray[tpgnode->output_id()] = node;
     }
@@ -800,7 +801,7 @@ Fsim3::fault_sweep(SimFFR* ffr,
 SimNode*
 Fsim3::make_input()
 {
-  ymuint32 id = mNodeArray.size();
+  ymuint id = mNodeArray.size();
   SimNode* node = SimNode::new_input(id);
   mNodeArray.push_back(node);
   return node;
@@ -811,7 +812,7 @@ SimNode*
 Fsim3::make_node(GateType type,
 		 const vector<SimNode*>& inputs)
 {
-  ymuint32 id = mNodeArray.size();
+  ymuint id = mNodeArray.size();
   SimNode* node = SimNode::new_node(id, type, inputs);
   mNodeArray.push_back(node);
   mLogicArray.push_back(node);

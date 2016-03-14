@@ -255,9 +255,6 @@ SatBool3
 FaultAnalyzer::analyze_fault(const TpgFault* fault,
 			     TvMgr& tvmgr)
 {
-  cout << endl
-       << "analyze_fault(" << fault->str() << ")" << endl;
-
   ymuint f_id = fault->id();
   FaultInfo& fi = mFaultInfoArray[f_id];
 
@@ -271,26 +268,6 @@ FaultAnalyzer::analyze_fault(const TpgFault* fault,
   vector<SatBool3> sat_model;
   SatBool3 sat_stat = gval_cnf.check_sat(sat_model);
   if ( sat_stat == kB3True ) {
-    {
-      ModelValMap val_map(fval_cnf.gvar_map(), fval_cnf.fvar_map(), sat_model);
-      for (ymuint i = 0; i < node_set(f_id).tfo_tfi_size(); ++ i) {
-	const TpgNode* node = node_set(f_id).tfo_tfi_node(i);
-	if ( node->is_output() ) {
-	  cout << "*";
-	}
-	cout << node->name() << ": ";
-	if ( i < node_set(f_id).tfo_size() ) {
-	  Val3 gval = val_map.gval(node);
-	  Val3 fval = val_map.fval(node);
-	  cout << gval << "/" << fval;
-	}
-	else {
-	  Val3 gval = val_map.gval(node);
-	  cout << gval;
-	}
-	cout << endl;
-      }
-    }
     // 割当結果から十分割当を求める．
     NodeValList& suf_list = fi.mSufficientAssignment;
     NodeValList& pi_suf_list = fi.mPiSufficientAssignment;
@@ -333,9 +310,32 @@ FaultAnalyzer::analyze_fault(const TpgFault* fault,
       }
     }
 
+    {
+      cout << fault->str() << endl
+	   << "  suf_list    = ";
+      for (ymuint i = 0; i < suf_list.size(); ++ i) {
+	NodeVal nv = suf_list[i];
+	cout << " " << nv.node()->name() << ":" << nv.val();
+      }
+      cout << endl;
+      cout << "  ma_list     = ";
+      for (ymuint i = 0; i < ma_list.size(); ++ i) {
+	NodeVal nv = ma_list[i];
+	cout << " " << nv.node()->name() << ":" << nv.val();
+      }
+      cout << endl;
+      cout << "  PI suf_list = ";
+      for (ymuint i = 0; i < pi_suf_list.size(); ++ i) {
+	NodeVal nv = pi_suf_list[i];
+	cout << " " << nv.node()->name() << ":" << nv.val();
+      }
+      cout << endl;
+    }
+#if 0
     if ( suf_list.size() == ma_list.size() ) {
       fi.mSingleCube = true;
     }
+#endif
   }
   return sat_stat;
 }
@@ -419,7 +419,7 @@ FaultAnalyzer::node_set(ymuint fid) const
 {
   ASSERT_COND( fid < mMaxFaultId );
   const TpgFault* fault = mFaultInfoArray[fid].fault();
-  return mNodeSetArray[fault->tpg_inode()->id()];
+  return mNodeSetArray[fault->tpg_onode()->id()];
 }
 
 // @brief 等価故障を記録する．

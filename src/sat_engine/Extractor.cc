@@ -69,8 +69,6 @@ Extractor::operator()(const TpgFault* fault,
   const TpgNode* spo = find_sensitized_output(fnode);
   ASSERT_COND( spo != nullptr );
 
-  cout << "find_sensitized_output() = " << spo->name() << endl;
-
   // その経路の side input の値を記録する．
   mRecorded.clear();
   assign_list.clear();
@@ -81,6 +79,7 @@ Extractor::operator()(const TpgFault* fault,
     ymuint ni = fnode->fanin_num();
     for (ymuint i = 0; i < ni; ++ i) {
       const TpgNode* inode = fnode->fanin(i);
+      mRecorded.add(inode->id());
       record_node(inode, assign_list);
     }
   }
@@ -141,7 +140,6 @@ Extractor::record_sensitized_node(const TpgNode* node,
     return;
   }
   mRecorded.add(node->id());
-
   record_node(node, assign_list);
 
   ASSERT_COND( mValMap.gval(node) != mValMap.fval(node) );
@@ -178,8 +176,6 @@ Extractor::record_side_inputs(const TpgNode* node,
     return;
   }
   mRecorded.add(node->id());
-
-  // node の値を記録する．
   record_node(node, assign_list);
 }
 
@@ -248,7 +244,6 @@ Extractor::record_node(const TpgNode* node,
 {
   bool val = (mValMap.gval(node) == kVal1);
   assign_list.add(node, val);
-  cout << "  record_node(" << node->name() << ": " << val << ")" << endl;
 }
 
 END_NAMESPACE_YM_SATPG
