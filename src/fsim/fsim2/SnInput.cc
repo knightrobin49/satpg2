@@ -28,6 +28,15 @@ SnInput::~SnInput()
 {
 }
 
+// @brief ゲートタイプを返す．
+//
+// ここでは kGateBUFF を返す．
+GateType
+SnInput::gate_type() const
+{
+  return kGateBUFF;
+}
+
 // @brief ファンイン数を得る．
 ymuint
 SnInput::nfi() const
@@ -88,6 +97,13 @@ SnBuff::~SnBuff()
 {
 }
 
+// @brief ゲートタイプを返す．
+GateType
+SnBuff::gate_type() const
+{
+  return kGateBUFF;
+}
+
 // @brief 正常値の計算を行う．(2値版)
 PackedVal
 SnBuff::_calc_gval2()
@@ -131,6 +147,13 @@ SnNot::SnNot(ymuint32 id,
 // @brief デストラクタ
 SnNot::~SnNot()
 {
+}
+
+// @brief ゲートタイプを返す．
+GateType
+SnNot::gate_type() const
+{
+  return kGateNOT;
 }
 
 // @brief 正常値の計算を行う．(2値版)

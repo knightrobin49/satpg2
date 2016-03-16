@@ -30,6 +30,7 @@ BEGIN_NAMESPACE_YM_SATPG
 FvalCnf::FvalCnf(GvalCnf& gval_cnf) :
   FvalCnfBase(gval_cnf)
 {
+  mDebugFlag = 0;
 }
 
 // @brief デストラクタ
@@ -100,11 +101,18 @@ FvalCnf::make_cnf(const TpgNode* src_node,
     SatVarId dvar = solver().new_var();
     set_fvar(node, fvar);
     set_dvar(node, dvar);
+    if ( debug() ) {
+      cout << "fvar(" << node->name() << ") = " << fvar << endl;
+    }
   }
   ymuint n0 = node_set.tfo_tfi_size();
   for (ymuint i = n; i < n0; ++ i) {
     const TpgNode* node = node_set.tfo_tfi_node(i);
     set_fvar(node, gvar(node));
+    if ( debug() ) {
+      cout << "gvar(" << node->name() << ") = " << gvar(node) << endl;
+      cout << "fvar(" << node->name() << ") = " << gvar(node) << endl;
+    }
   }
 
   for (ymuint i = 0; i < n; ++ i) {

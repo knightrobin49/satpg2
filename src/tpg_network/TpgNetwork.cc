@@ -331,6 +331,7 @@ TpgNetwork::set(const BnNetwork& bnnetwork)
 
   // 全部アクティブにしておく．
   activate_all();
+
 }
 
 // @brief 一つの外部出力に関係するノードのみをアクティブにする．

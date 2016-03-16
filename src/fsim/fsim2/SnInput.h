@@ -35,6 +35,13 @@ public:
 
 public:
 
+  /// @brief ゲートタイプを返す．
+  ///
+  /// ここでは kGateBUFF を返す．
+  virtual
+  GateType
+  gate_type() const;
+
   /// @brief ファンイン数を得る．
   virtual
   ymuint
@@ -91,6 +98,11 @@ public:
 
 public:
 
+  /// @brief ゲートタイプを返す．
+  virtual
+  GateType
+  gate_type() const;
+
   /// @brief 正常値の計算を行う．(2値版)
   virtual
   PackedVal
@@ -133,6 +145,11 @@ public:
 
 
 public:
+
+  /// @brief ゲートタイプを返す．
+  virtual
+  GateType
+  gate_type() const;
 
   /// @brief 正常値の計算を行う．(2値版)
   virtual

@@ -40,6 +40,13 @@ SnOr::_calc_gval2()
   return new_val;
 }
 
+// @brief ゲートタイプを返す．
+GateType
+SnOr::gate_type() const
+{
+  return kGateOR;
+}
+
 // @brief 故障値の計算を行う．(2値版)
 PackedVal
 SnOr::_calc_fval2()
@@ -95,6 +102,13 @@ SnOr2::~SnOr2()
 {
 }
 
+// @brief ゲートタイプを返す．
+GateType
+SnOr2::gate_type() const
+{
+  return kGateOR;
+}
+
 // @brief 正常値の計算を行う．(2値版)
 PackedVal
 SnOr2::_calc_gval2()
@@ -144,6 +158,13 @@ SnOr3::SnOr3(ymuint32 id,
 // @brief デストラクタ
 SnOr3::~SnOr3()
 {
+}
+
+// @brief ゲートタイプを返す．
+GateType
+SnOr3::gate_type() const
+{
+  return kGateOR;
 }
 
 // @brief 正常値の計算を行う．(2値版)
@@ -203,6 +224,13 @@ SnOr4::SnOr4(ymuint32 id,
 // @brief デストラクタ
 SnOr4::~SnOr4()
 {
+}
+
+// @brief ゲートタイプを返す．
+GateType
+SnOr4::gate_type() const
+{
+  return kGateOR;
 }
 
 // @brief 正常値の計算を行う．(2値版)
@@ -268,6 +296,13 @@ SnNor::~SnNor()
 {
 }
 
+// @brief ゲートタイプを返す．
+GateType
+SnNor::gate_type() const
+{
+  return kGateNOR;
+}
+
 // @brief 正常値の計算を行う．(2値版)
 PackedVal
 SnNor::_calc_gval2()
@@ -321,6 +356,13 @@ SnNor2::~SnNor2()
 {
 }
 
+// @brief ゲートタイプを返す．
+GateType
+SnNor2::gate_type() const
+{
+  return kGateNOR;
+}
+
 // @brief 正常値の計算を行う．(2値版)
 PackedVal
 SnNor2::_calc_gval2()
@@ -363,6 +405,13 @@ SnNor3::SnNor3(ymuint32 id,
 // @brief デストラクタ
 SnNor3::~SnNor3()
 {
+}
+
+// @brief ゲートタイプを返す．
+GateType
+SnNor3::gate_type() const
+{
+  return kGateNOR;
 }
 
 // @brief 正常値の計算を行う．(2値版)
@@ -410,6 +459,13 @@ SnNor4::SnNor4(ymuint32 id,
 // @brief デストラクタ
 SnNor4::~SnNor4()
 {
+}
+
+// @brief ゲートタイプを返す．
+GateType
+SnNor4::gate_type() const
+{
+  return kGateNOR;
 }
 
 // @brief 正常値の計算を行う．(2値版)

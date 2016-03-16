@@ -35,6 +35,7 @@ GvalCnf::GvalCnf(ymuint max_node_id,
   mMark(max_node_id, false),
   mVarMap(max_node_id)
 {
+  mDebugFlag = 0;
 }
 
 // @brief デストラクタ

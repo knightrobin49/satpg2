@@ -37,6 +37,27 @@ alloc_array(Alloc& alloc,
 
 END_NONAMESPACE
 
+// @brief GateType のストリーム演算子
+ostream&
+operator<<(ostream& s,
+	   GateType gate_type)
+{
+  switch ( gate_type ) {
+  case kGateCONST0: s << "CONST-0"; break;
+  case kGateCONST1: s << "CONST-1"; break;
+  case kGateBUFF:   s << "BUFF"; break;
+  case kGateNOT:    s << "NOT"; break;
+  case kGateAND:    s << "AND"; break;
+  case kGateNAND:   s << "NAND"; break;
+  case kGateOR:     s << "OR"; break;
+  case kGateNOR:    s << "NOR"; break;
+  case kGateXOR:    s << "XOR"; break;
+  case kGateXNOR:   s << "XNOR"; break;
+  default:          s << "---"; break;
+  }
+  return s;
+}
+
 
 //////////////////////////////////////////////////////////////////////
 // クラス TpgNode

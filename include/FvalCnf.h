@@ -94,6 +94,14 @@ public:
 	   const NodeSet& node_set,
 	   Val3 detect);
 
+  /// @brief デバッグ用のフラグをセットする．
+  void
+  set_debug(ymuint bits);
+
+  /// @brief デバッグ用のフラグを得る．
+  ymuint
+  debug() const;
+
 
 private:
   //////////////////////////////////////////////////////////////////////
@@ -102,6 +110,9 @@ private:
 
   // 故障検出用の変数番号
   SatVarId mFdVar;
+
+  // デバッグ用のフラグ
+  ymuint mDebugFlag;
 
 };
 
@@ -124,6 +135,22 @@ void
 FvalCnf::set_fdvar(SatVarId fdvar)
 {
   mFdVar = fdvar;
+}
+
+// @brief デバッグ用のフラグをセットする．
+inline
+void
+FvalCnf::set_debug(ymuint bits)
+{
+  mDebugFlag = bits;
+}
+
+// @brief デバッグ用のフラグを得る．
+inline
+ymuint
+FvalCnf::debug() const
+{
+  return mDebugFlag;
 }
 
 END_NAMESPACE_YM_SATPG

@@ -28,6 +28,13 @@ SnXor::~SnXor()
 {
 }
 
+// @brief ゲートタイプを返す．
+GateType
+SnXor::gate_type() const
+{
+  return kGateXOR;
+}
+
 // @brief 正常値の計算を行う．(2値版)
 PackedVal
 SnXor::_calc_gval2()
@@ -88,6 +95,13 @@ SnXor2::~SnXor2()
 {
 }
 
+// @brief ゲートタイプを返す．
+GateType
+SnXor2::gate_type() const
+{
+  return kGateXOR;
+}
+
 // @brief 正常値の計算を行う．(2値版)
 PackedVal
 SnXor2::_calc_gval2()
@@ -137,6 +151,13 @@ SnXnor::SnXnor(ymuint32 id,
 // @brief デストラクタ
 SnXnor::~SnXnor()
 {
+}
+
+// @brief ゲートタイプを返す．
+GateType
+SnXnor::gate_type() const
+{
+  return kGateXNOR;
 }
 
 // @brief 正常値の計算を行う．(2値版)
@@ -190,6 +211,13 @@ SnXnor2::SnXnor2(ymuint32 id,
 // @brief デストラクタ
 SnXnor2::~SnXnor2()
 {
+}
+
+// @brief ゲートタイプを返す．
+GateType
+SnXnor2::gate_type() const
+{
+  return kGateXNOR;
 }
 
 // @brief 正常値の計算を行う．(2値版)

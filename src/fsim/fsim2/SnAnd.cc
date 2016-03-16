@@ -28,6 +28,13 @@ SnAnd::~SnAnd()
 {
 }
 
+// @brief ゲートタイプを返す．
+GateType
+SnAnd::gate_type() const
+{
+  return kGateAND;
+}
+
 // @brief 正常値の計算を行う．(2値版)
 PackedVal
 SnAnd::_calc_gval2()
@@ -95,6 +102,13 @@ SnAnd2::~SnAnd2()
 {
 }
 
+// @brief ゲートタイプを返す．
+GateType
+SnAnd2::gate_type() const
+{
+  return kGateAND;
+}
+
 // @brief 正常値の計算を行う．(2値版)
 PackedVal
 SnAnd2::_calc_gval2()
@@ -144,6 +158,13 @@ SnAnd3::SnAnd3(ymuint32 id,
 // @brief デストラクタ
 SnAnd3::~SnAnd3()
 {
+}
+
+// @brief ゲートタイプを返す．
+GateType
+SnAnd3::gate_type() const
+{
+  return kGateAND;
 }
 
 // @brief 正常値の計算を行う．(2値版)
@@ -203,6 +224,13 @@ SnAnd4::SnAnd4(ymuint32 id,
 // @brief デストラクタ
 SnAnd4::~SnAnd4()
 {
+}
+
+// @brief ゲートタイプを返す．
+GateType
+SnAnd4::gate_type() const
+{
+  return kGateAND;
 }
 
 // @brief 正常値の計算を行う．(2値版)
@@ -268,6 +296,13 @@ SnNand::~SnNand()
 {
 }
 
+// @brief ゲートタイプを返す．
+GateType
+SnNand::gate_type() const
+{
+  return kGateNAND;
+}
+
 // @brief 正常値の計算を行う．(2値版)
 PackedVal
 SnNand::_calc_gval2()
@@ -321,6 +356,13 @@ SnNand2::~SnNand2()
 {
 }
 
+// @brief ゲートタイプを返す．
+GateType
+SnNand2::gate_type() const
+{
+  return kGateNAND;
+}
+
 // @brief 正常値の計算を行う．(2値版)
 PackedVal
 SnNand2::_calc_gval2()
@@ -363,6 +405,13 @@ SnNand3::SnNand3(ymuint32 id,
 // @brief デストラクタ
 SnNand3::~SnNand3()
 {
+}
+
+// @brief ゲートタイプを返す．
+GateType
+SnNand3::gate_type() const
+{
+  return kGateNAND;
 }
 
 // @brief 正常値の計算を行う．(2値版)
@@ -410,6 +459,13 @@ SnNand4::SnNand4(ymuint32 id,
 // @brief デストラクタ
 SnNand4::~SnNand4()
 {
+}
+
+// @brief ゲートタイプを返す．
+GateType
+SnNand4::gate_type() const
+{
+  return kGateNAND;
 }
 
 // @brief 正常値の計算を行う．(2値版)

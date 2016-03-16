@@ -94,8 +94,8 @@ TpgLogicXOR2::make_cnf(SatSolver& solver,
   SatLiteral ilit1 = lit_map.input(1);
   SatLiteral olit  = lit_map.output();
   solver.add_clause(~ilit0, ~ilit1, ~olit);
-  solver.add_clause(~ilit1,  ilit1,  olit);
-  solver.add_clause( ilit1, ~ilit1,  olit);
+  solver.add_clause(~ilit0,  ilit1,  olit);
+  solver.add_clause( ilit0, ~ilit1,  olit);
   solver.add_clause( ilit0,  ilit1, ~olit);
 }
 

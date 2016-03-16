@@ -142,44 +142,6 @@ MinPatBase::run(TpgNetwork& network,
     // 最初のグループを作る．
     ymuint gid = fgmgr.new_group(fid);
     group_list.push_back(gid);
-
-    {
-      ymuint nf = fgmgr.fault_num(gid);
-      vector<const TpgFault*> f_list(nf);
-      for (ymuint i = 0; i < nf; ++ i) {
-	ymuint fid = fgmgr.fault_id(gid, i);
-	const TpgFault* f = mAnalyzer.fault(fid);
-	f_list[i] = f;
-      }
-      cout << endl << "Group#" << gid << ":" << endl;
-      for (ymuint i = 0; i < nf; ++ i) {
-	ymuint fid = fgmgr.fault_id(gid, i);
-	const TpgFault* f = mAnalyzer.fault(fid);
-	cout << " " << f->str();
-      }
-      cout << endl;
-      const NodeValList& suf_list = fgmgr.sufficient_assignment(gid);
-      cout << "suf-list: ";
-      for (ymuint i = 0; i < suf_list.size(); ++ i) {
-	const TpgNode* node = suf_list[i].node();
-	bool val = suf_list[i].val();
-	cout << " " << node->name() << ":" << val;
-      }
-      cout << endl;
-      TestVector* tv = tvmgr.new_vector();
-      make_testvector(network, suf_list, tv);
-      cout << "tv = " << tv->bin_str() << endl;
-      Verifier verifier;
-      bool stat = verifier.check(fsim2, f_list, vector<TestVector*>(1, tv));
-      tvmgr.delete_vector(tv);
-      if ( stat ) {
-	cout << "  -> OK" << endl;
-      }
-      else {
-	cout << "  -> NG" << endl;
-      }
-
-    }
   }
 
   // 未処理の故障がある限り以下の処理を繰り返す．
@@ -201,43 +163,6 @@ MinPatBase::run(TpgNetwork& network,
       // 新たなグループを作る．
       ymuint gid = fgmgr.new_group(fid);
       group_list.push_back(gid);
-    }
-    { // debug 2016/03/14
-      ymuint nf = fgmgr.fault_num(gid);
-      vector<const TpgFault*> f_list(nf);
-      for (ymuint i = 0; i < nf; ++ i) {
-	ymuint fid = fgmgr.fault_id(gid, i);
-	const TpgFault* f = mAnalyzer.fault(fid);
-	f_list[i] = f;
-      }
-      cout << endl << "Group#" << gid << ":" << endl;
-      for (ymuint i = 0; i < nf; ++ i) {
-	ymuint fid = fgmgr.fault_id(gid, i);
-	const TpgFault* f = mAnalyzer.fault(fid);
-	cout << " " << f->str();
-      }
-      cout << endl;
-      const NodeValList& suf_list = fgmgr.sufficient_assignment(gid);
-      cout << "suf-list: ";
-      for (ymuint i = 0; i < suf_list.size(); ++ i) {
-	const TpgNode* node = suf_list[i].node();
-	bool val = suf_list[i].val();
-	cout << " " << node->name() << ":" << val;
-      }
-      cout << endl;
-      TestVector* tv = tvmgr.new_vector();
-      make_testvector(network, suf_list, tv);
-      cout << "tv = " << tv->bin_str() << endl;
-      Verifier verifier;
-      bool stat = verifier.check(fsim2, f_list, vector<TestVector*>(1, tv));
-      tvmgr.delete_vector(tv);
-      if ( stat ) {
-	cout << "  -> OK" << endl;
-      }
-      else {
-	cout << "  -> NG" << endl;
-      }
-
     }
   }
 
@@ -294,31 +219,6 @@ MinPatBase::run(TpgNetwork& network,
     TestVector* tv = tvmgr.new_vector();
     make_testvector(network, suf_list, tv);
     tv_list.push_back(tv);
-
-    {
-      ymuint nf = fgmgr.fault_num(gid);
-      vector<const TpgFault*> f_list(nf);
-      for (ymuint i = 0; i < nf; ++ i) {
-	ymuint fid = fgmgr.fault_id(gid, i);
-	const TpgFault* f = mAnalyzer.fault(fid);
-	f_list[i] = f;
-      }
-      cout << "Group#" << i << ":" << endl;
-      for (ymuint i = 0; i < nf; ++ i) {
-	ymuint fid = fgmgr.fault_id(gid, i);
-	const TpgFault* f = mAnalyzer.fault(fid);
-	cout << " " << f->str();
-      }
-      cout << endl;
-      Verifier verifier;
-      bool stat = verifier.check(fsim2, f_list, vector<TestVector*>(1, tv));
-      if ( stat ) {
-	cout << "  -> OK" << endl;
-      }
-      else {
-	cout << "  -> NG" << endl;
-      }
-    }
   }
 
   local_timer.stop();
@@ -419,7 +319,6 @@ MinPatBase::make_testvector(TpgNetwork& network,
 			    const NodeValList& suf_list,
 			    TestVector* tv)
 {
-#if 1
   GvalCnf gval_cnf(mMaxNodeId, string(), string(), nullptr);
 
   vector<SatBool3> sat_model;
@@ -441,25 +340,6 @@ MinPatBase::make_testvector(TpgNetwork& network,
     }
     tv->set_val(input_id, val);
   }
-#else
-  for (ymuint i = 0; i < network.input_num(); ++ i) {
-    const TpgNode* node = network.input(i);
-    ymuint input_id = node->input_id();
-    tv->set_val(input_id, kVal0);
-  }
-  for (ymuint i = 0; i < suf_list.size(); ++ i) {
-    const TpgNode* node = suf_list[i].node();
-    ASSERT_COND( node->is_input() );
-    ymuint input_id = node->input_id();
-    bool val = suf_list[i].val();
-    if ( val ) {
-      tv->set_val(input_id, kVal1);
-    }
-    else {
-      tv->set_val(input_id, kVal0);
-    }
-  }
-#endif
 }
 
 END_NAMESPACE_YM_SATPG

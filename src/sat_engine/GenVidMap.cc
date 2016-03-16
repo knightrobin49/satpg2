@@ -16,7 +16,7 @@ BEGIN_NAMESPACE_YM_SATPG
 // @brief コンストラクタ
 // @param[in] max_id ノード番号の最大値
 GenVidMap::GenVidMap(ymuint max_id) :
-  mVidArray(max_id)
+  mVidArray(max_id, kSatVarIdIllegal)
 {
 }
 

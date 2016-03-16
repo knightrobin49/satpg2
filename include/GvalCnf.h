@@ -155,6 +155,14 @@ public:
   check_sat(const NodeValList& assign_list1,
 	    const NodeValList& assign_list2);
 
+  /// @brief デバッグ用のフラグをセットする．
+  void
+  set_debug(ymuint bits);
+
+  /// @brief デバッグ用のフラグを得る．
+  ymuint
+  debug() const;
+
 
 private:
   //////////////////////////////////////////////////////////////////////
@@ -188,6 +196,9 @@ private:
 
   // 変数マップ
   GenVidMap mVarMap;
+
+  // デバッグ用のフラグ
+  ymuint mDebugFlag;
 
 };
 
@@ -293,6 +304,22 @@ GvalCnf::check_sat(const NodeValList& assign_list1,
 {
   vector<SatBool3> model;
   return check_sat(assign_list1, assign_list2, model);
+}
+
+// @brief デバッグ用のフラグをセットする．
+inline
+void
+GvalCnf::set_debug(ymuint bits)
+{
+  mDebugFlag = bits;
+}
+
+// @brief デバッグ用のフラグを得る．
+inline
+ymuint
+GvalCnf::debug() const
+{
+  return mDebugFlag;
 }
 
 END_NAMESPACE_YM_SATPG

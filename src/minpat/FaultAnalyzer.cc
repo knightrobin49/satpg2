@@ -310,32 +310,10 @@ FaultAnalyzer::analyze_fault(const TpgFault* fault,
       }
     }
 
-    {
-      cout << fault->str() << endl
-	   << "  suf_list    = ";
-      for (ymuint i = 0; i < suf_list.size(); ++ i) {
-	NodeVal nv = suf_list[i];
-	cout << " " << nv.node()->name() << ":" << nv.val();
-      }
-      cout << endl;
-      cout << "  ma_list     = ";
-      for (ymuint i = 0; i < ma_list.size(); ++ i) {
-	NodeVal nv = ma_list[i];
-	cout << " " << nv.node()->name() << ":" << nv.val();
-      }
-      cout << endl;
-      cout << "  PI suf_list = ";
-      for (ymuint i = 0; i < pi_suf_list.size(); ++ i) {
-	NodeVal nv = pi_suf_list[i];
-	cout << " " << nv.node()->name() << ":" << nv.val();
-      }
-      cout << endl;
-    }
-#if 0
     if ( suf_list.size() == ma_list.size() ) {
       fi.mSingleCube = true;
     }
-#endif
+
   }
   return sat_stat;
 }

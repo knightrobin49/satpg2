@@ -47,6 +47,7 @@ clear_lobs(SimNode* node)
 
 END_NONAMESPACE
 
+
 //////////////////////////////////////////////////////////////////////
 // Fsim2
 //////////////////////////////////////////////////////////////////////
@@ -92,6 +93,7 @@ Fsim2::set_network(const TpgNetwork& network)
       // 外部入力に対応する SimNode の生成
       node = make_input();
       mInputArray[tpgnode->input_id()] = node;
+      node->set_name(tpgnode->name());
     }
     else if ( tpgnode->is_output() ) {
       // 外部出力に対応する SimNode の生成
@@ -100,6 +102,7 @@ Fsim2::set_network(const TpgNetwork& network)
       node = make_node(kGateBUFF, vector<SimNode*>(1, inode));
       node->set_output();
       mOutputArray[tpgnode->output_id()] = node;
+      node->set_name(tpgnode->name());
     }
     else if ( tpgnode->is_logic() ) {
       // 論理ノードに対する SimNode の作成
@@ -117,6 +120,7 @@ Fsim2::set_network(const TpgNetwork& network)
       // 出力の論理を表す SimNode を作る．
       GateType type = tpgnode->gate_type();
       node = make_node(type, inputs);
+      node->set_name(tpgnode->name());
     }
     // 対応表に登録しておく．
     mSimMap[tpgnode->id()] = node;
@@ -647,10 +651,13 @@ Fsim2::ffr_simulate(SimFFR* ffr)
 PackedVal
 Fsim2::eventq_simulate()
 {
+  // どこかの外部出力で検出されたことを表すビット
   PackedVal obs = kPvAll0;
   for ( ; ; ) {
     SimNode* node = mEventQ.get();
     if ( node == nullptr ) break;
+    // すでに検出済みのビットはマスクしておく
+    // これは無駄なイベントの発生を抑える．
     PackedVal diff = node->calc_fval2(~obs);
     if ( diff != kPvAll0 ) {
       mClearArray.push_back(node);

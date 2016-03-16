@@ -69,6 +69,11 @@ enum GateType {
   kGateCPLX   = 10
 };
 
+/// @brief GateType のストリーム演算子
+ostream&
+operator<<(ostream& s,
+	   GateType gate_type);
+
 
 //////////////////////////////////////////////////////////////////////
 /// @brief タイマーのモード
@@ -93,7 +98,6 @@ enum {
 // クラス名の宣言
 //////////////////////////////////////////////////////////////////////
 
-class AtpgMgr;
 class TpgFault;
 class FaultMgr;
 class TpgNetwork;
