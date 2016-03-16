@@ -90,7 +90,6 @@ DtpgSatS::run(TpgNetwork& network,
     NodeSet node_set;
     node_set.mark_region(max_id, node);
 
-#if 0
     cnf_begin();
 
     GvalCnf gval_cnf(max_id, sat_type(), sat_option(), sat_outp());
@@ -116,28 +115,6 @@ DtpgSatS::run(TpgNetwork& network,
 
       solve(gval_cnf.solver(), assumptions, fault, node_set, fval_cnf.gvar_map(), fval_cnf.fvar_map());
     }
-#else
-    ymuint nf = node->fault_num();
-    for (ymuint i = 0; i < nf; ++ i) {
-      const TpgFault* fault = node->fault(i);
-      if ( !fault_mark[fault->id()] || fmgr.status(fault) != kFsUndetected ) {
-	continue;
-      }
-
-      cout << "fault = " << fault->str() << endl;
-      cnf_begin();
-
-      GvalCnf gval_cnf(max_id, sat_type(), sat_option(), sat_outp());
-      FvalCnf fval_cnf(gval_cnf);
-
-      fval_cnf.make_cnf(fault, node_set, kVal1);
-
-      cnf_end();
-
-      // 故障に対するテスト生成を行なう．
-      solve(gval_cnf.solver(), vector<SatLiteral>(), fault, node_set, fval_cnf.gvar_map(), fval_cnf.fvar_map());
-    }
-#endif
   }
 
   get_stats(stats);
