@@ -133,6 +133,7 @@ set (sat_engine_SOURCES
   src/sat_engine/LitMap.cc
   src/sat_engine/ModelValMap.cc
   src/sat_engine/GenVidMap.cc
+  src/sat_engine/StructSat.cc
   )
 
 set (dtpg_SOURCES
