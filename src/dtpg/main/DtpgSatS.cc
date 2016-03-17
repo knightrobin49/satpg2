@@ -87,8 +87,8 @@ DtpgSatS::run(TpgNetwork& network,
   for (ymuint i = 0; i < nn; ++ i) {
     const TpgNode* node = network.active_node(i);
 
-    NodeSet node_set;
-    node_set.mark_region(max_id, node);
+    FoCone focone(max_id);
+    focone.mark_region(node);
 
     cnf_begin();
 

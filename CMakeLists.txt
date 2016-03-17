@@ -114,6 +114,7 @@ add_subdirectory ( python )
 
 set (base_SOURCES
   src/base/FaultMgr.cc
+  src/base/FoCone.cc
   src/base/NodeSet.cc
   src/base/NodeValList.cc
   src/base/TestVector.cc
