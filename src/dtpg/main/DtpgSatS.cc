@@ -87,17 +87,8 @@ DtpgSatS::run(TpgNetwork& network,
   for (ymuint i = 0; i < nn; ++ i) {
     const TpgNode* node = network.active_node(i);
 
-    FoCone focone(max_id);
-    focone.mark_region(node);
-
-    cnf_begin();
-
-    GvalCnf gval_cnf(max_id, sat_type(), sat_option(), sat_outp());
-    FvalCnf fval_cnf(gval_cnf);
-
-    fval_cnf.make_cnf(node, node_set, kVal1);
-
-    cnf_end();
+    NodeSet node_set;
+    node_set.mark_region(max_id, node);
 
     ymuint nf = node->fault_num();
     for (ymuint i = 0; i < nf; ++ i) {
@@ -107,6 +98,16 @@ DtpgSatS::run(TpgNetwork& network,
       }
 
       // 故障に対するテスト生成を行なう．
+
+      cnf_begin();
+
+      GvalCnf gval_cnf(max_id, sat_type(), sat_option(), sat_outp());
+      FvalCnf fval_cnf(gval_cnf);
+
+      fval_cnf.make_cnf(node, node_set, kVal1);
+
+      cnf_end();
+
       NodeValList assignment;
       gval_cnf.add_fault_condition(fault, assignment);
 
