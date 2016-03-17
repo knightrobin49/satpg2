@@ -329,7 +329,6 @@ TpgNetwork::set(const BnNetwork& bnnetwork)
 
   // 全部アクティブにしておく．
   activate_all();
-
 }
 
 // @brief 一つの外部出力に関係するノードのみをアクティブにする．
@@ -514,6 +513,18 @@ TpgNetwork::activate_sub()
 
   // マークを消す．
   clear_tfimark();
+
+  mMffcNum = 0;
+  mFfrNum = 0;
+  for (ymuint i = 0; i < mNodeNum; ++ i) {
+    TpgNode* node = mNodeArray[i];
+    if ( node->imm_dom() == nullptr ) {
+      ++ mMffcNum;
+    }
+    if ( node->fanout_num() > 1 || node->is_output() ) {
+      ++ mFfrNum;
+    }
+  }
 }
 
 // @brief TFI マークを消す．

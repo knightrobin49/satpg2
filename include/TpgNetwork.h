@@ -94,6 +94,14 @@ public:
   ymuint
   max_fault_id() const;
 
+  /// @brief MFFC 数を返す．
+  ymuint
+  mffc_num() const;
+
+  /// @brief FFR 数を返す．
+  ymuint
+  ffr_num() const;
+
 
 public:
   //////////////////////////////////////////////////////////////////////
@@ -181,10 +189,6 @@ private:
   //////////////////////////////////////////////////////////////////////
   // 内部で用いられる下請け関数
   //////////////////////////////////////////////////////////////////////
-
-  /// @brief TpgNode の TFIbits のサイズを計算する．
-  ymuint
-  tfibits_size() const;
 
   /// @brief 論理式から TpgNode の木を生成する．
   /// @param[in] name ノード名
@@ -330,6 +334,12 @@ private:
   // 全故障数
   ymuint mFaultNum;
 
+  // MFFC 数
+  ymuint mMffcNum;
+
+  // FFR 数
+  ymuint mFfrNum;
+
 };
 
 /// @brief TpgNetwork の内容を出力する関数
@@ -448,12 +458,20 @@ TpgNetwork::active_node(ymuint pos) const
   return mActNodeArray[pos];
 }
 
-// TpgNode の TFIbits のサイズを計算する．
+// @brief MFFC 数を返す．
 inline
 ymuint
-TpgNetwork::tfibits_size() const
+TpgNetwork::mffc_num() const
 {
-  return (output_num2() + 63) / 64;
+  return mMffcNum;
+}
+
+// @brief FFR 数を返す．
+inline
+ymuint
+TpgNetwork::ffr_num() const
+{
+  return mFfrNum;
 }
 
 END_NAMESPACE_YM_SATPG

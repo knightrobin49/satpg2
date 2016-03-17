@@ -75,17 +75,19 @@ PrintStatsCmd::cmd_proc(TclObjVector& objv)
   fprintf(stdout, "#C: # of redundant faults   = %7lu\n", fmgr.untest_list().size());
   fprintf(stdout, "#D: # of undetected faults  = %7lu\n", fmgr.remain_list().size());
   fprintf(stdout, "#E: # of generated patterns = %7lu\n", _tv_list().size());
-  fprintf(stdout, "#F:   Total CPU time        = %7.2fu %7.2fs\n",
+  fprintf(stdout, "#F: # of MFFCs              = %7u\n", _network().mffc_num());
+  fprintf(stdout, "#G: # of FFRs               = %7u\n", _network().ffr_num());
+  fprintf(stdout, "#H:   Total CPU time        = %7.2fu %7.2fs\n",
 	  lap.usr_time(), lap.sys_time());
-  fprintf(stdout, "#G:    (read time           = %7.2f)\n",
+  fprintf(stdout, "#I:    (read time           = %7.2f)\n",
 	  r_time.usr_time());
-  fprintf(stdout, "#H:    (dtpg time           = %7.2f)\n",
+  fprintf(stdout, "#J:    (dtpg time           = %7.2f)\n",
 	  d_time.usr_time());
-  fprintf(stdout, "#I:    (fsim time           = %7.2f)\n",
+  fprintf(stdout, "#K:    (fsim time           = %7.2f)\n",
 	  f_time.usr_time());
-  fprintf(stdout, "#J:    (sat  time           = %7.2f)\n",
+  fprintf(stdout, "#L:    (sat  time           = %7.2f)\n",
 	  s_time.usr_time());
-  fprintf(stdout, "#K:    (misc time           = %7.2f)\n",
+  fprintf(stdout, "#M:    (misc time           = %7.2f)\n",
 	  m_time.usr_time());
 
   return TCL_OK;
