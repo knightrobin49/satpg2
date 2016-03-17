@@ -11,7 +11,7 @@
 #include "DtpgStats.h"
 #include "GvalCnf.h"
 #include "FvalCnf.h"
-#include "NodeSet.h"
+#include "FoCone.h"
 #include "TpgFault.h"
 #include "TpgNetwork.h"
 #include "FaultMgr.h"
@@ -126,15 +126,14 @@ DtpgSatF::run(TpgNetwork& network,
       continue;
     }
 
-    NodeSet node_set;
-    node_set.mark_region(max_id, node);
-
     cnf_begin();
 
     GvalCnf gval_cnf(max_id, sat_type(), sat_option(), sat_outp());
     FvalCnf fval_cnf(gval_cnf);
 
-    fval_cnf.make_cnf(node, node_set, kVal1);
+    FoCone focone(max_id);
+    focone.mark_region(node);
+    fval_cnf.make_cnf(node, focone, kVal1);
 
     cnf_end();
 
@@ -153,7 +152,7 @@ DtpgSatF::run(TpgNetwork& network,
       gval_cnf.conv_to_assumption(assignment, assumption);
 
       // 故障に対するテスト生成を行なう．
-      solve(gval_cnf.solver(), assumption, fault, node_set, fval_cnf.gvar_map(), fval_cnf.fvar_map());
+      solve(gval_cnf.solver(), assumption, fault, focone.output_list(), fval_cnf.gvar_map(), fval_cnf.fvar_map());
     }
   }
 

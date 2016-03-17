@@ -17,6 +17,8 @@
 
 BEGIN_NAMESPACE_YM_SATPG
 
+class FoCone;
+
 //////////////////////////////////////////////////////////////////////
 /// @class GvalCnf GvalCnf.h "GvalCnf.h"
 /// @brief 正常回路のCNF式を作るためのクラス
@@ -107,6 +109,11 @@ public:
   /// @param[in] node_set ノード集合
   void
   make_cnf(const NodeSet& node_set);
+
+  /// @brief FoCone に含まれるノードの CNF を作る．
+  /// @param[in] focone ノード集合
+  void
+  make_cnf(const FoCone& focone);
 
   /// @brief node の TFI の CNF を作る．
   /// @param[in] node 対象のノード

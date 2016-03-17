@@ -82,6 +82,19 @@ public:
 	   Val3 detect);
 
   /// @brief 故障回路のCNFを作る．
+  /// @param[in] src_node 故障位置のノード
+  /// @param[in] focone 故障のファンアウトコーン
+  /// @param[in] detect 検出条件
+  ///
+  /// detect = kVal0: 検出しないCNFを作る．
+  ///        = kVal1: 検出するCNFを作る．
+  ///        = kValX: fd_var() で制御するCNFを作る．
+  void
+  make_cnf(const TpgNode* src_node,
+	   const FoCone& focone,
+	   Val3 detect);
+
+  /// @brief 故障回路のCNFを作る．
   /// @param[in] fault 故障
   /// @param[in] node_set 故障に関係するノード集合
   /// @param[in] detect 検出条件
@@ -101,6 +114,19 @@ public:
   /// @brief デバッグ用のフラグを得る．
   ymuint
   debug() const;
+
+
+private:
+  //////////////////////////////////////////////////////////////////////
+  // 内部で用いられる関数
+  //////////////////////////////////////////////////////////////////////
+
+  /// @brief ノードの fvar を gvar にする．
+  /// @param[in] node ノード
+  /// @param[in] mark 処理済みの印
+  void
+  set_fvar_recur(const TpgNode* node,
+		 vector<bool>& mark);
 
 
 private:

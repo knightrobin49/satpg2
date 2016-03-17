@@ -8,6 +8,7 @@
 
 
 #include "GvalCnf.h"
+#include "FoCone.h"
 #include "NodeSet.h"
 #include "NodeValList.h"
 #include "TpgFault.h"
@@ -193,6 +194,18 @@ GvalCnf::make_cnf(const NodeSet& node_set)
     }
     set_mark(node);
     node->make_cnf(mSolver, VidLitMap(node, var_map()));
+  }
+}
+
+// @brief FoCone に含まれるノードの CNF を作る．
+// @param[in] focone ノード集合
+void
+GvalCnf::make_cnf(const FoCone& focone)
+{
+  ymuint n = focone.node_num();
+  for (ymuint i = 0; i < n; ++ i) {
+    const TpgNode* node = focone.node(i);
+    make_cnf(node);
   }
 }
 

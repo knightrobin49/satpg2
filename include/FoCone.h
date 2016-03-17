@@ -74,11 +74,6 @@ public:
   const TpgNode*
   node(ymuint pos) const;
 
-  /// @brief マークを読む．
-  /// @param[in] node 対象のノード
-  bool
-  mark(const TpgNode* node) const;
-
   /// @brief 出力のノードのリストを返す．
   const vector<const TpgNode*>&
   output_list() const;
@@ -94,6 +89,11 @@ private:
   //////////////////////////////////////////////////////////////////////
   // 内部で用いられる下請け関数
   //////////////////////////////////////////////////////////////////////
+
+  /// @brief マークを読む．
+  /// @param[in] node 対象のノード
+  bool
+  mark(const TpgNode* node) const;
 
   /// @brief tfo マークをつける．
   /// @param[in] node 対象のノード

@@ -63,19 +63,27 @@ public:
       DtpgStats& stats);
 
 
+protected:
+  //////////////////////////////////////////////////////////////////////
+  // 継承クラスから用いられる関数
+  //////////////////////////////////////////////////////////////////////
+
+  /// @brief ノード番号の最大値を変える．
+  ymuint
+  max_node_id();
+
+
 private:
   //////////////////////////////////////////////////////////////////////
   // 内部で用いられる下請け関数
   //////////////////////////////////////////////////////////////////////
 
   /// @brief テスト生成を行なう．
-  /// @param[in] node_set 対象のノード集合
   /// @param[in] fnode_list 対象の故障を持つノードのリスト
   /// @param[in] flist 対象の故障リスト
   virtual
   void
-  run_multi(const NodeSet& node_set,
-	    const vector<const TpgNode*>& fnode_list,
+  run_multi(const vector<const TpgNode*>& fnode_list,
 	    const vector<const TpgFault*>& flist) = 0;
 
   /// @brief DFS で MFFC を求める．
@@ -90,6 +98,9 @@ private:
   //////////////////////////////////////////////////////////////////////
   // データメンバ
   //////////////////////////////////////////////////////////////////////
+
+  // ノード番号の最大値
+  ymuint mMaxId;
 
   // 故障を持つノードのリスト
   vector<const TpgNode*> mFaultNodeList;

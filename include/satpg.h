@@ -100,6 +100,7 @@ enum {
 
 class TpgFault;
 class FaultMgr;
+class FoCone;
 class TpgNetwork;
 class TpgNode;
 class NodeSet;

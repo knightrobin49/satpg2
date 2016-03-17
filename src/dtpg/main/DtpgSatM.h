@@ -55,13 +55,11 @@ private:
   //////////////////////////////////////////////////////////////////////
 
   /// @brief テスト生成を行なう．
-  /// @param[in] node_set 対象のノード集合
   /// @param[in] fnode_list 対象の故障を持つノードのリスト
   /// @param[in] flist 対象の故障リスト
   virtual
   void
-  run_multi(const NodeSet& node_set,
-	    const vector<const TpgNode*>& fnode_list,
+  run_multi(const vector<const TpgNode*>& fnode_list,
 	    const vector<const TpgFault*>& flist);
 
 

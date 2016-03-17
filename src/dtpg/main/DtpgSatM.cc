@@ -54,39 +54,30 @@ DtpgSatM::~DtpgSatM()
 }
 
 // @brief テストパタン生成を行なう．
-// @param[in] node_set 対象のノード集合
 // @param[in] fnode_list 対象の故障を持つノードのリスト
 // @param[in] flist 故障リスト
 void
-DtpgSatM::run_multi(const NodeSet& node_set,
-		    const vector<const TpgNode*>& fnode_list,
+DtpgSatM::run_multi(const vector<const TpgNode*>& fnode_list,
 		    const vector<const TpgFault*>& flist)
 {
   cnf_begin();
 
-  ymuint max_id = node_set.max_id();
-
-  GvalCnf gval_cnf(max_id, sat_type(), sat_option(), sat_outp());
+  GvalCnf gval_cnf(max_node_id(), sat_type(), sat_option(), sat_outp());
   MvalCnf mval_cnf(gval_cnf);
 
+  NodeSet node_set;
+  node_set.mark_region(max_node_id(), fnode_list);
   mval_cnf.make_cnf(flist, fnode_list, node_set);
 
   cnf_end();
 
   mMarkArray.clear();
-  mMarkArray.resize(max_id, false);
+  mMarkArray.resize(max_node_id(), false);
 
   // 個々の故障に対するテスト生成を行なう．
   ymuint nf = flist.size();
   for (ymuint i = 0; i < nf; ++ i) {
     const TpgFault* f = flist[i];
-
-#if 0
-    if ( f->status() == kFsDetected ) {
-      // 他の故障のパタンで検出済みになっている場合がある．
-      continue;
-    }
-#endif
 
     vector<SatLiteral> assumptions;
 
@@ -101,7 +92,6 @@ DtpgSatM::run_multi(const NodeSet& node_set,
 
     // 故障ノードの TFO 以外の dlit を0にする．
     mTmpNodeList.clear();
-    mTmpNodeList.reserve(node_set.tfo_tfi_size());
     mMarkArray[fnode->id()] = true;
     mTmpNodeList.push_back(fnode);
     for (ymuint rpos = 0; rpos < mTmpNodeList.size(); ++ rpos) {
@@ -135,7 +125,7 @@ DtpgSatM::run_multi(const NodeSet& node_set,
       assumptions.push_back(dlit);
     }
 
-    solve(gval_cnf.solver(), assumptions, f, node_set, mval_cnf.gvar_map(), mval_cnf.fvar_map());
+    solve(gval_cnf.solver(), assumptions, f, node_set.output_list(), mval_cnf.gvar_map(), mval_cnf.fvar_map());
   }
 }
 

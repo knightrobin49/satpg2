@@ -121,7 +121,7 @@ protected:
   solve(SatSolver& solver,
 	const vector<SatLiteral>& assumptions,
 	const TpgFault* fault,
-	const NodeSet& node_set,
+	const vector<const TpgNode*>& output_list,
 	const VidMap& gvar_map,
 	const VidMap& fvar_map);
 

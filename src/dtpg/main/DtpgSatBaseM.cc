@@ -55,7 +55,7 @@ DtpgSatBaseM::run(TpgNetwork& network,
 
   NodeSet node_set;
 
-  ymuint max_id = network.node_num();
+  mMaxId = network.node_num();
 
   // 故障番号の最大値
   ymuint max_fault_id = network.max_fault_id();
@@ -70,7 +70,7 @@ DtpgSatBaseM::run(TpgNetwork& network,
   }
 
   mMark.clear();
-  mMark.resize(max_id, false);
+  mMark.resize(mMaxId, false);
   ymuint n = network.active_node_num();
   for (ymuint i = 0; i < n; ++ i) {
     const TpgNode* node = network.active_node(i);
@@ -81,8 +81,7 @@ DtpgSatBaseM::run(TpgNetwork& network,
       dfs_mffc(node, fmgr);
 
       if ( !mFaultList.empty() ) {
-	node_set.mark_region(max_id, mFaultNodeList);
-	run_multi(node_set, mFaultNodeList, mFaultList);
+	run_multi(mFaultNodeList, mFaultList);
       }
     }
   }
@@ -118,6 +117,13 @@ DtpgSatBaseM::dfs_mffc(const TpgNode* node,
   if ( c > 0 ) {
     mFaultNodeList.push_back(node);
   }
+}
+
+// @brief ノード番号の最大値を変える．
+ymuint
+DtpgSatBaseM::max_node_id()
+{
+  return mMaxId;
 }
 
 END_NAMESPACE_YM_SATPG

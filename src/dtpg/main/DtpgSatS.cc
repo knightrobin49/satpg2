@@ -11,7 +11,7 @@
 #include "DtpgStats.h"
 #include "GvalCnf.h"
 #include "FvalCnf.h"
-#include "NodeSet.h"
+#include "FoCone.h"
 #include "TpgFault.h"
 #include "TpgNetwork.h"
 #include "FaultMgr.h"
@@ -87,9 +87,6 @@ DtpgSatS::run(TpgNetwork& network,
   for (ymuint i = 0; i < nn; ++ i) {
     const TpgNode* node = network.active_node(i);
 
-    NodeSet node_set;
-    node_set.mark_region(max_id, node);
-
     ymuint nf = node->fault_num();
     for (ymuint i = 0; i < nf; ++ i) {
       const TpgFault* fault = node->fault(i);
@@ -101,10 +98,13 @@ DtpgSatS::run(TpgNetwork& network,
 
       cnf_begin();
 
+      FoCone focone(max_id);
+      focone.mark_region(node);
+
       GvalCnf gval_cnf(max_id, sat_type(), sat_option(), sat_outp());
       FvalCnf fval_cnf(gval_cnf);
 
-      fval_cnf.make_cnf(node, node_set, kVal1);
+      fval_cnf.make_cnf(node, focone, kVal1);
 
       cnf_end();
 
@@ -114,7 +114,7 @@ DtpgSatS::run(TpgNetwork& network,
       vector<SatLiteral> assumptions;
       gval_cnf.conv_to_assumption(assignment, assumptions);
 
-      solve(gval_cnf.solver(), assumptions, fault, node_set, fval_cnf.gvar_map(), fval_cnf.fvar_map());
+      solve(gval_cnf.solver(), assumptions, fault, focone.output_list(), fval_cnf.gvar_map(), fval_cnf.fvar_map());
     }
   }
 

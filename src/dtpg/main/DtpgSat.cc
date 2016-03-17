@@ -146,7 +146,7 @@ SatBool3
 DtpgSat::solve(SatSolver& solver,
 	       const vector<SatLiteral>& assumptions,
 	       const TpgFault* fault,
-	       const NodeSet& node_set,
+	       const vector<const TpgNode*>& output_list,
 	       const VidMap& gvar_map,
 	       const VidMap& fvar_map)
 {
@@ -173,7 +173,7 @@ DtpgSat::solve(SatSolver& solver,
     ModelValMap val_map(gvar_map, fvar_map, model);
 
     // バックトレースを行う．
-    mBackTracer(fault->tpg_onode(), node_set, val_map, mLastAssign);
+    mBackTracer(fault->tpg_onode(), output_list, val_map, mLastAssign);
 
     // パタンの登録などを行う．
     mDetectOp(fault, mLastAssign);
