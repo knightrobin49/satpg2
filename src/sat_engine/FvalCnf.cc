@@ -198,7 +198,7 @@ FvalCnf::make_cnf(const TpgNode* src_node,
 {
   gval_cnf().make_cnf(focone);
 
-  const TpgNode* dom_node = focone.dom_node();
+  const TpgNode* dom_node = nullptr;
 
   // focone に含まれるノードに変数を割り当てる．
   vector<bool> mark(max_node_id(), false);

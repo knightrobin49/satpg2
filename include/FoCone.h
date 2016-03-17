@@ -26,7 +26,9 @@ public:
 
   /// @brief コンストラクタ
   /// @param[in] max_node_id ノード番号の最大値
-  FoCone(ymuint max_node_id);
+  /// @param[in] fnode 故障位置のノード
+  FoCone(ymuint max_node_id,
+	 const TpgNode* fnode);
 
   /// @brief デストラクタ
   ~FoCone();
@@ -36,30 +38,6 @@ public:
   //////////////////////////////////////////////////////////////////////
   // 外部インターフェイス
   //////////////////////////////////////////////////////////////////////
-
-  /// @brief 故障位置を与えてその TFO のリストを作る．
-  /// @param[in] fnode 故障位置のノード
-  ///
-  /// 結果は mNodeList に格納される．
-  void
-  mark_region(const TpgNode* fnode);
-
-  /// @brief 故障位置を与えてその TFO のリストを作る．
-  /// @param[in] fnode_list 故障位置のノードのリスト
-  ///
-  /// 結果は mNodeList に格納される．
-  void
-  mark_region(const vector<const TpgNode*>& fnode_list);
-
-  /// @brief 故障位置を与えてその TFO の TFI リストを作る．
-  /// @param[in] fnode 故障位置のノード
-  /// @param[in] dom_node dominator ノード
-  ///
-  /// 結果は mNodeList に格納される．
-  /// こちらは fnode の直近の dominator までを対象とする．
-  void
-  mark_region2(const TpgNode* fnode,
-	       const TpgNode* dom_node);
 
   /// @brief ノード番号の最大値を返す．
   ymuint
@@ -77,12 +55,6 @@ public:
   /// @brief 出力のノードのリストを返す．
   const vector<const TpgNode*>&
   output_list() const;
-
-  /// @brief mark_region2() を使った時の dom_node を返す．
-  ///
-  /// そうでなければ nullptr を返す．
-  const TpgNode*
-  dom_node() const;
 
 
 private:
@@ -118,26 +90,12 @@ private:
   // 現在の故障に関係ありそうな外部出力のリスト
   vector<const TpgNode*> mOutputList;
 
-  // mark_region2() のターゲットノード
-  const TpgNode* mDomNode;
-
 };
 
 
 //////////////////////////////////////////////////////////////////////
 // インライン関数の定義
 //////////////////////////////////////////////////////////////////////
-
-// @brief 故障位置を与えてその TFO の TFI リストを作る．
-// @param[in] fnode 故障位置のノード
-//
-// 結果は mNodeList に格納される．
-inline
-void
-FoCone::mark_region(const TpgNode* fnode)
-{
-  mark_region(vector<const TpgNode*>(1, fnode));
-}
 
 // @brief ノード番号の最大値を返す．
 inline
@@ -190,16 +148,6 @@ bool
 FoCone::mark(const TpgNode* node) const
 {
   return static_cast<bool>((mMarkArray[node->id()] >> 0) & 1U);
-}
-
-// @brief mark_region2() を使った時の dom_node を返す．
-//
-// そうでなければ nullptr を返す．
-inline
-const TpgNode*
-FoCone::dom_node() const
-{
-  return mDomNode;
 }
 
 END_NAMESPACE_YM_SATPG

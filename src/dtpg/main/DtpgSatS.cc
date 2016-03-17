@@ -98,12 +98,9 @@ DtpgSatS::run(TpgNetwork& network,
 
       cnf_begin();
 
-      FoCone focone(max_id);
-      focone.mark_region(node);
-
       GvalCnf gval_cnf(max_id, sat_type(), sat_option(), sat_outp());
       FvalCnf fval_cnf(gval_cnf);
-
+      FoCone focone(max_id, node);
       fval_cnf.make_cnf(node, focone, kVal1);
 
       cnf_end();
