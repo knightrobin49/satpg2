@@ -48,7 +48,7 @@ TpgLogicC0::make_cnf(SatSolver& solver,
 		     const LitMap& lit_map) const
 {
   SatLiteral olit = lit_map.output();
-  solver.add_clause(olit);
+  solver.add_clause(~olit);
 }
 
 END_NAMESPACE_YM_SATPG

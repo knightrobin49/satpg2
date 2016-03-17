@@ -11,8 +11,6 @@
 #include "TpgNode.h"
 #include "TpgNodeInfo.h"
 #include "TpgNodeMap.h"
-#include "TpgInput.h"
-#include "TpgOutput.h"
 #include "TpgFault.h"
 #include "TpgStemFault.h"
 #include "TpgBranchFault.h"
@@ -539,8 +537,7 @@ TpgNetwork::make_input_node(ymuint iid,
 			    const char* name)
 {
   const char* d_name = alloc_str(mAlloc, name);
-  void* p = mAlloc.get_memory(sizeof(TpgInput));
-  TpgNode* node = new (p) TpgInput(mNodeNum, d_name, iid);
+  TpgNode* node = TpgNode::new_input(mAlloc, mNodeNum, d_name, iid);
   mNodeArray[mNodeNum] = node;
   ++ mNodeNum;
 
@@ -562,8 +559,7 @@ TpgNetwork::make_output_node(ymuint oid,
 			     TpgNode* inode)
 {
   const char* d_name = alloc_str(mAlloc, name);
-  void* p = mAlloc.get_memory(sizeof(TpgOutput));
-  TpgNode* node = new (p) TpgOutput(mNodeNum, d_name, oid, inode);
+  TpgNode* node = TpgNode::new_output(mAlloc, mNodeNum, d_name, oid, inode);
   mNodeArray[mNodeNum] = node;
   ++ mNodeNum;
 

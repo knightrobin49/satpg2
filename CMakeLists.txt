@@ -104,6 +104,7 @@ add_subdirectory ( ym-mincov )
 add_subdirectory ( ym-sat )
 add_subdirectory ( ym-tclpp )
 
+add_subdirectory ( gtest )
 add_subdirectory ( atpg_tclsh )
 add_subdirectory ( python )
 

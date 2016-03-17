@@ -34,6 +34,32 @@ class TpgNode
 {
 public:
 
+  /// @brief 入力ノードを生成する．
+  /// @param[in] alloc メモリアロケータ
+  /// @param[in] id ID番号
+  /// @param[in] name ノード名
+  /// @param[in] input_id 入力番号
+  static
+  TpgNode*
+  new_input(Alloc& alloc,
+	    ymuint id,
+	    const char* name,
+	    ymuint input_id);
+
+  /// @brief 出力ノードを生成する．
+  /// @param[in] alloc メモリアロケータ
+  /// @param[in] id ID番号
+  /// @param[in] name ノード名
+  /// @param[in] output_id 入力番号
+  /// @param[in] inode ファンインのノード
+  static
+  TpgNode*
+  new_output(Alloc& alloc,
+	     ymuint id,
+	     const char* name,
+	     ymuint output_id,
+	     TpgNode* inode);
+
   /// @brief 組み込み型の論理ゲートを生成する．
   /// @param[in] alloc メモリアロケータ
   /// @param[in] id ID番号

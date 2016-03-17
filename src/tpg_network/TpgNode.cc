@@ -8,6 +8,8 @@
 
 
 #include "TpgNode.h"
+#include "TpgInput.h"
+#include "TpgOutput.h"
 #include "TpgLogicC0.h"
 #include "TpgLogicC1.h"
 #include "TpgLogicBUFF.h"
@@ -62,6 +64,42 @@ operator<<(ostream& s,
 //////////////////////////////////////////////////////////////////////
 // クラス TpgNode
 //////////////////////////////////////////////////////////////////////
+
+// @brief 入力ノードを生成する．
+// @param[in] alloc メモリアロケータ
+// @param[in] id ID番号
+// @param[in] name ノード名
+// @param[in] input_id 入力番号
+TpgNode*
+TpgNode::new_input(Alloc& alloc,
+		   ymuint id,
+		   const char* name,
+		   ymuint input_id)
+{
+  void* p = alloc.get_memory(sizeof(TpgInput));
+  TpgNode* node = new (p) TpgInput(id, name, input_id);
+
+  return node;
+}
+
+// @brief 出力ノードを生成する．
+// @param[in] alloc メモリアロケータ
+// @param[in] id ID番号
+// @param[in] name ノード名
+// @param[in] output_id 入力番号
+// @param[in] inode ファンインのノード
+TpgNode*
+TpgNode::new_output(Alloc& alloc,
+		    ymuint id,
+		    const char* name,
+		    ymuint output_id,
+		    TpgNode* inode)
+{
+  void* p = alloc.get_memory(sizeof(TpgOutput));
+  TpgNode* node = new (p) TpgOutput(id, name, output_id, inode);
+
+  return node;
+}
 
 // @brief 組み込み型の論理ゲートを生成する．
 // @param[in] alloc メモリアロケータ
