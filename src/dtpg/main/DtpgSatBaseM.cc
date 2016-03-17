@@ -106,13 +106,17 @@ DtpgSatBaseM::dfs_mffc(const TpgNode* node,
     }
   }
 
-  mFaultNodeList.push_back(node);
   ymuint nf = node->fault_num();
+  ymuint c = 0;
   for (ymuint i = 0; i < nf; ++ i) {
     const TpgFault* f = node->fault(i);
     if ( mFaultMark[f->id()] && fmgr.status(f) == kFsUndetected ) {
       mFaultList.push_back(f);
+      ++ c;
     }
+  }
+  if ( c > 0 ) {
+    mFaultNodeList.push_back(node);
   }
 }
 

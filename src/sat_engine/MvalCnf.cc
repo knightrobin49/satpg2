@@ -155,13 +155,12 @@ MvalCnf::make_cnf(const vector<const TpgFault*>& fault_list,
     SatVarId fdvar = solver().new_var();
     set_fault_var(i, fdvar);
     const TpgFault* f = fault_list[i];
+    const TpgNode* node = f->tpg_onode();
     int fval = f->val();
     if ( f->is_stem_fault() ) {
-      const TpgNode* node = f->tpg_inode();
       set_ofvar(node, fval, fdvar);
     }
     else {
-      const TpgNode* node = f->tpg_onode();
       ymuint pos = f->tpg_pos();
       set_ifvar(node, pos, fval, fdvar);
     }
@@ -205,7 +204,6 @@ MvalCnf::make_cnf(const vector<const TpgFault*>& fault_list,
 }
 
 // @brief 故障回路のノードの入出力の関係を表す CNF を作る．
-// @param[in] engine SAT エンジン
 // @param[in] node 対象のノード
 void
 MvalCnf::make_fnode_cnf(const TpgNode* node)
@@ -268,9 +266,6 @@ MvalCnf::make_fnode_cnf(const TpgNode* node)
     SatLiteral output(ovar, false);
     solver().add_clause( glit, ~output);
     solver().add_clause(~glit,  output);
-  }
-  else if ( node->is_output() ) {
-    ASSERT_NOT_REACHED;
   }
   else {
     node->make_cnf(solver(), VectLitMap(ivars, ovar));
