@@ -46,15 +46,6 @@ public:
   ymuint
   max_id() const;
 
-  /// @brief ノードの数を得る．
-  ymuint
-  node_num() const;
-
-  /// @brief ノードを得る．
-  /// @param[in] pos 位置番号 ( 0 <= pos < node_num() )
-  const TpgNode*
-  node(ymuint pos) const;
-
   /// @brief 出力のノードのリストを返す．
   const vector<const TpgNode*>&
   output_list() const;
@@ -88,6 +79,15 @@ private:
   //////////////////////////////////////////////////////////////////////
   // 内部で用いられる下請け関数
   //////////////////////////////////////////////////////////////////////
+
+  /// @brief ノードの数を得る．
+  ymuint
+  node_num() const;
+
+  /// @brief ノードを得る．
+  /// @param[in] pos 位置番号 ( 0 <= pos < node_num() )
+  const TpgNode*
+  node(ymuint pos) const;
 
   /// @brief ノードに故障値用の変数番号を割り当てる．
   /// @param[in] node ノード

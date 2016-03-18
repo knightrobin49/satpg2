@@ -121,11 +121,6 @@ public:
   conv_to_assumption(const NodeValList& assign_list,
 		     vector<SatLiteral>& assumptions);
 
-  /// @brief FoCone に含まれるノードの CNF を作る．
-  /// @param[in] focone ノード集合
-  void
-  make_cnf(const FoCone& focone);
-
   /// @brief node の TFI の CNF を作る．
   /// @param[in] node 対象のノード
   void

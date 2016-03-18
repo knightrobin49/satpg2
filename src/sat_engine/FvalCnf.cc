@@ -9,7 +9,6 @@
 
 #include "FvalCnf.h"
 #include "GvalCnf.h"
-#include "FoCone.h"
 #include "NodeSet.h"
 #include "TpgNode.h"
 #include "TpgFault.h"
@@ -129,114 +128,6 @@ FvalCnf::make_cnf(const TpgNode* src_node,
   }
 
   const vector<const TpgNode*>& output_list = node_set.output_list();
-  ymuint npo = output_list.size();
-
-  if ( detect == kVal0 ) {
-    for (ymuint i = 0; i < npo; ++ i) {
-      const TpgNode* node = output_list[i];
-      SatLiteral dlit(dvar(node));
-      solver().add_clause(~dlit);
-    }
-    if ( dom_node != nullptr ) {
-      SatLiteral dlit(dvar(dom_node));
-      solver().add_clause(~dlit);
-    }
-  }
-  else if ( detect == kVal1 ) {
-    vector<SatLiteral> tmp_lits;
-    tmp_lits.reserve(npo + 1);
-    for (ymuint i = 0; i < npo; ++ i) {
-      const TpgNode* node = output_list[i];
-      SatLiteral dlit(dvar(node));
-      tmp_lits.push_back(dlit);
-    }
-    if ( dom_node != nullptr ) {
-      SatLiteral dlit(dvar(dom_node));
-      tmp_lits.push_back(dlit);
-    }
-    solver().add_clause(tmp_lits);
-
-    for (const TpgNode* node = src_node; node != nullptr && node != dom_node; node = node->imm_dom()) {
-      SatLiteral dlit(dvar(node));
-      solver().add_clause(dlit);
-    }
-  }
-  else {
-    SatVarId fdvar = solver().new_var();
-    set_fdvar(fdvar);
-    vector<SatLiteral> tmp_lits;
-    tmp_lits.reserve(npo + 1);
-    SatLiteral fdlit(fdvar);
-    for (ymuint i = 0; i < npo; ++ i) {
-      const TpgNode* node = output_list[i];
-      SatLiteral dlit(dvar(node));
-      tmp_lits.push_back(dlit);
-      solver().add_clause(fdlit, ~dlit);
-    }
-    tmp_lits.push_back(~fdlit);
-    solver().add_clause(tmp_lits);
-
-    for (const TpgNode* node = src_node; node != nullptr && node != dom_node; node = node->imm_dom()) {
-      SatLiteral dlit(dvar(node));
-      solver().add_clause(~fdlit, dlit);
-    }
-  }
-}
-
-// @brief 故障回路のCNFを作る．
-// @param[in] src_node 故障位置のノード
-// @param[in] focone 故障のファンアウトコーン
-// @param[in] detect 検出条件
-//
-// detect = kVal0: 検出しないCNFを作る．
-//        = kVal1: 検出するCNFを作る．
-//        = kValX: fd_var() で制御するCNFを作る．
-void
-FvalCnf::make_cnf(const TpgNode* src_node,
-		  const FoCone& focone,
-		  Val3 detect)
-{
-  gval_cnf().make_cnf(focone);
-
-  const TpgNode* dom_node = nullptr;
-
-  // focone に含まれるノードに変数を割り当てる．
-  vector<bool> mark(max_node_id(), false);
-  ymuint n = focone.node_num();
-  for (ymuint i = 0; i < n; ++ i) {
-    const TpgNode* node = focone.node(i);
-    mark[node->id()] = true;
-    SatVarId fvar = solver().new_var();
-    SatVarId dvar = solver().new_var();
-    set_fvar(node, fvar);
-    set_dvar(node, dvar);
-    if ( debug() ) {
-      cout << "fvar(" << node->name() << ") = " << fvar << endl;
-    }
-  }
-
-  // focone に含まれないノードの fvar を gvar にする．
-  for (ymuint i = 0; i < n; ++ i) {
-    const TpgNode* node = focone.node(i);
-    ymuint ni = node->fanin_num();
-    for (ymuint j = 0; j < ni; ++ j) {
-      const TpgNode* inode = node->fanin(j);
-      set_fvar_recur(inode, mark);
-    }
-  }
-
-  for (ymuint i = 0; i < n; ++ i) {
-    const TpgNode* node = focone.node(i);
-    if ( node != src_node ) {
-      // 故障回路のゲートの入出力関係を表すCNFを作る．
-      node->make_cnf(solver(), VidLitMap(node, fvar_map()));
-    }
-
-    // D-Chain 制約を作る．
-    make_dchain_cnf(node, dom_node);
-  }
-
-  const vector<const TpgNode*>& output_list = focone.output_list();
   ymuint npo = output_list.size();
 
   if ( detect == kVal0 ) {
