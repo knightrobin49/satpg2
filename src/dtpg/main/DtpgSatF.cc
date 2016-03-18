@@ -9,8 +9,7 @@
 
 #include "DtpgSatF.h"
 #include "DtpgStats.h"
-#include "GvalCnf.h"
-#include "FvalCnf.h"
+#include "StructSat.h"
 #include "FoCone.h"
 #include "TpgFault.h"
 #include "TpgNetwork.h"
@@ -128,10 +127,8 @@ DtpgSatF::run(TpgNetwork& network,
 
     cnf_begin();
 
-    GvalCnf gval_cnf(max_id, sat_type(), sat_option(), sat_outp());
-    FvalCnf fval_cnf(gval_cnf);
-    FoCone focone(max_id, node);
-    fval_cnf.make_cnf(node, focone, kVal1);
+    StructSat struct_sat(max_id);
+    FoCone* focone = struct_sat.add_focone(node, kVal1);
 
     cnf_end();
 
@@ -144,13 +141,13 @@ DtpgSatF::run(TpgNetwork& network,
 
       // FFR 内の故障活性化&伝搬条件を求める．
       NodeValList assignment;
-      gval_cnf.add_ffr_condition(node, fault, assignment);
+      struct_sat.add_ffr_condition(node, fault, assignment);
 
       vector<SatLiteral> assumption;
-      gval_cnf.conv_to_assumption(assignment, assumption);
+      struct_sat.conv_to_assumption(assignment, assumption);
 
       // 故障に対するテスト生成を行なう．
-      solve(gval_cnf.solver(), assumption, fault, focone.output_list(), fval_cnf.gvar_map(), fval_cnf.fvar_map());
+      solve(struct_sat.solver(), assumption, fault, focone->output_list(), focone->gvar_map(), focone->fvar_map());
     }
   }
 

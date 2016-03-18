@@ -9,8 +9,7 @@
 
 #include "DtpgSatS.h"
 #include "DtpgStats.h"
-#include "GvalCnf.h"
-#include "FvalCnf.h"
+#include "StructSat.h"
 #include "FoCone.h"
 #include "TpgFault.h"
 #include "TpgNetwork.h"
@@ -98,20 +97,18 @@ DtpgSatS::run(TpgNetwork& network,
 
       cnf_begin();
 
-      GvalCnf gval_cnf(max_id, sat_type(), sat_option(), sat_outp());
-      FvalCnf fval_cnf(gval_cnf);
-      FoCone focone(max_id, node);
-      fval_cnf.make_cnf(node, focone, kVal1);
+      StructSat struct_sat(max_id);
+      FoCone* focone = struct_sat.add_focone(node, kVal1);
 
       cnf_end();
 
       NodeValList assignment;
-      gval_cnf.add_fault_condition(fault, assignment);
+      struct_sat.add_fault_condition(fault, assignment);
 
       vector<SatLiteral> assumptions;
-      gval_cnf.conv_to_assumption(assignment, assumptions);
+      struct_sat.conv_to_assumption(assignment, assumptions);
 
-      solve(gval_cnf.solver(), assumptions, fault, focone.output_list(), fval_cnf.gvar_map(), fval_cnf.fvar_map());
+      solve(struct_sat.solver(), assumptions, fault, focone->output_list(), focone->gvar_map(), focone->fvar_map());
     }
   }
 

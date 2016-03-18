@@ -41,6 +41,22 @@ StructSat::StructSat(ymuint max_node_id,
 // @brief デストラクタ
 StructSat::~StructSat()
 {
+  for (ymuint i = 0; i < mFoConeList.size(); ++ i) {
+    FoCone* focone = mFoConeList[i];
+    delete focone;
+  }
+}
+
+// @brief fault cone を追加する．
+// @param[in] fnode 故障のあるノード
+// @param[in] detect 検出条件
+FoCone*
+StructSat::add_focone(const TpgNode* fnode,
+		      Val3 detect)
+{
+  FoCone* focone = new FoCone(*this, fnode, detect);
+  mFoConeList.push_back(focone);
+  return focone;
 }
 
 // @brief 故障の検出条件を割当リストに追加する．

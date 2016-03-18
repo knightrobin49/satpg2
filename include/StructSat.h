@@ -17,6 +17,8 @@
 
 BEGIN_NAMESPACE_YM_SATPG
 
+class FoCone;
+
 //////////////////////////////////////////////////////////////////////
 /// @class StructSat StructSat.h "StructSat.h"
 /// @brief TpgNetwork の構造に基づく SAT ソルバ
@@ -67,6 +69,12 @@ public:
   // 節を作る関数
   //////////////////////////////////////////////////////////////////////
 
+  /// @brief fault cone を追加する．
+  /// @param[in] fnode 故障のあるノード
+  /// @param[in] detect 検出条件
+  FoCone*
+  add_focone(const TpgNode* fnode,
+	     Val3 detect);
 
   /// @brief 故障の検出条件を割当リストに追加する．
   /// @param[in] fault 故障
@@ -219,6 +227,9 @@ private:
 
   // 変数マップ
   GenVidMap mVarMap;
+
+  // fault cone のリスト
+  vector<FoCone*> mFoConeList;
 
   // デバッグ用のフラグ
   ymuint mDebugFlag;

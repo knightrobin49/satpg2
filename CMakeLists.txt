@@ -115,7 +115,6 @@ add_subdirectory ( python )
 
 set (base_SOURCES
   src/base/FaultMgr.cc
-  src/base/FoCone.cc
   src/base/NodeSet.cc
   src/base/NodeValList.cc
   src/base/TestVector.cc
@@ -126,6 +125,7 @@ set (base_SOURCES
 set (sat_engine_SOURCES
   src/sat_engine/VidLitMap.cc
   src/sat_engine/GvalCnf.cc
+  src/sat_engine/FoCone.cc
   src/sat_engine/FvalCnf.cc
   src/sat_engine/FvalCnfBase.cc
   src/sat_engine/MvalCnf.cc
