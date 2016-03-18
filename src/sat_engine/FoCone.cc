@@ -78,7 +78,7 @@ FoCone::FoCone(StructSat& struct_sat,
   // focone に含まれるノードに変数を割り当てる．
   for (ymuint i = 0; i < tfo_num; ++ i) {
     const TpgNode* node = mNodeList[i];
-    mStructSat.make_cnf(node);
+    mStructSat.make_tfi_cnf(node);
     SatVarId fvar = solver().new_var();
     SatVarId dvar = solver().new_var();
     set_fvar(node, fvar);
@@ -102,7 +102,7 @@ FoCone::FoCone(StructSat& struct_sat,
     }
 
     // D-Chain 制約を作る．
-    make_dchain_cnf(node, nullptr);
+    mStructSat.make_dchain_cnf(node, nullptr, fvar_map(), dvar_map());
   }
 
   ymuint npo = mOutputList.size();
@@ -134,53 +134,6 @@ FoCone::FoCone(StructSat& struct_sat,
 // @brief デストラクタ
 FoCone::~FoCone()
 {
-}
-
-// @brief 正常値と故障値が異なるという制約を追加する．
-// @param[in] node 対象のノード
-void
-FoCone::add_diff_clause(const TpgNode* node)
-{
-  SatLiteral lit1(gvar(node));
-  SatLiteral lit2(fvar(node));
-  solver().add_clause( lit1,  lit2);
-  solver().add_clause(~lit1, ~lit2);
-}
-
-// @brief 故障伝搬条件を表すCNFを作る．
-// @param[in] node 対象のノード
-// @param[in] dst_node 伝搬条件の終点のノード
-void
-FoCone::make_dchain_cnf(const TpgNode* node,
-			const TpgNode* dst_node)
-{
-  SatLiteral glit(gvar(node), false);
-  SatLiteral flit(fvar(node), false);
-  SatLiteral dlit(dvar(node), false);
-
-  // dlit -> XOR(glit, flit) を追加する．
-  // 要するに dlit が 1 の時，正常回路と故障回路で異なっていなければならない．
-  solver().add_clause(~glit, ~flit, ~dlit);
-  solver().add_clause( glit,  flit, ~dlit);
-
-  if ( node->is_output() || node == dst_node ) {
-    // 出力ノードの場合，XOR(glit, flit) -> dlit となる．
-    solver().add_clause(~glit,  flit, dlit);
-    solver().add_clause( glit, ~flit, dlit);
-  }
-  else {
-    // dlit が 1 の時，ファンアウトの dlit が最低1つは 1 でなければならない．
-    ymuint nfo = node->active_fanout_num();
-    vector<SatLiteral> tmp_lits;
-    tmp_lits.reserve(nfo + 1);
-    tmp_lits.push_back(~dlit);
-    for (ymuint j = 0; j < nfo; ++ j) {
-      const TpgNode* onode = node->active_fanout(j);
-      SatLiteral odlit(dvar(onode), false);
-      tmp_lits.push_back(odlit);
-    }
-    solver().add_clause(tmp_lits);
-  }
 }
 
 END_NAMESPACE_YM_SATPG

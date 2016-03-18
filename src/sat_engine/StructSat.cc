@@ -134,7 +134,7 @@ StructSat::add_assignments(const NodeValList& assignment)
     NodeVal nv = assignment[i];
     const TpgNode* node = nv.node();
     // node およびその TFI に関する節を追加する．
-    make_cnf(node);
+    make_tfi_cnf(node);
 
     SatLiteral alit(var(node), false);
     if ( nv.val() ) {
@@ -157,7 +157,7 @@ StructSat::add_negation(const NodeValList& assignment)
     NodeVal nv = assignment[i];
     const TpgNode* node = nv.node();
     // node およびその TFI に関する節を追加する．
-    make_cnf(node);
+    make_tfi_cnf(node);
 
     SatLiteral alit(var(node), false);
     if ( nv.val() ) {
@@ -184,7 +184,7 @@ StructSat::conv_to_assumption(const NodeValList& assign_list,
     NodeVal nv = assign_list[i];
     const TpgNode* node = nv.node();
     // node およびその TFI に関する節を追加する．
-    make_cnf(node);
+    make_tfi_cnf(node);
 
     SatLiteral alit(var(node), false);
     if ( nv.val() ) {
@@ -199,7 +199,7 @@ StructSat::conv_to_assumption(const NodeValList& assign_list,
 // @brief node の TFI の CNF を作る．
 // @param[in] node 対象のノード
 void
-StructSat::make_cnf(const TpgNode* node)
+StructSat::make_tfi_cnf(const TpgNode* node)
 {
   if ( mark(node) ) {
     return;
@@ -210,7 +210,7 @@ StructSat::make_cnf(const TpgNode* node)
   ymuint ni = node->fanin_num();
   for (ymuint i = 0; i < ni; ++ i) {
     const TpgNode* inode = node->fanin(i);
-    make_cnf(inode);
+    make_tfi_cnf(inode);
   }
 
   // node に対応する変数を用意する．
@@ -219,6 +219,42 @@ StructSat::make_cnf(const TpgNode* node)
 
   // node の入出力の関係を表す節を作る．
   node->make_cnf(mSolver, VidLitMap(node, var_map()));
+}
+
+// @brief node に関する故障伝搬条件を作る．
+void
+StructSat::make_dchain_cnf(const TpgNode* node,
+			   const TpgNode* dst_node,
+			   const VidMap& fvar_map,
+			   const VidMap& dvar_map)
+{
+  SatLiteral glit(var(node), false);
+  SatLiteral flit(fvar_map(node), false);
+  SatLiteral dlit(dvar_map(node), false);
+
+  // dlit -> XOR(glit, flit) を追加する．
+  // 要するに dlit が 1 の時，正常回路と故障回路で異なっていなければならない．
+  solver().add_clause(~glit, ~flit, ~dlit);
+  solver().add_clause( glit,  flit, ~dlit);
+
+  if ( node->is_output() || node == dst_node ) {
+    // 出力ノードの場合，XOR(glit, flit) -> dlit となる．
+    solver().add_clause(~glit,  flit, dlit);
+    solver().add_clause( glit, ~flit, dlit);
+  }
+  else {
+    // dlit が 1 の時，ファンアウトの dlit が最低1つは 1 でなければならない．
+    ymuint nfo = node->active_fanout_num();
+    vector<SatLiteral> tmp_lits;
+    tmp_lits.reserve(nfo + 1);
+    tmp_lits.push_back(~dlit);
+    for (ymuint j = 0; j < nfo; ++ j) {
+      const TpgNode* onode = node->active_fanout(j);
+      SatLiteral odlit(dvar_map(onode), false);
+      tmp_lits.push_back(odlit);
+    }
+    solver().add_clause(tmp_lits);
+  }
 }
 
 // @brief チェックを行う．

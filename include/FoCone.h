@@ -80,15 +80,6 @@ private:
   // 内部で用いられる下請け関数
   //////////////////////////////////////////////////////////////////////
 
-  /// @brief ノードの数を得る．
-  ymuint
-  node_num() const;
-
-  /// @brief ノードを得る．
-  /// @param[in] pos 位置番号 ( 0 <= pos < node_num() )
-  const TpgNode*
-  node(ymuint pos) const;
-
   /// @brief ノードに故障値用の変数番号を割り当てる．
   /// @param[in] node ノード
   /// @param[in] fvar 故障値の変数番号
@@ -102,18 +93,6 @@ private:
   void
   set_dvar(const TpgNode* node,
 	   SatVarId dvar);
-
-  /// @brief 正常値と故障値が異なるという制約を追加する．
-  /// @param[in] node 対象のノード
-  void
-  add_diff_clause(const TpgNode* node);
-
-  /// @brief 故障伝搬条件を表すCNFを作る．
-  /// @param[in] node 対象のノード
-  /// @param[in] dst_node 伝搬条件の終点のノード
-  void
-  make_dchain_cnf(const TpgNode* node,
-		  const TpgNode* dst_node);
 
   /// @brief マークを読む．
   /// @param[in] node 対象のノード
@@ -169,23 +148,6 @@ ymuint
 FoCone::max_id() const
 {
   return mMaxNodeId;
-}
-
-// @brief ノードの数を得る．
-inline
-ymuint
-FoCone::node_num() const
-{
-  return mNodeList.size();
-}
-
-// @brief ノードを得る．
-// @param[in] pos 位置番号 ( 0 <= pos < node_num() )
-inline
-const TpgNode*
-FoCone::node(ymuint pos) const
-{
-  return mNodeList[pos];
 }
 
 // @brief 出力のノードのリストを返す．
