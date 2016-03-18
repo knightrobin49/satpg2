@@ -54,6 +54,8 @@ DtpgCmd::DtpgCmd(AtpgMgr* mgr) :
 			     "single3 mode");
   mPoptFFR = new TclPopt(this, "ffr",
 			 "FFR mode");
+  mPoptMFFC = new TclPopt(this, "mffc",
+			  "MFFC mode");
   mPoptMulti = new TclPopt(this, "multi",
 			   "multi mode");
   mPoptMulti2 = new TclPoptInt(this, "multi2",
@@ -80,7 +82,12 @@ DtpgCmd::DtpgCmd(AtpgMgr* mgr) :
 			     "disable timer");
 
   new_popt_group(mPoptSat, mPoptMiniSat, mPoptMiniSat2, mPoptSatRec);
-  new_popt_group(mPoptSingle, mPoptSingle2, mPoptMulti, mPoptMulti2, mPoptSmtSingle);
+
+  TclPoptGroup* g0 = new_popt_group(mPoptSingle, mPoptSingle2, mPoptMulti, mPoptMulti2);
+  add_popt(g0, mPoptSmtSingle);
+  add_popt(g0, mPoptFFR);
+  add_popt(g0, mPoptMFFC);
+
   new_popt_group(mPoptTimer, mPoptNoTimer);
 }
 
@@ -155,6 +162,9 @@ DtpgCmd::cmd_proc(TclObjVector& objv)
   else if ( mPoptFFR->is_specified() ) {
     engine_type = "ffr";
   }
+  else if ( mPoptMFFC->is_specified() ) {
+    engine_type = "mffc";
+  }
   else if ( mPoptMulti->is_specified() ) {
     engine_type = "multi";
   }
@@ -207,6 +217,9 @@ DtpgCmd::cmd_proc(TclObjVector& objv)
   }
   else if ( engine_type == "ffr" ) {
     engine = new_DtpgSatF(sat_type, sat_option, outp, bt, dop_list, uop_list);
+  }
+  else if ( engine_type == "mffc" ) {
+    engine = new_DtpgSatH(sat_type, sat_option, outp, bt, dop_list, uop_list);
   }
   else if ( engine_type == "multi" ) {
     engine = new_DtpgSatM(sat_type, sat_option, outp, bt, dop_list, uop_list);

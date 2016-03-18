@@ -1,15 +1,16 @@
 ﻿
-/// @file FoCone.cc
-/// @brief FoCone の実装ファイル
+/// @file MffcCone.cc
+/// @brief MffcCone の実装ファイル
 /// @author Yusuke Matsunaga (松永 裕介)
 ///
 /// Copyright (C) 2005-2010, 2012-2014 Yusuke Matsunaga
 /// All rights reserved.
 
 
-#include "FoCone.h"
+#include "MffcCone.h"
 #include "StructSat.h"
 #include "TpgNode.h"
+#include "VectLitMap.h"
 #include "VidLitMap.h"
 
 
@@ -34,20 +35,30 @@ END_NONAMESPACE
 // @brief コンストラクタ
 // @param[in] struct_sat StructSat ソルバ
 // @param[in] fnode 故障位置のノード
-// @param[in] detect 検出条件
-FoCone::FoCone(StructSat& struct_sat,
-	       const TpgNode* fnode,
-	       Val3 detect) :
+MffcCone::MffcCone(StructSat& struct_sat,
+		   const TpgNode* fnode) :
   mStructSat(struct_sat),
   mMaxNodeId(struct_sat.max_node_id()),
   mMarkArray(max_id()),
+  mElemList(fnode->mffc_elem_num()),
   mFvarMap(max_id()),
-  mDvarMap(max_id())
+  mDvarMap(max_id()),
+  mElemVarList(fnode->mffc_elem_num())
 {
   mNodeList.reserve(max_id());
 
-  // 故障のあるノードの TFO を mNodeList に入れる．
-  set_mark(fnode);
+  for (ymuint i = 0; i < fnode->mffc_elem_num(); ++ i) {
+    mElemList[i] = fnode->mffc_elem(i);
+    mElemVarList[i] = solver().new_var();
+  }
+
+  // mElemList に含まれるノードの TFO を mNodeList に加える．
+  vector<int> elem_map(max_id(), -1);
+  for (ymuint i = 0; i < mffc_elem_num(); ++ i) {
+    const TpgNode* node = mffc_elem(i);
+    set_mark(node);
+    elem_map[node->id()] = i;
+  }
   for (ymuint rpos = 0; rpos < mNodeList.size(); ++ rpos) {
     const TpgNode* node = mNodeList[rpos];
     ymuint nfo = node->active_fanout_num();
@@ -96,7 +107,27 @@ FoCone::FoCone(StructSat& struct_sat,
 
   for (ymuint i = 0; i < tfo_num; ++ i) {
     const TpgNode* node = mNodeList[i];
-    if ( node != fnode ) {
+    int fpos = elem_map[node->id()];
+    if ( fpos >= 0 ) {
+      // 出力に故障挿入変数との XOR ゲートを挿入する．
+      SatVarId tmp_var = solver().new_var();
+      ymuint ni = node->fanin_num();
+      vector<SatVarId> tmp_ivars(ni);
+      for (ymuint j = 0; j < ni; ++ j) {
+	tmp_ivars[j] = fvar(node->fanin(j));
+      }
+      VectLitMap lit_map(tmp_ivars, tmp_var);
+      node->make_cnf(solver(), lit_map);
+
+      SatLiteral ilit(tmp_var);
+      SatLiteral olit(fvar(node));
+      SatLiteral dlit(mElemVarList[fpos]);
+      solver().add_clause( ilit,  dlit, ~olit);
+      solver().add_clause( ilit, ~dlit,  olit);
+      solver().add_clause(~ilit,  dlit,  olit);
+      solver().add_clause(~ilit, ~dlit, ~olit);
+    }
+    else {
       // 故障回路のゲートの入出力関係を表すCNFを作る．
       node->make_cnf(solver(), VidLitMap(node, fvar_map()));
     }
@@ -106,33 +137,23 @@ FoCone::FoCone(StructSat& struct_sat,
   }
 
   ymuint npo = mOutputList.size();
-
-  if ( detect == kVal0 ) {
-    for (ymuint i = 0; i < npo; ++ i) {
-      const TpgNode* node = mOutputList[i];
-      SatLiteral dlit(dvar(node));
-      solver().add_clause(~dlit);
-    }
+  vector<SatLiteral> tmp_lits;
+  tmp_lits.reserve(npo);
+  for (ymuint i = 0; i < npo; ++ i) {
+    const TpgNode* node = mOutputList[i];
+    SatLiteral dlit(dvar(node));
+    tmp_lits.push_back(dlit);
   }
-  else if ( detect == kVal1 ) {
-    vector<SatLiteral> tmp_lits;
-    tmp_lits.reserve(npo);
-    for (ymuint i = 0; i < npo; ++ i) {
-      const TpgNode* node = mOutputList[i];
-      SatLiteral dlit(dvar(node));
-      tmp_lits.push_back(dlit);
-    }
-    solver().add_clause(tmp_lits);
+  solver().add_clause(tmp_lits);
 
-    for (const TpgNode* node = fnode; node != nullptr && node != nullptr; node = node->imm_dom()) {
-      SatLiteral dlit(dvar(node));
-      solver().add_clause(dlit);
-    }
+  for (const TpgNode* node = fnode; node != nullptr && node != nullptr; node = node->imm_dom()) {
+    SatLiteral dlit(dvar(node));
+    solver().add_clause(dlit);
   }
 }
 
 // @brief デストラクタ
-FoCone::~FoCone()
+MffcCone::~MffcCone()
 {
 }
 

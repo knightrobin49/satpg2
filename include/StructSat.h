@@ -76,6 +76,13 @@ public:
   add_focone(const TpgNode* fnode,
 	     Val3 detect);
 
+  /// @brief fault cone を追加する．
+  /// @param[in] fnode 故障のあるノード
+  ///
+  /// こちらは MFFC 内の故障を対象にする．
+  MffcCone*
+  add_mffccone(const TpgNode* fnode);
+
   /// @brief 故障の検出条件を割当リストに追加する．
   /// @param[in] fault 故障
   /// @param[out] assignment 割当リスト
@@ -234,8 +241,11 @@ private:
   // 変数マップ
   GenVidMap mVarMap;
 
-  // fault cone のリスト
+  // fanout cone のリスト
   vector<FoCone*> mFoConeList;
+
+  // MFFC cone のリスト
+  vector<MffcCone*> mMffcConeList;
 
   // デバッグ用のフラグ
   ymuint mDebugFlag;

@@ -76,6 +76,9 @@ private:
   // ffr オプションの解析用オブジェクト
   TclPopt* mPoptFFR;
 
+  // mffc オプションの解析用オブジェクト
+  TclPopt* mPoptMFFC;
+
   // multi オプションの解析用オブジェクト
   TclPopt* mPoptMulti;
 

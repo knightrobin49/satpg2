@@ -363,6 +363,7 @@ TpgNetwork::set(const BnNetwork& bnnetwork)
     if ( node->imm_dom() == nullptr ) {
       // node を根とする MFFC 内の FFR の根のノードのリストを作る．
       vector<TpgNode*> tmp_list;
+      tmp_list.push_back(node);
       get_mffc_elem(node, mark, tmp_list);
       ymuint n = tmp_list.size();
       void* p = mAlloc.get_memory(sizeof(TpgNode*) * n);
@@ -370,6 +371,7 @@ TpgNetwork::set(const BnNetwork& bnnetwork)
       for (ymuint i = 0; i < n; ++ i) {
 	root_list[i] = tmp_list[i];
       }
+      ASSERT_COND( root_list[0] == node );
       node->set_root_list(n, root_list);
     }
   }

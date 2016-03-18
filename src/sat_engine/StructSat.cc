@@ -9,6 +9,7 @@
 
 #include "StructSat.h"
 #include "FoCone.h"
+#include "MffcCone.h"
 #include "NodeValList.h"
 #include "TpgFault.h"
 #include "TpgNode.h"
@@ -42,8 +43,12 @@ StructSat::StructSat(ymuint max_node_id,
 StructSat::~StructSat()
 {
   for (ymuint i = 0; i < mFoConeList.size(); ++ i) {
-    FoCone* focone = mFoConeList[i];
-    delete focone;
+    FoCone* cone = mFoConeList[i];
+    delete cone;
+  }
+  for (ymuint i = 0; i < mMffcConeList.size(); ++ i) {
+    MffcCone* cone = mMffcConeList[i];
+    delete cone;
   }
 }
 
@@ -57,6 +62,18 @@ StructSat::add_focone(const TpgNode* fnode,
   FoCone* focone = new FoCone(*this, fnode, detect);
   mFoConeList.push_back(focone);
   return focone;
+}
+
+// @brief fault cone を追加する．
+// @param[in] fnode 故障のあるノード
+//
+// こちらは MFFC 内の故障を対象にする．
+MffcCone*
+StructSat::add_mffccone(const TpgNode* fnode)
+{
+  MffcCone* mffc_cone = new MffcCone(*this, fnode);
+  mMffcConeList.push_back(mffc_cone);
+  return mffc_cone;
 }
 
 // @brief 故障の検出条件を割当リストに追加する．
