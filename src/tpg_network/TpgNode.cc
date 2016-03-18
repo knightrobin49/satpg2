@@ -337,6 +337,8 @@ TpgNode::TpgNode(ymuint id,
   mFaultNum = 0;
   mFaultList = nullptr;
   mMarks = 0U;
+  mRootNum = 0;
+  mRootList = nullptr;
 }
 
 // @brief デストラクタ
@@ -657,6 +659,15 @@ TpgNode::set_fault_list(ymuint nf,
 {
   mFaultNum = nf;
   mFaultList = fault_list;
+}
+
+// @brief MFFC の情報をセットする．
+void
+TpgNode::set_root_list(ymuint n,
+		       TpgNode** root_list)
+{
+  mRootNum = n;
+  mRootList = root_list;
 }
 
 END_NAMESPACE_YM_SATPG

@@ -244,6 +244,19 @@ public:
   TpgNode*
   imm_dom() const;
 
+  /// @brief MFFC 内の FFR の根のノードの数を返す．
+  ///
+  /// imm_dom() == nullptr の時のみ意味を持つ．
+  ymuint
+  mffc_elem_num() const;
+
+  /// @brief MFFC 内の FFR の根のノードを返す．
+  /// @param[in] pos 位置番号 ( 0 <= pos < root_num() )
+  ///
+  /// imm_dom() == nullptr の時のみ意味を持つ．
+  TpgNode*
+  mffc_elem(ymuint pos) const;
+
 
 public:
   //////////////////////////////////////////////////////////////////////
@@ -382,6 +395,11 @@ public:
   void
   clear_active();
 
+  /// @brief MFFC の情報をセットする．
+  void
+  set_root_list(ymuint n,
+		TpgNode** root_list);
+
 
 private:
   //////////////////////////////////////////////////////////////////////
@@ -424,6 +442,12 @@ private:
 
   // immediate dominator
   TpgNode* mImmDom;
+
+  // MFFC 内の FFR の根のノードの数
+  ymuint mRootNum;
+
+  // MFFC 内の FFR の根のノードの配列
+  TpgNode** mRootList;
 
 };
 
@@ -534,6 +558,28 @@ TpgNode*
 TpgNode::imm_dom() const
 {
   return mImmDom;
+}
+
+// @brief MFFC 内の FFR の根のノードの数を返す．
+//
+// imm_dom() == nullptr の時のみ意味を持つ．
+inline
+ymuint
+TpgNode::mffc_elem_num() const
+{
+  return mRootNum;
+}
+
+// @brief MFFC 内の FFR の根のノードを返す．
+// @param[in] pos 位置番号 ( 0 <= pos < root_num() )
+//
+// imm_dom() == nullptr の時のみ意味を持つ．
+inline
+TpgNode*
+TpgNode::mffc_elem(ymuint pos) const
+{
+  ASSERT_COND( pos < mffc_elem_num() );
+  return mRootList[pos];
 }
 
 END_NAMESPACE_YM_SATPG

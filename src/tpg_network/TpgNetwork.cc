@@ -167,6 +167,32 @@ TpgNetwork::read_iscas89(const string& filename)
   return stat;
 }
 
+BEGIN_NONAMESPACE
+
+void
+get_mffc_elem(TpgNode* node,
+	      vector<bool>& mark,
+	      vector<TpgNode*>& tmp_list)
+{
+  if ( mark[node->id()] ) {
+    return;
+  }
+  mark[node->id()] = true;
+  if ( node->imm_dom() != nullptr && node->ffr_root() == node ) {
+    tmp_list.push_back(node);
+  }
+
+  ymuint ni = node->fanin_num();
+  for (ymuint i = 0; i < ni; ++ i) {
+    TpgNode* inode = node->fanin(i);
+    if ( inode->imm_dom() != nullptr ) {
+      get_mffc_elem(inode, mark, tmp_list);
+    }
+  }
+}
+
+END_NONAMESPACE
+
 // @brief 内容を設定する．
 // @param[in] bnnetwork もとのネットワーク
 void
@@ -329,6 +355,24 @@ TpgNetwork::set(const BnNetwork& bnnetwork)
 
   // 全部アクティブにしておく．
   activate_all();
+
+  // MFFC 内の FFR の情報をセットしておく．
+  vector<bool> mark(node_num(), false);
+  for (ymuint i = 0; i < mNodeNum; ++ i) {
+    TpgNode* node = mNodeArray[i];
+    if ( node->imm_dom() == nullptr ) {
+      // node を根とする MFFC 内の FFR の根のノードのリストを作る．
+      vector<TpgNode*> tmp_list;
+      get_mffc_elem(node, mark, tmp_list);
+      ymuint n = tmp_list.size();
+      void* p = mAlloc.get_memory(sizeof(TpgNode*) * n);
+      TpgNode** root_list = new (p) TpgNode*[n];
+      for (ymuint i = 0; i < n; ++ i) {
+	root_list[i] = tmp_list[i];
+      }
+      node->set_root_list(n, root_list);
+    }
+  }
 }
 
 // @brief 一つの外部出力に関係するノードのみをアクティブにする．
