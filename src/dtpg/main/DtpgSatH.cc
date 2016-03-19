@@ -192,15 +192,8 @@ DtpgSatH::run(TpgNetwork& network,
 	  vector<SatLiteral> assumption;
 	  struct_sat.conv_to_assumption(assignment, assumption);
 
-	  for (ymuint k = 0; k < ne; ++ k) {
-	    SatVarId dvar = mffc_cone->mffc_elem_var(k);
-	    if ( k == j ) {
-	      assumption.push_back(SatLiteral(dvar, false));
-	    }
-	    else {
-	      assumption.push_back(SatLiteral(dvar, true));
-	    }
-	  }
+	  // node1 の出力に故障を挿入する．
+	  mffc_cone->select_fault_node(j, assumption);
 
 	  // 故障に対するテスト生成を行なう．
 	  solve(struct_sat.solver(), assumption, fault, node1, mffc_cone->output_list(),

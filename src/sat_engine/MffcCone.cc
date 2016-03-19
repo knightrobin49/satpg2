@@ -69,7 +69,7 @@ MffcCone::MffcCone(StructSat& struct_sat,
       }
     }
   }
-  ymuint tfo_num = mNodeList.size();
+  mTfoNum = mNodeList.size();
 
   // mNodeList に含まれるノードの TFI を mNodeList に追加する．
   for (ymuint rpos = 0; rpos < mNodeList.size(); ++ rpos) {
@@ -87,7 +87,7 @@ MffcCone::MffcCone(StructSat& struct_sat,
   sort(mOutputList.begin(), mOutputList.end(), Lt());
 
   // focone に含まれるノードに変数を割り当てる．
-  for (ymuint i = 0; i < tfo_num; ++ i) {
+  for (ymuint i = 0; i < mTfoNum; ++ i) {
     const TpgNode* node = mNodeList[i];
     mStructSat.make_tfi_cnf(node);
     SatVarId fvar = solver().new_var();
@@ -100,12 +100,12 @@ MffcCone::MffcCone(StructSat& struct_sat,
   }
 
   // focone に含まれないノードの fvar を gvar にする．
-  for (ymuint i = tfo_num; i < mNodeList.size(); ++ i) {
+  for (ymuint i = mTfoNum; i < mNodeList.size(); ++ i) {
     const TpgNode* node = mNodeList[i];
     set_fvar(node, gvar(node));
   }
 
-  for (ymuint i = 0; i < tfo_num; ++ i) {
+  for (ymuint i = 0; i < mTfoNum; ++ i) {
     const TpgNode* node = mNodeList[i];
     int fpos = elem_map[node->id()];
     if ( fpos >= 0 ) {
@@ -155,6 +155,54 @@ MffcCone::MffcCone(StructSat& struct_sat,
 // @brief デストラクタ
 MffcCone::~MffcCone()
 {
+}
+
+// @brief 故障挿入位置を選ぶ．
+// @param[in] pos 位置番号 ( 0 <= pos < mffc_elem_num() )
+// @param[out] assumptions 結果の割り当てを追加するベクタ
+void
+MffcCone::select_fault_node(ymuint pos,
+			    vector<SatLiteral>& assumptions)
+{
+  ASSERT_COND( pos < mElemList.size() );
+
+  // mElemVar の設定を行う．
+  for (ymuint i = 0; i < mElemList.size(); ++ i) {
+    SatVarId fdvar = mElemVarList[i];
+    if ( i == pos ) {
+      assumptions.push_back(SatLiteral(fdvar, false));
+    }
+    else {
+      assumptions.push_back(SatLiteral(fdvar, true));
+    }
+  }
+
+  // node1 の TFO でない部分の dvar を false にする．
+  const TpgNode* node0 = mElemList[0];
+  const TpgNode* node1 = mElemList[pos];
+  vector<const TpgNode*> node_list;
+  vector<bool> mark(max_id(), false);
+  node_list.push_back(node1);
+  mark[node1->id()] = true;
+  for (ymuint rpos = 0; rpos < node_list.size(); ++ rpos) {
+    const TpgNode* node = node_list[rpos];
+    ymuint nfo = node->active_fanout_num();
+    for (ymuint i = 0; i < nfo; ++ i) {
+      const TpgNode* onode = node->active_fanout(i);
+      if ( mark[onode->id()] ) {
+	continue;
+      }
+      mark[onode->id()] = true;
+      node_list.push_back(onode);
+    }
+  }
+  for (ymuint i = 0; i < mTfoNum; ++ i) {
+    const TpgNode* node = mNodeList[i];
+    if ( !mark[node->id()] ) {
+      SatLiteral dlit(dvar(node), true);
+      assumptions.push_back(dlit);
+    }
+  }
 }
 
 END_NAMESPACE_YM_SATPG

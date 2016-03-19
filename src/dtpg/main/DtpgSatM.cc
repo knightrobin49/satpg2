@@ -14,7 +14,6 @@
 #include "TpgNode.h"
 #include "TpgFault.h"
 #include "MvalCnf.h"
-#include "SatEngine.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG

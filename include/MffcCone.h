@@ -93,6 +93,13 @@ public:
   SatVarId
   mffc_elem_var(ymuint pos) const;
 
+  /// @brief 故障挿入位置を選ぶ．
+  /// @param[in] pos 位置番号 ( 0 <= pos < mffc_elem_num() )
+  /// @param[out] assumptions 結果の割り当てを追加するベクタ
+  void
+  select_fault_node(ymuint pos,
+		    vector<SatLiteral>& assumptions);
+
 
 private:
   //////////////////////////////////////////////////////////////////////
@@ -159,6 +166,9 @@ private:
 
   // 故障回路の要素を納めたリスト
   vector<const TpgNode*> mNodeList;
+
+  // mNodeList のうち故障位置の TFO の部分の数
+  ymuint mTfoNum;
 
   // 現在の故障に関係ありそうな外部出力のリスト
   vector<const TpgNode*> mOutputList;
