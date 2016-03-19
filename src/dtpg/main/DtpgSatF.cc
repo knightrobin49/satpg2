@@ -147,7 +147,8 @@ DtpgSatF::run(TpgNetwork& network,
       struct_sat.conv_to_assumption(assignment, assumption);
 
       // 故障に対するテスト生成を行なう．
-      solve(struct_sat.solver(), assumption, fault, focone->output_list(), focone->gvar_map(), focone->fvar_map());
+      solve(struct_sat.solver(), assumption, fault, node, focone->output_list(),
+	    focone->gvar_map(), focone->fvar_map());
     }
   }
 

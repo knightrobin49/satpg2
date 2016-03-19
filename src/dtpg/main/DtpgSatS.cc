@@ -108,7 +108,8 @@ DtpgSatS::run(TpgNetwork& network,
       vector<SatLiteral> assumptions;
       struct_sat.conv_to_assumption(assignment, assumptions);
 
-      solve(struct_sat.solver(), assumptions, fault, focone->output_list(), focone->gvar_map(), focone->fvar_map());
+      solve(struct_sat.solver(), assumptions, fault, node, focone->output_list(),
+	    focone->gvar_map(), focone->fvar_map());
     }
   }
 

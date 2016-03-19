@@ -33,8 +33,9 @@ BtJust2::~BtJust2()
 void
 BtJust2::set_max_id(ymuint max_id)
 {
-  mJustArray.resize(max_id, nullptr);
   BtJustBase::set_max_id(max_id);
+  mMaxId = max_id;
+  mJustArray.resize(max_id, nullptr);
 }
 
 // @brief バックトレースを行なう．
@@ -48,6 +49,10 @@ BtJust2::run(const TpgNode* fnode,
 	     const ValMap& val_map,
 	     NodeValList& assign_list)
 {
+  mTfoMark.clear();
+  mTfoMark.resize(mMaxId, false);
+  mark_tfo(fnode);
+
   // 故障差の伝搬している外部出力を選ぶ．
   ymuint nmin = 0;
   NodeList* best_list = nullptr;
@@ -109,7 +114,7 @@ BtJust2::justify(const TpgNode* node,
   Val3 gval = val_map.gval(node);
   Val3 fval = val_map.fval(node);
 
-  if ( gval != fval ) {
+  if ( mTfoMark[node->id()] && gval != fval ) {
     // 正常値と故障値が異なっていたら
     // すべてのファンインをたどる．
     return just_sub1(node, val_map);
@@ -179,7 +184,6 @@ BtJust2::justify(const TpgNode* node,
   return nullptr;
 }
 
-
 // @brief すべてのファンインに対して justify() を呼ぶ．
 // @param[in] node 対象のノード
 // @param[in] val_map SATの値の割り当て結果を収めた配列
@@ -213,7 +217,7 @@ BtJust2::just_sub2(const TpgNode* node,
   for (ymuint i = 0; i < ni; ++ i) {
     const TpgNode* inode = node->fanin(i);
     Val3 igval = val_map.gval(inode);
-    Val3 ifval = val_map.fval(inode);
+    Val3 ifval = mTfoMark[node->id()] ? val_map.fval(inode) : val_map.gval(inode);
     if ( igval != ifval || igval != val ) {
       continue;
     }
@@ -229,6 +233,8 @@ BtJust2::just_sub2(const TpgNode* node,
     list_merge(node_list, mJustArray[node->fanin(pos)->id()]);
     return node_list;
   }
+
+  ASSERT_COND( mTfoMark[node->id()] );
 
   ymuint gpos = ni;
   ymuint fpos = ni;
@@ -326,6 +332,22 @@ BtJust2::list_free(NodeList* node_list)
     NodeList* next = tmp->mLink;
     mAlloc.put_memory(sizeof(NodeList), tmp);
     tmp = next;
+  }
+}
+
+// @brief ノードの TFO に印をつける．
+void
+BtJust2::mark_tfo(const TpgNode* node)
+{
+  if ( mTfoMark[node->id()] ) {
+    return;
+  }
+  mTfoMark[node->id()] = true;
+
+  ymuint nfo = node->active_fanout_num();
+  for (ymuint i = 0; i < nfo; ++ i) {
+    const TpgNode* onode = node->active_fanout(i);
+    mark_tfo(onode);
   }
 }
 

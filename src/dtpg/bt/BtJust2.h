@@ -129,6 +129,10 @@ private:
   void
   list_free(NodeList* node_list);
 
+  /// @brief ノードの TFO に印をつける．
+  void
+  mark_tfo(const TpgNode* node);
+
 
 private:
   //////////////////////////////////////////////////////////////////////
@@ -138,8 +142,14 @@ private:
   // メモリ確保用のオブジェクト
   UnitAlloc mAlloc;
 
+  // ノード番号の最大値
+  ymuint mMaxId;
+
   // node->id() をキーにして入力番号のリストを納める配列
   vector<NodeList*> mJustArray;
+
+  // 故障の TFO につけるマーク
+  vector<bool> mTfoMark;
 
 };
 

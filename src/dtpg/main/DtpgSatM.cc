@@ -125,7 +125,8 @@ DtpgSatM::run_multi(const vector<const TpgNode*>& fnode_list,
       assumptions.push_back(dlit);
     }
 
-    solve(gval_cnf.solver(), assumptions, f, node_set.output_list(), mval_cnf.gvar_map(), mval_cnf.fvar_map());
+    solve(gval_cnf.solver(), assumptions, f, fnode, node_set.output_list(),
+	  mval_cnf.gvar_map(), mval_cnf.fvar_map());
   }
 }
 
