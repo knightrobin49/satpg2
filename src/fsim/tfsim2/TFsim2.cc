@@ -1,13 +1,13 @@
 ﻿
-/// @file Fsim2.cc
-/// @brief Fsim2 の実装ファイル
+/// @file TFsim2.cc
+/// @brief TFsim2 の実装ファイル
 /// @author Yusuke Matsunaga (松永 裕介)
 ///
 /// Copyright (C) 2005-2010, 2012-2014 Yusuke Matsunaga
 /// All rights reserved.
 
 
-#include "Fsim2.h"
+#include "TFsim2.h"
 #include "FsimOp.h"
 #include "TpgNetwork.h"
 #include "TpgNode.h"
@@ -24,15 +24,15 @@
 BEGIN_NAMESPACE_YM_SATPG
 
 Fsim*
-new_Fsim2()
+new_TFsim2()
 {
-  return new nsFsim2::Fsim2();
+  return new nsTFsim2::TFsim2();
 }
 
 END_NAMESPACE_YM_SATPG
 
 
-BEGIN_NAMESPACE_YM_SATPG_FSIM2
+BEGIN_NAMESPACE_YM_SATPG_TFSIM2
 
 BEGIN_NONAMESPACE
 
@@ -49,16 +49,16 @@ END_NONAMESPACE
 
 
 //////////////////////////////////////////////////////////////////////
-// Fsim2
+// TFsim2
 //////////////////////////////////////////////////////////////////////
 
 // @brief コンストラクタ
-Fsim2::Fsim2()
+TFsim2::TFsim2()
 {
 }
 
 // @brief デストラクタ
-Fsim2::~Fsim2()
+TFsim2::~TFsim2()
 {
   clear();
 }
@@ -66,7 +66,7 @@ Fsim2::~Fsim2()
 // @brief ネットワークをセットする関数
 // @param[in] network ネットワーク
 void
-Fsim2::set_network(const TpgNetwork& network)
+TFsim2::set_network(const TpgNetwork& network)
 {
   clear();
 
@@ -124,6 +124,17 @@ Fsim2::set_network(const TpgNetwork& network)
     }
     // 対応表に登録しておく．
     mSimMap[tpgnode->id()] = node;
+  }
+
+  {
+    for (ymuint i = 0; i < ni; ++ i) {
+      SimNode* node = mInputArray[i];
+      ASSERT_COND( node != nullptr );
+    }
+    for (ymuint i = 0; i < no; ++ i) {
+      SimNode* node = mOutputArray[i];
+      ASSERT_COND( node != nullptr );
+    }
   }
 
   // 各ノードのファンアウトリストの設定
@@ -220,7 +231,7 @@ Fsim2::set_network(const TpgNetwork& network)
 
 // @brief 故障にスキップマークをつける．
 void
-Fsim2::set_skip(const TpgFault* f)
+TFsim2::set_skip(const TpgFault* f)
 {
   mFaultArray[f->id()]->mSkip = true;
 }
@@ -230,7 +241,7 @@ Fsim2::set_skip(const TpgFault* f)
 //
 // スキップマークは消される．
 void
-Fsim2::set_faults(const vector<const TpgFault*>& fault_list)
+TFsim2::set_faults(const vector<const TpgFault*>& fault_list)
 {
   HashSet<ymuint> fault_set;
   for (ymuint i = 0; i < fault_list.size(); ++ i) {
@@ -261,8 +272,8 @@ Fsim2::set_faults(const vector<const TpgFault*>& fault_list)
 // @param[in] tv テストベクタ
 // @param[in] op 検出した時に起動されるファンクタオブジェクト
 void
-Fsim2::sppfp(TestVector* tv,
-	     FsimOp& op)
+TFsim2::sppfp(TestVector* tv,
+	      FsimOp& op)
 {
   ymuint npi = mNetwork->input_num2();
 
@@ -270,7 +281,7 @@ Fsim2::sppfp(TestVector* tv,
   for (ymuint i = 0; i < npi; ++ i) {
     SimNode* simnode = mInputArray[i];
     PackedVal val = (tv->val3(i) == kVal1) ? kPvAll1 : kPvAll0;
-    simnode->set_gval(val);
+    simnode->set_gval1(val);
   }
 
   _sppfp(op);
@@ -280,15 +291,15 @@ Fsim2::sppfp(TestVector* tv,
 // @param[in] assign_list 値の割当リスト
 // @param[in] op 検出した時に起動されるファンクタオブジェクト
 void
-Fsim2::sppfp(const NodeValList& assign_list,
-	     FsimOp& op)
+TFsim2::sppfp(const NodeValList& assign_list,
+	      FsimOp& op)
 {
   ymuint npi = mNetwork->input_num2();
 
   // デフォルトで 0 にする．
   for (ymuint i = 0; i < npi; ++ i) {
     SimNode* simnode = mInputArray[i];
-    simnode->set_gval(kPvAll0);
+    simnode->set_gval1(kPvAll0);
   }
 
   ymuint n = assign_list.size();
@@ -296,7 +307,7 @@ Fsim2::sppfp(const NodeValList& assign_list,
     NodeVal nv = assign_list[i];
     if ( nv.val() ) {
       SimNode* simnode = mInputArray[nv.node()->input_id()];
-      simnode->set_gval(kPvAll1);
+      simnode->set_gval1(kPvAll1);
     }
   }
 
@@ -306,9 +317,26 @@ Fsim2::sppfp(const NodeValList& assign_list,
 // @brief SPPFP故障シミュレーションの本体
 // @param[in] op 検出した時に起動されるファンクタオブジェクト
 void
-Fsim2::_sppfp(FsimOp& op)
+TFsim2::_sppfp(FsimOp& op)
 {
-  // 正常値の計算を行う．
+  // 1時刻目の正常値の計算を行う．
+  for (vector<SimNode*>::iterator q = mLogicArray.begin();
+       q != mLogicArray.end(); ++ q) {
+    SimNode* node = *q;
+    node->calc_gval1();
+  }
+
+  // 2時刻目のフリップフロップの値を設定する．
+  ymuint npi1 = mNetwork->input_num();
+  ymuint npo1 = mNetwork->output_num();
+  ymuint nff = mNetwork->dff_num();
+  for (ymuint i = 0; i < nff; ++ i) {
+    SimNode* onode = mOutputArray[i + npo1];
+    SimNode* inode = mInputArray[i + npi1];
+    inode->set_gval(onode->gval());
+  }
+
+  // 2時刻目の正常値の計算を行う．
   for (vector<SimNode*>::iterator q = mLogicArray.begin();
        q != mLogicArray.end(); ++ q) {
     SimNode* node = *q;
@@ -379,8 +407,8 @@ Fsim2::_sppfp(FsimOp& op)
 // @param[in] tv_array テストベクタの配列
 // @param[in] op 検出した時に起動されるファンクタオブジェクト(Type2)
 void
-Fsim2::ppsfp(const vector<TestVector*>& tv_array,
-	     FsimOp& op)
+TFsim2::ppsfp(const vector<TestVector*>& tv_array,
+	      FsimOp& op)
 {
   ymuint npi = mNetwork->input_num2();
   ymuint nb = tv_array.size();
@@ -401,10 +429,29 @@ Fsim2::ppsfp(const vector<TestVector*>& tv_array,
       }
     }
     SimNode* simnode = mInputArray[i];
-    simnode->set_gval(val);
+    simnode->set_gval1(val);
   }
 
-  // 正常値の計算を行う．
+  // 1時刻目の正常値の計算を行う．
+  for (vector<SimNode*>::iterator q = mLogicArray.begin();
+       q != mLogicArray.end(); ++ q) {
+    SimNode* node = *q;
+    node->calc_gval1();
+  }
+
+  // 2時刻目のフリップフロップの値を設定する．
+  {
+    ymuint npi1 = mNetwork->input_num();
+    ymuint npo1 = mNetwork->output_num();
+    ymuint nff = mNetwork->dff_num();
+    for (ymuint i = 0; i < nff; ++ i) {
+      SimNode* onode = mOutputArray[i + npo1];
+      SimNode* inode = mInputArray[i + npi1];
+      inode->set_gval(onode->gval());
+    }
+  }
+
+  // 2時刻目の正常値の計算を行う．
   for (vector<SimNode*>::iterator q = mLogicArray.begin();
        q != mLogicArray.end(); ++ q) {
     SimNode* node = *q;
@@ -470,8 +517,8 @@ Fsim2::ppsfp(const vector<TestVector*>& tv_array,
 // @retval true 故障の検出が行えた．
 // @retval false 故障の検出が行えなかった．
 bool
-Fsim2::spsfp(TestVector* tv,
-	     const TpgFault* f)
+TFsim2::spsfp(TestVector* tv,
+	      const TpgFault* f)
 {
   ymuint npi = mNetwork->input_num2();
 
@@ -491,8 +538,8 @@ Fsim2::spsfp(TestVector* tv,
 // @retval true 故障の検出が行えた．
 // @retval false 故障の検出が行えなかった．
 bool
-Fsim2::spsfp(const NodeValList& assign_list,
-	     const TpgFault* f)
+TFsim2::spsfp(const NodeValList& assign_list,
+	      const TpgFault* f)
 {
   ymuint npi = mNetwork->input_num2();
 
@@ -519,7 +566,7 @@ Fsim2::spsfp(const NodeValList& assign_list,
 // @retval true 故障の検出が行えた．
 // @retval false 故障の検出が行えなかった．
 bool
-Fsim2::_spsfp(const TpgFault* f)
+TFsim2::_spsfp(const TpgFault* f)
 {
   // 正常値の計算を行う．
   for (vector<SimNode*>::iterator q = mLogicArray.begin();
@@ -573,7 +620,7 @@ Fsim2::_spsfp(const TpgFault* f)
 
 // @brief 現在保持している SimNode のネットワークを破棄する．
 void
-Fsim2::clear()
+TFsim2::clear()
 {
   mSimMap.clear();
 
@@ -605,7 +652,7 @@ Fsim2::clear()
 
 // @brief FFR 内の故障シミュレーションを行う．
 PackedVal
-Fsim2::ffr_simulate(SimFFR* ffr)
+TFsim2::ffr_simulate(SimFFR* ffr)
 {
   PackedVal ffr_req = kPvAll0;
   const vector<SimFault*>& flist = ffr->fault_list();
@@ -619,15 +666,22 @@ Fsim2::ffr_simulate(SimFFR* ffr)
     // ff の故障伝搬を行う．
     SimNode* simnode = ff->mNode;
     PackedVal lobs = simnode->calc_lobs();
-    PackedVal valdiff = ff->mInode->gval();
+    PackedVal val1 = ff->mInode->gval1();
+    PackedVal val2 = ff->mInode->gval();
     const TpgFault* f = ff->mOrigF;
     if ( f->is_branch_fault() ) {
       // 入力の故障
       ymuint ipos = ff->mIpos;
       lobs &= simnode->calc_gobs2(ipos);
     }
+    PackedVal valdiff;
     if ( f->val() == 1 ) {
-      valdiff = ~valdiff;
+      // 1 -> 0 への遷移
+      valdiff = ~val2 & val1;
+    }
+    else {
+      // 0 -> 1 への遷移
+      valdiff = val2 & ~val1;
     }
     lobs &= valdiff;
 
@@ -649,7 +703,7 @@ Fsim2::ffr_simulate(SimFFR* ffr)
 
 // @brief イベントキューを用いてシミュレーションを行う．
 PackedVal
-Fsim2::eventq_simulate()
+TFsim2::eventq_simulate()
 {
   // どこかの外部出力で検出されたことを表すビット
   PackedVal obs = kPvAll0;
@@ -683,8 +737,8 @@ Fsim2::eventq_simulate()
 
 // @brief ffr 内の故障が検出可能か調べる．
 void
-Fsim2::fault_sweep(SimFFR* ffr,
-		   FsimOp& op)
+TFsim2::fault_sweep(SimFFR* ffr,
+		    FsimOp& op)
 {
   vector<SimFault*>& flist = ffr->fault_list();
   for (vector<SimFault*>::const_iterator p = flist.begin();
@@ -699,7 +753,7 @@ Fsim2::fault_sweep(SimFFR* ffr,
 
 // @brief 外部入力ノードを作る．
 SimNode*
-Fsim2::make_input()
+TFsim2::make_input()
 {
   ymuint id = mNodeArray.size();
   SimNode* node = SimNode::new_input(id);
@@ -709,7 +763,7 @@ Fsim2::make_input()
 
 // @brief 単純な logic ノードを作る．
 SimNode*
-Fsim2::make_node(GateType type,
+TFsim2::make_node(GateType type,
 		 const vector<SimNode*>& inputs)
 {
   ymuint id = mNodeArray.size();
@@ -721,7 +775,7 @@ Fsim2::make_node(GateType type,
 
 // @brief node に対応する SimNode* を得る．
 SimNode*
-Fsim2::find_simnode(const TpgNode* node) const
+TFsim2::find_simnode(const TpgNode* node) const
 {
   return mSimMap[node->id()];
 }
@@ -729,9 +783,49 @@ Fsim2::find_simnode(const TpgNode* node) const
 // @brief WSA を計算する．
 // @param[in] tv テストベクタ
 ymuint
-Fsim2::calc_wsa(TestVector* tv)
+TFsim2::calc_wsa(TestVector* tv)
 {
-  return 0;
+  ymuint npi = mNetwork->input_num2();
+
+  // tv を全ビットにセットしていく．
+  for (ymuint i = 0; i < npi; ++ i) {
+    SimNode* simnode = mInputArray[i];
+    PackedVal val = (tv->val3(i) == kVal1) ? kPvAll1 : kPvAll0;
+    simnode->set_gval1(val);
+  }
+
+  // 1時刻目の正常値の計算を行う．
+  for (vector<SimNode*>::iterator q = mLogicArray.begin();
+       q != mLogicArray.end(); ++ q) {
+    SimNode* node = *q;
+    node->calc_gval1();
+  }
+
+  // 2時刻目のフリップフロップの値を設定する．
+  ymuint npi1 = mNetwork->input_num();
+  ymuint npo1 = mNetwork->output_num();
+  ymuint nff = mNetwork->dff_num();
+  for (ymuint i = 0; i < nff; ++ i) {
+    SimNode* onode = mOutputArray[i + npo1];
+    SimNode* inode = mInputArray[i + npi1];
+    inode->set_gval(onode->gval());
+  }
+
+  // 2時刻目の正常値の計算を行う．
+  // と同時に WSA を計算する．
+  ymuint wsa = 0;
+  for (vector<SimNode*>::iterator q = mLogicArray.begin();
+       q != mLogicArray.end(); ++ q) {
+    SimNode* node = *q;
+    node->calc_gval2();
+
+    // wsa を計算する．
+    if ( node->gval1() != node->gval() ) {
+      wsa += node->nfo();
+    }
+  }
+
+  return wsa;
 }
 
-END_NAMESPACE_YM_SATPG_FSIM2
+END_NAMESPACE_YM_SATPG_TFSIM2

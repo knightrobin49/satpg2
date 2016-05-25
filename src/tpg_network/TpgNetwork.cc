@@ -227,6 +227,8 @@ TpgNetwork::set(const BnNetwork& bnnetwork)
   mOutputNum = bnnetwork.output_num();
   mFFNum = bnnetwork.dff_num();
 
+  nn += mFFNum;
+
   mNodeArray = alloc_array<TpgNode*>(mAlloc, nn);
 
   mInputArray = alloc_array<TpgNode*>(mAlloc, input_num2());
@@ -254,11 +256,16 @@ TpgNetwork::set(const BnNetwork& bnnetwork)
   //////////////////////////////////////////////////////////////////////
   // 外部入力を作成する．
   //////////////////////////////////////////////////////////////////////
-  ymuint npi = input_num2();
-  for (ymuint i = 0; i < npi; ++ i) {
+  for (ymuint i = 0; i < mInputNum; ++ i) {
     const BnNode* bnnode = bnnetwork.input(i);
     TpgNode* node = make_input_node(i, bnnode->name());
     mInputArray[i] = node;
+    node_map.reg(bnnode->id(), node);
+  }
+  for (ymuint i = 0; i < mFFNum; ++ i) {
+    const BnNode* bnnode = bnnetwork.dff(i);
+    TpgNode* node = make_input_node(i + mInputNum, bnnode->name());
+    mInputArray[i + mInputNum] = node;
     node_map.reg(bnnode->id(), node);
   }
 
@@ -299,8 +306,7 @@ TpgNetwork::set(const BnNetwork& bnnetwork)
   //////////////////////////////////////////////////////////////////////
   // 外部出力ノードを作成する．
   //////////////////////////////////////////////////////////////////////
-  ymuint npo = output_num2();
-  for (ymuint i = 0; i < npo; ++ i) {
+  for (ymuint i = 0; i < mOutputNum; ++ i) {
     const BnNode* bnnode = bnnetwork.output(i);
     TpgNode* inode = node_map.get(bnnode->inode_id());
     string buf = "*";
@@ -308,6 +314,19 @@ TpgNetwork::set(const BnNetwork& bnnetwork)
     TpgNode* node = make_output_node(i, buf.c_str(), inode);
     mOutputArray[i] = node;
     node_map.reg(bnnode->id(), node);
+  }
+  for (ymuint i = 0; i < mFFNum; ++ i) {
+    const BnNode* bnnode = bnnetwork.dff(i);
+    TpgNode* inode = node_map.get(bnnode->inode_id());
+    string buf = "*";
+    buf += bnnode->name();
+    TpgNode* node = make_output_node(i + mOutputNum, buf.c_str(), inode);
+    mOutputArray[i + mOutputNum] = node;
+#if 0
+    TpgNode* alt_node = mInputArray[i + mInputNum];
+    alt_node->mAltNode = node;
+    node->mAltNode = alt_node;
+#endif
   }
 
   ASSERT_COND( mNodeNum == nn );
@@ -332,6 +351,7 @@ TpgNetwork::set(const BnNetwork& bnnetwork)
   // TFI のサイズの昇順に並べた出力順を
   // mOutputArray2 に記録する．
   //////////////////////////////////////////////////////////////////////
+  ymuint npo = output_num2();
   vector<pair<ymuint, ymuint> > tmp_list(npo);
   for (ymuint i = 0; i < npo; ++ i) {
     TpgNode* onode = output(i);

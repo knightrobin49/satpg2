@@ -61,6 +61,10 @@ public:
   Fsim&
   _fsim();
 
+  /// @brief 2値の故障シミュレータを取り出す．(遷移故障用)
+  Fsim&
+  _tfsim();
+
   /// @brief 3値の故障シミュレータを返す．
   Fsim&
   _fsim3();
@@ -138,6 +142,9 @@ private:
   // 故障シミュレータ
   Fsim* mFsim;
 
+  // 遷移故障用の故障シミュレータ
+  Fsim* mTFsim;
+
   // 3値の故障シミュレータ
   Fsim* mFsim3;
 
@@ -192,6 +199,14 @@ Fsim&
 AtpgMgr::_fsim()
 {
   return *mFsim;
+}
+
+// @brief 2値の故障シミュレータを取り出す．(遷移故障用)
+inline
+Fsim&
+AtpgMgr::_tfsim()
+{
+  return *mTFsim;
 }
 
 // @brief 3値の故障シミュレータを返す．

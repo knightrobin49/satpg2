@@ -1,31 +1,36 @@
-﻿#ifndef RTPG_H
-#define RTPG_H
+﻿#ifndef RTPGTP1_H
+#define RTPGTP1_H
 
-/// @file Rtpg.h
-/// @brief Rtpg のヘッダファイル
-///
+/// @file RtpgTP1.h
+/// @brief RtpgTP1 のヘッダファイル
 /// @author Yusuke Matsunaga (松永 裕介)
 ///
-/// Copyright (C) 2005-2010, 2012-2014 Yusuke Matsunaga
+/// Copyright (C) 2005-2011, 2013-2014 Yusuke Matsunaga
 /// All rights reserved.
 
 
-#include "satpg.h"
+#include "RtpgTP.h"
+#include "ym/RandGen.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG
 
 //////////////////////////////////////////////////////////////////////
-/// @class Rtpg Rtpg.h "Rtpg.h"
-/// @brief RTPG を行う基底クラス
+/// @class RtpgTP1 RtpgTP1.h "RtpgTP1.h"
+/// @brief Fsim を使う Rtpg
 //////////////////////////////////////////////////////////////////////
-class Rtpg
+class RtpgTP1 :
+  public RtpgTP
 {
 public:
 
+  /// @brief コンストラクタ
+  RtpgTP1();
+
   /// @brief デストラクタ
   virtual
-  ~Rtpg() {}
+  ~RtpgTP1();
+
 
 public:
   //////////////////////////////////////////////////////////////////////
@@ -36,15 +41,16 @@ public:
   /// @param[in] seed 乱数の種
   virtual
   void
-  init(ymuint32 seed) = 0;
+  init(ymuint32 seed);
 
   /// @brief RTPGを行なう．
-  /// @param[in] fault_list 故障のリスト
+  /// @param[in] fault_list 故障リスト
   /// @param[in] tvmgr テストベクタマネージャ
   /// @param[in] fsim 故障シミュレータ
   /// @param[in] min_f 1回のシミュレーションで検出する故障数の下限
   /// @param[in] max_i 故障検出できないシミュレーション回数の上限
   /// @param[in] max_pat 最大のパタン数
+  /// @param[in] wsa_limit WSA の制限値
   /// @param[out] det_fault_list 検出された故障のリスト
   /// @param[out] tvlist テストベクタのリスト
   /// @param[out] stats 実行結果の情報を格納する変数
@@ -56,23 +62,25 @@ public:
       ymuint min_f,
       ymuint max_i,
       ymuint max_pat,
+      ymuint wsa_limit,
       vector<const TpgFault*>& det_fault_list,
       vector<TestVector*>& tvlist,
-      RtpgStats& stats) = 0;
+      RtpgStats& stats);
+
+
+private:
+  //////////////////////////////////////////////////////////////////////
+  // データメンバ
+  //////////////////////////////////////////////////////////////////////
+
+  // 乱数生成器
+  RandGen mRandGen;
+
+  // 制限値
+  ymuint mLimit;
 
 };
 
-
-/// @brief Rtpg のインスタンスを生成する．
-extern
-Rtpg*
-new_Rtpg();
-
-/// @brief Rtpg のインスタンスを生成する．
-extern
-Rtpg*
-new_Rtpg1();
-
 END_NAMESPACE_YM_SATPG
 
-#endif // RTPG_H
+#endif // RTPGTP1_H

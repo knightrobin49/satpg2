@@ -263,6 +263,13 @@ AtpgCmd::_fsim()
   return mMgr->_fsim();
 }
 
+// @brief 遷移故障用の2値の故障シミュレータを取り出す．
+Fsim&
+AtpgCmd::_tfsim()
+{
+  return mMgr->_tfsim();
+}
+
 // @brief 3値の故障シミュレータを返す．
 Fsim&
 AtpgCmd::_fsim3()

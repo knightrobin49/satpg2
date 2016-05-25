@@ -74,6 +74,10 @@ protected:
   Fsim&
   _fsim();
 
+  /// @brief 遷移故障用の2値の故障シミュレータを取り出す．
+  Fsim&
+  _tfsim();
+
   /// @brief 3値の故障シミュレータを返す．
   Fsim&
   _fsim3();

@@ -108,6 +108,12 @@ public:
   ppsfp(const vector<TestVector*>& tv_array,
 	FsimOp& op);
 
+  /// @brief WSA を計算する．
+  /// @param[in] tv テストベクタ
+  virtual
+  ymuint
+  calc_wsa(TestVector* tv);
+
 
 private:
   //////////////////////////////////////////////////////////////////////

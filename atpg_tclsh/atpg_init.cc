@@ -13,6 +13,7 @@
 #include "AtpgCmd.h"
 #include "NtwkIoCmd.h"
 #include "RtpgCmd.h"
+#include "Rtpg1Cmd.h"
 #include "DtpgCmd.h"
 #include "MinPatCmd.h"
 #include "PrintFaultCmd.h"
@@ -49,6 +50,7 @@ atpg_init(Tcl_Interp* interp)
   TclCmdBinder1<PrintPatCmd, AtpgMgr*>::reg(interp, mgr, "::atpg::print_pat");
   TclCmdBinder1<PrintPatStatsCmd, AtpgMgr*>::reg(interp, mgr, "::atpg::print_pat_stats");
   TclCmdBinder1<RtpgCmd, AtpgMgr*>::reg(interp, mgr, "::atpg::rtpg");
+  TclCmdBinder1<Rtpg1Cmd, AtpgMgr*>::reg(interp, mgr, "::atpg::rtpg1");
   TclCmdBinder1<DtpgCmd, AtpgMgr*>::reg(interp, mgr, "::atpg::dtpg");
   TclCmdBinder1<MinPatCmd, AtpgMgr*>::reg(interp, mgr, "::atpg::minpat");
   TclCmdBinder<StopwatchCls>::reg(interp, "atpg::stopwatch");
@@ -69,6 +71,7 @@ atpg_init(Tcl_Interp* interp)
       << "proc complete(print_pat) { t s e l p m } { return \"\" }" << endl
       << "proc complete(print_pat_stats) { t s e l p m } { return \"\" }" << endl
       << "proc complete(rtpg) { t s e l p m } { return \"\" }" << endl
+      << "proc complete(rtpg1) { t s e l p m } { return \"\" }" << endl
       << "proc complete(dtpg) { t s e l p m } { return \"\" }" << endl
       << "proc complete(minpat) { t s e l p m } { return \"\" }" << endl
       << "proc complete(stopwatch) { t s e l p m } { return \"\" }" << endl

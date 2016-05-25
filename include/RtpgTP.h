@@ -1,8 +1,8 @@
-﻿#ifndef RTPG_H
-#define RTPG_H
+﻿#ifndef RTPGTP_H
+#define RTPGTP_H
 
-/// @file Rtpg.h
-/// @brief Rtpg のヘッダファイル
+/// @file RtpgTP.h
+/// @brief RtpgTP のヘッダファイル
 ///
 /// @author Yusuke Matsunaga (松永 裕介)
 ///
@@ -16,16 +16,16 @@
 BEGIN_NAMESPACE_YM_SATPG
 
 //////////////////////////////////////////////////////////////////////
-/// @class Rtpg Rtpg.h "Rtpg.h"
+/// @class RtpgTP RtpgTP.h "RtpgTP.h"
 /// @brief RTPG を行う基底クラス
 //////////////////////////////////////////////////////////////////////
-class Rtpg
+class RtpgTP
 {
 public:
 
   /// @brief デストラクタ
   virtual
-  ~Rtpg() {}
+  ~RtpgTP() {}
 
 public:
   //////////////////////////////////////////////////////////////////////
@@ -45,6 +45,7 @@ public:
   /// @param[in] min_f 1回のシミュレーションで検出する故障数の下限
   /// @param[in] max_i 故障検出できないシミュレーション回数の上限
   /// @param[in] max_pat 最大のパタン数
+  /// @param[in] wsa_limit WSA の制限値
   /// @param[out] det_fault_list 検出された故障のリスト
   /// @param[out] tvlist テストベクタのリスト
   /// @param[out] stats 実行結果の情報を格納する変数
@@ -56,6 +57,7 @@ public:
       ymuint min_f,
       ymuint max_i,
       ymuint max_pat,
+      ymuint wsa_limit,
       vector<const TpgFault*>& det_fault_list,
       vector<TestVector*>& tvlist,
       RtpgStats& stats) = 0;
@@ -63,16 +65,16 @@ public:
 };
 
 
-/// @brief Rtpg のインスタンスを生成する．
+/// @brief RtpgTP のインスタンスを生成する．
 extern
-Rtpg*
-new_Rtpg();
+RtpgTP*
+new_RtpgTP1();
 
-/// @brief Rtpg のインスタンスを生成する．
+/// @brief RtpgTP のインスタンスを生成する．
 extern
-Rtpg*
-new_Rtpg1();
+RtpgTP*
+new_RtpgTP2(ymuint nbits = 1);
 
 END_NAMESPACE_YM_SATPG
 
-#endif // RTPG_H
+#endif // RTPGTP_H

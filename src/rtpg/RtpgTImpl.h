@@ -1,31 +1,36 @@
-﻿#ifndef RTPG_H
-#define RTPG_H
+﻿#ifndef RTPGTIMPL_H
+#define RTPGTIMPL_H
 
-/// @file Rtpg.h
-/// @brief Rtpg のヘッダファイル
-///
+/// @file RtpgTImpl.h
+/// @brief RtpgTImpl のヘッダファイル
 /// @author Yusuke Matsunaga (松永 裕介)
 ///
-/// Copyright (C) 2005-2010, 2012-2014 Yusuke Matsunaga
+/// Copyright (C) 2005-2011, 2013-2014 Yusuke Matsunaga
 /// All rights reserved.
 
 
-#include "satpg.h"
+#include "Rtpg.h"
+#include "ym/RandGen.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG
 
 //////////////////////////////////////////////////////////////////////
-/// @class Rtpg Rtpg.h "Rtpg.h"
-/// @brief RTPG を行う基底クラス
+/// @class RtpgTImpl RtpgTImpl.h "RtpgTImpl.h"
+/// @brief Fsim を使う Rtpg
 //////////////////////////////////////////////////////////////////////
-class Rtpg
+class RtpgTImpl :
+  public Rtpg
 {
 public:
 
+  /// @brief コンストラクタ
+  RtpgTImpl();
+
   /// @brief デストラクタ
   virtual
-  ~Rtpg() {}
+  ~RtpgTImpl();
+
 
 public:
   //////////////////////////////////////////////////////////////////////
@@ -36,10 +41,10 @@ public:
   /// @param[in] seed 乱数の種
   virtual
   void
-  init(ymuint32 seed) = 0;
+  init(ymuint32 seed);
 
   /// @brief RTPGを行なう．
-  /// @param[in] fault_list 故障のリスト
+  /// @param[in] fault_list 故障リスト
   /// @param[in] tvmgr テストベクタマネージャ
   /// @param[in] fsim 故障シミュレータ
   /// @param[in] min_f 1回のシミュレーションで検出する故障数の下限
@@ -58,21 +63,19 @@ public:
       ymuint max_pat,
       vector<const TpgFault*>& det_fault_list,
       vector<TestVector*>& tvlist,
-      RtpgStats& stats) = 0;
+      RtpgStats& stats);
+
+
+private:
+  //////////////////////////////////////////////////////////////////////
+  // データメンバ
+  //////////////////////////////////////////////////////////////////////
+
+  // 乱数生成器
+  RandGen mRandGen;
 
 };
 
-
-/// @brief Rtpg のインスタンスを生成する．
-extern
-Rtpg*
-new_Rtpg();
-
-/// @brief Rtpg のインスタンスを生成する．
-extern
-Rtpg*
-new_Rtpg1();
-
 END_NAMESPACE_YM_SATPG
 
-#endif // RTPG_H
+#endif // RTPGIMPL_H

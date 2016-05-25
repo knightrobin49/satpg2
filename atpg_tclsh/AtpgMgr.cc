@@ -29,6 +29,7 @@ AtpgMgr::AtpgMgr() :
   mTvMgr = new TvMgr();
 
   mFsim = new_Fsim2();
+  mTFsim = new_TFsim2();
   mFsim3 = new_Fsim3();
 }
 
@@ -38,6 +39,7 @@ AtpgMgr::~AtpgMgr()
   delete mFaultMgr;
   delete mTvMgr;
   delete mFsim;
+  delete mTFsim;
   delete mFsim3;
 }
 
@@ -86,6 +88,7 @@ AtpgMgr::after_set_network()
   mTvMgr->init(mNetwork.input_num2());
 
   mFsim->set_network(mNetwork);
+  mTFsim->set_network(mNetwork);
   mFsim3->set_network(mNetwork);
 }
 

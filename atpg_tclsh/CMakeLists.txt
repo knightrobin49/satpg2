@@ -25,6 +25,7 @@ set (atpg_tclsh_SOURCES
   PrintStatsCmd.cc
   TimeCmd.cc
   RtpgCmd.cc
+  Rtpg1Cmd.cc
   DtpgCmd.cc
   MinPatCmd.cc
   )

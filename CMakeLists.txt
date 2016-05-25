@@ -186,6 +186,15 @@ set (fsim_SOURCES
   src/fsim/fsim3/SnInput.cc
   src/fsim/fsim3/SnOr.cc
   src/fsim/fsim3/SnXor.cc
+
+  src/fsim/tfsim2/EventQ.cc
+  src/fsim/tfsim2/TFsim2.cc
+  src/fsim/tfsim2/SimNode.cc
+  src/fsim/tfsim2/SnAnd.cc
+  src/fsim/tfsim2/SnGate.cc
+  src/fsim/tfsim2/SnInput.cc
+  src/fsim/tfsim2/SnOr.cc
+  src/fsim/tfsim2/SnXor.cc
   )
 
 set (minpat_SOURCES
@@ -211,6 +220,9 @@ set (minpat_SOURCES
 set (rtpg_SOURCES
   src/rtpg/FopRtpg.cc
   src/rtpg/RtpgImpl.cc
+  src/rtpg/RtpgTImpl.cc
+  src/rtpg/RtpgTP1.cc
+  src/rtpg/RtpgTP2.cc
   )
 
 set (tpg_network_SOURCES

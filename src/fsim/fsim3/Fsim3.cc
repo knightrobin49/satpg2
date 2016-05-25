@@ -826,4 +826,12 @@ Fsim3::find_simnode(const TpgNode* node) const
   return mSimMap[node->id()];
 }
 
+// @brief WSA を計算する．
+// @param[in] tv テストベクタ
+ymuint
+Fsim3::calc_wsa(TestVector* tv)
+{
+  return 0;
+}
+
 END_NAMESPACE_YM_SATPG_FSIM

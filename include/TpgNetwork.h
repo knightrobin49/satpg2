@@ -90,6 +90,24 @@ public:
   TpgNode*
   output2(ymuint pos) const;
 
+  /// @brief DFF数を得る．
+  ymuint
+  dff_num() const;
+
+  /// @brief DFFの出力に対応した擬似入力ノードを得る．
+  /// @param[in] pos 位置番号 ( 0 <= pos < dff_num() )
+  ///
+  /// 実は input(pos + input_num()) と同じ．
+  TpgNode*
+  dff_output(ymuint pos) const;
+
+  /// @brief DFFの入力に対応した擬似出力ノードを得る．
+  /// @param[in] pos 位置番号 ( 0 <= pos < dff_num() )
+  ///
+  /// 実は output(pos + input_num()) と同じ．
+  TpgNode*
+  dff_input(ymuint pos) const;
+
   /// @brief 故障IDの最大値+1を返す．
   ymuint
   max_fault_id() const;
@@ -421,6 +439,38 @@ TpgNetwork::output2(ymuint pos) const
 {
   ASSERT_COND( pos < output_num2() );
   return mOutputArray2[pos];
+}
+
+// @brief DFF数を得る．
+inline
+ymuint
+TpgNetwork::dff_num() const
+{
+  return mFFNum;
+}
+
+// @brief DFFの出力に対応した擬似入力ノードを得る．
+// @param[in] pos 位置番号 ( 0 <= pos < dff_num() )
+//
+// 実は input(pos + input_num()) と同じ．
+inline
+TpgNode*
+TpgNetwork::dff_output(ymuint pos) const
+{
+  ASSERT_COND( pos < dff_num() );
+  return mInputArray[pos + input_num()];
+}
+
+// @brief DFFの入力に対応した擬似出力ノードを得る．
+// @param[in] pos 位置番号 ( 0 <= pos < dff_num() )
+//
+// 実は output(pos + input_num()) と同じ．
+inline
+TpgNode*
+TpgNetwork::dff_input(ymuint pos) const
+{
+  ASSERT_COND( pos < dff_num() );
+  return mOutputArray[pos + output_num()];
 }
 
 // @brief ノードを得る．
