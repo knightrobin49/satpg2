@@ -4,7 +4,7 @@
 # ===================================================================
 include_directories(
   ${GTEST_INCLUDE_DIR}
-  ${PROJECT_SOURCE_DIR}/src/sat_engine
+  ${PROJECT_SOURCE_DIR}/satpg_common/sat_engine
   )
 
 
