@@ -10,6 +10,7 @@
 
 
 #include "satpg.h"
+#include "ym/HashMap.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG
@@ -23,8 +24,7 @@ class TpgNodeMap
 public:
 
   /// @brief コンストラクタ
-  /// @param[in] max_id ノード番号の最大値 + 1
-  TpgNodeMap(ymuint max_id);
+  TpgNodeMap();
 
   /// @brief デストラクタ
   ~TpgNodeMap();
@@ -59,7 +59,7 @@ private:
   //////////////////////////////////////////////////////////////////////
 
   // BnNode::id() をキーにした配列
-  vector<TpgNode*> mNodeArray;
+  HashMap<ymuint, TpgNode*> mNodeMap;
 
 };
 

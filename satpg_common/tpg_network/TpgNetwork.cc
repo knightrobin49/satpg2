@@ -15,7 +15,6 @@
 #include "TpgStemFault.h"
 #include "TpgBranchFault.h"
 #include "TpgMap.h"
-#include "ym/BnFuncType.h"
 #include "ym/BnNetwork.h"
 #include "ym/BnNode.h"
 #include "ym/Expr.h"
@@ -28,20 +27,20 @@ BEGIN_NONAMESPACE
 // BnFuncType を GateType に変換する．
 inline
 GateType
-conv_to_gate_type(BnFuncType::Type type)
+conv_to_gate_type(BnLogicType type)
 {
   switch ( type ) {
-  case BnFuncType::kFt_C0:   return kGateCONST0;
-  case BnFuncType::kFt_C1:   return kGateCONST1;
-  case BnFuncType::kFt_BUFF: return kGateBUFF;
-  case BnFuncType::kFt_NOT:  return kGateNOT;
-  case BnFuncType::kFt_AND:  return kGateAND;
-  case BnFuncType::kFt_NAND: return kGateNAND;
-  case BnFuncType::kFt_OR:   return kGateOR;
-  case BnFuncType::kFt_NOR:  return kGateNOR;
-  case BnFuncType::kFt_XOR:  return kGateXOR;
-  case BnFuncType::kFt_XNOR: return kGateXNOR;
-  case BnFuncType::kFt_EXPR: return kGateCPLX;
+  case kBnLt_C0:   return kGateCONST0;
+  case kBnLt_C1:   return kGateCONST1;
+  case kBnLt_BUFF: return kGateBUFF;
+  case kBnLt_NOT:  return kGateNOT;
+  case kBnLt_AND:  return kGateAND;
+  case kBnLt_NAND: return kGateNAND;
+  case kBnLt_OR:   return kGateOR;
+  case kBnLt_NOR:  return kGateNOR;
+  case kBnLt_XOR:  return kGateXOR;
+  case kBnLt_XNOR: return kGateXNOR;
+  case kBnLt_EXPR: return kGateCPLX;
   default: break;
   }
   ASSERT_NOT_REACHED;
@@ -61,13 +60,13 @@ alloc_array(Alloc& alloc,
 // 文字列用のメモリ領域を確保する関数
 const char*
 alloc_str(Alloc& alloc,
-	  const char* src_str)
+	  const string& src_str)
 {
-  if ( src_str == nullptr ) {
+  if ( src_str == string() ) {
     return nullptr;
   }
 
-  ymuint l = strlen(src_str);
+  ymuint l = src_str.size();
   void* p = alloc.get_memory(sizeof(char) * (l + 1));
   char* d = new (p) char[l + 1];
   for (ymuint i = 0; i < l; ++ i) {
@@ -200,22 +199,20 @@ TpgNetwork::set(const BnNetwork& bnnetwork)
 {
   mAlloc.destroy();
 
-  ymuint bn_nn = bnnetwork.node_num();
   ymuint nl = bnnetwork.logic_num();
-  ymuint nn = bn_nn;
-
 
   //////////////////////////////////////////////////////////////////////
   // NodeInfoMgr にノードの論理関数を登録する．
   //////////////////////////////////////////////////////////////////////
   TpgNodeInfoMgr node_info_mgr;
+  ymuint extra_node_num = 0;
   for (ymuint i = 0; i < nl; ++ i) {
     const BnNode* bnnode = bnnetwork.logic(i);
-    const BnFuncType* func_type = bnnode->func_type();
-    if ( func_type->type() == BnFuncType::kFt_EXPR ) {
-      ymuint fid = func_type->id();
-      const TpgNodeInfo* node_info = node_info_mgr.complex_type(fid, bnnode->fanin_num(), func_type->expr());
-      nn += node_info->extra_node_num();
+    BnLogicType logic_type = bnnode->logic_type();
+    if ( logic_type == kBnLt_EXPR ) {
+      ymuint fid = bnnode->func_id();
+      const TpgNodeInfo* node_info = node_info_mgr.complex_type(fid, bnnode->fanin_num(), bnnode->expr());
+      extra_node_num += node_info->extra_node_num();
     }
   }
 
@@ -227,7 +224,7 @@ TpgNetwork::set(const BnNetwork& bnnetwork)
   mOutputNum = bnnetwork.output_num();
   mFFNum = bnnetwork.dff_num();
 
-  nn += mFFNum;
+  ymuint nn = mInputNum + mOutputNum + mFFNum + nl + extra_node_num;
 
   mNodeArray = alloc_array<TpgNode*>(mAlloc, nn);
 
@@ -247,7 +244,7 @@ TpgNetwork::set(const BnNetwork& bnnetwork)
   }
 
   // BnNode::id() をキーにして TpgNode* を格納するマップ
-  TpgNodeMap node_map(bn_nn);
+  TpgNodeMap node_map;
 
   mNodeNum = 0;
   mFaultNum = 0;
@@ -274,18 +271,15 @@ TpgNetwork::set(const BnNetwork& bnnetwork)
   // 論理ノードを作成する．
   // ただし mNodeArray は入力からのトポロジカル順になる．
   //////////////////////////////////////////////////////////////////////
-  vector<const BnNode*> sorted_node_list;
-  bnnetwork.topological_sort(sorted_node_list);
   for (ymuint i = 0; i < nl; ++ i) {
-    const BnNode* bnnode = sorted_node_list[i];
+    const BnNode* bnnode = bnnetwork.logic(i);
     ymuint ni = bnnode->fanin_num();
 
     // BnFuncType から TpgNodeInfo を作る．
-    const BnFuncType* func_type = bnnode->func_type();
-    GateType gate_type = conv_to_gate_type(func_type->type());
+    GateType gate_type = conv_to_gate_type(bnnode->logic_type());
     const TpgNodeInfo* node_info;
     if ( gate_type == kGateCPLX ) {
-      node_info = node_info_mgr.complex_type(func_type->id(), ni, func_type->expr());
+      node_info = node_info_mgr.complex_type(bnnode->func_id(), ni, bnnode->expr());
     }
     else {
       node_info = node_info_mgr.simple_type(gate_type);
@@ -294,7 +288,7 @@ TpgNetwork::set(const BnNetwork& bnnetwork)
     // ファンインのノードを取ってくる．
     vector<TpgNode*> fanin_array(ni);
     for (ymuint j = 0; j < ni; ++ j) {
-      fanin_array[j] = node_map.get(bnnode->fanin_id(j));
+      fanin_array[j] = node_map.get(bnnode->fanin(j));
     }
     TpgNode* node = make_logic_node(bnnode->name(), node_info, fanin_array);
 
@@ -308,7 +302,7 @@ TpgNetwork::set(const BnNetwork& bnnetwork)
   //////////////////////////////////////////////////////////////////////
   for (ymuint i = 0; i < mOutputNum; ++ i) {
     const BnNode* bnnode = bnnetwork.output(i);
-    TpgNode* inode = node_map.get(bnnode->inode_id());
+    TpgNode* inode = node_map.get(bnnode->input());
     string buf = "*";
     buf += bnnode->name();
     TpgNode* node = make_output_node(i, buf.c_str(), inode);
@@ -317,7 +311,7 @@ TpgNetwork::set(const BnNetwork& bnnetwork)
   }
   for (ymuint i = 0; i < mFFNum; ++ i) {
     const BnNode* bnnode = bnnetwork.dff(i);
-    TpgNode* inode = node_map.get(bnnode->inode_id());
+    TpgNode* inode = node_map.get(bnnode->input());
     string buf = "*";
     buf += bnnode->name();
     TpgNode* node = make_output_node(i + mOutputNum, buf.c_str(), inode);
@@ -611,7 +605,7 @@ TpgNetwork::clear_tfimark()
 // @return 生成したノードを返す．
 TpgNode*
 TpgNetwork::make_input_node(ymuint iid,
-			    const char* name)
+			    const string& name)
 {
   const char* d_name = alloc_str(mAlloc, name);
   TpgNode* node = TpgNode::new_input(mAlloc, mNodeNum, d_name, iid);
@@ -632,7 +626,7 @@ TpgNetwork::make_input_node(ymuint iid,
 // @return 生成したノードを返す．
 TpgNode*
 TpgNetwork::make_output_node(ymuint oid,
-			     const char* name,
+			     const string& name,
 			     TpgNode* inode)
 {
   const char* d_name = alloc_str(mAlloc, name);
@@ -653,7 +647,7 @@ TpgNetwork::make_output_node(ymuint oid,
 // @param[in] fanin_list ファンインのリスト
 // @return 生成したノードを返す．
 TpgNode*
-TpgNetwork::make_logic_node(const char* src_name,
+TpgNetwork::make_logic_node(const string& src_name,
 			    const TpgNodeInfo* node_info,
 			    const vector<TpgNode*>& fanin_list)
 {
@@ -783,7 +777,7 @@ TpgNetwork::make_logic_node(const char* src_name,
 // leaf_nodes は 変数番号 * 2 + (0/1) に
 // 該当する変数の肯定/否定のリテラルが入っている．
 TpgNode*
-TpgNetwork::make_cplx_node(const char* name,
+TpgNetwork::make_cplx_node(const string& name,
 			   const Expr& expr,
 			   const vector<TpgNode*>& leaf_nodes,
 			   TpgNode** inode_array,
@@ -848,10 +842,11 @@ TpgNetwork::make_cplx_node(const char* name,
 // @param[in] ni ファンイン数
 // @return 生成したノードを返す．
 TpgNode*
-TpgNetwork::make_prim_node(const char* name,
+TpgNetwork::make_prim_node(const string& name,
 			   GateType type,
 			   const vector<TpgNode*>& fanin_list)
 {
+  const char* c_name = alloc_str(mAlloc, name);
   ymuint ni = fanin_list.size();
   if ( ni > 2 ) {
     // 2入力以上の XOR/XNOR ゲートを2入力に分解する．
@@ -863,7 +858,7 @@ TpgNetwork::make_prim_node(const char* name,
       for (ymuint i = 2; i < ni; ++ i) {
 	tmp_list[0] = tmp_node;
 	tmp_list[1] = fanin_list[i];
-	const char* tmp_name = (i == ni - 1) ? name : nullptr;
+	const char* tmp_name = (i == ni - 1) ? c_name : nullptr;
 	tmp_node = make_prim_node(tmp_name, type, tmp_list);
       }
       return tmp_node;
@@ -887,7 +882,7 @@ TpgNetwork::make_prim_node(const char* name,
     }
   }
 
-  TpgNode* node = TpgNode::new_primitive(mAlloc, mNodeNum, name, type, fanin_list);
+  TpgNode* node = TpgNode::new_primitive(mAlloc, mNodeNum, c_name, type, fanin_list);
 
   mNodeArray[mNodeNum] = node;
   ++ mNodeNum;
@@ -1004,12 +999,13 @@ TpgNetwork::set_fanouts()
 // @param[in] val 故障値 ( 0 / 1 )
 // @param[in] node 故障位置のノード
 const TpgFault*
-TpgNetwork::new_ofault(const char* name,
+TpgNetwork::new_ofault(const string& name,
 		       int val,
 		       TpgNode* node)
 {
+  const char* c_name = alloc_str(mAlloc, name);
   void* p = mAlloc.get_memory(sizeof(TpgStemFault));
-  TpgFault* f = new (p) TpgStemFault(mFaultNum, name, val, node, nullptr);
+  TpgFault* f = new (p) TpgStemFault(mFaultNum, c_name, val, node, nullptr);
   node->set_output_fault(val, f);
   ++ mFaultNum;
 
@@ -1027,16 +1023,17 @@ TpgNetwork::new_ofault(const char* name,
 // プリミティブ型の場合は ipos と inode_pos は同一だが
 // 複合型の場合には異なる．
 const TpgFault*
-TpgNetwork::new_ifault(const char* name,
+TpgNetwork::new_ifault(const string& name,
 		       int val,
 		       ymuint ipos,
 		       TpgNode* node,
 		       ymuint inode_pos,
 		       const TpgFault* rep)
 {
+  const char* c_name = alloc_str(mAlloc, name);
   TpgNode* inode = node->fanin(inode_pos);
   void* p = mAlloc.get_memory(sizeof(TpgBranchFault));
-  TpgFault* f = new (p) TpgBranchFault(mFaultNum, name, val, ipos, node, inode, inode_pos, rep);
+  TpgFault* f = new (p) TpgBranchFault(mFaultNum, c_name, val, ipos, node, inode, inode_pos, rep);
   node->set_input_fault(val, inode_pos, f);
   ++ mFaultNum;
 

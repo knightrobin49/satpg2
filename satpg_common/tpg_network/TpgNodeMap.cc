@@ -17,9 +17,7 @@ BEGIN_NAMESPACE_YM_SATPG
 //////////////////////////////////////////////////////////////////////
 
 // @brief コンストラクタ
-// @param[in] max_id ノード番号の最大値 + 1
-TpgNodeMap::TpgNodeMap(ymuint max_id) :
-  mNodeArray(max_id, nullptr)
+TpgNodeMap::TpgNodeMap()
 {
 }
 
@@ -35,16 +33,19 @@ void
 TpgNodeMap::reg(ymuint bnnode_id,
 		TpgNode* tpgnode)
 {
-  ASSERT_COND( bnnode_id < mNodeArray.size() );
-  mNodeArray[bnnode_id] = tpgnode;
+  ASSERT_COND( !mNodeMap.check(bnnode_id) );
+  mNodeMap.add(bnnode_id, tpgnode);
 }
 
 // @brief 対応するノードを得る．
 TpgNode*
 TpgNodeMap::get(ymuint bnnode_id) const
 {
-  ASSERT_COND( bnnode_id < mNodeArray.size() );
-  return mNodeArray[bnnode_id];
+  TpgNode* node;
+  if ( mNodeMap.find(bnnode_id, node) ) {
+    return node;
+  }
+  return nullptr;
 }
 
 END_NAMESPACE_YM_SATPG

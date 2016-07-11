@@ -16,7 +16,6 @@
 #include "ym/ym_bnet.h"
 #include "ym/ym_cell.h"
 #include "ym/ym_logic.h"
-#include "ym/BnFuncType.h"
 #include "ym/SimpleAlloc.h"
 #include "ym/HashMap.h"
 
@@ -180,7 +179,7 @@ public:
   /// @return 生成したノードを返す．
   TpgNode*
   make_input_node(ymuint iid,
-		  const char* name);
+		  const string& name);
 
   /// @brief 出力ノードを生成する．
   /// @param[in] oid 出力の番号
@@ -189,7 +188,7 @@ public:
   /// @return 生成したノードを返す．
   TpgNode*
   make_output_node(ymuint oid,
-		   const char* name,
+		   const string& name,
 		   TpgNode* inode);
 
   /// @brief 論理ノードを生成する．
@@ -198,7 +197,7 @@ public:
   /// @param[in] fanin_list ファンインのリスト
   /// @return 生成したノードを返す．
   TpgNode*
-  make_logic_node(const char* name,
+  make_logic_node(const string& name,
 		  const TpgNodeInfo* node_info,
 		  const vector<TpgNode*>& fanin_list);
 
@@ -218,7 +217,7 @@ private:
   /// leaf_nodes は 変数番号 * 2 + (0/1) に
   /// 該当する変数の肯定/否定のリテラルが入っている．
   TpgNode*
-  make_cplx_node(const char* name,
+  make_cplx_node(const string& name,
 		 const Expr& expr,
 		 const vector<TpgNode*>& leaf_nodes,
 		 TpgNode** inode_array,
@@ -230,7 +229,7 @@ private:
   /// @param[in] fanin_list ファンインのリスト
   /// @return 生成したノードを返す．
   TpgNode*
-  make_prim_node(const char* name,
+  make_prim_node(const string& name,
 		 GateType type,
 		 const vector<TpgNode*>& fanin_list);
 
@@ -243,7 +242,7 @@ private:
   /// @param[in] val 故障値 ( 0 / 1 )
   /// @param[in] node 故障位置のノード
   const TpgFault*
-  new_ofault(const char* name,
+  new_ofault(const string& name,
 	     int val,
 	     TpgNode* node);
 
@@ -258,7 +257,7 @@ private:
   /// プリミティブ型の場合は ipos と inode_pos は同一だが
   /// 複合型の場合には異なる．
   const TpgFault*
-  new_ifault(const char* name,
+  new_ifault(const string& name,
 	     int val,
 	     ymuint ipos,
 	     TpgNode* node,
