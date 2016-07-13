@@ -224,7 +224,7 @@ TpgNetwork::set(const BnNetwork& bnnetwork)
   mOutputNum = bnnetwork.output_num();
   mFFNum = bnnetwork.dff_num();
 
-  ymuint nn = mInputNum + mOutputNum + mFFNum + nl + extra_node_num;
+  ymuint nn = mInputNum + mOutputNum + mFFNum + mFFNum + nl + extra_node_num;
 
   mNodeArray = alloc_array<TpgNode*>(mAlloc, nn);
 
@@ -248,7 +248,6 @@ TpgNetwork::set(const BnNetwork& bnnetwork)
 
   mNodeNum = 0;
   mFaultNum = 0;
-
 
   //////////////////////////////////////////////////////////////////////
   // 外部入力を作成する．
@@ -296,7 +295,6 @@ TpgNetwork::set(const BnNetwork& bnnetwork)
     node_map.reg(bnnode->id(), node);
   }
 
-
   //////////////////////////////////////////////////////////////////////
   // 外部出力ノードを作成する．
   //////////////////////////////////////////////////////////////////////
@@ -307,7 +305,6 @@ TpgNetwork::set(const BnNetwork& bnnetwork)
     buf += bnnode->name();
     TpgNode* node = make_output_node(i, buf.c_str(), inode);
     mOutputArray[i] = node;
-    node_map.reg(bnnode->id(), node);
   }
   for (ymuint i = 0; i < mFFNum; ++ i) {
     const BnNode* bnnode = bnnetwork.dff(i);
