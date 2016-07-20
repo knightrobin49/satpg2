@@ -168,10 +168,10 @@ public:
   bool
   read_iscas89(const string& filename);
 
-  /// @brief BnNetwork から内容を設定する．
-  /// @param[in] bnnetwork もとのネットワーク
+  /// @brief BnBuilder から内容を設定する．
+  /// @param[in] builder ビルダーオブジェクト
   void
-  set(const BnNetwork& bnnetwork);
+  set(const BnBuilder& builder);
 
   /// @brief 入力ノードを生成する．
   /// @param[in] iid 入力の番号

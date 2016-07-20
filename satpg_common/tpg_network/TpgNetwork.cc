@@ -15,7 +15,9 @@
 #include "TpgStemFault.h"
 #include "TpgBranchFault.h"
 #include "TpgMap.h"
-#include "ym/BnNetwork.h"
+#include "ym/BnBlifReader.h"
+#include "ym/BnIscas89Reader.h"
+#include "ym/BnBuilder.h"
 #include "ym/BnNode.h"
 #include "ym/Expr.h"
 
@@ -140,11 +142,12 @@ bool
 TpgNetwork::read_blif(const string& filename,
 		      const CellLibrary* cell_library)
 {
-  BnNetwork bnnetwork;
+  BnBuilder builder;
+  BnBlifReader reader;
 
-  bool stat = bnnetwork.read_blif(filename, cell_library);
+  bool stat = reader.read(builder, filename, cell_library);
   if ( stat ) {
-    set(bnnetwork);
+    set(builder);
   }
 
   return stat;
@@ -156,11 +159,12 @@ TpgNetwork::read_blif(const string& filename,
 bool
 TpgNetwork::read_iscas89(const string& filename)
 {
-  BnNetwork bnnetwork;
+  BnBuilder builder;
+  BnIscas89Reader reader;
 
-  bool stat = bnnetwork.read_iscas89(filename);
+  bool stat = reader.read(builder, filename);
   if ( stat ) {
-    set(bnnetwork);
+    set(builder);
   }
 
   return stat;
@@ -193,13 +197,13 @@ get_mffc_elem(TpgNode* node,
 END_NONAMESPACE
 
 // @brief 内容を設定する．
-// @param[in] bnnetwork もとのネットワーク
+// @param[in] builder ビルダーオブジェクト
 void
-TpgNetwork::set(const BnNetwork& bnnetwork)
+TpgNetwork::set(const BnBuilder& builder)
 {
   mAlloc.destroy();
 
-  ymuint nl = bnnetwork.logic_num();
+  ymuint nl = builder.logic_num();
 
   //////////////////////////////////////////////////////////////////////
   // NodeInfoMgr にノードの論理関数を登録する．
@@ -207,22 +211,22 @@ TpgNetwork::set(const BnNetwork& bnnetwork)
   TpgNodeInfoMgr node_info_mgr;
   ymuint extra_node_num = 0;
   for (ymuint i = 0; i < nl; ++ i) {
-    const BnNode* bnnode = bnnetwork.logic(i);
-    BnLogicType logic_type = bnnode->logic_type();
+    const BnBuilder::NodeInfo src_node_info = builder.logic(i);
+    BnLogicType logic_type = src_node_info.mLogicType;
     if ( logic_type == kBnLt_EXPR ) {
-      ymuint fid = bnnode->func_id();
-      const TpgNodeInfo* node_info = node_info_mgr.complex_type(fid, bnnode->fanin_num(), bnnode->expr());
+      ymuint fid = src_node_info.mId;
+      ymuint ni = src_node_info.mFaninList.size();
+      const TpgNodeInfo* node_info = node_info_mgr.complex_type(fid, ni, src_node_info.mExpr);
       extra_node_num += node_info->extra_node_num();
     }
   }
 
-
   //////////////////////////////////////////////////////////////////////
   // 要素数を数え，必要なメモリ領域を確保する．
   //////////////////////////////////////////////////////////////////////
-  mInputNum = bnnetwork.input_num();
-  mOutputNum = bnnetwork.output_num();
-  mFFNum = bnnetwork.dff_num();
+  mInputNum = builder.input_num();
+  mOutputNum = builder.output_num();
+  mFFNum = builder.dff_num();
 
   ymuint nn = mInputNum + mOutputNum + mFFNum + mFFNum + nl + extra_node_num;
 
@@ -253,32 +257,26 @@ TpgNetwork::set(const BnNetwork& bnnetwork)
   // 外部入力を作成する．
   //////////////////////////////////////////////////////////////////////
   for (ymuint i = 0; i < mInputNum; ++ i) {
-    const BnNode* bnnode = bnnetwork.input(i);
-    TpgNode* node = make_input_node(i, bnnode->name());
+    const BnBuilder::NodeInfo& node_info = builder.input(i);
+    TpgNode* node = make_input_node(i, node_info.mName);
     mInputArray[i] = node;
-    node_map.reg(bnnode->id(), node);
+    node_map.reg(node_info.mId, node);
   }
-  for (ymuint i = 0; i < mFFNum; ++ i) {
-    const BnNode* bnnode = bnnetwork.dff(i);
-    TpgNode* node = make_input_node(i + mInputNum, bnnode->name());
-    mInputArray[i + mInputNum] = node;
-    node_map.reg(bnnode->id(), node);
-  }
-
 
   //////////////////////////////////////////////////////////////////////
   // 論理ノードを作成する．
   // ただし mNodeArray は入力からのトポロジカル順になる．
   //////////////////////////////////////////////////////////////////////
   for (ymuint i = 0; i < nl; ++ i) {
-    const BnNode* bnnode = bnnetwork.logic(i);
-    ymuint ni = bnnode->fanin_num();
+    const BnBuilder::NodeInfo& src_node_info = builder.logic(i);
+    ymuint ni = src_node_info.mFaninList.size();
 
     // BnFuncType から TpgNodeInfo を作る．
-    GateType gate_type = conv_to_gate_type(bnnode->logic_type());
+    GateType gate_type = conv_to_gate_type(src_node_info.mLogicType);
     const TpgNodeInfo* node_info;
     if ( gate_type == kGateCPLX ) {
-      node_info = node_info_mgr.complex_type(bnnode->func_id(), ni, bnnode->expr());
+      ymuint fid = src_node_info.mId;
+      node_info = node_info_mgr.complex_type(fid, ni, src_node_info.mExpr);
     }
     else {
       node_info = node_info_mgr.simple_type(gate_type);
@@ -287,37 +285,24 @@ TpgNetwork::set(const BnNetwork& bnnetwork)
     // ファンインのノードを取ってくる．
     vector<TpgNode*> fanin_array(ni);
     for (ymuint j = 0; j < ni; ++ j) {
-      fanin_array[j] = node_map.get(bnnode->fanin(j));
+      fanin_array[j] = node_map.get(src_node_info.mFaninList[j]);
     }
-    TpgNode* node = make_logic_node(bnnode->name(), node_info, fanin_array);
+    TpgNode* node = make_logic_node(src_node_info.mName, node_info, fanin_array);
 
     // ノードを登録する．
-    node_map.reg(bnnode->id(), node);
+    node_map.reg(src_node_info.mId, node);
   }
 
   //////////////////////////////////////////////////////////////////////
   // 外部出力ノードを作成する．
   //////////////////////////////////////////////////////////////////////
   for (ymuint i = 0; i < mOutputNum; ++ i) {
-    const BnNode* bnnode = bnnetwork.output(i);
-    TpgNode* inode = node_map.get(bnnode->input());
+    const BnBuilder::NodeInfo& src_node_info = builder.output(i);
+    TpgNode* inode = node_map.get(src_node_info.mFaninList[0]);
     string buf = "*";
-    buf += bnnode->name();
+    buf += src_node_info.mName;
     TpgNode* node = make_output_node(i, buf.c_str(), inode);
     mOutputArray[i] = node;
-  }
-  for (ymuint i = 0; i < mFFNum; ++ i) {
-    const BnNode* bnnode = bnnetwork.dff(i);
-    TpgNode* inode = node_map.get(bnnode->input());
-    string buf = "*";
-    buf += bnnode->name();
-    TpgNode* node = make_output_node(i + mOutputNum, buf.c_str(), inode);
-    mOutputArray[i + mOutputNum] = node;
-#if 0
-    TpgNode* alt_node = mInputArray[i + mInputNum];
-    alt_node->mAltNode = node;
-    node->mAltNode = alt_node;
-#endif
   }
 
   ASSERT_COND( mNodeNum == nn );
