@@ -145,16 +145,6 @@ public:
 	      const vector<ymuint>& group_list,
 	      bool fast) = 0;
 
-#if 0
-  /// @brief 既存のグループに故障を追加する．
-  /// @param[in] gid グループ番号 ( 0 <= gid < group_num() )
-  /// @param[in] fid 故障番号
-  virtual
-  void
-  add_fault(ymuint gid,
-	    ymuint fid) = 0;
-#endif
-
   /// @brief 故障を取り除く
   /// @param[in] gid グループ番号 ( 0 <= gid < group_num() )
   /// @param[in] fid_list 削除する故障番号のリスト
@@ -189,12 +179,6 @@ public:
   virtual
   const NodeValList&
   mandatory_assignment(ymuint gid) const = 0;
-
-  /// @brief 外部入力上の十分割当リストを返す．
-  /// @param[in] gid グループ番号 ( 0 <= gid < group_num() )
-  virtual
-  const NodeValList&
-  pi_sufficient_assignment(ymuint gid) const = 0;
 
   /// @brief 故障グループのリストを出力する．
   /// @param[in] s 出力先のストリーム

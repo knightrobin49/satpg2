@@ -138,16 +138,6 @@ public:
 	      const vector<ymuint>& group_list,
 	      bool fast);
 
-#if 0
-  /// @brief 既存のグループに故障を追加する．
-  /// @param[in] gid グループ番号 ( 0 <= gid < group_num() )
-  /// @param[in] fid 故障番号
-  virtual
-  void
-  add_fault(ymuint gid,
-	    ymuint fid);
-#endif
-
   /// @brief 故障を取り除く
   /// @param[in] gid グループ番号 ( 0 <= gid < group_num() )
   /// @param[in] fid_list 削除する故障番号のリスト
@@ -182,12 +172,6 @@ public:
   virtual
   const NodeValList&
   mandatory_assignment(ymuint gid) const;
-
-  /// @brief 外部入力上の十分割当リストを返す．
-  /// @param[in] gid グループ番号 ( 0 <= gid < group_num() )
-  virtual
-  const NodeValList&
-  pi_sufficient_assignment(ymuint gid) const;
 
   /// @brief 複数故障の検出検査回数
   ymuint
@@ -267,6 +251,10 @@ private:
   check_conflict_cache(ymuint gid,
 		       ymuint fid);
 
+  /// @brief [デバッグ用] sufficient_assignment が正しいか調べる．
+  bool
+  check_sufficient_assignment(ymuint gid);
+
 
 private:
   //////////////////////////////////////////////////////////////////////
@@ -315,10 +303,6 @@ private:
     const NodeValList&
     mandatory_assignment() const;
 
-    /// @brief 外部入力上の十分割当を返す．
-    const NodeValList&
-    pi_sufficient_assignment() const;
-
     /// @brief 衝突キャッシュに登録する．
     void
     add_conflict_cache(ymuint fid);
@@ -339,8 +323,7 @@ private:
     void
     add_fault(ymuint fid,
 	      const NodeValList& suf_list,
-	      const NodeValList& ma_list,
-	      const NodeValList& pi_suf_list);
+	      const NodeValList& ma_list);
 
     /// @brief 故障を削除する．
     void
@@ -349,8 +332,7 @@ private:
     /// @brief 故障の十分割当リストを設定する．
     void
     set_suf_list(ymuint pos,
-		 const NodeValList& suf_list,
-		 const NodeValList& pi_suf_list);
+		 const NodeValList& suf_list);
 
     /// @brief 故障リストが変更された時の更新処理を行う．
     void
@@ -368,8 +350,7 @@ private:
       // コンストラクタ
       FaultData(ymuint fid,
 		const NodeValList& suf_list,
-		const NodeValList& ma_list,
-		const NodeValList& pi_suf_list);
+		const NodeValList& ma_list);
 
       // 故障番号
       ymuint mFaultId;
@@ -379,9 +360,6 @@ private:
 
       // 必要割当リスト
       NodeValList mMaList;
-
-      // 外部入力上の十分割当リスト
-      NodeValList mPiSufList;
 
     };
 
@@ -514,16 +492,6 @@ FgMgrBase::mandatory_assignment(ymuint gid) const
 {
   const FaultGroup* fg = _fault_group(gid);
   return fg->mandatory_assignment();
-}
-
-// @brief 外部入力上の十分割当リストを返す．
-// @param[in] gid グループ番号 ( 0 <= gid < group_num() )
-inline
-const NodeValList&
-FgMgrBase::pi_sufficient_assignment(ymuint gid) const
-{
-  const FaultGroup* fg = _fault_group(gid);
-  return fg->pi_sufficient_assignment();
 }
 
 // @brief 衝突キャッシュに登録する

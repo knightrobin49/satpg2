@@ -93,8 +93,7 @@ FgMgrBase::new_group(ymuint fid)
   const FaultInfo& fi = _fault_info(fid);
   const NodeValList& suf_list = fi.sufficient_assignment();
   const NodeValList& ma_list = fi.mandatory_assignment();
-  const NodeValList& pi_suf_list = fi.pi_sufficient_assignment();
-  fg->add_fault(fid, suf_list, ma_list, pi_suf_list);
+  fg->add_fault(fid, suf_list, ma_list);
   return fg->id();
 }
 
@@ -326,7 +325,7 @@ FgMgrBase::find_group2(ymuint fid0,
   gval_cnf0.add_assignments(ma_list0);
 
   FvalCnf fval_cnf0(gval_cnf0);
-  if ( !fi0.single_cube() ) {
+  if ( true || !fi0.single_cube() ) {
     // fault を検出する CNF を生成
     fval_cnf0.make_cnf(_fault(fid0), _node_set(fid0), kVal1);
   }
@@ -344,15 +343,35 @@ FgMgrBase::find_group2(ymuint fid0,
       vector<SatBool3> sat_model;
       if ( gval_cnf0.check_sat(suf_list1, sat_model) == kB3True ) {
 	FaultGroup* fg = _fault_group(gid);
-	if ( fi0.single_cube() ) {
-	  const NodeValList& pi_suf_list = fi0.pi_sufficient_assignment();
-	  fg->add_fault(fid0, ma_list0, ma_list0, pi_suf_list);
+	if ( false && fi0.single_cube() ) {
+	  fg->add_fault(fid0, ma_list0, ma_list0);
+	  {
+	    GvalCnf gval_cnf(max_node_id(), string(), string(), nullptr);
+	    // mSufList 単独で充足可能か調べておく．
+	    if ( gval_cnf.check_sat(fg->sufficient_assignment()) != kB3True ) {
+	      cout << "Error in FaultGroup::add_fault(1)" << endl
+		   << "  mSufList inconsistent" << endl;
+	    }
+	  }
+	  if ( !check_sufficient_assignment(gid) ) {
+	    cout << "Error in sufficient_assignment at add_fault(1)" << endl;
+	  }
 	}
 	else {
 	  NodeValList suf_list;
-	  NodeValList pi_suf_list;
-	  fval_cnf0.get_pi_suf_list(sat_model, _fault(fid0), _node_set(fid0), suf_list, pi_suf_list);
-	  fg->add_fault(fid0, suf_list, ma_list0, pi_suf_list);
+	  fval_cnf0.get_suf_list(sat_model, _fault(fid0), _node_set(fid0), suf_list);
+	  fg->add_fault(fid0, suf_list, ma_list0);
+	  {
+	    GvalCnf gval_cnf(max_node_id(), string(), string(), nullptr);
+	    // mSufList 単独で充足可能か調べておく．
+	    if ( gval_cnf.check_sat(fg->sufficient_assignment()) != kB3True ) {
+	      cout << "Error in FaultGroup::add_fault(2)" << endl
+		   << "  mSufList inconsistent" << endl;
+	    }
+	  }
+	  if ( !check_sufficient_assignment(gid) ) {
+	    cout << "Error in sufficient_assignment at add_fault(2)" << endl;
+	  }
 	}
 	ans_gid = gid;
 	break;
@@ -418,24 +437,54 @@ FgMgrBase::find_group2(ymuint fid0,
 	const FaultInfo& fi1 = _fault_info(fid1);
 	if ( !fi1.single_cube() ) {
 	  NodeValList suf_list;
-	  NodeValList pi_suf_list;
-	  fval_cnf_array[i].get_pi_suf_list(sat_model, _fault(fid1), _node_set(fid1),
-					    suf_list, pi_suf_list);
-	  fg->set_suf_list(i, suf_list, pi_suf_list);
+	  fval_cnf_array[i].get_suf_list(sat_model, _fault(fid1), _node_set(fid1), suf_list);
+	  fg->set_suf_list(i, suf_list);
 	}
       }
 
       fg->update();
 
+      {
+	GvalCnf gval_cnf(max_node_id(), string(), string(), nullptr);
+	// mSufList 単独で充足可能か調べておく．
+	if ( gval_cnf.check_sat(fg->sufficient_assignment()) != kB3True ) {
+	  cout << "Error in FaultGroup::update()" << endl
+	       << "  mSufList inconsistent" << endl;
+	}
+      }
+      if ( !check_sufficient_assignment(gid) ) {
+	cout << "Error in sufficient_assignment at updatet()" << endl;
+      }
+
       if ( fi0.single_cube() ) {
-	const NodeValList& pi_suf_list = fi0.pi_sufficient_assignment();
-	fg->add_fault(fid0, ma_list0, ma_list0, pi_suf_list);
+	fg->add_fault(fid0, ma_list0, ma_list0);
+	{
+	  GvalCnf gval_cnf(max_node_id(), string(), string(), nullptr);
+	  // mSufList 単独で充足可能か調べておく．
+	  if ( gval_cnf.check_sat(fg->sufficient_assignment()) != kB3True ) {
+	    cout << "Error in FaultGroup::add_fault(3)" << endl
+		 << "  mSufList inconsistent" << endl;
+	  }
+	}
+	if ( !check_sufficient_assignment(gid) ) {
+	  cout << "Error in sufficient_assignment at add_fault(3)" << endl;
+	}
       }
       else {
 	NodeValList suf_list;
-	NodeValList pi_suf_list;
-	fval_cnf0.get_pi_suf_list(sat_model, _fault(fid0), _node_set(fid0), suf_list, pi_suf_list);
-	fg->add_fault(fid0, suf_list, ma_list0, pi_suf_list);
+	fval_cnf0.get_suf_list(sat_model, _fault(fid0), _node_set(fid0), suf_list);
+	fg->add_fault(fid0, suf_list, ma_list0);
+	{
+	  GvalCnf gval_cnf(max_node_id(), string(), string(), nullptr);
+	  // mSufList 単独で充足可能か調べておく．
+	  if ( gval_cnf.check_sat(fg->sufficient_assignment()) != kB3True ) {
+	    cout << "Error in FaultGroup::add_fault(4)" << endl
+		 << "  mSufList inconsistent" << endl;
+	  }
+	}
+	if ( !check_sufficient_assignment(gid) ) {
+	  cout << "Error in sufficient_assignment at add_fault(4)" << endl;
+	}
       }
       ans_gid = gid;
       break;
@@ -445,101 +494,14 @@ FgMgrBase::find_group2(ymuint fid0,
     }
   }
 
+  if ( ans_gid < group_num() ) {
+  }
+
   local_timer.stop();
   mCheckTime += local_timer.time();
 
   return ans_gid;
 }
-
-#if 0
-// @brief 既存のグループに故障を追加する．
-// @param[in] gid グループ番号 ( 0 <= gid < group_num() )
-// @param[in] fid0 故障番号
-void
-FgMgrBase::add_fault(ymuint gid,
-		     ymuint fid0)
-{
-  const FaultInfo& fi0 = _fault_info(fid0);
-
-  FaultGroup* fg = _fault_group(gid);
-  ymuint nf = fg->fault_num();
-
-  if ( nf == 0 ) {
-    const NodeValList& suf_list = fi0.sufficient_assignment();
-    const NodeValList& ma_list = fi0.mandatory_assignment();
-    const NodeValList& pi_suf_list = fi0.pi_sufficient_assignment();
-    fg->add_fault(fid0, suf_list, ma_list, pi_suf_list);
-    return;
-  }
-
-  GvalCnf gval_cnf(max_node_id(), string(), string(), nullptr);
-
-  // fid0 の必要割当を追加
-  const NodeValList& ma_list0 = fi0.mandatory_assignment();
-  gval_cnf.add_assignments(ma_list0);
-
-  // グループの必要割当を追加
-  const NodeValList& group_ma_list = mandatory_assignment(gid);
-  gval_cnf.add_assignments(group_ma_list);
-
-  FvalCnf fval_cnf0(gval_cnf);
-
-  ymuint fnum = 0;
-  if ( !fi0.single_cube() ) {
-    // fid0 を検出する条件を追加
-    fval_cnf0.make_cnf(_fault(fid0), _node_set(fid0), kVal1);
-    ++ fnum;
-  }
-
-  vector<FvalCnf> fval_cnf_array(nf, FvalCnf(gval_cnf));
-  for (ymuint i = 0; i < nf; ++ i) {
-    ymuint fid1 = fg->fault_id(i);
-    const FaultInfo& fi1 = _fault_info(fid1);
-    // fault を検出する条件を追加
-    if ( !fi1.single_cube() ) {
-      fval_cnf_array[i].make_cnf(_fault(fid1), _node_set(fid1), kVal1);
-      ++ fnum;
-    }
-  }
-
-  vector<SatBool3> sat_model;
-  SatBool3 sat_ans = gval_cnf.check_sat(sat_model);
-  ASSERT_COND( sat_ans == kB3True );
-
-  // 既存の故障の十分割当も更新する．
-  for (ymuint i = 0; i < nf; ++ i) {
-    ymuint fid1 = fg->fault_id(i);
-    const FaultInfo& fi1 = _fault_info(fid1);
-    if ( !fi1.single_cube() ) {
-      NodeValList suf_list;
-      NodeValList pi_suf_list;
-      fval_cnf_array[i].get_pi_suf_list(sat_model, _fault(fid1), _node_set(fid1),
-					suf_list, pi_suf_list);
-      fg->set_suf_list(i, suf_list, pi_suf_list);
-    }
-  }
-  fg->update();
-
-  // 統計情報の更新
-  ++ mMnum;
-  if ( mFmax < fnum ) {
-    mFmax = fnum;
-  }
-  mFsum += fnum;
-
-  // fid0 の故障の情報をセットする．
-  if ( fi0.single_cube() ) {
-    const NodeValList& pi_suf_list = fi0.pi_sufficient_assignment();
-    fg->add_fault(fid0, ma_list0, ma_list0, pi_suf_list);
-  }
-  else {
-    NodeValList suf_list;
-    NodeValList pi_suf_list;
-    fval_cnf0.get_pi_suf_list(sat_model, _fault(fid0), _node_set(fid0), suf_list, pi_suf_list);
-    fg->add_fault(fid0, suf_list, ma_list0, pi_suf_list);
-  }
-}
-#endif
 
 // @brief 新しいグループを作る．
 // @return グループを返す．
@@ -619,6 +581,49 @@ FgMgrBase::clear_count()
   mCheckTime.set(0.0, 0.0, 0.0);
 }
 
+// @brief [デバッグ用] sufficient_assignment が正しいか調べる．
+bool
+FgMgrBase::check_sufficient_assignment(ymuint gid)
+{
+  // suf_list が正しいか検証する．
+  bool error = false;
+  const NodeValList& suf_list = sufficient_assignment(gid);
+  for (ymuint i = 0; i < fault_num(gid); ++ i) {
+    ymuint fid = fault_id(gid, i);
+    GvalCnf gval_cnf(max_node_id(), string(), string(), nullptr);
+    // gid の十分条件を追加
+    gval_cnf.add_assignments(suf_list);
+    FvalCnf fval_cnf(gval_cnf);
+    // fid を検出しない条件を追加
+    fval_cnf.make_cnf(_fault(fid), _node_set(fid), kVal0);
+    // 十分条件が正しければこの SAT 問題は充足不能のはず．
+    if ( gval_cnf.check_sat() != kB3False ) {
+      cout << "ERROR in fault group#" << gid << ": "
+	   << _fault(fid)->str() << " is not detected with suf_list" << endl;
+      error = true;
+    }
+    const FaultInfo& fi = _fault_info(fid);
+    const vector<ymuint>& dom_list = fi.dom_list();
+    for (ymuint j = 0; j < dom_list.size(); ++ j) {
+      ymuint fid1 = dom_list[j];
+      GvalCnf gval_cnf(max_node_id(), string(), string(), nullptr);
+      // gid の十分条件を追加
+      gval_cnf.add_assignments(suf_list);
+      FvalCnf fval_cnf(gval_cnf);
+      // fid1 を検出しない条件を追加
+      fval_cnf.make_cnf(_fault(fid1), _node_set(fid1), kVal0);
+      // 十分条件が正しければこの SAT 問題は充足不能のはず．
+      if ( gval_cnf.check_sat() != kB3False ) {
+	cout << "ERROR in fault group#" << gid << ": "
+	     << _fault(fid1)->str() << " is not detected with suf_list" << endl;
+	error = true;
+      }
+    }
+  }
+
+  return !error;
+}
+
 
 //////////////////////////////////////////////////////////////////////
 // クラス FgMgrBase::FaultGroup
@@ -680,13 +685,6 @@ FgMgrBase::FaultGroup::mandatory_assignment() const
   return mMaList;
 }
 
-// @brief 外部入力上の十分割当を返す．
-const NodeValList&
-FgMgrBase::FaultGroup::pi_sufficient_assignment() const
-{
-  return mPiSufList;
-}
-
 // @brief 衝突キャッシュに登録する．
 void
 FgMgrBase::FaultGroup::add_conflict_cache(ymuint fid)
@@ -709,7 +707,6 @@ FgMgrBase::FaultGroup::copy(const FaultGroup& dst)
   mCplxNum = dst.mCplxNum;
   mSufList = dst.mSufList;
   mMaList = dst.mMaList;
-  mPiSufList = dst.mPiSufList;
 
   mConflictCache.clear();
   for (HashSetIterator<ymuint> p = dst.mConflictCache.begin();
@@ -730,13 +727,11 @@ FgMgrBase::FaultGroup::set_id(ymuint id)
 void
 FgMgrBase::FaultGroup::add_fault(ymuint fid,
 				 const NodeValList& suf_list,
-				 const NodeValList& ma_list,
-				 const NodeValList& pi_suf_list)
+				 const NodeValList& ma_list)
 {
-  mFaultDataList.push_back(FaultData(fid, suf_list, ma_list, pi_suf_list));
+  mFaultDataList.push_back(FaultData(fid, suf_list, ma_list));
   mSufList.merge(suf_list);
   mMaList.merge(ma_list);
-  mPiSufList.merge(pi_suf_list);
 }
 
 // @brief 故障を削除する．
@@ -772,12 +767,10 @@ FgMgrBase::FaultGroup::delete_faults(const vector<ymuint>& fid_list)
 // @brief 故障の十分割当リストを設定する．
 void
 FgMgrBase::FaultGroup::set_suf_list(ymuint pos,
-				    const NodeValList& suf_list,
-				    const NodeValList& pi_suf_list)
+				    const NodeValList& suf_list)
 {
   ASSERT_COND( pos < fault_num() );
   mFaultDataList[pos].mSufList = suf_list;
-  mFaultDataList[pos].mPiSufList = pi_suf_list;
 }
 
 // @brief 故障リストが変更された時の更新処理を行う．
@@ -802,12 +795,10 @@ FgMgrBase::FaultGroup::update()
 // コンストラクタ
 FgMgrBase::FaultGroup::FaultData::FaultData(ymuint fid,
 					    const NodeValList& suf_list,
-					    const NodeValList& ma_list,
-					    const NodeValList& pi_suf_list) :
+					    const NodeValList& ma_list) :
   mFaultId(fid),
   mSufList(suf_list),
-  mMaList(ma_list),
-  mPiSufList(pi_suf_list)
+  mMaList(ma_list)
 {
 }
 
