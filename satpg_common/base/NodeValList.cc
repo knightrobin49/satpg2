@@ -89,6 +89,25 @@ NodeValList::diff(const NodeValList& src_list)
   mAsList = tmp_list;
 }
 
+// @brief 矛盾した内容になっていないかチェックする．
+// @return 正しければ true を返す．
+//
+// 具体的には同じノードで異なる値がある場合にエラーとなる．
+// この関数はソートされている前提で動作する．
+bool
+NodeValList::sanity_check() const
+{
+  NodeVal prev(nullptr, false);
+  for (ymuint i = 0; i < mAsList.size(); ++ i) {
+    NodeVal nv = mAsList[i];
+    if ( prev.node() == nv.node() && prev.val() != nv.val() ) {
+      return false;
+    }
+    prev = nv;
+  }
+  return true;
+}
+
 // @brief 2つの割当リストが矛盾しているか調べる．
 bool
 check_conflict(const NodeValList& src_list1,
