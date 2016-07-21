@@ -18,7 +18,8 @@
 #include "ym/BnBlifReader.h"
 #include "ym/BnIscas89Reader.h"
 #include "ym/BnBuilder.h"
-#include "ym/BnNode.h"
+//#include "ym/BnNode.h"
+#include "ym/Cell.h"
 #include "ym/Expr.h"
 
 
@@ -203,20 +204,29 @@ TpgNetwork::set(const BnBuilder& builder)
 {
   mAlloc.destroy();
 
-  ymuint nl = builder.logic_num();
-
   //////////////////////////////////////////////////////////////////////
   // NodeInfoMgr にノードの論理関数を登録する．
   //////////////////////////////////////////////////////////////////////
   TpgNodeInfoMgr node_info_mgr;
+  ymuint nexpr = builder.expr_num();
+  vector<const TpgNodeInfo*> node_info_list(nexpr);
   ymuint extra_node_num = 0;
+  for (ymuint i = 0; i < nexpr; ++ i) {
+    Expr expr = builder.expr(i);
+    ymuint ni = expr.input_size();
+    const TpgNodeInfo* node_info = node_info_mgr.complex_type(ni, expr);
+    node_info_list[i] = node_info;
+  }
+
+  //////////////////////////////////////////////////////////////////////
+  // 追加で生成されるノード数を数える．
+  //////////////////////////////////////////////////////////////////////
+  ymuint nl = builder.logic_num();
   for (ymuint i = 0; i < nl; ++ i) {
     const BnBuilder::NodeInfo src_node_info = builder.logic(i);
     BnLogicType logic_type = src_node_info.mLogicType;
     if ( logic_type == kBnLt_EXPR ) {
-      ymuint fid = src_node_info.mId;
-      ymuint ni = src_node_info.mFaninList.size();
-      const TpgNodeInfo* node_info = node_info_mgr.complex_type(fid, ni, src_node_info.mExpr);
+      const TpgNodeInfo* node_info = node_info_list[src_node_info.mFuncId];
       extra_node_num += node_info->extra_node_num();
     }
   }
@@ -247,7 +257,6 @@ TpgNetwork::set(const BnBuilder& builder)
     mTmpMark[i] = false;
   }
 
-  // BnNode::id() をキーにして TpgNode* を格納するマップ
   TpgNodeMap node_map;
 
   mNodeNum = 0;
@@ -269,20 +278,19 @@ TpgNetwork::set(const BnBuilder& builder)
   //////////////////////////////////////////////////////////////////////
   for (ymuint i = 0; i < nl; ++ i) {
     const BnBuilder::NodeInfo& src_node_info = builder.logic(i);
-    ymuint ni = src_node_info.mFaninList.size();
-
-    // BnFuncType から TpgNodeInfo を作る．
-    GateType gate_type = conv_to_gate_type(src_node_info.mLogicType);
-    const TpgNodeInfo* node_info;
-    if ( gate_type == kGateCPLX ) {
-      ymuint fid = src_node_info.mId;
-      node_info = node_info_mgr.complex_type(fid, ni, src_node_info.mExpr);
+    const TpgNodeInfo* node_info = nullptr;
+    BnLogicType logic_type = src_node_info.mLogicType;
+    if ( logic_type == kBnLt_EXPR ) {
+      node_info = node_info_list[src_node_info.mFuncId];
     }
     else {
+      ASSERT_COND( logic_type != kBnLt_TV );
+      GateType gate_type = conv_to_gate_type(logic_type);
       node_info = node_info_mgr.simple_type(gate_type);
     }
 
     // ファンインのノードを取ってくる．
+    ymuint ni = src_node_info.mFaninList.size();
     vector<TpgNode*> fanin_array(ni);
     for (ymuint j = 0; j < ni; ++ j) {
       fanin_array[j] = node_map.get(src_node_info.mFaninList[j]);

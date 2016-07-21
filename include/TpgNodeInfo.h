@@ -13,6 +13,7 @@
 #include "Val3.h"
 #include "ym/ym_logic.h"
 #include "ym/HashMap.h"
+#include "ym/TvFunc.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG
@@ -91,12 +92,10 @@ public:
   simple_type(GateType gate_type);
 
   /// @brief 複合型のオブジェクトを返す．
-  /// @param[in] id ID番号
   /// @param[in] ni 入力数
   /// @param[in] expr 論理式
   const TpgNodeInfo*
-  complex_type(ymuint id,
-	       ymuint ni,
+  complex_type(ymuint ni,
 	       const Expr& expr);
 
 
@@ -114,8 +113,8 @@ private:
   // 組み込み型のオブジェクトの配列
   TpgNodeInfo* mSimpleType[10];
 
-  // 複合型のオブジェクトのハッシュ表
-  HashMap<ymuint, TpgNodeInfo*> mCplxTypeMap;
+  // 普通のオブジェクトのリスト
+  vector<TpgNodeInfo*> mList;
 
 };
 

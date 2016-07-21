@@ -12,7 +12,6 @@
 #include "satpg.h"
 #include "Val3.h"
 #include "TpgNode.h"
-#include "TpgNodeInfo.h"
 #include "ym/ym_bnet.h"
 #include "ym/ym_cell.h"
 #include "ym/ym_logic.h"
@@ -22,8 +21,7 @@
 
 BEGIN_NAMESPACE_YM_SATPG
 
-class TpgMap;
-class TpgNodeMap;
+class TpgNodeInfo;
 
 //////////////////////////////////////////////////////////////////////
 /// @class TpgNetwork TpgNetwork.h "TpgNetwork.h"

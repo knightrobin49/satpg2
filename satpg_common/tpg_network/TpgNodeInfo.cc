@@ -329,6 +329,9 @@ TpgNodeInfoMgr::~TpgNodeInfoMgr()
   for (ymuint i = 0; i < 10; ++ i) {
     delete mSimpleType[i];
   }
+  for (ymuint i = 0; i < mList.size(); ++ i) {
+    delete mList[i];
+  }
 }
 
 // @brief 組み込み型のオブジェクトを返す．
@@ -354,23 +357,14 @@ TpgNodeInfoMgr::simple_type(GateType gate_type)
 }
 
 // @brief 複合型のオブジェクトを返す．
-// @param[in] id ID番号
 // @param[in] ni 入力数
 // @param[in] expr 論理式
 const TpgNodeInfo*
-TpgNodeInfoMgr::complex_type(ymuint id,
-			     ymuint ni,
+TpgNodeInfoMgr::complex_type(ymuint ni,
 			     const Expr& expr)
 {
-  TpgNodeInfo* node_info = nullptr;
-  if ( mCplxTypeMap.find(id, node_info) ) {
-    // すでに登録済みの場合にはそのオブジェクトを返す．
-    return node_info;
-  }
-  // 新規に作る．
-  node_info = new CplxTpgNodeInfo(ni, expr);
-  mCplxTypeMap.add(id, node_info);
-
+  TpgNodeInfo* node_info = new CplxTpgNodeInfo(ni, expr);
+  mList.push_back(node_info);
   return node_info;
 }
 
