@@ -10,7 +10,7 @@
 #include "DomChecker.h"
 
 #include "FaultAnalyzer.h"
-
+#include "TpgFault.h"
 #include "TvMgr.h"
 #include "TestVector.h"
 #include "Fsim.h"
@@ -530,13 +530,13 @@ DomChecker::get_dom_faults1(const vector<ymuint>& src_list,
       // これが f2 の十分割当のもとで成り立ったら支配しない
       if ( gval_cnf.check_sat(fi2.sufficient_assignment()) == kB3True ) {
 	if ( print_dom_detail ) {
-	  cout << "NODOM(1) " << f1_id << " " << f2_id << endl;
+	  cout << "NODOM(1) " << f1->str() << " " << f2->str() << endl;
 	}
 	++ stats.mNoDom;
 	if ( verify_dom_check ) {
 	  bool check = mAnalyzer.check_dominance(f2_id, f1_id);
 	  if ( check ) {
-	    cout << "ERROR in check_dominance(" << f2 << ", " << f1 << ")[NODOM(1)]" << endl;
+	    cout << "ERROR in check_dominance(" << f2->str() << ", " << f1->str() << ")[NODOM(1)]" << endl;
 	    exit(1);
 	  }
 	}
@@ -545,7 +545,7 @@ DomChecker::get_dom_faults1(const vector<ymuint>& src_list,
       if ( fi2.single_cube() ) {
 	// これ以上のチェックは必要ない．
 	if ( print_dom_detail ) {
-	  cout << "DOM(2) " << f1_id << " " << f2_id << endl;
+	  cout << "DOM(2) " << f1->str() << " " << f2->str() << endl;
 	}
 	mDomFlag[f1_id] = true;
 	mAnalyzer.add_dom_fault(f2_id, f1_id);
@@ -554,7 +554,7 @@ DomChecker::get_dom_faults1(const vector<ymuint>& src_list,
 	if ( verify_dom_check ) {
 	  bool check = mAnalyzer.check_dominance(f2_id, f1_id);
 	  if ( !check ) {
-	    cout << "ERROR in check_dominance(" << f2 << ", " << f1 << ")[DOM(2)]" << endl;
+	    cout << "ERROR in check_dominance(" << f2->str() << ", " << f1->str() << ")[DOM(2)]" << endl;
 	    exit(1);
 	  }
 	}
@@ -565,7 +565,7 @@ DomChecker::get_dom_faults1(const vector<ymuint>& src_list,
       ++ stats.mSat;
       if ( mAnalyzer.check_dominance(f2_id, f1_id) ) {
 	if ( print_dom_detail ) {
-	  cout << "DOM(3) " << f1_id << " " << f2_id << endl;
+	  cout << "DOM(3) " << f1->str() << " " << f2->str() << endl;
 	}
 	mDomFlag[f1_id] = true;
 	mAnalyzer.add_dom_fault(f2_id, f1_id);
@@ -574,7 +574,7 @@ DomChecker::get_dom_faults1(const vector<ymuint>& src_list,
 	break;
       }
       if ( print_dom_detail ) {
-	cout << "NODOM(4) " << f1_id << " " << f2_id << endl;
+	cout << "NODOM(4) " << f1->str() << " " << f2->str() << endl;
       }
     }
   }
