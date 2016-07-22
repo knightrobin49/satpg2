@@ -215,7 +215,8 @@ FvalCnf::make_cnf(const TpgFault* fault,
 		  const NodeSet& node_set,
 		  Val3 detect)
 {
-  make_cnf(fault->tpg_onode(), node_set, detect);
+  const TpgNode* src_node = fault->tpg_onode();
+  make_cnf(src_node, node_set, detect);
 
   NodeValList assign_list;
   gval_cnf().add_fault_condition(fault, assign_list);

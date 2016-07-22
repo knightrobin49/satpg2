@@ -216,7 +216,7 @@ MinPatBase::run(TpgNetwork& network,
   for (ymuint i = 0; i < new_ng; ++ i) {
     ymuint gid = group_list[i];
     const NodeValList& suf_list = fgmgr.sufficient_assignment(gid);
-    {
+    if ( false ) {
       // suf_list が正しいか検証する．
       for (ymuint i = 0; i < fgmgr.fault_num(gid); ++ i) {
 	ymuint fid = fgmgr.fault_id(gid, i);
@@ -254,7 +254,7 @@ MinPatBase::run(TpgNetwork& network,
     TestVector* tv = tvmgr.new_vector();
     make_testvector(network, suf_list, tv);
     tv_list.push_back(tv);
-    {
+    if ( false ) {
       vector<const TpgFault*> fault_list;
       for (ymuint i = 0; i < fgmgr.fault_num(gid); ++ i) {
 	ymuint fid = fgmgr.fault_id(gid, i);
@@ -262,7 +262,6 @@ MinPatBase::run(TpgNetwork& network,
       }
       vector<TestVector*> tv_list(1, tv);
       Verifier ver;
-      cout << "Fault Group#" << gid << ": " << fgmgr.fault_num(gid) << " faults" << endl;
       if ( !ver.check(fsim2, fault_list, tv_list) ) {
 	cout << "ERROR in fault group#" << gid << endl;
       }
