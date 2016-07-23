@@ -8,7 +8,6 @@
 
 
 #include "BtSimple.h"
-#include "NodeSet.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG

@@ -8,7 +8,6 @@
 
 
 #include "BtJust2.h"
-#include "NodeSet.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG
