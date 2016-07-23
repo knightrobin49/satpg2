@@ -369,6 +369,11 @@ TpgLogicAND4::make_faulty_cnf(SatSolver& solver,
   case 2:
     pos0 = 0;
     pos1 = 1;
+    pos2 = 3;
+    break;
+  case 3:
+    pos0 = 0;
+    pos1 = 1;
     pos2 = 2;
     break;
   }

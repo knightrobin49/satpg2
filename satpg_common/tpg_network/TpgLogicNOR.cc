@@ -112,18 +112,11 @@ TpgLogicNOR2::make_faulty_cnf(SatSolver& solver,
 			      const LitMap& lit_map) const
 {
   ASSERT_COND( fval == 0 );
-  if ( fpos == 0 ) {
-    SatLiteral ilit1 = lit_map.input(1);
-    SatLiteral olit  = lit_map.output();
-    solver.add_clause(~ilit1, ~olit);
-    solver.add_clause( ilit1,  olit);
-  }
-  else {
-    SatLiteral ilit0 = lit_map.input(0);
-    SatLiteral olit  = lit_map.output();
-    solver.add_clause(~ilit0, ~olit);
-    solver.add_clause( ilit0,  olit);
-  }
+  ymuint pos = (fpos == 0) ? 1 : 0;
+  SatLiteral ilit0 = lit_map.input(pos);
+  SatLiteral olit  = lit_map.output();
+  solver.add_clause(~ilit0, ~olit);
+  solver.add_clause( ilit0,  olit);
 }
 
 
@@ -229,27 +222,28 @@ TpgLogicNOR3::make_faulty_cnf(SatSolver& solver,
 			      const LitMap& lit_map) const
 {
   ASSERT_COND( fval == 0 );
-  SatLiteral ilit0 = lit_map.input(0);
-  SatLiteral ilit1 = lit_map.input(1);
-  SatLiteral ilit2 = lit_map.input(2);
-  SatLiteral olit  = lit_map.output();
+  ymuint pos0;
+  ymuint pos1;
   switch ( fpos ) {
   case 0:
-    solver.add_clause(~ilit1,         ~olit);
-    solver.add_clause(~ilit2,         ~olit);
-    solver.add_clause( ilit1,  ilit2,  olit);
+    pos0 = 1;
+    pos1 = 2;
     break;
   case 1:
-    solver.add_clause(~ilit0,         ~olit);
-    solver.add_clause(~ilit2,         ~olit);
-    solver.add_clause( ilit0,  ilit2,  olit);
+    pos0 = 0;
+    pos1 = 2;
     break;
   case 2:
-    solver.add_clause(~ilit0,         ~olit);
-    solver.add_clause(~ilit1,         ~olit);
-    solver.add_clause( ilit0,  ilit1,  olit);
+    pos0 = 0;
+    pos1 = 1;
     break;
   }
+  SatLiteral ilit0 = lit_map.input(pos0);
+  SatLiteral ilit1 = lit_map.input(pos1);
+  SatLiteral olit  = lit_map.output();
+  solver.add_clause(~ilit0,         ~olit);
+  solver.add_clause(~ilit1,         ~olit);
+  solver.add_clause( ilit0,  ilit1,  olit);
 }
 
 
@@ -358,37 +352,39 @@ TpgLogicNOR4::make_faulty_cnf(SatSolver& solver,
 			      const LitMap& lit_map) const
 {
   ASSERT_COND( fval == 0 );
-  SatLiteral ilit0 = lit_map.input(0);
-  SatLiteral ilit1 = lit_map.input(1);
-  SatLiteral ilit2 = lit_map.input(2);
-  SatLiteral ilit3 = lit_map.input(3);
-  SatLiteral olit  = lit_map.output();
+  ymuint pos0;
+  ymuint pos1;
+  ymuint pos2;
   switch ( fpos ) {
   case 0:
-    solver.add_clause(~ilit1,                 ~olit);
-    solver.add_clause(~ilit2,                 ~olit);
-    solver.add_clause(~ilit3,                 ~olit);
-    solver.add_clause( ilit1,  ilit2,  ilit3,  olit);
+    pos0 = 1;
+    pos1 = 2;
+    pos2 = 3;
     break;
   case 1:
-    solver.add_clause(~ilit0,                 ~olit);
-    solver.add_clause(~ilit2,                 ~olit);
-    solver.add_clause(~ilit3,                 ~olit);
-    solver.add_clause( ilit0,  ilit2,  ilit3,  olit);
+    pos0 = 0;
+    pos1 = 2;
+    pos2 = 3;
     break;
   case 2:
-    solver.add_clause(~ilit0,                 ~olit);
-    solver.add_clause(~ilit1,                 ~olit);
-    solver.add_clause(~ilit3,                 ~olit);
-    solver.add_clause( ilit0,  ilit1,  ilit3,  olit);
+    pos0 = 0;
+    pos1 = 1;
+    pos2 = 3;
     break;
   case 3:
-    solver.add_clause(~ilit0,                 ~olit);
-    solver.add_clause(~ilit1,                 ~olit);
-    solver.add_clause(~ilit2,                 ~olit);
-    solver.add_clause( ilit0,  ilit1,  ilit2,  olit);
+    pos0 = 0;
+    pos1 = 1;
+    pos2 = 2;
     break;
   }
+  SatLiteral ilit0 = lit_map.input(pos0);
+  SatLiteral ilit1 = lit_map.input(pos1);
+  SatLiteral ilit2 = lit_map.input(pos2);
+  SatLiteral olit  = lit_map.output();
+  solver.add_clause(~ilit0,                 ~olit);
+  solver.add_clause(~ilit1,                 ~olit);
+  solver.add_clause(~ilit2,                 ~olit);
+  solver.add_clause( ilit0,  ilit1,  ilit2,  olit);
 }
 
 
