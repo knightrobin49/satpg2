@@ -23,7 +23,9 @@ BEGIN_NAMESPACE_YM_SATPG
 //////////////////////////////////////////////////////////////////////
 class FoCone
 {
-public:
+  friend class StructSat;
+
+private:
 
   /// @brief コンストラクタ
   /// @param[in] struct_sat StructSat ソルバ
