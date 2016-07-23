@@ -325,7 +325,7 @@ FgMgrBase::find_group2(ymuint fid0,
   gval_cnf0.add_assignments(ma_list0);
 
   FvalCnf fval_cnf0(gval_cnf0);
-  if ( true || !fi0.single_cube() ) {
+  if ( !fi0.single_cube() ) {
     // fault を検出する CNF を生成
     fval_cnf0.make_cnf(_fault(fid0), _node_set(fid0), kVal1);
   }
@@ -343,7 +343,7 @@ FgMgrBase::find_group2(ymuint fid0,
       vector<SatBool3> sat_model;
       if ( gval_cnf0.check_sat(suf_list1, sat_model) == kB3True ) {
 	FaultGroup* fg = _fault_group(gid);
-	if ( false && fi0.single_cube() ) {
+	if ( fi0.single_cube() ) {
 	  fg->add_fault(fid0, ma_list0, ma_list0);
 	  {
 	    GvalCnf gval_cnf(max_node_id(), string(), string(), nullptr);
