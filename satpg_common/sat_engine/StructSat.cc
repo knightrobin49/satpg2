@@ -275,7 +275,7 @@ StructSat::make_dchain_cnf(const TpgNode* node,
     // immediate dominator がある場合，immediate dominator の dlit も 1 でなければならない．
     const TpgNode* idom = node->imm_dom();
     if ( idom != nullptr ) {
-      SatLiteral odlit(dvar(idom));
+      SatLiteral odlit(dvar_map(idom));
       solver().add_clause(~dlit, odlit);
     }
   }
