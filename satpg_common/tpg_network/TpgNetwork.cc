@@ -18,7 +18,6 @@
 #include "ym/BnBlifReader.h"
 #include "ym/BnIscas89Reader.h"
 #include "ym/BnBuilder.h"
-//#include "ym/BnNode.h"
 #include "ym/Cell.h"
 #include "ym/Expr.h"
 

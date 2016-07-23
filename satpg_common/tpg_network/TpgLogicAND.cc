@@ -98,6 +98,27 @@ TpgLogicAND2::make_cnf(SatSolver& solver,
   solver.add_clause(~ilit0, ~ilit1,  olit);
 }
 
+// @brief 入出力の関係を表す CNF 式を生成する(故障あり)．
+// @param[in] solver SAT ソルバ
+// @param[in] fpos 故障のある入力位置
+// @param[in] fval 故障値 ( 0 / 1 )
+// @param[in] lit_map 入出力とリテラルの対応マップ
+//
+// こちらは入力に故障を仮定したバージョン
+void
+TpgLogicAND2::make_faulty_cnf(SatSolver& solver,
+			      ymuint fpos,
+			      int fval,
+			      const LitMap& lit_map) const
+{
+  ASSERT_COND( fval == 1 );
+  ymuint pos = (fpos == 0) ? 1 : 0;
+  SatLiteral ilit0 = lit_map.input(pos);
+  SatLiteral olit = lit_map.output();
+  solver.add_clause( ilit0, ~olit);
+  solver.add_clause(~ilit0,  olit);
+}
+
 
 //////////////////////////////////////////////////////////////////////
 // クラス TpgLogicAND3
@@ -185,6 +206,44 @@ TpgLogicAND3::make_cnf(SatSolver& solver,
   solver.add_clause( ilit1,                 ~olit);
   solver.add_clause( ilit2,                 ~olit);
   solver.add_clause(~ilit0, ~ilit1, ~ilit2,  olit);
+}
+
+// @brief 入出力の関係を表す CNF 式を生成する(故障あり)．
+// @param[in] solver SAT ソルバ
+// @param[in] fpos 故障のある入力位置
+// @param[in] fval 故障値 ( 0 / 1 )
+// @param[in] lit_map 入出力とリテラルの対応マップ
+//
+// こちらは入力に故障を仮定したバージョン
+void
+TpgLogicAND3::make_faulty_cnf(SatSolver& solver,
+			      ymuint fpos,
+			      int fval,
+			      const LitMap& lit_map) const
+{
+  ASSERT_COND( fval == 1 );
+  ymuint pos0;
+  ymuint pos1;
+  switch ( fpos ) {
+  case 0:
+    pos0 = 1;
+    pos1 = 2;
+    break;
+  case 1:
+    pos0 = 0;
+    pos1 = 2;
+    break;
+  case 2:
+    pos0 = 0;
+    pos1 = 1;
+    break;
+  }
+  SatLiteral ilit0 = lit_map.input(pos0);
+  SatLiteral ilit1 = lit_map.input(pos1);
+  SatLiteral olit  = lit_map.output();
+  solver.add_clause( ilit0,         ~olit);
+  solver.add_clause( ilit1,         ~olit);
+  solver.add_clause(~ilit0, ~ilit1,  olit);
 }
 
 
@@ -279,6 +338,50 @@ TpgLogicAND4::make_cnf(SatSolver& solver,
   solver.add_clause(~ilit0, ~ilit1, ~ilit2, ~ilit3,  olit);
 }
 
+// @brief 入出力の関係を表す CNF 式を生成する(故障あり)．
+// @param[in] solver SAT ソルバ
+// @param[in] fpos 故障のある入力位置
+// @param[in] fval 故障値 ( 0 / 1 )
+// @param[in] lit_map 入出力とリテラルの対応マップ
+//
+// こちらは入力に故障を仮定したバージョン
+void
+TpgLogicAND4::make_faulty_cnf(SatSolver& solver,
+			      ymuint fpos,
+			      int fval,
+			      const LitMap& lit_map) const
+{
+  ASSERT_COND( fval == 1 );
+  ymuint pos0;
+  ymuint pos1;
+  ymuint pos2;
+  switch ( fpos ) {
+  case 0:
+    pos0 = 1;
+    pos1 = 2;
+    pos2 = 3;
+    break;
+  case 1:
+    pos0 = 0;
+    pos1 = 2;
+    pos2 = 3;
+    break;
+  case 2:
+    pos0 = 0;
+    pos1 = 1;
+    pos2 = 2;
+    break;
+  }
+  SatLiteral ilit0 = lit_map.input(pos0);
+  SatLiteral ilit1 = lit_map.input(pos1);
+  SatLiteral ilit2 = lit_map.input(pos2);
+  SatLiteral olit  = lit_map.output();
+  solver.add_clause( ilit0,                 ~olit);
+  solver.add_clause( ilit1,                 ~olit);
+  solver.add_clause( ilit2,                 ~olit);
+  solver.add_clause(~ilit0, ~ilit1, ~ilit2,  olit);
+}
+
 
 //////////////////////////////////////////////////////////////////////
 // クラス TpgLogicANDN
@@ -369,6 +472,36 @@ TpgLogicANDN::make_cnf(SatSolver& solver,
     tmp_lits[i] = ~ilit;
   }
   tmp_lits[ni] = olit;
+  solver.add_clause(tmp_lits);
+}
+
+// @brief 入出力の関係を表す CNF 式を生成する(故障あり)．
+// @param[in] solver SAT ソルバ
+// @param[in] fpos 故障のある入力位置
+// @param[in] fval 故障値 ( 0 / 1 )
+// @param[in] lit_map 入出力とリテラルの対応マップ
+//
+// こちらは入力に故障を仮定したバージョン
+void
+TpgLogicANDN::make_faulty_cnf(SatSolver& solver,
+			      ymuint fpos,
+			      int fval,
+			      const LitMap& lit_map) const
+{
+  ASSERT_COND( fval == 1 );
+  SatLiteral olit  = lit_map.output();
+  ymuint ni = fanin_num();
+  vector<SatLiteral> tmp_lits;
+  tmp_lits.reserve(ni);
+  for (ymuint i = 0; i < ni; ++ i) {
+    if ( i == fpos ) {
+      continue;
+    }
+    SatLiteral ilit = lit_map.input(i);
+    solver.add_clause(ilit, ~olit);
+    tmp_lits.push_back(~ilit);
+  }
+  tmp_lits.push_back(olit);
   solver.add_clause(tmp_lits);
 }
 

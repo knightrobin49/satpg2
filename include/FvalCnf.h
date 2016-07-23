@@ -68,7 +68,7 @@ public:
   void
   set_fdvar(SatVarId fdvar);
 
-  /// @brief 故障回路のCNFを作る．
+  /// @brief 故障伝搬条件のCNFを作る．
   /// @param[in] src_node 故障位置のノード
   /// @param[in] node_set 故障に関係するノード集合
   /// @param[in] detect 検出条件
@@ -77,9 +77,9 @@ public:
   ///        = kVal1: 検出するCNFを作る．
   ///        = kValX: fd_var() で制御するCNFを作る．
   void
-  make_cnf(const TpgNode* src_node,
-	   const NodeSet& node_set,
-	   Val3 detect);
+  make_prop_cnf(const TpgNode* src_node,
+		const NodeSet& node_set,
+		Val3 detect);
 
   /// @brief 故障回路のCNFを作る．
   /// @param[in] fault 故障

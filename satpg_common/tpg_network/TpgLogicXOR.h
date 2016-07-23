@@ -88,6 +88,20 @@ public:
   make_cnf(SatSolver& solver,
 	   const LitMap& lit_map) const;
 
+  /// @brief 入出力の関係を表す CNF 式を生成する(故障あり)．
+  /// @param[in] solver SAT ソルバ
+  /// @param[in] fpos 故障のある入力位置
+  /// @param[in] fval 故障値 ( 0 / 1 )
+  /// @param[in] lit_map 入出力とリテラルの対応マップ
+  ///
+  /// こちらは入力に故障を仮定したバージョン
+  virtual
+  void
+  make_faulty_cnf(SatSolver& solver,
+		  ymuint fpos,
+		  int fval,
+		  const LitMap& lit_map) const;
+
 
 private:
   //////////////////////////////////////////////////////////////////////

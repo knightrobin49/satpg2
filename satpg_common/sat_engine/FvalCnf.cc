@@ -49,8 +49,11 @@ FvalCnf::get_suf_list(const vector<SatBool3>& sat_model,
 		      const NodeSet& node_set,
 		      NodeValList& suf_list)
 {
-  NodeValList dummy;
-  get_pi_suf_list(sat_model, fault, node_set, suf_list, dummy);
+  ModelValMap val_map(gvar_map(), fvar_map(), sat_model);
+
+  Extractor extractor(val_map);
+  extractor(fault, suf_list);
+  suf_list.sort();
 }
 
 // @brief 十分割当リストを求める．
@@ -77,7 +80,7 @@ FvalCnf::get_pi_suf_list(const vector<SatBool3>& sat_model,
   pi_suf_list.sort();
 }
 
-// @brief 故障回路のCNFを作る．
+// @brief 故障伝搬条件のCNFを作る．
 // @param[in] src_node 故障位置のノード
 // @param[in] node_set 故障に関係するノード集合
 // @param[in] detect 検出条件
@@ -86,9 +89,9 @@ FvalCnf::get_pi_suf_list(const vector<SatBool3>& sat_model,
 //        = kVal1: 検出するCNFを作る．
 //        = kValX: fd_var() で制御するCNFを作る．
 void
-FvalCnf::make_cnf(const TpgNode* src_node,
-		  const NodeSet& node_set,
-		  Val3 detect)
+FvalCnf::make_prop_cnf(const TpgNode* src_node,
+		       const NodeSet& node_set,
+		       Val3 detect)
 {
   gval_cnf().make_cnf(node_set);
 
@@ -215,31 +218,24 @@ FvalCnf::make_cnf(const TpgFault* fault,
 		  const NodeSet& node_set,
 		  Val3 detect)
 {
+  // 故障の伝搬条件を作る．
   const TpgNode* src_node = fault->tpg_onode();
-  make_cnf(src_node, node_set, detect);
+  make_prop_cnf(src_node, node_set, detect);
 
-  NodeValList assign_list;
-  gval_cnf().add_fault_condition(fault, assign_list);
-
-  if ( detect == kVal0 ) {
-    gval_cnf().add_negation(assign_list);
-  }
-  else if ( detect == kVal1 ) {
-    gval_cnf().add_assignments(assign_list);
+  if ( fault->is_branch_fault() ) {
+    // ブランチの故障の場合はちょっと面倒
+    // 故障のある入力を故障値に縮退した論理式を作る必要がある．
+    src_node->make_faulty_cnf(solver(), fault->tpg_pos(), fault->val(), VidLitMap(src_node, fvar_map()));
   }
   else {
-    SatLiteral fdlit(fd_var(), false);
-    ymuint n = assign_list.size();
-    vector<SatLiteral> tmp_lits(n + 1);
-    for (ymuint i = 0; i < n; ++ i) {
-      NodeVal nv = assign_list[i];
-      const TpgNode* node = nv.node();
-      bool val = nv.val();
-      SatLiteral clit(gvar(node), val);
-      solver().add_clause(~fdlit, clit);
-      tmp_lits[i] = ~clit;
+    // 出力の故障の場合は故障値をそのまま固定する．
+    SatLiteral flit(fvar(src_node));
+    if ( fault->val() == 0 ) {
+      solver().add_clause(~flit);
     }
-    tmp_lits[n] = fdlit;
+    else {
+      solver().add_clause(flit);
+    }
   }
 }
 

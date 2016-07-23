@@ -513,7 +513,7 @@ FaultAnalyzer::check_dominance(ymuint f1_id,
 
     // dom_node から出力までの故障伝搬条件を作る．
     FvalCnf fval_cnf0(gval_cnf);
-    fval_cnf0.make_cnf(dom_node, node_set0, kVal1);
+    fval_cnf0.make_prop_cnf(dom_node, node_set0, kVal1);
 
     fval_cnf0.add_diff_clause(dom_node);
 
