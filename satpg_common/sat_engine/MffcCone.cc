@@ -146,10 +146,8 @@ MffcCone::MffcCone(StructSat& struct_sat,
   }
   solver().add_clause(tmp_lits);
 
-  for (const TpgNode* node = fnode; node != nullptr && node != nullptr; node = node->imm_dom()) {
-    SatLiteral dlit(dvar(node));
-    solver().add_clause(dlit);
-  }
+  SatLiteral dlit(dvar(fnode));
+  solver().add_clause(dlit);
 }
 
 // @brief デストラクタ

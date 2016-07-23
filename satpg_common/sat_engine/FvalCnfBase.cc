@@ -84,6 +84,13 @@ FvalCnfBase::make_dchain_cnf(const TpgNode* node,
       tmp_lits.push_back(odlit);
     }
     mSolver.add_clause(tmp_lits);
+
+    // immediate dominator がある場合，immediate dominator の dlit も 1 でなければならない．
+    const TpgNode* idom = node->imm_dom();
+    if ( idom != nullptr ) {
+      SatLiteral odlit(dvar(idom));
+      mSolver.add_clause(~dlit, odlit);
+    }
   }
 }
 

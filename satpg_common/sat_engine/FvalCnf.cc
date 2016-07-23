@@ -3,7 +3,7 @@
 /// @brief FvalCnf の実装ファイル
 /// @author Yusuke Matsunaga (松永 裕介)
 ///
-/// Copyright (C) 2015 Yusuke Matsunaga
+/// Copyright (C) 2015, 2016 Yusuke Matsunaga
 /// All rights reserved.
 
 
@@ -97,6 +97,7 @@ FvalCnf::make_prop_cnf(const TpgNode* src_node,
 
   const TpgNode* dom_node = node_set.dom_node();
 
+  // fault cone に属する部分のノードに対応する変数を用意する．
   ymuint n = node_set.tfo_size();
   for (ymuint i = 0; i < n; ++ i) {
     const TpgNode* node = node_set.tfo_tfi_node(i);
@@ -108,6 +109,7 @@ FvalCnf::make_prop_cnf(const TpgNode* src_node,
       cout << "fvar(" << node->name() << ") = " << fvar << endl;
     }
   }
+  // それ以外の部分のノードに対応する fvar は gvar を使う．
   ymuint n0 = node_set.tfo_tfi_size();
   for (ymuint i = n; i < n0; ++ i) {
     const TpgNode* node = node_set.tfo_tfi_node(i);
@@ -118,11 +120,11 @@ FvalCnf::make_prop_cnf(const TpgNode* src_node,
     }
   }
 
+  // 故障回路のゲートの入出力関係を表すCNFを作る．
   for (ymuint i = 0; i < n; ++ i) {
     const TpgNode* node = node_set.tfo_tfi_node(i);
 
     if ( node != src_node ) {
-      // 故障回路のゲートの入出力関係を表すCNFを作る．
       node->make_cnf(solver(), VidLitMap(node, fvar_map()));
     }
 
@@ -134,54 +136,70 @@ FvalCnf::make_prop_cnf(const TpgNode* src_node,
   ymuint npo = output_list.size();
 
   if ( detect == kVal0 ) {
-    for (ymuint i = 0; i < npo; ++ i) {
-      const TpgNode* node = output_list[i];
-      SatLiteral dlit(dvar(node));
-      solver().add_clause(~dlit);
+    // 故障を検出しない条件
+    if ( dom_node == nullptr ) {
+      // 全ての出力の dlit が 0
+      for (ymuint i = 0; i < npo; ++ i) {
+	const TpgNode* node = output_list[i];
+	SatLiteral dlit(dvar(node));
+	solver().add_clause(~dlit);
+      }
     }
-    if ( dom_node != nullptr ) {
+    else {
+      // dominator の dlit が 0
       SatLiteral dlit(dvar(dom_node));
       solver().add_clause(~dlit);
     }
+    // src_node の dlit が 0
+    SatLiteral dlit(dvar(src_node));
+    solver().add_clause(~dlit);
   }
   else if ( detect == kVal1 ) {
-    vector<SatLiteral> tmp_lits;
-    tmp_lits.reserve(npo + 1);
-    for (ymuint i = 0; i < npo; ++ i) {
-      const TpgNode* node = output_list[i];
-      SatLiteral dlit(dvar(node));
-      tmp_lits.push_back(dlit);
+    // 故障を検出する条件
+    if ( dom_node == nullptr ) {
+      // 出力の最低1つの dlit が 1
+      vector<SatLiteral> tmp_lits(npo);
+      for (ymuint i = 0; i < npo; ++ i) {
+	const TpgNode* node = output_list[i];
+	SatLiteral dlit(dvar(node));
+	tmp_lits[i] = dlit;
+      }
+      solver().add_clause(tmp_lits);
     }
-    if ( dom_node != nullptr ) {
+    else {
+      // dominator の dlit が 1
       SatLiteral dlit(dvar(dom_node));
-      tmp_lits.push_back(dlit);
-    }
-    solver().add_clause(tmp_lits);
-
-    for (const TpgNode* node = src_node; node != nullptr && node != dom_node; node = node->imm_dom()) {
-      SatLiteral dlit(dvar(node));
       solver().add_clause(dlit);
     }
+    // src_node の dlit が 1
+    SatLiteral dlit(dvar(src_node));
+    solver().add_clause(dlit);
   }
   else {
+    // 変数に応じて検出かどうかをコントロールする．
     SatVarId fdvar = solver().new_var();
     set_fdvar(fdvar);
-    vector<SatLiteral> tmp_lits;
-    tmp_lits.reserve(npo + 1);
     SatLiteral fdlit(fdvar);
-    for (ymuint i = 0; i < npo; ++ i) {
-      const TpgNode* node = output_list[i];
-      SatLiteral dlit(dvar(node));
-      tmp_lits.push_back(dlit);
-      solver().add_clause(fdlit, ~dlit);
+    if ( dom_node == nullptr ) {
+      vector<SatLiteral> tmp_lits;
+      tmp_lits.reserve(npo + 1);
+      for (ymuint i = 0; i < npo; ++ i) {
+	const TpgNode* node = output_list[i];
+	SatLiteral dlit(dvar(node));
+	tmp_lits.push_back(dlit);
+	solver().add_clause(fdlit, ~dlit);
+      }
+      tmp_lits.push_back(~fdlit);
+      solver().add_clause(tmp_lits);
     }
-    tmp_lits.push_back(~fdlit);
-    solver().add_clause(tmp_lits);
-
-    for (const TpgNode* node = src_node; node != nullptr && node != dom_node; node = node->imm_dom()) {
-      SatLiteral dlit(dvar(node));
-      solver().add_clause(~fdlit, dlit);
+    else {
+      SatLiteral dlit(dvar(dom_node));
+      solver().add_clause(~fdlit,  dlit);
+      solver().add_clause( fdlit, ~dlit);
     }
+    SatLiteral dlit(dvar(src_node));
+    solver().add_clause(~fdlit,  dlit);
+    solver().add_clause( fdlit, ~dlit);
   }
 }
 
