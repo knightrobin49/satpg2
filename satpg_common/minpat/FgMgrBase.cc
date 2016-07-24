@@ -17,6 +17,8 @@
 
 BEGIN_NAMESPACE_YM_SATPG
 
+bool verify_add_fault = false;
+
 //////////////////////////////////////////////////////////////////////
 // クラス FgMgr
 //////////////////////////////////////////////////////////////////////
@@ -345,37 +347,33 @@ FgMgrBase::find_group2(ymuint fid0,
 	FaultGroup* fg = _fault_group(gid);
 	if ( fi0.single_cube() ) {
 	  fg->add_fault(fid0, ma_list0, ma_list0);
-	  {
+	  if ( verify_add_fault ) {
 	    GvalCnf gval_cnf(max_node_id(), string(), string(), nullptr);
 	    // mSufList 単独で充足可能か調べておく．
 	    if ( gval_cnf.check_sat(fg->sufficient_assignment()) != kB3True ) {
 	      cout << "Error in FaultGroup::add_fault(1)" << endl
 		   << "  mSufList inconsistent" << endl;
 	    }
+	    if ( !check_sufficient_assignment(gid) ) {
+	      cout << "Error in sufficient_assignment at add_fault(1)" << endl;
+	    }
 	  }
-#if 0
-	  if ( !check_sufficient_assignment(gid) ) {
-	    cout << "Error in sufficient_assignment at add_fault(1)" << endl;
-	  }
-#endif
 	}
 	else {
 	  NodeValList suf_list;
 	  fval_cnf0.get_suf_list(sat_model, _fault(fid0), suf_list);
 	  fg->add_fault(fid0, suf_list, ma_list0);
-	  {
+	  if ( verify_add_fault) {
 	    GvalCnf gval_cnf(max_node_id(), string(), string(), nullptr);
 	    // mSufList 単独で充足可能か調べておく．
 	    if ( gval_cnf.check_sat(fg->sufficient_assignment()) != kB3True ) {
 	      cout << "Error in FaultGroup::add_fault(2)" << endl
 		   << "  mSufList inconsistent" << endl;
 	    }
+	    if ( !check_sufficient_assignment(gid) ) {
+	      cout << "Error in sufficient_assignment at add_fault(2)" << endl;
+	    }
 	  }
-#if 0
-	  if ( !check_sufficient_assignment(gid) ) {
-	    cout << "Error in sufficient_assignment at add_fault(2)" << endl;
-	  }
-#endif
 	}
 	ans_gid = gid;
 	break;
@@ -448,53 +446,47 @@ FgMgrBase::find_group2(ymuint fid0,
 
       fg->update();
 
-      {
+      if ( verify_add_fault ) {
 	GvalCnf gval_cnf(max_node_id(), string(), string(), nullptr);
 	// mSufList 単独で充足可能か調べておく．
 	if ( gval_cnf.check_sat(fg->sufficient_assignment()) != kB3True ) {
 	  cout << "Error in FaultGroup::update()" << endl
 	       << "  mSufList inconsistent" << endl;
 	}
+	if ( !check_sufficient_assignment(gid) ) {
+	  cout << "Error in sufficient_assignment at updatet()" << endl;
+	}
       }
-#if 0
-      if ( !check_sufficient_assignment(gid) ) {
-	cout << "Error in sufficient_assignment at updatet()" << endl;
-      }
-#endif
 
       if ( fi0.single_cube() ) {
 	fg->add_fault(fid0, ma_list0, ma_list0);
-	{
+	if ( verify_add_fault ) {
 	  GvalCnf gval_cnf(max_node_id(), string(), string(), nullptr);
 	  // mSufList 単独で充足可能か調べておく．
 	  if ( gval_cnf.check_sat(fg->sufficient_assignment()) != kB3True ) {
 	    cout << "Error in FaultGroup::add_fault(3)" << endl
 		 << "  mSufList inconsistent" << endl;
 	  }
+	  if ( !check_sufficient_assignment(gid) ) {
+	    cout << "Error in sufficient_assignment at add_fault(3)" << endl;
+	  }
 	}
-#if 0
-	if ( !check_sufficient_assignment(gid) ) {
-	  cout << "Error in sufficient_assignment at add_fault(3)" << endl;
-	}
-#endif
       }
       else {
 	NodeValList suf_list;
 	fval_cnf0.get_suf_list(sat_model, _fault(fid0), suf_list);
 	fg->add_fault(fid0, suf_list, ma_list0);
-	{
+	if ( verify_add_fault ) {
 	  GvalCnf gval_cnf(max_node_id(), string(), string(), nullptr);
 	  // mSufList 単独で充足可能か調べておく．
 	  if ( gval_cnf.check_sat(fg->sufficient_assignment()) != kB3True ) {
 	    cout << "Error in FaultGroup::add_fault(4)" << endl
 		 << "  mSufList inconsistent" << endl;
 	  }
+	  if ( !check_sufficient_assignment(gid) ) {
+	    cout << "Error in sufficient_assignment at add_fault(4)" << endl;
+	  }
 	}
-#if 0
-	if ( !check_sufficient_assignment(gid) ) {
-	  cout << "Error in sufficient_assignment at add_fault(4)" << endl;
-	}
-#endif
       }
       ans_gid = gid;
       break;
