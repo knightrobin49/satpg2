@@ -41,12 +41,10 @@ FvalCnf::~FvalCnf()
 // @brief 十分割当リストを求める．
 // @param[in] sat_model SAT問題の解
 // @param[in] fault 故障
-// @param[in] node_set 故障に関連するノード集合
 // @param[out] suf_list 十分割当リストを格納する変数
 void
 FvalCnf::get_suf_list(const vector<SatBool3>& sat_model,
 		      const TpgFault* fault,
-		      const NodeSet& node_set,
 		      NodeValList& suf_list)
 {
   ModelValMap val_map(gvar_map(), fvar_map(), sat_model);
@@ -59,13 +57,13 @@ FvalCnf::get_suf_list(const vector<SatBool3>& sat_model,
 // @brief 十分割当リストを求める．
 // @param[in] sat_model SAT問題の解
 // @param[in] fault 故障
-// @param[in] node_set 故障に関連するノード集合
+// @param[in] po_list 故障に関連する外部出力のリスト
 // @param[out] suf_list 十分割当リストを格納する変数
 // @param[out] pi_suf_list 外部入力上の十分割当リストを格納する変数
 void
 FvalCnf::get_pi_suf_list(const vector<SatBool3>& sat_model,
 			 const TpgFault* fault,
-			 const NodeSet& node_set,
+			 const vector<const TpgNode*>& po_list,
 			 NodeValList& suf_list,
 			 NodeValList& pi_suf_list)
 {
@@ -76,7 +74,7 @@ FvalCnf::get_pi_suf_list(const vector<SatBool3>& sat_model,
   suf_list.sort();
 
   BackTracer backtracer(max_node_id());
-  backtracer(fault->tpg_onode(), node_set.output_list(), val_map, pi_suf_list);
+  backtracer(fault->tpg_onode(), po_list, val_map, pi_suf_list);
   pi_suf_list.sort();
 }
 

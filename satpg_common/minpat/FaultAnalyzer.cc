@@ -271,7 +271,7 @@ FaultAnalyzer::analyze_fault(const TpgFault* fault,
     // 割当結果から十分割当を求める．
     NodeValList& suf_list = fi.mSufficientAssignment;
     NodeValList& pi_suf_list = fi.mPiSufficientAssignment;
-    fval_cnf.get_pi_suf_list(sat_model, fault, node_set(f_id), suf_list, pi_suf_list);
+    fval_cnf.get_pi_suf_list(sat_model, fault, node_set(f_id).output_list(), suf_list, pi_suf_list);
 
     // テストベクタを作る．
     TestVector* tv = tvmgr.new_vector();

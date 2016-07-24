@@ -361,7 +361,7 @@ FgMgrBase::find_group2(ymuint fid0,
 	}
 	else {
 	  NodeValList suf_list;
-	  fval_cnf0.get_suf_list(sat_model, _fault(fid0), _node_set(fid0), suf_list);
+	  fval_cnf0.get_suf_list(sat_model, _fault(fid0), suf_list);
 	  fg->add_fault(fid0, suf_list, ma_list0);
 	  {
 	    GvalCnf gval_cnf(max_node_id(), string(), string(), nullptr);
@@ -441,7 +441,7 @@ FgMgrBase::find_group2(ymuint fid0,
 	const FaultInfo& fi1 = _fault_info(fid1);
 	if ( !fi1.single_cube() ) {
 	  NodeValList suf_list;
-	  fval_cnf_array[i].get_suf_list(sat_model, _fault(fid1), _node_set(fid1), suf_list);
+	  fval_cnf_array[i].get_suf_list(sat_model, _fault(fid1), suf_list);
 	  fg->set_suf_list(i, suf_list);
 	}
       }
@@ -480,7 +480,7 @@ FgMgrBase::find_group2(ymuint fid0,
       }
       else {
 	NodeValList suf_list;
-	fval_cnf0.get_suf_list(sat_model, _fault(fid0), _node_set(fid0), suf_list);
+	fval_cnf0.get_suf_list(sat_model, _fault(fid0), suf_list);
 	fg->add_fault(fid0, suf_list, ma_list0);
 	{
 	  GvalCnf gval_cnf(max_node_id(), string(), string(), nullptr);
