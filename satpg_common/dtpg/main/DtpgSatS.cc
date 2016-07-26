@@ -94,21 +94,14 @@ DtpgSatS::run(TpgNetwork& network,
       }
 
       // 故障に対するテスト生成を行なう．
-
       cnf_begin();
 
       StructSat struct_sat(max_id);
-      FoCone* focone = struct_sat.add_focone(node, kVal1);
+      FoCone* focone = struct_sat.add_focone(fault, kVal1);
 
       cnf_end();
 
-      NodeValList assignment;
-      struct_sat.add_fault_condition(fault, assignment);
-
-      vector<SatLiteral> assumptions;
-      struct_sat.conv_to_assumption(assignment, assumptions);
-
-      solve(struct_sat.solver(), assumptions, fault, node, focone->output_list(),
+      solve(struct_sat.solver(), vector<SatLiteral>(), fault, node, focone->output_list(),
 	    focone->gvar_map(), focone->fvar_map());
     }
   }

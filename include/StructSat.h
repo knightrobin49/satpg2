@@ -77,6 +77,13 @@ public:
 	     Val3 detect);
 
   /// @brief fault cone を追加する．
+  /// @param[in] fault 故障
+  /// @param[in] detect 検出条件
+  FoCone*
+  add_focone(const TpgFault* fault,
+	     Val3 detect);
+
+  /// @brief fault cone を追加する．
   /// @param[in] fnode 故障のあるノード
   ///
   /// こちらは MFFC 内の故障を対象にする．
