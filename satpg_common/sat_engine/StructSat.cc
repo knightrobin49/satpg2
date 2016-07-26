@@ -71,8 +71,31 @@ FoCone*
 StructSat::add_focone(const TpgFault* fault,
 		      Val3 detect)
 {
-  FoCone* focone = new FoCone(*this, fault, detect);
+  const TpgNode* fnode = fault->tpg_onode();
+  FoCone* focone = new FoCone(*this, fnode, detect);
   mFoConeList.push_back(focone);
+
+  if ( detect == kVal1 ) {
+    NodeValList assignment;
+    add_fault_condition(fault, assignment);
+    add_assignments(assignment);
+  }
+  else {
+    int fval = fault->val();
+    if ( fault->is_branch_fault() ) {
+      ymuint pos = fault->tpg_pos();
+      fnode->make_faulty_cnf(solver(), pos, fval, VidLitMap(fnode, focone->fvar_map()));
+    }
+    else {
+      SatLiteral flit(focone->fvar(fnode));
+      if ( fval == 0 ) {
+	solver().add_clause(~flit);
+      }
+      else {
+	solver().add_clause(flit);
+      }
+    }
+  }
   return focone;
 }
 

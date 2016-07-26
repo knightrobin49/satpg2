@@ -46,53 +46,6 @@ FoCone::FoCone(StructSat& struct_sat,
   mFvarMap(max_id()),
   mDvarMap(max_id())
 {
-  set(fnode, detect);
-}
-
-// @brief コンストラクタ
-// @param[in] struct_sat StructSat ソルバ
-// @param[in] fault 故障
-// @param[in] detect 検出条件
-FoCone::FoCone(StructSat& struct_sat,
-	       const TpgFault* fault,
-	       Val3 detect) :
-  mStructSat(struct_sat),
-  mMaxNodeId(struct_sat.max_node_id()),
-  mMarkArray(max_id()),
-  mFvarMap(max_id()),
-  mDvarMap(max_id())
-{
-  const TpgNode* fnode = fault->tpg_onode();
-  set(fnode, detect);
-
-  int fval = fault->val();
-  if ( fault->is_branch_fault() ) {
-    ymuint pos = fault->tpg_pos();
-    fnode->make_faulty_cnf(solver(), pos, fval, VidLitMap(fnode, fvar_map()));
-  }
-  else {
-    SatLiteral flit(fvar(fnode));
-    if ( fval == 0 ) {
-      solver().add_clause(~flit);
-    }
-    else {
-      solver().add_clause(flit);
-    }
-  }
-}
-
-// @brief デストラクタ
-FoCone::~FoCone()
-{
-}
-
-// @brief fnode のファンアウトコーンの情報をセットする．
-// @param[in] fnode 故障位置のノード
-// @param[in] detect 検出条件
-void
-FoCone::set(const TpgNode* fnode,
-	    Val3 detect)
-{
   mNodeList.reserve(max_id());
 
   // 故障のあるノードの TFO を mNodeList に入れる．
@@ -182,6 +135,11 @@ FoCone::set(const TpgNode* fnode,
     SatLiteral dlit(dvar(fnode));
     solver().add_clause(dlit);
   }
+}
+
+// @brief デストラクタ
+FoCone::~FoCone()
+{
 }
 
 END_NAMESPACE_YM_SATPG

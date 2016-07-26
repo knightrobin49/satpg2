@@ -35,14 +35,6 @@ private:
 	 const TpgNode* fnode,
 	 Val3 detect);
 
-  /// @brief コンストラクタ
-  /// @param[in] struct_sat StructSat ソルバ
-  /// @param[in] fault 故障
-  /// @param[in] detect 検出条件
-  FoCone(StructSat& struct_sat,
-	 const TpgFault* fault,
-	 Val3 detect);
-
   /// @brief デストラクタ
   ~FoCone();
 
@@ -89,13 +81,6 @@ private:
   //////////////////////////////////////////////////////////////////////
   // 内部で用いられる下請け関数
   //////////////////////////////////////////////////////////////////////
-
-  /// @brief fnode のファンアウトコーンの情報をセットする．
-  /// @param[in] fnode 故障位置のノード
-  /// @param[in] detect 検出条件
-  void
-  set(const TpgNode* fnode,
-      Val3 detect);
 
   /// @brief ノードに故障値用の変数番号を割り当てる．
   /// @param[in] node ノード
