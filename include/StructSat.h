@@ -72,14 +72,14 @@ public:
   /// @brief fault cone を追加する．
   /// @param[in] fnode 故障のあるノード
   /// @param[in] detect 検出条件
-  FoCone*
+  const FoCone*
   add_focone(const TpgNode* fnode,
 	     Val3 detect);
 
   /// @brief fault cone を追加する．
   /// @param[in] fault 故障
   /// @param[in] detect 検出条件
-  FoCone*
+  const FoCone*
   add_focone(const TpgFault* fault,
 	     Val3 detect);
 
@@ -87,7 +87,7 @@ public:
   /// @param[in] fnode 故障のあるノード
   ///
   /// こちらは MFFC 内の故障を対象にする．
-  MffcCone*
+  const MffcCone*
   add_mffccone(const TpgNode* fnode);
 
   /// @brief 故障の検出条件を割当リストに追加する．

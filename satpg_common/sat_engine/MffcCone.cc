@@ -160,7 +160,7 @@ MffcCone::~MffcCone()
 // @param[out] assumptions 結果の割り当てを追加するベクタ
 void
 MffcCone::select_fault_node(ymuint pos,
-			    vector<SatLiteral>& assumptions)
+			    vector<SatLiteral>& assumptions) const
 {
   ASSERT_COND( pos < mElemList.size() );
 

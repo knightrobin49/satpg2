@@ -131,7 +131,7 @@ DtpgSatH::run(TpgNetwork& network,
       cnf_begin();
 
       StructSat struct_sat(max_id);
-      FoCone* focone = struct_sat.add_focone(node, kVal1);
+      const FoCone* focone = struct_sat.add_focone(node, kVal1);
 
       cnf_end();
 
@@ -171,7 +171,7 @@ DtpgSatH::run(TpgNetwork& network,
       cnf_begin();
 
       StructSat struct_sat(max_id);
-      MffcCone* mffc_cone = struct_sat.add_mffccone(node);
+      const MffcCone* mffc_cone = struct_sat.add_mffccone(node);
 
       cnf_end();
 

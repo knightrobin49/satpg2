@@ -55,7 +55,7 @@ StructSat::~StructSat()
 // @brief fault cone を追加する．
 // @param[in] fnode 故障のあるノード
 // @param[in] detect 検出条件
-FoCone*
+const FoCone*
 StructSat::add_focone(const TpgNode* fnode,
 		      Val3 detect)
 {
@@ -67,7 +67,7 @@ StructSat::add_focone(const TpgNode* fnode,
 // @brief fault cone を追加する．
 // @param[in] fault 故障
 // @param[in] detect 検出条件
-FoCone*
+const FoCone*
 StructSat::add_focone(const TpgFault* fault,
 		      Val3 detect)
 {
@@ -103,7 +103,7 @@ StructSat::add_focone(const TpgFault* fault,
 // @param[in] fnode 故障のあるノード
 //
 // こちらは MFFC 内の故障を対象にする．
-MffcCone*
+const MffcCone*
 StructSat::add_mffccone(const TpgNode* fnode)
 {
   MffcCone* mffc_cone = new MffcCone(*this, fnode);

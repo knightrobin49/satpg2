@@ -98,7 +98,7 @@ public:
   /// @param[out] assumptions 結果の割り当てを追加するベクタ
   void
   select_fault_node(ymuint pos,
-		    vector<SatLiteral>& assumptions);
+		    vector<SatLiteral>& assumptions) const;
 
 
 private:
