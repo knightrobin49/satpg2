@@ -100,13 +100,17 @@ FvalCnf::make_prop_cnf(const TpgNode* src_node,
   for (ymuint i = 0; i < n; ++ i) {
     const TpgNode* node = node_set.tfo_tfi_node(i);
     SatVarId fvar = solver().new_var();
-    SatVarId dvar = solver().new_var();
     set_fvar(node, fvar);
-    set_dvar(node, dvar);
     if ( debug() ) {
       cout << "fvar(" << node->name() << ") = " << fvar << endl;
     }
+
+    if ( detect == kVal1 ) {
+      SatVarId dvar = solver().new_var();
+      set_dvar(node, dvar);
+    }
   }
+
   // それ以外の部分のノードに対応する fvar は gvar を使う．
   ymuint n0 = node_set.tfo_tfi_size();
   for (ymuint i = n; i < n0; ++ i) {
@@ -125,9 +129,6 @@ FvalCnf::make_prop_cnf(const TpgNode* src_node,
     if ( node != src_node ) {
       node->make_cnf(solver(), VidLitMap(node, fvar_map()));
     }
-
-    // D-Chain 制約を作る．
-    make_dchain_cnf(node, dom_node);
   }
 
   const vector<const TpgNode*>& output_list = node_set.output_list();
@@ -139,21 +140,28 @@ FvalCnf::make_prop_cnf(const TpgNode* src_node,
       // 全ての出力の dlit が 0
       for (ymuint i = 0; i < npo; ++ i) {
 	const TpgNode* node = output_list[i];
-	SatLiteral dlit(dvar(node));
-	solver().add_clause(~dlit);
+	SatLiteral glit(gvar(node), false);
+	SatLiteral flit(fvar(node), false);
+	solver().add_clause(~glit,  flit);
+	solver().add_clause( glit, ~flit);
       }
     }
     else {
       // dominator の dlit が 0
-      SatLiteral dlit(dvar(dom_node));
-      solver().add_clause(~dlit);
+      SatLiteral glit(gvar(dom_node), false);
+      SatLiteral flit(fvar(dom_node), false);
+      solver().add_clause(~glit,  flit);
+      solver().add_clause( glit, ~flit);
     }
-    // src_node の dlit が 0
-    SatLiteral dlit(dvar(src_node));
-    solver().add_clause(~dlit);
   }
   else if ( detect == kVal1 ) {
     // 故障を検出する条件
+    for (ymuint i = 0; i < n; ++ i) {
+      const TpgNode* node = node_set.tfo_tfi_node(i);
+
+      // D-Chain 制約を作る．
+      make_dchain_cnf(node, dom_node);
+    }
     if ( dom_node == nullptr ) {
       // 出力の最低1つの dlit が 1
       vector<SatLiteral> tmp_lits(npo);
