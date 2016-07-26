@@ -225,7 +225,10 @@ MinPatBase::run(TpgNetwork& network,
 	gval_cnf.add_assignments(suf_list);
 	FvalCnf fval_cnf(gval_cnf);
 	// fid を検出しない条件を追加
-	fval_cnf.make_cnf(mAnalyzer.fault_info(fid).fault(), mAnalyzer.node_set(fid), kVal0);
+	const TpgFault* f = mAnalyzer.fault_info(fid).fault();
+	NodeSet node_set;
+	node_set.mark_region(mMaxNodeId, f->tpg_onode());
+	fval_cnf.make_cnf(f, node_set, kVal0);
 	vector<SatBool3> sat_model;
 	// 十分条件が正しければこの SAT 問題は充足不能のはず．
 	if ( gval_cnf.check_sat(sat_model) != kB3False ) {
@@ -241,7 +244,10 @@ MinPatBase::run(TpgNetwork& network,
 	  gval_cnf.add_assignments(suf_list);
 	  FvalCnf fval_cnf(gval_cnf);
 	  // fid1 を検出しない条件を追加
-	  fval_cnf.make_cnf(mAnalyzer.fault_info(fid1).fault(), mAnalyzer.node_set(fid1), kVal0);
+	  const TpgFault* f1 = mAnalyzer.fault_info(fid1).fault();
+	  NodeSet node_set1;
+	  node_set1.mark_region(mMaxNodeId, f1->tpg_onode());
+	  fval_cnf.make_cnf(f1, node_set1, kVal0);
 	  vector<SatBool3> sat_model;
 	  // 十分条件が正しければこの SAT 問題は充足不能のはず．
 	  if ( gval_cnf.check_sat(sat_model) != kB3False ) {
@@ -378,12 +384,7 @@ MinPatBase::make_testvector(TpgNetwork& network,
   }
 
   vector<SatBool3> sat_model;
-#if 0
   SatBool3 sat_ans = gval_cnf.check_sat(suf_list, sat_model);
-#else
-  gval_cnf.add_assignments(suf_list);
-  SatBool3 sat_ans = gval_cnf.check_sat(sat_model);
-#endif
   ASSERT_COND ( sat_ans == kB3True );
 
   const VidMap& var_map = gval_cnf.var_map();

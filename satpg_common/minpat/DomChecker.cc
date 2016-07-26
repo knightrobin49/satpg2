@@ -514,7 +514,9 @@ DomChecker::get_dom_faults1(const vector<ymuint>& src_list,
 
     // f1 を検出しない CNF を作成
     FvalCnf fval_cnf(gval_cnf);
-    fval_cnf.make_cnf(f1, mAnalyzer.node_set(f1_id), kVal0);
+    NodeSet node_set1;
+    node_set1.mark_region(mMaxNodeId, f1->tpg_onode());
+    fval_cnf.make_cnf(f1, node_set1, kVal0);
 
     for (ymuint i2 = 0; i2 < cand_list.size(); ++ i2) {
       ymuint f2_id = cand_list[i2];

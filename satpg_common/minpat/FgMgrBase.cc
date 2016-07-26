@@ -157,7 +157,9 @@ FgMgrBase::find_dom_group(ymuint fid,
   FvalCnf fval_cnf(gval_cnf);
 
   // fault が見つからない条件を作る．
-  fval_cnf.make_cnf(_fault(fid), _node_set(fid), kVal0);
+  NodeSet node_set;
+  node_set.mark_region(max_node_id(), _fault(fid)->tpg_onode());
+  fval_cnf.make_cnf(_fault(fid), node_set, kVal0);
 
   ymuint first_gid = group_num();
   for (ymuint i = 0; i < group_list.size(); ++ i) {
@@ -209,8 +211,11 @@ FgMgrBase::find_group(ymuint fid0,
 
   if ( !fi0.single_cube() ) {
     // fault を検出する CNF を生成
+    const TpgFault* f0 = _fault(fid0);
     FvalCnf fval_cnf0(gval_cnf0);
-    fval_cnf0.make_cnf(_fault(fid0), _node_set(fid0), kVal1);
+    NodeSet node_set0;
+    node_set0.mark_region(max_node_id(), f0->tpg_onode());
+    fval_cnf0.make_cnf(f0, node_set0, kVal1);
   }
 
   for (ymuint i = 0; i < group_list.size(); ++ i) {
@@ -259,8 +264,11 @@ FgMgrBase::find_group(ymuint fid0,
 
     if ( !fi0.single_cube() ) {
       // fid0 を検出する条件を追加
+      const TpgFault* f0 = fi0.fault();
       FvalCnf fval_cnf0(gval_cnf);
-      fval_cnf0.make_cnf(_fault(fid0), _node_set(fid0), kVal1);
+      NodeSet node_set0;
+      node_set0.mark_region(max_node_id(), f0->tpg_onode());
+      fval_cnf0.make_cnf(f0, node_set0, kVal1);
       ++ fnum;
     }
 
@@ -270,8 +278,11 @@ FgMgrBase::find_group(ymuint fid0,
       const FaultInfo& fi1 = _fault_info(fid1);
       if ( !fi1.single_cube() ) {
 	// fid1 の検出条件を生成
+	const TpgFault* f1 = fi1.fault();
 	FvalCnf fval_cnf1(gval_cnf);
-	fval_cnf1.make_cnf(_fault(fid1), _node_set(fid1), kVal1);
+	NodeSet node_set1;
+	node_set1.mark_region(max_node_id(), f1->tpg_onode());
+	fval_cnf1.make_cnf(f1, node_set1, kVal1);
 	++ fnum;
       }
     }
@@ -328,8 +339,11 @@ FgMgrBase::find_group2(ymuint fid0,
 
   FvalCnf fval_cnf0(gval_cnf0);
   if ( !fi0.single_cube() ) {
-    // fault を検出する CNF を生成
-    fval_cnf0.make_cnf(_fault(fid0), _node_set(fid0), kVal1);
+    // f0 を検出する CNF を生成
+    const TpgFault* f0 = fi0.fault();
+    NodeSet node_set0;
+    node_set0.mark_region(max_node_id(), f0->tpg_onode());
+    fval_cnf0.make_cnf(f0, node_set0, kVal1);
   }
 
   ymuint ans_gid = group_num();
@@ -406,7 +420,10 @@ FgMgrBase::find_group2(ymuint fid0,
     FvalCnf fval_cnf0(gval_cnf);
     if ( !fi0.single_cube() ) {
       // fid0 を検出する条件を追加
-      fval_cnf0.make_cnf(_fault(fid0), _node_set(fid0), kVal1);
+      const TpgFault* f0 = fi0.fault();
+      NodeSet node_set0;
+      node_set0.mark_region(max_node_id(), f0->tpg_onode());
+      fval_cnf0.make_cnf(f0, node_set0, kVal1);
       ++ fnum;
     }
 
@@ -417,7 +434,10 @@ FgMgrBase::find_group2(ymuint fid0,
       const FaultInfo& fi1 = _fault_info(fid1);
       if ( !fi1.single_cube() ) {
 	// fid1 の検出条件を生成
-	fval_cnf_array[i].make_cnf(_fault(fid1), _node_set(fid1), kVal1);
+	const TpgFault* f1 = fi1.fault();
+	NodeSet node_set1;
+	node_set1.mark_region(max_node_id(), f1->tpg_onode());
+	fval_cnf_array[i].make_cnf(f1, node_set1, kVal1);
 	++ fnum;
       }
     }
@@ -597,7 +617,10 @@ FgMgrBase::check_sufficient_assignment(ymuint gid)
     gval_cnf.add_assignments(suf_list);
     FvalCnf fval_cnf(gval_cnf);
     // fid を検出しない条件を追加
-    fval_cnf.make_cnf(_fault(fid), _node_set(fid), kVal0);
+    const TpgFault* f = _fault(fid);
+    NodeSet node_set;
+    node_set.mark_region(max_node_id(), f->tpg_onode());
+    fval_cnf.make_cnf(f, node_set, kVal0);
     // 十分条件が正しければこの SAT 問題は充足不能のはず．
     if ( gval_cnf.check_sat() != kB3False ) {
       cout << "ERROR in fault group#" << gid << ": "
@@ -613,7 +636,10 @@ FgMgrBase::check_sufficient_assignment(ymuint gid)
       gval_cnf.add_assignments(suf_list);
       FvalCnf fval_cnf(gval_cnf);
       // fid1 を検出しない条件を追加
-      fval_cnf.make_cnf(_fault(fid1), _node_set(fid1), kVal0);
+      const TpgFault* f1 = _fault(fid1);
+      NodeSet node_set1;
+      node_set1.mark_region(max_node_id(), f1->tpg_onode());
+      fval_cnf.make_cnf(f1, node_set1, kVal0);
       // 十分条件が正しければこの SAT 問題は充足不能のはず．
       if ( gval_cnf.check_sat() != kB3False ) {
 	cout << "ERROR in fault group#" << gid << ": "

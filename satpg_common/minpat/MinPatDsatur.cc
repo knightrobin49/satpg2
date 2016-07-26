@@ -203,7 +203,13 @@ MinPatDsatur::get_next_fault(FgMgr& fgmgr,
 
       ymuint fid = fs.mFaultId;
       const TpgFault* fault = analyzer().fault(fid);
-      fval_cnf.make_cnf(fault, analyzer().node_set(fid), kVal1);
+#if 0
+      const NodeSet& node_set = analyzer().node_set(fid);
+#else
+      NodeSet node_set;
+      node_set.mark_region(mMaxNodeId, fault->tpg_onode());
+#endif
+      fval_cnf.make_cnf(fault, node_set, kVal1);
 
       const NodeValList& ma_list = analyzer().fault_info(fid).mandatory_assignment();
       for (ymuint gid = 0; gid < ng; ++ gid) {

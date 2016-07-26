@@ -110,9 +110,6 @@ FaultAnalyzer::init(const TpgNetwork& network,
   mInputList2Array.clear();
   mInputList2Array.resize(mMaxNodeId);
 
-  mNodeSetArray.clear();
-  mNodeSetArray.resize(mMaxNodeId);
-
   mFaultInfoArray.clear();
   mFaultInfoArray.resize(mMaxFaultId);
 
@@ -134,7 +131,7 @@ FaultAnalyzer::init(const TpgNetwork& network,
     const TpgNode* node = network.active_node(i);
 
     // 故障箇所の TFI of TFI を node_set に記録する．
-    NodeSet& node_set = mNodeSetArray[node->id()];
+    NodeSet node_set;
     node_set.mark_region(mMaxNodeId, node);
 
     // そのうちの外部入力を ImputListArray に入れる．
@@ -263,7 +260,9 @@ FaultAnalyzer::analyze_fault(const TpgFault* fault,
   GvalCnf gval_cnf(mMaxNodeId, string(), string(), nullptr);
   FvalCnf fval_cnf(gval_cnf);
 
-  fval_cnf.make_cnf(fault, node_set(f_id), kVal1);
+  NodeSet node_set;
+  node_set.mark_region(mMaxNodeId, fault->tpg_onode());
+  fval_cnf.make_cnf(fault, node_set, kVal1);
 
   vector<SatBool3> sat_model;
   SatBool3 sat_stat = gval_cnf.check_sat(sat_model);
@@ -271,7 +270,7 @@ FaultAnalyzer::analyze_fault(const TpgFault* fault,
     // 割当結果から十分割当を求める．
     NodeValList& suf_list = fi.mSufficientAssignment;
     NodeValList& pi_suf_list = fi.mPiSufficientAssignment;
-    fval_cnf.get_pi_suf_list(sat_model, fault, node_set(f_id).output_list(), suf_list, pi_suf_list);
+    fval_cnf.get_pi_suf_list(sat_model, fault, node_set.output_list(), suf_list, pi_suf_list);
 
     // テストベクタを作る．
     TestVector* tv = tvmgr.new_vector();
@@ -389,15 +388,6 @@ FaultAnalyzer::input_list2(ymuint fid) const
   ASSERT_COND( fid < mMaxFaultId );
   const TpgFault* fault = mFaultInfoArray[fid].fault();
   return mInputList2Array[fault->tpg_onode()->id()];
-}
-
-// @brief 故障に関連するノード集合を返す．
-const NodeSet&
-FaultAnalyzer::node_set(ymuint fid) const
-{
-  ASSERT_COND( fid < mMaxFaultId );
-  const TpgFault* fault = mFaultInfoArray[fid].fault();
-  return mNodeSetArray[fault->tpg_onode()->id()];
 }
 
 // @brief 等価故障を記録する．
@@ -529,13 +519,15 @@ FaultAnalyzer::check_dominance(ymuint f1_id,
     if ( !fi1.single_cube() ) {
       // f1 を検出する CNF を生成
       FvalCnf fval_cnf1(gval_cnf);
-      const NodeSet& node_set1 = node_set(f1_id);
+      NodeSet node_set1;
+      node_set1.mark_region(mMaxNodeId, fnode1);
       fval_cnf1.make_cnf(f1, node_set1, kVal1);
     }
 
     // f2 を検出しない CNF を生成
     FvalCnf fval_cnf2(gval_cnf);
-    const NodeSet& node_set2 = node_set(f2_id);
+    NodeSet node_set2;
+    node_set2.mark_region(mMaxNodeId, fnode2);
     fval_cnf2.make_cnf(f2, node_set2, kVal0);
   }
 
@@ -549,12 +541,14 @@ FaultAnalyzer::check_dominance(ymuint f1_id,
 
     // f1 を検出する CNF を生成
     FvalCnf fval_cnf1(gval_cnf);
-    const NodeSet& node_set1 = node_set(f1_id);
+    NodeSet node_set1;
+    node_set1.mark_region(mMaxNodeId, f1->tpg_onode());
     fval_cnf1.make_cnf(f1, node_set1, kVal1);
 
     // f2 を検出しない CNF を生成
     FvalCnf fval_cnf2(gval_cnf);
-    const NodeSet& node_set2 = node_set(f2_id);
+    NodeSet node_set2;
+    node_set2.mark_region(mMaxNodeId, f2->tpg_onode());
     fval_cnf2.make_cnf(f2, node_set2, kVal0);
 
     SatBool3 sat_stat2 = gval_cnf.check_sat();

@@ -99,10 +99,6 @@ public:
   const vector<ymuint>&
   input_list2(ymuint fid) const;
 
-  /// @brief 故障に関連するノード集合を返す．
-  const NodeSet&
-  node_set(ymuint fid) const;
-
   /// @brief 等価故障を記録する．
   void
   add_eq_fault(ymuint fid1,
@@ -194,9 +190,6 @@ private:
 
   // ノードごとに関係する入力の番号のリストを収める配列
   vector<vector<ymuint> > mInputList2Array;
-
-  // ノードごとに NodeSet を収める配列
-  vector<NodeSet> mNodeSetArray;
 
   // 故障ごとの情報を収める配列
   vector<FaultInfo> mFaultInfoArray;

@@ -226,11 +226,6 @@ private:
   const FaultInfo&
   _fault_info(ymuint fid) const;
 
-  /// @brief 故障に関係するノード集合を返す．
-  /// @param[in] fid 故障番号
-  const NodeSet&
-  _node_set(ymuint fid) const;
-
   /// @brief 故障グループを返す．
   /// @param[in] gid グループ番号 ( 0 <= gid < group_num() )
   FaultGroup*
@@ -530,15 +525,6 @@ const FaultInfo&
 FgMgrBase::_fault_info(ymuint fid) const
 {
   return mAnalyzer.fault_info(fid);
-}
-
-// @brief 故障に関係するノード集合を返す．
-// @param[in] fid 故障番号
-inline
-const NodeSet&
-FgMgrBase::_node_set(ymuint fid) const
-{
-  return mAnalyzer.node_set(fid);
 }
 
 // @brief 故障グループを返す．

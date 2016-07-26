@@ -11,6 +11,7 @@
 
 #include "FaultAnalyzer.h"
 
+#include "TpgFault.h"
 #include "TvMgr.h"
 #include "TestVector.h"
 #include "Fsim.h"
@@ -236,7 +237,8 @@ ConflictChecker::analyze_conflict(ymuint f1_id,
   if ( !fi1.single_cube() ) {
     FvalCnf fval_cnf(gval_cnf);
     const TpgFault* f1 = mAnalyzer.fault(f1_id);
-    const NodeSet& node_set1 = mAnalyzer.node_set(f1_id);
+    NodeSet node_set1;
+    node_set1.mark_region(mMaxNodeId, f1->tpg_onode());
     fval_cnf.make_cnf(f1, node_set1, kVal1);
   }
 
@@ -298,7 +300,8 @@ ConflictChecker::analyze_conflict(ymuint f1_id,
       if ( !fi1.single_cube() ) {
 	FvalCnf fval_cnf1(gval_cnf);
 	const TpgFault* f1 = mAnalyzer.fault(f1_id);
-	const NodeSet& node_set1 = mAnalyzer.node_set(f1_id);
+	NodeSet node_set1;
+	node_set1.mark_region(mMaxNodeId, f1->tpg_onode());
 	fval_cnf1.make_cnf(f1, node_set1, kVal1);
       }
 
@@ -307,7 +310,8 @@ ConflictChecker::analyze_conflict(ymuint f1_id,
       gval_cnf.add_assignments(fi2.mandatory_assignment());
       FvalCnf fval_cnf2(gval_cnf);
       const TpgFault* f2 = mAnalyzer.fault(f2_id);
-      const NodeSet& node_set2 = mAnalyzer.node_set(f2_id);
+      NodeSet node_set2;
+      node_set2.mark_region(mMaxNodeId, f2->tpg_onode());
       fval_cnf2.make_cnf(f2, node_set2, kVal1);
 
       SatBool3 sat_stat = gval_cnf.check_sat();
