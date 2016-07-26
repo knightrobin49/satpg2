@@ -18,9 +18,14 @@
 #include "NodeSet.h"
 #include "NodeValList.h"
 
+#include "StructSat.h"
+#include "FoCone.h"
 #include "GvalCnf.h"
 #include "FvalCnf.h"
 #include "ModelValMap.h"
+
+#include "Extractor.h"
+#include "BackTracer.h"
 
 #include "ym/RandGen.h"
 #include "ym/StopWatch.h"
@@ -257,20 +262,26 @@ FaultAnalyzer::analyze_fault(const TpgFault* fault,
 
   fi.mFault = fault;
 
-  GvalCnf gval_cnf(mMaxNodeId, string(), string(), nullptr);
-  FvalCnf fval_cnf(gval_cnf);
-
-  NodeSet node_set;
-  node_set.mark_region(mMaxNodeId, fault->tpg_onode());
-  fval_cnf.make_cnf(fault, node_set, kVal1);
+  StructSat struct_sat(mMaxNodeId);
+  const FoCone* focone = struct_sat.add_focone(fault, kVal1);
 
   vector<SatBool3> sat_model;
-  SatBool3 sat_stat = gval_cnf.check_sat(sat_model);
+  SatBool3 sat_stat = struct_sat.check_sat(sat_model);
   if ( sat_stat == kB3True ) {
     // 割当結果から十分割当を求める．
     NodeValList& suf_list = fi.mSufficientAssignment;
     NodeValList& pi_suf_list = fi.mPiSufficientAssignment;
-    fval_cnf.get_pi_suf_list(sat_model, fault, node_set.output_list(), suf_list, pi_suf_list);
+    {
+      ModelValMap val_map(focone->gvar_map(), focone->fvar_map(), sat_model);
+
+      Extractor extractor(val_map);
+      extractor(fault, suf_list);
+      suf_list.sort();
+
+      BackTracer backtracer(mMaxNodeId);
+      backtracer(fault->tpg_onode(), focone->output_list(), val_map, pi_suf_list);
+      pi_suf_list.sort();
+    }
 
     // テストベクタを作る．
     TestVector* tv = tvmgr.new_vector();
@@ -302,7 +313,7 @@ FaultAnalyzer::analyze_fault(const TpgFault* fault,
       const TpgNode* node = nv.node();
       bool val = nv.val();
       list1.add(node, !val);
-      if ( gval_cnf.check_sat(list1) == kB3False ) {
+      if ( struct_sat.check_sat(list1) == kB3False ) {
 	// node の値を反転したら検出できなかった．
 	// -> この割当は必須割当
 	ma_list.add(node, val);
@@ -312,8 +323,8 @@ FaultAnalyzer::analyze_fault(const TpgFault* fault,
     if ( suf_list.size() == ma_list.size() ) {
       fi.mSingleCube = true;
     }
-
   }
+
   return sat_stat;
 }
 
