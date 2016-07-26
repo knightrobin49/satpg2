@@ -8,8 +8,6 @@
 
 
 #include "ModelValMap.h"
-#include "TpgNode.h"
-#include "FvalCnf.h"
 #include "VidMap.h"
 
 
