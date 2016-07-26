@@ -48,22 +48,8 @@ DtpgCmd::DtpgCmd(AtpgMgr* mgr) :
 				"print statistics");
   mPoptSingle = new TclPopt(this, "single",
 			    "single mode");
-  mPoptSingle2 = new TclPoptInt(this, "single2",
-				"single2 mode <INT>");
-  mPoptSingle3 = new TclPopt(this, "single3",
-			     "single3 mode");
-  mPoptFFR = new TclPopt(this, "ffr",
-			 "FFR mode");
   mPoptMFFC = new TclPopt(this, "mffc",
 			  "MFFC mode");
-  mPoptMulti = new TclPopt(this, "multi",
-			   "multi mode");
-  mPoptMulti2 = new TclPoptInt(this, "multi2",
-			       "multi2 mode <INT>");
-  mPoptConcurrent = new TclPopt(this, "concurrent",
-				"concurrent mode");
-  mPoptSmtSingle = new TclPopt(this, "smt_single",
-			       "smt_single mode");
   mPoptX = new TclPoptInt(this, "x",
 			  "X-extract mode [0-2]");
   mPoptDrop = new TclPopt(this, "drop",
@@ -83,10 +69,7 @@ DtpgCmd::DtpgCmd(AtpgMgr* mgr) :
 
   new_popt_group(mPoptSat, mPoptMiniSat, mPoptMiniSat2, mPoptSatRec);
 
-  TclPoptGroup* g0 = new_popt_group(mPoptSingle, mPoptSingle2, mPoptMulti, mPoptMulti2);
-  add_popt(g0, mPoptSmtSingle);
-  add_popt(g0, mPoptFFR);
-  add_popt(g0, mPoptMFFC);
+  TclPoptGroup* g0 = new_popt_group(mPoptSingle, mPoptMFFC);
 
   new_popt_group(mPoptTimer, mPoptNoTimer);
 }
@@ -152,34 +135,9 @@ DtpgCmd::cmd_proc(TclObjVector& objv)
       engine_type = "single";
     }
   }
-  else if ( mPoptSingle2->is_specified() ) {
-    engine_type = "single2";
-    mode_val = mPoptSingle2->val();
-  }
-  else if ( mPoptSingle3->is_specified() ) {
-    engine_type = "single3";
-  }
-  else if ( mPoptFFR->is_specified() ) {
-    engine_type = "ffr";
-  }
   else if ( mPoptMFFC->is_specified() ) {
     engine_type = "mffc";
   }
-  else if ( mPoptMulti->is_specified() ) {
-    engine_type = "multi";
-  }
-  else if ( mPoptMulti2->is_specified() ) {
-    engine_type = "multi2";
-    mode_val = mPoptMulti2->val();
-  }
-  else if ( mPoptConcurrent->is_specified() ) {
-    engine_type = "concurrent";
-  }
-#if 0
-  else if ( mPoptSmtSingle->is_specified() ) {
-    engine_type = "smt_single";
-  }
-#endif
 
   string option_str = mPoptOpt->val();
 
@@ -215,14 +173,8 @@ DtpgCmd::cmd_proc(TclObjVector& objv)
   if ( engine_type == "single" ) {
     engine = new_DtpgSatS(sat_type, sat_option, outp, bt, dop_list, uop_list);
   }
-  else if ( engine_type == "ffr" ) {
-    engine = new_DtpgSatF(sat_type, sat_option, outp, bt, dop_list, uop_list);
-  }
   else if ( engine_type == "mffc" ) {
     engine = new_DtpgSatH(sat_type, sat_option, outp, bt, dop_list, uop_list);
-  }
-  else if ( engine_type == "multi" ) {
-    engine = new_DtpgSatM(sat_type, sat_option, outp, bt, dop_list, uop_list);
   }
   else {
     // デフォルトフォールバック

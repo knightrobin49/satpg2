@@ -67,29 +67,8 @@ private:
   // single オプションの解析用オブジェクト
   TclPopt* mPoptSingle;
 
-  // single2 オプションの解析用オブジェクト
-  TclPoptInt* mPoptSingle2;
-
-  // single3 オプションの解析用オブジェクト
-  TclPopt* mPoptSingle3;
-
-  // ffr オプションの解析用オブジェクト
-  TclPopt* mPoptFFR;
-
   // mffc オプションの解析用オブジェクト
   TclPopt* mPoptMFFC;
-
-  // multi オプションの解析用オブジェクト
-  TclPopt* mPoptMulti;
-
-  // multi2 オプションの解析用オブジェクト
-  TclPoptInt* mPoptMulti2;
-
-  // concurrent オプションの解析用オブジェクト
-  TclPopt* mPoptConcurrent;
-
-  // smt_single オプションの解析用オブジェクト
-  TclPopt* mPoptSmtSingle;
 
   // X抽出オプションの解析用オブジェクト
   TclPoptInt* mPoptX;

@@ -23,7 +23,6 @@ set (sat_engine_SOURCES
   sat_engine/FoCone.cc
   sat_engine/FvalCnf.cc
   sat_engine/FvalCnfBase.cc
-  sat_engine/MvalCnf.cc
   sat_engine/MffcCone.cc
   sat_engine/Extractor.cc
   sat_engine/LitMap.cc
@@ -49,10 +48,7 @@ set (dtpg_SOURCES
   dtpg/dop/FopDrop.cc
 
   dtpg/main/DtpgSat.cc
-  dtpg/main/DtpgSatBaseM.cc
   dtpg/main/DtpgSatS.cc
-  dtpg/main/DtpgSatM.cc
-  dtpg/main/DtpgSatF.cc
   dtpg/main/DtpgSatH.cc
 
   dtpg/uop/UopBase.cc
