@@ -20,8 +20,6 @@
 
 #include "StructSat.h"
 #include "FoCone.h"
-#include "GvalCnf.h"
-#include "FvalCnf.h"
 #include "ModelValMap.h"
 
 #include "Extractor.h"
@@ -35,8 +33,6 @@
 BEGIN_NAMESPACE_YM_SATPG
 
 BEGIN_NONAMESPACE
-
-const bool verify_dom_check = false;
 
 void
 mark_tfi(const TpgNode* node,
@@ -490,95 +486,52 @@ FaultAnalyzer::check_dominance(ymuint f1_id,
   const TpgNode* fnode2 = f2->tpg_onode();
   const TpgNode* dom_node = common_node(fnode1, fnode2);
 
-  GvalCnf gval_cnf(mMaxNodeId, string(), string(), nullptr);
+  StructSat struct_sat(mMaxNodeId);
 
   // f1 の必要条件を追加する．
   const NodeValList& ma_list1 = fi1.mandatory_assignment();
-  gval_cnf.add_assignments(ma_list1);
+  struct_sat.add_assignments(ma_list1);
+
+  SatBool3 sat_stat = kB3X;
 
   if ( dom_node != nullptr ) {
-    // 伝搬経路に共通な dominator がある時
+    // 伝搬径路に共通な dominator がある時
     ++ mDomCheckCount;
 
-    // 共通部分のノード集合
-    NodeSet node_set0;
-    node_set0.mark_region(mMaxNodeId, dom_node);
+    // f2 の故障を検出しない条件を追加
+    struct_sat.add_focone(f2, dom_node, kVal0);
 
-    // 故障1に固有のノード集合
-    NodeSet node_set1;
-    node_set1.mark_region2(mMaxNodeId, fnode1, dom_node);
+    sat_stat = struct_sat.check_sat();
 
-    // 故障2に固有のノード集合
-    NodeSet node_set2;
-    node_set2.mark_region2(mMaxNodeId, fnode2, dom_node);
+    if ( sat_stat != kB3False ) {
+      // f1 の故障を検出する条件を追加
+      struct_sat.add_focone(f1, dom_node, kVal1);
 
-    // dom_node から出力までの故障伝搬条件を作る．
-    FvalCnf fval_cnf0(gval_cnf);
-    fval_cnf0.make_prop_cnf(dom_node, node_set0, kVal1);
+      sat_stat = struct_sat.check_sat();
 
-    fval_cnf0.add_diff_clause(dom_node);
+      if ( sat_stat != kB3False ) {
+	// 共通部分の伝搬条件を追加する．
+	struct_sat.add_focone(dom_node, kVal1);
 
-    // f1 を検出する条件を追加する．
-    FvalCnf fval_cnf1(gval_cnf);
-    fval_cnf1.make_cnf(f1, node_set1, kVal1);
-
-    // f2 を検出しない条件を追加する．
-    FvalCnf fval_cnf2(gval_cnf);
-    fval_cnf2.make_cnf(f2, node_set2, kVal0);
+	sat_stat = struct_sat.check_sat();
+      }
+    }
   }
   else {
-    if ( !fi1.single_cube() ) {
-      // f1 を検出する CNF を生成
-      FvalCnf fval_cnf1(gval_cnf);
-      NodeSet node_set1;
-      node_set1.mark_region(mMaxNodeId, fnode1);
-      fval_cnf1.make_cnf(f1, node_set1, kVal1);
+    // f2 の故障を検出しない条件を追加
+    struct_sat.add_focone(f2, kVal0);
+
+    sat_stat = struct_sat.check_sat();
+    if ( sat_stat != kB3False ) {
+      // f1 の故障を検出する条件を追加
+      struct_sat.add_focone(f1, kVal1);
+
+      sat_stat = struct_sat.check_sat();
     }
-
-    // f2 を検出しない CNF を生成
-    FvalCnf fval_cnf2(gval_cnf);
-    NodeSet node_set2;
-    node_set2.mark_region(mMaxNodeId, fnode2);
-    fval_cnf2.make_cnf(f2, node_set2, kVal0);
   }
-
-  SatBool3 sat_stat = gval_cnf.check_sat();
 
   timer.stop();
   USTime time = timer.time();
-
-  if ( verify_dom_check ) {
-    GvalCnf gval_cnf(mMaxNodeId, string(), string(), nullptr);
-
-    // f1 を検出する CNF を生成
-    FvalCnf fval_cnf1(gval_cnf);
-    NodeSet node_set1;
-    node_set1.mark_region(mMaxNodeId, f1->tpg_onode());
-    fval_cnf1.make_cnf(f1, node_set1, kVal1);
-
-    // f2 を検出しない CNF を生成
-    FvalCnf fval_cnf2(gval_cnf);
-    NodeSet node_set2;
-    node_set2.mark_region(mMaxNodeId, f2->tpg_onode());
-    fval_cnf2.make_cnf(f2, node_set2, kVal0);
-
-    SatBool3 sat_stat2 = gval_cnf.check_sat();
-    if ( sat_stat != sat_stat2 ) {
-      cout << "ERROR in check_dominance(" << f1 << ", " << f2 << ")" << endl
-	   << "  sat_stat  = " << sat_stat << endl
-	   << "  sat_stat2 = " << sat_stat2 << endl;
-      if ( dom_node ) {
-	cout << "  smart dom check" << endl;
-      }
-      if ( fi1.single_cube() ) {
-	cout << "  f1 is single cube" << endl;
-      }
-      if ( fi2.single_cube() ) {
-	cout << "  f2 is single cube" << endl;
-      }
-      exit(1);
-    }
-  }
 
   if ( sat_stat == kB3False ) {
     mSuccessTime += time;

@@ -77,10 +77,28 @@ public:
 	     Val3 detect);
 
   /// @brief fault cone を追加する．
+  /// @param[in] fnode 故障のあるノード
+  /// @param[in] bnode ブロックノード
+  /// @param[in] detect 検出条件
+  const FoCone*
+  add_focone(const TpgNode* fnode,
+	     const TpgNode* bnode,
+	     Val3 detect);
+
+  /// @brief fault cone を追加する．
   /// @param[in] fault 故障
   /// @param[in] detect 検出条件
   const FoCone*
   add_focone(const TpgFault* fault,
+	     Val3 detect);
+
+  /// @brief fault cone を追加する．
+  /// @param[in] fault 故障
+  /// @param[in] bnode ブロックノード
+  /// @param[in] detect 検出条件
+  const FoCone*
+  add_focone(const TpgFault* fault,
+	     const TpgNode* bnode,
 	     Val3 detect);
 
   /// @brief fault cone を追加する．

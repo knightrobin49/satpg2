@@ -65,6 +65,20 @@ StructSat::add_focone(const TpgNode* fnode,
 }
 
 // @brief fault cone を追加する．
+// @param[in] fnode 故障のあるノード
+// @param[in] bnode ブロックノード
+// @param[in] detect 検出条件
+const FoCone*
+StructSat::add_focone(const TpgNode* fnode,
+		      const TpgNode* bnode,
+		      Val3 detect)
+{
+  FoCone* focone = new FoCone(*this, fnode, bnode, detect);
+  mFoConeList.push_back(focone);
+  return focone;
+}
+
+// @brief fault cone を追加する．
 // @param[in] fault 故障
 // @param[in] detect 検出条件
 const FoCone*
@@ -73,6 +87,43 @@ StructSat::add_focone(const TpgFault* fault,
 {
   const TpgNode* fnode = fault->tpg_onode();
   FoCone* focone = new FoCone(*this, fnode, detect);
+  mFoConeList.push_back(focone);
+
+  if ( detect == kVal1 ) {
+    NodeValList assignment;
+    add_fault_condition(fault, assignment);
+    add_assignments(assignment);
+  }
+  else {
+    int fval = fault->val();
+    if ( fault->is_branch_fault() ) {
+      ymuint pos = fault->tpg_pos();
+      fnode->make_faulty_cnf(solver(), pos, fval, VidLitMap(fnode, focone->fvar_map()));
+    }
+    else {
+      SatLiteral flit(focone->fvar(fnode));
+      if ( fval == 0 ) {
+	solver().add_clause(~flit);
+      }
+      else {
+	solver().add_clause(flit);
+      }
+    }
+  }
+  return focone;
+}
+
+// @brief fault cone を追加する．
+// @param[in] fault 故障
+// @param[in] bnode ブロックノード
+// @param[in] detect 検出条件
+const FoCone*
+StructSat::add_focone(const TpgFault* fault,
+		      const TpgNode* bnode,
+		      Val3 detect)
+{
+  const TpgNode* fnode = fault->tpg_onode();
+  FoCone* focone = new FoCone(*this, fnode, bnode, detect);
   mFoConeList.push_back(focone);
 
   if ( detect == kVal1 ) {
