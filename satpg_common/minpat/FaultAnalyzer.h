@@ -12,7 +12,6 @@
 #include "satpg.h"
 #include "NodeValList.h"
 #include "FaultInfo.h"
-#include "NodeSet.h"
 #include "ym/RandGen.h"
 #include "ym/SatBool3.h"
 #include "ym/StopWatch.h"

@@ -10,20 +10,15 @@
 
 set (base_SOURCES
   base/FaultMgr.cc
-  base/NodeSet.cc
   base/NodeValList.cc
   base/TestVector.cc
-  base/TfiBits.cc
   base/TvMgr.cc
   )
 
 set (sat_engine_SOURCES
   sat_engine/VidLitMap.cc
-  sat_engine/GvalCnf.cc
   sat_engine/ConeBase.cc
   sat_engine/FoCone.cc
-  sat_engine/FvalCnf.cc
-  sat_engine/FvalCnfBase.cc
   sat_engine/MffcCone.cc
   sat_engine/Extractor.cc
   sat_engine/LitMap.cc

@@ -16,10 +16,9 @@
 #include "TestVector.h"
 #include "Fsim.h"
 #include "DetOp.h"
-#include "NodeSet.h"
 
-#include "GvalCnf.h"
-#include "FvalCnf.h"
+#include "StructSat.h"
+#include "FoCone.h"
 
 #include "ym/RandGen.h"
 #include "ym/StopWatch.h"
@@ -230,6 +229,7 @@ ConflictChecker::analyze_conflict(ymuint f1_id,
   const NodeValList& suf_list1 = fi1.sufficient_assignment();
   const NodeValList& ma_list1 = fi1.mandatory_assignment();
 
+#if 0
   GvalCnf gval_cnf(mMaxNodeId, string(), string(), nullptr);
 
   // f1 を検出する CNF を生成
@@ -323,6 +323,92 @@ ConflictChecker::analyze_conflict(ymuint f1_id,
     }
     mConflictStats.conf4_timer.stop();
   }
+#else
+  StructSat struct_sat(mMaxNodeId);
+
+  // f1 を検出する CNF を生成
+  struct_sat.add_assignments(ma_list1);
+  if ( !fi1.single_cube() ) {
+    const TpgFault* f1 = mAnalyzer.fault(f1_id);
+    struct_sat.add_focone(f1, kVal1);
+  }
+
+  conf_list.reserve(f2_list.size());
+  for (ymuint i2 = 0; i2 < f2_list.size(); ++ i2) {
+    ymuint f2_id = f2_list[i2];
+
+    if ( f1_id > f2_id ) {
+      continue;
+    }
+
+    const FaultInfo& fi2 = mAnalyzer.fault_info(f2_id);
+    const NodeValList& suf_list2 = fi2.sufficient_assignment();
+    const NodeValList& ma_list2 = fi2.mandatory_assignment();
+
+    mConflictStats.int2_timer.start();
+    SatBool3 sat_stat = struct_sat.check_sat(suf_list2);
+    if ( sat_stat == kB3True ) {
+      // f2 の十分割当のもとで f1 が検出できれば f1 と f2 はコンフリクトしない．
+      ++ mConflictStats.int2_count;
+      mConflictStats.int2_timer.stop();
+      continue;
+    }
+    mConflictStats.int2_timer.stop();
+
+    if ( fi2.single_cube() ) {
+      if ( sat_stat == kB3False ) {
+	++ mConflictStats.conf_count;
+	++ mConflictStats.conf3_count;
+	conf_list.push_back(f2_id);
+      }
+      // f2 の十分割当と必要割当が等しければ上のチェックで終わり．
+      continue;
+    }
+
+    mConflictStats.conf3_timer.start();
+    if ( struct_sat.check_sat(ma_list2) == kB3False ) {
+      // f2 の必要割当のもとで f1 が検出できなければ f1 と f2 はコンフリクトしている．
+      ++ mConflictStats.conf_count;
+      ++ mConflictStats.conf3_count;
+      conf_list.push_back(f2_id);
+      mConflictStats.conf3_timer.stop();
+      continue;
+    }
+    mConflictStats.conf3_timer.stop();
+
+    if ( simple ) {
+      continue;
+    }
+
+    mConflictStats.conf4_timer.start();
+    ++ mConflictStats.conf4_check_count;
+    {
+      StructSat struct_sat(mMaxNodeId);
+
+      // f1 を検出する CNF を生成
+      const FaultInfo& fi1 = mAnalyzer.fault_info(f1_id);
+      struct_sat.add_assignments(fi1.mandatory_assignment());
+      if ( !fi1.single_cube() ) {
+	const TpgFault* f1 = mAnalyzer.fault(f1_id);
+	struct_sat.add_focone(f1, kVal1);
+      }
+
+      // f2 を検出する CNF を生成
+      const FaultInfo& fi2 = mAnalyzer.fault_info(f2_id);
+      struct_sat.add_assignments(fi2.mandatory_assignment());
+      const TpgFault* f2 = mAnalyzer.fault(f2_id);
+      struct_sat.add_focone(f2, kVal1);
+
+      SatBool3 sat_stat = struct_sat.check_sat();
+      if ( sat_stat == kB3False ) {
+	++ mConflictStats.conf_count;
+	++ mConflictStats.conf4_count;
+	conf_list.push_back(f2_id);
+      }
+    }
+    mConflictStats.conf4_timer.stop();
+  }
+#endif
 
   mConflictStats.conf_timer.stop();
 

@@ -14,11 +14,9 @@
 #include "TpgNetwork.h"
 #include "TvMgr.h"
 #include "Verifier.h"
-#include "GvalCnf.h"
-#include "FvalCnf.h"
-#include "NodeSet.h"
 #include "ModelValMap.h"
 #include "TpgFault.h"
+#include "StructSat.h"
 
 #include "ym/StopWatch.h"
 
@@ -216,62 +214,9 @@ MinPatBase::run(TpgNetwork& network,
   for (ymuint i = 0; i < new_ng; ++ i) {
     ymuint gid = group_list[i];
     const NodeValList& suf_list = fgmgr.sufficient_assignment(gid);
-    if ( false ) {
-      // suf_list が正しいか検証する．
-      for (ymuint i = 0; i < fgmgr.fault_num(gid); ++ i) {
-	ymuint fid = fgmgr.fault_id(gid, i);
-	GvalCnf gval_cnf(mMaxNodeId, string(), string(), nullptr);
-	// gid の十分条件を追加
-	gval_cnf.add_assignments(suf_list);
-	FvalCnf fval_cnf(gval_cnf);
-	// fid を検出しない条件を追加
-	const TpgFault* f = mAnalyzer.fault_info(fid).fault();
-	NodeSet node_set;
-	node_set.mark_region(mMaxNodeId, f->tpg_onode());
-	fval_cnf.make_cnf(f, node_set, kVal0);
-	vector<SatBool3> sat_model;
-	// 十分条件が正しければこの SAT 問題は充足不能のはず．
-	if ( gval_cnf.check_sat(sat_model) != kB3False ) {
-	  cout << "ERROR in fault group#" << gid << ": "
-	       << mAnalyzer.fault_info(fid).fault()->str() << " is not detected with suf_list" << endl;
-	}
-	const FaultInfo& fi = mAnalyzer.fault_info(fid);
-	const vector<ymuint>& dom_list = fi.dom_list();
-	for (ymuint j = 0; j < dom_list.size(); ++ j) {
-	  ymuint fid1 = dom_list[j];
-	  GvalCnf gval_cnf(mMaxNodeId, string(), string(), nullptr);
-	  // gid の十分条件を追加
-	  gval_cnf.add_assignments(suf_list);
-	  FvalCnf fval_cnf(gval_cnf);
-	  // fid1 を検出しない条件を追加
-	  const TpgFault* f1 = mAnalyzer.fault_info(fid1).fault();
-	  NodeSet node_set1;
-	  node_set1.mark_region(mMaxNodeId, f1->tpg_onode());
-	  fval_cnf.make_cnf(f1, node_set1, kVal0);
-	  vector<SatBool3> sat_model;
-	  // 十分条件が正しければこの SAT 問題は充足不能のはず．
-	  if ( gval_cnf.check_sat(sat_model) != kB3False ) {
-	    cout << "ERROR in fault group#" << gid << ": "
-		 << mAnalyzer.fault_info(fid1).fault()->str() << " is not detected with suf_list" << endl;
-	  }
-	}
-      }
-    }
     TestVector* tv = tvmgr.new_vector();
     make_testvector(network, suf_list, tv);
     tv_list.push_back(tv);
-    if ( false ) {
-      vector<const TpgFault*> fault_list;
-      for (ymuint i = 0; i < fgmgr.fault_num(gid); ++ i) {
-	ymuint fid = fgmgr.fault_id(gid, i);
-	fault_list.push_back(mAnalyzer.fault_info(fid).fault());
-      }
-      vector<TestVector*> tv_list(1, tv);
-      Verifier ver;
-      if ( !ver.check(fsim2, fault_list, tv_list) ) {
-	cout << "ERROR in fault group#" << gid << endl;
-      }
-    }
   }
 
   local_timer.stop();
@@ -372,7 +317,7 @@ MinPatBase::make_testvector(TpgNetwork& network,
 			    const NodeValList& suf_list,
 			    TestVector* tv)
 {
-  GvalCnf gval_cnf(mMaxNodeId, string(), string(), nullptr);
+  StructSat struct_sat(mMaxNodeId);
 
   if ( !suf_list.sanity_check() ) {
     cout << "Error in suf_list: ";
@@ -384,10 +329,10 @@ MinPatBase::make_testvector(TpgNetwork& network,
   }
 
   vector<SatBool3> sat_model;
-  SatBool3 sat_ans = gval_cnf.check_sat(suf_list, sat_model);
+  SatBool3 sat_ans = struct_sat.check_sat(suf_list, sat_model);
   ASSERT_COND ( sat_ans == kB3True );
 
-  const VidMap& var_map = gval_cnf.var_map();
+  const VidMap& var_map = struct_sat.var_map();
   ModelValMap val_map(var_map, var_map, sat_model);
   ymuint ni = network.input_num();
   for (ymuint i = 0; i < ni; ++ i) {

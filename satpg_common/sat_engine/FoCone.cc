@@ -11,7 +11,8 @@
 #include "StructSat.h"
 #include "TpgNode.h"
 #include "VidLitMap.h"
-
+#include "ModelValMap.h"
+#include "Extractor.h"
 #include "NodeValList.h"
 
 BEGIN_NAMESPACE_YM_SATPG
@@ -79,6 +80,22 @@ FoCone::FoCone(StructSat& struct_sat,
 // @brief デストラクタ
 FoCone::~FoCone()
 {
+}
+
+// @brief 十分条件を得る．
+// @param[in] sat_model SAT の割り当て結果
+// @param[in] fault 故障
+// @param[out] suf_list 十分条件の割り当てリスト
+void
+FoCone::get_suf_list(const vector<SatBool3>& sat_model,
+		     const TpgFault* fault,
+		     NodeValList& suf_list) const
+{
+  ModelValMap val_map(gvar_map(), fvar_map(), sat_model);
+
+  Extractor extractor(val_map);
+  extractor(fault, suf_list);
+  suf_list.sort();
 }
 
 END_NAMESPACE_YM_SATPG

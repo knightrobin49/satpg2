@@ -14,8 +14,8 @@
 #include "EqChecker.h"
 #include "DomChecker.h"
 #include "FgMgr.h"
-#include "GvalCnf.h"
-#include "FvalCnf.h"
+#include "StructSat.h"
+
 
 #include "ym/RandGen.h"
 
@@ -198,18 +198,11 @@ MinPatDsatur::get_next_fault(FgMgr& fgmgr,
       ymuint slack = max2 - max_satur;
       FaultStruct& fs = mFaultStructList[max2_pos];
 
-      GvalCnf gval_cnf(mMaxNodeId, string(), string(), nullptr);
-      FvalCnf fval_cnf(gval_cnf);
+      StructSat struct_sat(mMaxNodeId);
 
       ymuint fid = fs.mFaultId;
       const TpgFault* fault = analyzer().fault(fid);
-#if 0
-      const NodeSet& node_set = analyzer().node_set(fid);
-#else
-      NodeSet node_set;
-      node_set.mark_region(mMaxNodeId, fault->tpg_onode());
-#endif
-      fval_cnf.make_cnf(fault, node_set, kVal1);
+      struct_sat.add_focone(fault, kVal1);
 
       const NodeValList& ma_list = analyzer().fault_info(fid).mandatory_assignment();
       for (ymuint gid = 0; gid < ng; ++ gid) {
@@ -217,12 +210,12 @@ MinPatDsatur::get_next_fault(FgMgr& fgmgr,
 	  fs.mPendingMap[gid] = false;
 	  -- fs.mPendingNum;
 	  const NodeValList& suf_list0 = fgmgr.sufficient_assignment(gid);
-	  if ( gval_cnf.check_sat(ma_list) == kB3False ) {
+	  if ( struct_sat.check_sat(ma_list) == kB3False ) {
 	    ++ fs.mConflictNum;
 	    fs.mConflictMap[gid] = true;
 	    ++ mSimpleConfNum;
 	  }
-	  else if ( gval_cnf.check_sat(suf_list0) == kB3False ) {
+	  else if ( struct_sat.check_sat(suf_list0) == kB3False ) {
 	    ++ fs.mConflictNum;
 	    fs.mConflictMap[gid] = true;
 	    ++ mSatConfNum;

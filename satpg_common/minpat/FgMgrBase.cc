@@ -9,9 +9,9 @@
 
 #include "FgMgrBase.h"
 
-#include "NodeSet.h"
-#include "GvalCnf.h"
-#include "FvalCnf.h"
+#include "StructSat.h"
+#include "FoCone.h"
+
 #include "TpgFault.h"
 
 
@@ -153,20 +153,17 @@ FgMgrBase::find_dom_group(ymuint fid,
 			  bool first_hit,
 			  vector<ymuint>& gid_list)
 {
-  GvalCnf gval_cnf(max_node_id(), string(), string(), nullptr);
-  FvalCnf fval_cnf(gval_cnf);
-
-  // fault が見つからない条件を作る．
-  NodeSet node_set;
-  node_set.mark_region(max_node_id(), _fault(fid)->tpg_onode());
-  fval_cnf.make_cnf(_fault(fid), node_set, kVal0);
+  StructSat struct_sat(max_node_id());
+  const TpgFault* fault = _fault(fid);
+  // fault が検出できない条件を追加
+  struct_sat.add_focone(fault, kVal0);
 
   ymuint first_gid = group_num();
   for (ymuint i = 0; i < group_list.size(); ++ i) {
     ymuint gid = group_list[i];
     const NodeValList& suf_list0 = sufficient_assignment(gid);
-    if ( gval_cnf.check_sat(suf_list0) == kB3False ) {
-      // suf_lib0 のもとでは必ず見つかるということ．
+    if ( struct_sat.check_sat(suf_list0) == kB3False ) {
+      // suf_list0 の元では必ず検出できる
       if ( first_gid == group_num() ) {
 	first_gid = gid;
 	if ( first_hit ) {
@@ -176,6 +173,7 @@ FgMgrBase::find_dom_group(ymuint fid,
       gid_list.push_back(gid);
     }
   }
+
   return first_gid;
 }
 
@@ -201,21 +199,18 @@ FgMgrBase::find_group(ymuint fid0,
 
   ymuint first_gid = group_num();
 
-  GvalCnf gval_cnf0(max_node_id(), string(), string(), nullptr);
+  StructSat struct_sat0(max_node_id());
 
   const FaultInfo& fi0 = _fault_info(fid0);
 
   // fi0 の必要割当を追加
   const NodeValList ma_list0 = fi0.mandatory_assignment();
-  gval_cnf0.add_assignments(ma_list0);
+  struct_sat0.add_assignments(ma_list0);
 
   if ( !fi0.single_cube() ) {
     // fault を検出する CNF を生成
     const TpgFault* f0 = _fault(fid0);
-    FvalCnf fval_cnf0(gval_cnf0);
-    NodeSet node_set0;
-    node_set0.mark_region(max_node_id(), f0->tpg_onode());
-    fval_cnf0.make_cnf(f0, node_set0, kVal1);
+    struct_sat0.add_focone(f0, kVal1);
   }
 
   for (ymuint i = 0; i < group_list.size(); ++ i) {
@@ -227,7 +222,7 @@ FgMgrBase::find_group(ymuint fid0,
 
     { // グループの十分割当が成り立っていたら両立している．
       const NodeValList& suf_list1 = sufficient_assignment(gid);
-      if ( gval_cnf0.check_sat(suf_list1) == kB3True ) {
+      if ( struct_sat0.check_sat(suf_list1) == kB3True ) {
 	if ( first_gid == group_num() ) {
 	  first_gid = gid;
 	  if ( first_hit ) {
@@ -244,7 +239,7 @@ FgMgrBase::find_group(ymuint fid0,
 
     { // グループの必要割当が成り立たなかったら衝突している．
       const NodeValList& ma_list1 = mandatory_assignment(gid);
-      if ( gval_cnf0.check_sat(ma_list1) == kB3False ) {
+      if ( struct_sat0.check_sat(ma_list1) == kB3False ) {
 	add_conflict_cache(gid, fid0);
 	continue;
       }
@@ -253,22 +248,19 @@ FgMgrBase::find_group(ymuint fid0,
     ++ mCheckCount;
 
     // 簡易検査ではわからなかったので正式に調べる．
-    GvalCnf gval_cnf(max_node_id(), string(), string(), nullptr);
+    StructSat struct_sat(max_node_id());
 
     // fid0 の必要割当を追加
-    gval_cnf.add_assignments(ma_list0);
+    struct_sat.add_assignments(ma_list0);
     // グループの必要割当を追加
-    gval_cnf.add_assignments(mandatory_assignment(gid));
+    struct_sat.add_assignments(mandatory_assignment(gid));
 
     ymuint fnum = 0;
 
     if ( !fi0.single_cube() ) {
       // fid0 を検出する条件を追加
       const TpgFault* f0 = fi0.fault();
-      FvalCnf fval_cnf0(gval_cnf);
-      NodeSet node_set0;
-      node_set0.mark_region(max_node_id(), f0->tpg_onode());
-      fval_cnf0.make_cnf(f0, node_set0, kVal1);
+      struct_sat.add_focone(f0, kVal1);
       ++ fnum;
     }
 
@@ -279,10 +271,7 @@ FgMgrBase::find_group(ymuint fid0,
       if ( !fi1.single_cube() ) {
 	// fid1 の検出条件を生成
 	const TpgFault* f1 = fi1.fault();
-	FvalCnf fval_cnf1(gval_cnf);
-	NodeSet node_set1;
-	node_set1.mark_region(max_node_id(), f1->tpg_onode());
-	fval_cnf1.make_cnf(f1, node_set1, kVal1);
+	struct_sat.add_focone(f1, kVal1);
 	++ fnum;
       }
     }
@@ -293,7 +282,7 @@ FgMgrBase::find_group(ymuint fid0,
     }
     ++ mMnum;
 
-    if ( gval_cnf.check_sat() == kB3True ) {
+    if ( struct_sat.check_sat() == kB3True ) {
       ++ mFoundCount;
       if ( first_gid == group_num() ) {
 	first_gid = gid;
@@ -329,21 +318,19 @@ FgMgrBase::find_group2(ymuint fid0,
   StopWatch local_timer;
   local_timer.start();
 
-  GvalCnf gval_cnf0(max_node_id(), string(), string(), nullptr);
+  StructSat struct_sat0(max_node_id());
 
   const FaultInfo& fi0 = _fault_info(fid0);
 
   // fi0 の必要割当を追加
   const NodeValList ma_list0 = fi0.mandatory_assignment();
-  gval_cnf0.add_assignments(ma_list0);
+  struct_sat0.add_assignments(ma_list0);
 
-  FvalCnf fval_cnf0(gval_cnf0);
+  const FoCone* focone0 = nullptr;
   if ( !fi0.single_cube() ) {
     // f0 を検出する CNF を生成
     const TpgFault* f0 = fi0.fault();
-    NodeSet node_set0;
-    node_set0.mark_region(max_node_id(), f0->tpg_onode());
-    fval_cnf0.make_cnf(f0, node_set0, kVal1);
+    focone0 = struct_sat0.add_focone(f0, kVal1);
   }
 
   ymuint ans_gid = group_num();
@@ -357,36 +344,25 @@ FgMgrBase::find_group2(ymuint fid0,
     { // グループの十分割当が成り立っていたら両立している．
       const NodeValList& suf_list1 = sufficient_assignment(gid);
       vector<SatBool3> sat_model;
-      if ( gval_cnf0.check_sat(suf_list1, sat_model) == kB3True ) {
+      if ( struct_sat0.check_sat(suf_list1, sat_model) == kB3True ) {
 	FaultGroup* fg = _fault_group(gid);
 	if ( fi0.single_cube() ) {
 	  fg->add_fault(fid0, ma_list0, ma_list0);
-	  if ( verify_add_fault ) {
-	    GvalCnf gval_cnf(max_node_id(), string(), string(), nullptr);
-	    // mSufList 単独で充足可能か調べておく．
-	    if ( gval_cnf.check_sat(fg->sufficient_assignment()) != kB3True ) {
-	      cout << "Error in FaultGroup::add_fault(1)" << endl
-		   << "  mSufList inconsistent" << endl;
-	    }
-	    if ( !check_sufficient_assignment(gid) ) {
-	      cout << "Error in sufficient_assignment at add_fault(1)" << endl;
-	    }
-	  }
 	}
 	else {
 	  NodeValList suf_list;
-	  fval_cnf0.get_suf_list(sat_model, _fault(fid0), suf_list);
+	  focone0->get_suf_list(sat_model, _fault(fid0), suf_list);
 	  fg->add_fault(fid0, suf_list, ma_list0);
-	  if ( verify_add_fault) {
-	    GvalCnf gval_cnf(max_node_id(), string(), string(), nullptr);
-	    // mSufList 単独で充足可能か調べておく．
-	    if ( gval_cnf.check_sat(fg->sufficient_assignment()) != kB3True ) {
-	      cout << "Error in FaultGroup::add_fault(2)" << endl
-		   << "  mSufList inconsistent" << endl;
-	    }
-	    if ( !check_sufficient_assignment(gid) ) {
-	      cout << "Error in sufficient_assignment at add_fault(2)" << endl;
-	    }
+	}
+	if ( verify_add_fault) {
+	  StructSat struct_sat(max_node_id());
+	  // mSufList 単独で充足可能か調べておく．
+	  if ( struct_sat.check_sat(fg->sufficient_assignment()) != kB3True ) {
+	    cout << "Error in FaultGroup::add_fault(2)" << endl
+		 << "  mSufList inconsistent" << endl;
+	  }
+	  if ( !check_sufficient_assignment(gid) ) {
+	    cout << "Error in sufficient_assignment at add_fault(2)" << endl;
 	  }
 	}
 	ans_gid = gid;
@@ -399,7 +375,7 @@ FgMgrBase::find_group2(ymuint fid0,
 
     { // グループの必要割当が成り立たなかったら衝突している．
       const NodeValList& ma_list1 = mandatory_assignment(gid);
-      if ( gval_cnf0.check_sat(ma_list1) == kB3False ) {
+      if ( struct_sat0.check_sat(ma_list1) == kB3False ) {
 	add_conflict_cache(gid, fid0);
 	continue;
       }
@@ -408,36 +384,32 @@ FgMgrBase::find_group2(ymuint fid0,
     ++ mCheckCount;
 
     // 簡易検査ではわからなかったので正式に調べる．
-    GvalCnf gval_cnf(max_node_id(), string(), string(), nullptr);
+    StructSat struct_sat(max_node_id());
 
     // fid0 の必要割当を追加
-    gval_cnf.add_assignments(ma_list0);
+    struct_sat.add_assignments(ma_list0);
     // グループの必要割当を追加
-    gval_cnf.add_assignments(mandatory_assignment(gid));
+    struct_sat.add_assignments(mandatory_assignment(gid));
 
     ymuint fnum = 0;
 
-    FvalCnf fval_cnf0(gval_cnf);
+    const FoCone* focone0 = nullptr;
     if ( !fi0.single_cube() ) {
       // fid0 を検出する条件を追加
       const TpgFault* f0 = fi0.fault();
-      NodeSet node_set0;
-      node_set0.mark_region(max_node_id(), f0->tpg_onode());
-      fval_cnf0.make_cnf(f0, node_set0, kVal1);
+      focone0 = struct_sat.add_focone(f0, kVal1);
       ++ fnum;
     }
 
     ymuint nf = fault_num(gid);
-    vector<FvalCnf> fval_cnf_array(nf, FvalCnf(gval_cnf));
+    vector<const FoCone*> focone_array(nf);
     for (ymuint i = 0; i < nf; ++ i) {
       ymuint fid1 = fault_id(gid, i);
       const FaultInfo& fi1 = _fault_info(fid1);
       if ( !fi1.single_cube() ) {
 	// fid1 の検出条件を生成
 	const TpgFault* f1 = fi1.fault();
-	NodeSet node_set1;
-	node_set1.mark_region(max_node_id(), f1->tpg_onode());
-	fval_cnf_array[i].make_cnf(f1, node_set1, kVal1);
+	focone_array[i] = struct_sat.add_focone(f1, kVal1);
 	++ fnum;
       }
     }
@@ -449,7 +421,7 @@ FgMgrBase::find_group2(ymuint fid0,
     ++ mMnum;
 
     vector<SatBool3> sat_model;
-    if ( gval_cnf.check_sat(sat_model) == kB3True ) {
+    if ( struct_sat.check_sat(sat_model) == kB3True ) {
       ++ mFoundCount;
 
       FaultGroup* fg = _fault_group(gid);
@@ -459,7 +431,7 @@ FgMgrBase::find_group2(ymuint fid0,
 	const FaultInfo& fi1 = _fault_info(fid1);
 	if ( !fi1.single_cube() ) {
 	  NodeValList suf_list;
-	  fval_cnf_array[i].get_suf_list(sat_model, _fault(fid1), suf_list);
+	  focone_array[i]->get_suf_list(sat_model, fi1.fault(), suf_list);
 	  fg->set_suf_list(i, suf_list);
 	}
       }
@@ -467,9 +439,9 @@ FgMgrBase::find_group2(ymuint fid0,
       fg->update();
 
       if ( verify_add_fault ) {
-	GvalCnf gval_cnf(max_node_id(), string(), string(), nullptr);
+	StructSat struct_sat(max_node_id());
 	// mSufList 単独で充足可能か調べておく．
-	if ( gval_cnf.check_sat(fg->sufficient_assignment()) != kB3True ) {
+	if ( struct_sat.check_sat(fg->sufficient_assignment()) != kB3True ) {
 	  cout << "Error in FaultGroup::update()" << endl
 	       << "  mSufList inconsistent" << endl;
 	}
@@ -480,43 +452,31 @@ FgMgrBase::find_group2(ymuint fid0,
 
       if ( fi0.single_cube() ) {
 	fg->add_fault(fid0, ma_list0, ma_list0);
-	if ( verify_add_fault ) {
-	  GvalCnf gval_cnf(max_node_id(), string(), string(), nullptr);
-	  // mSufList 単独で充足可能か調べておく．
-	  if ( gval_cnf.check_sat(fg->sufficient_assignment()) != kB3True ) {
-	    cout << "Error in FaultGroup::add_fault(3)" << endl
-		 << "  mSufList inconsistent" << endl;
-	  }
-	  if ( !check_sufficient_assignment(gid) ) {
-	    cout << "Error in sufficient_assignment at add_fault(3)" << endl;
-	  }
-	}
       }
       else {
 	NodeValList suf_list;
-	fval_cnf0.get_suf_list(sat_model, _fault(fid0), suf_list);
+	focone0->get_suf_list(sat_model, _fault(fid0), suf_list);
 	fg->add_fault(fid0, suf_list, ma_list0);
-	if ( verify_add_fault ) {
-	  GvalCnf gval_cnf(max_node_id(), string(), string(), nullptr);
-	  // mSufList 単独で充足可能か調べておく．
-	  if ( gval_cnf.check_sat(fg->sufficient_assignment()) != kB3True ) {
-	    cout << "Error in FaultGroup::add_fault(4)" << endl
-		 << "  mSufList inconsistent" << endl;
-	  }
-	  if ( !check_sufficient_assignment(gid) ) {
-	    cout << "Error in sufficient_assignment at add_fault(4)" << endl;
-	  }
-	}
       }
       ans_gid = gid;
+
+      if ( verify_add_fault ) {
+	StructSat struct_sat(max_node_id());
+	// mSufList 単独で充足可能か調べておく．
+	if ( struct_sat.check_sat(fg->sufficient_assignment()) != kB3True ) {
+	  cout << "Error in FaultGroup::update()" << endl
+	       << "  mSufList inconsistent" << endl;
+	}
+	if ( !check_sufficient_assignment(gid) ) {
+	  cout << "Error in sufficient_assignment at updatet()" << endl;
+	}
+      }
+
       break;
     }
     else {
       add_conflict_cache(gid, fid0);
     }
-  }
-
-  if ( ans_gid < group_num() ) {
   }
 
   local_timer.stop();
@@ -612,38 +572,32 @@ FgMgrBase::check_sufficient_assignment(ymuint gid)
   const NodeValList& suf_list = sufficient_assignment(gid);
   for (ymuint i = 0; i < fault_num(gid); ++ i) {
     ymuint fid = fault_id(gid, i);
-    GvalCnf gval_cnf(max_node_id(), string(), string(), nullptr);
+    StructSat struct_sat(max_node_id());
     // gid の十分条件を追加
-    gval_cnf.add_assignments(suf_list);
-    FvalCnf fval_cnf(gval_cnf);
+    struct_sat.add_assignments(suf_list);
     // fid を検出しない条件を追加
     const TpgFault* f = _fault(fid);
-    NodeSet node_set;
-    node_set.mark_region(max_node_id(), f->tpg_onode());
-    fval_cnf.make_cnf(f, node_set, kVal0);
+    struct_sat.add_focone(f, kVal0);
     // 十分条件が正しければこの SAT 問題は充足不能のはず．
-    if ( gval_cnf.check_sat() != kB3False ) {
+    if ( struct_sat.check_sat() != kB3False ) {
       cout << "ERROR in fault group#" << gid << ": "
-	   << _fault(fid)->str() << " is not detected with suf_list" << endl;
+	   << f->str() << " is not detected with suf_list" << endl;
       error = true;
     }
     const FaultInfo& fi = _fault_info(fid);
     const vector<ymuint>& dom_list = fi.dom_list();
     for (ymuint j = 0; j < dom_list.size(); ++ j) {
       ymuint fid1 = dom_list[j];
-      GvalCnf gval_cnf(max_node_id(), string(), string(), nullptr);
+      StructSat struct_sat1(max_node_id());
       // gid の十分条件を追加
-      gval_cnf.add_assignments(suf_list);
-      FvalCnf fval_cnf(gval_cnf);
+      struct_sat1.add_assignments(suf_list);
       // fid1 を検出しない条件を追加
       const TpgFault* f1 = _fault(fid1);
-      NodeSet node_set1;
-      node_set1.mark_region(max_node_id(), f1->tpg_onode());
-      fval_cnf.make_cnf(f1, node_set1, kVal0);
+      struct_sat1.add_focone(f1, kVal0);
       // 十分条件が正しければこの SAT 問題は充足不能のはず．
-      if ( gval_cnf.check_sat() != kB3False ) {
+      if ( struct_sat1.check_sat() != kB3False ) {
 	cout << "ERROR in fault group#" << gid << ": "
-	     << _fault(fid1)->str() << " is not detected with suf_list" << endl;
+	     << f1->str() << " is not detected with suf_list" << endl;
 	error = true;
       }
     }

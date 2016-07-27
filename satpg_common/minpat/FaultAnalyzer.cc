@@ -15,7 +15,6 @@
 #include "FaultMgr.h"
 #include "TvMgr.h"
 #include "TestVector.h"
-#include "NodeSet.h"
 #include "NodeValList.h"
 
 #include "StructSat.h"
@@ -33,6 +32,27 @@
 BEGIN_NAMESPACE_YM_SATPG
 
 BEGIN_NONAMESPACE
+
+void
+mark_tfo(const TpgNode* node,
+	 HashSet<ymuint>& tfo_mark,
+	 vector<const TpgNode*>& node_list)
+{
+  if ( tfo_mark.check(node->id()) ) {
+    return;
+  }
+  tfo_mark.add(node->id());
+
+  if ( node->is_output() ) {
+    node_list.push_back(node);
+  }
+
+  ymuint no = node->fanout_num();
+  for (ymuint i = 0; i < no; ++ i) {
+    const TpgNode* onode = node->fanout(i);
+    mark_tfo(onode, tfo_mark, node_list);
+  }
+}
 
 void
 mark_tfi(const TpgNode* node,
@@ -132,24 +152,24 @@ FaultAnalyzer::init(const TpgNetwork& network,
     const TpgNode* node = network.active_node(i);
 
     // 故障箇所の TFI of TFI を node_set に記録する．
-    NodeSet node_set;
-    node_set.mark_region(mMaxNodeId, node);
+    vector<const TpgNode*> tfo_list;
+    HashSet<ymuint> tfo_mark;
+    mark_tfo(node, tfo_mark, tfo_list);
 
-    // そのうちの外部入力を ImputListArray に入れる．
+    // tfo_list の TFI に含まれる外部入力を mInputListArray に入れる．
     vector<ymuint>& input_list = mInputListArray[node->id()];
-    for (ymuint j = 0; j < node_set.tfo_tfi_size(); ++ j) {
-      const TpgNode* node1 = node_set.tfo_tfi_node(j);
-      if ( node1->is_input() ) {
-	input_list.push_back(node1->input_id());
-      }
+    HashSet<ymuint> tfi_mark;
+    for (ymuint i = 0; i < tfo_list.size(); ++ i) {
+      const TpgNode* node = tfo_list[i];
+      mark_tfi(node, tfi_mark, input_list);
     }
     // ソートしておく．
     sort(input_list.begin(), input_list.end());
 
     // 故障箇所の TFI に含まれる入力番号を mInputList2Array に入れる．
-    HashSet<ymuint> tfi_mark;
+    HashSet<ymuint> tfi_mark2;
     vector<ymuint>& input_list2 = mInputList2Array[node->id()];
-    mark_tfi(node, tfi_mark, input_list2);
+    mark_tfi(node, tfi_mark2, input_list2);
     // ソートしておく．
     sort(input_list2.begin(), input_list2.end());
 

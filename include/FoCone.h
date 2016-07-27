@@ -49,6 +49,15 @@ public:
   // 外部インターフェイス
   //////////////////////////////////////////////////////////////////////
 
+  /// @brief 十分条件を得る．
+  /// @param[in] sat_model SAT の割り当て結果
+  /// @param[in] fault 故障
+  /// @param[out] suf_list 十分条件の割り当てリスト
+  void
+  get_suf_list(const vector<SatBool3>& sat_model,
+	       const TpgFault* fault,
+	       NodeValList& suf_list) const;
+
 
 private:
   //////////////////////////////////////////////////////////////////////

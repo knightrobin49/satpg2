@@ -15,10 +15,7 @@
 #include "TestVector.h"
 #include "Fsim.h"
 #include "DetOp.h"
-#include "NodeSet.h"
-
-#include "GvalCnf.h"
-#include "FvalCnf.h"
+#include "StructSat.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG
@@ -510,13 +507,10 @@ DomChecker::get_dom_faults1(const vector<ymuint>& src_list,
 
     const TpgFault* f1 = mAnalyzer.fault(f1_id);
 
-    GvalCnf gval_cnf(mMaxNodeId, string(), string(), nullptr);
+    StructSat struct_sat(mMaxNodeId);
 
     // f1 を検出しない CNF を作成
-    FvalCnf fval_cnf(gval_cnf);
-    NodeSet node_set1;
-    node_set1.mark_region(mMaxNodeId, f1->tpg_onode());
-    fval_cnf.make_cnf(f1, node_set1, kVal0);
+    struct_sat.add_focone(f1, kVal0);
 
     for (ymuint i2 = 0; i2 < cand_list.size(); ++ i2) {
       ymuint f2_id = cand_list[i2];
@@ -530,7 +524,7 @@ DomChecker::get_dom_faults1(const vector<ymuint>& src_list,
       ++ stats.mSingleSat;
 
       // これが f2 の十分割当のもとで成り立ったら支配しない
-      if ( gval_cnf.check_sat(fi2.sufficient_assignment()) == kB3True ) {
+      if ( struct_sat.check_sat(fi2.sufficient_assignment()) == kB3True ) {
 	if ( print_dom_detail ) {
 	  cout << "NODOM(1) " << f1->str() << " " << f2->str() << endl;
 	}
