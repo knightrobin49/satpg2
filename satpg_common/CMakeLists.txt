@@ -20,6 +20,7 @@ set (base_SOURCES
 set (sat_engine_SOURCES
   sat_engine/VidLitMap.cc
   sat_engine/GvalCnf.cc
+  sat_engine/ConeBase.cc
   sat_engine/FoCone.cc
   sat_engine/FvalCnf.cc
   sat_engine/FvalCnfBase.cc

@@ -59,7 +59,7 @@ const FoCone*
 StructSat::add_focone(const TpgNode* fnode,
 		      Val3 detect)
 {
-  FoCone* focone = new FoCone(*this, fnode, detect);
+  FoCone* focone = new FoCone(*this, fnode, nullptr, detect);
   mFoConeList.push_back(focone);
   return focone;
 }
@@ -86,7 +86,7 @@ StructSat::add_focone(const TpgFault* fault,
 		      Val3 detect)
 {
   const TpgNode* fnode = fault->tpg_onode();
-  FoCone* focone = new FoCone(*this, fnode, detect);
+  FoCone* focone = new FoCone(*this, fnode, nullptr, detect);
   mFoConeList.push_back(focone);
 
   if ( detect == kVal1 ) {
@@ -322,49 +322,6 @@ StructSat::make_tfi_cnf(const TpgNode* node)
 
   // node の入出力の関係を表す節を作る．
   node->make_cnf(mSolver, VidLitMap(node, var_map()));
-}
-
-// @brief node に関する故障伝搬条件を作る．
-void
-StructSat::make_dchain_cnf(const TpgNode* node,
-			   const TpgNode* dst_node,
-			   const VidMap& fvar_map,
-			   const VidMap& dvar_map)
-{
-  SatLiteral glit(var(node), false);
-  SatLiteral flit(fvar_map(node), false);
-  SatLiteral dlit(dvar_map(node), false);
-
-  // dlit -> XOR(glit, flit) を追加する．
-  // 要するに dlit が 1 の時，正常回路と故障回路で異なっていなければならない．
-  solver().add_clause(~glit, ~flit, ~dlit);
-  solver().add_clause( glit,  flit, ~dlit);
-
-  if ( node->is_output() || node == dst_node ) {
-    // 出力ノードの場合，XOR(glit, flit) -> dlit となる．
-    solver().add_clause(~glit,  flit, dlit);
-    solver().add_clause( glit, ~flit, dlit);
-  }
-  else {
-    // dlit が 1 の時，ファンアウトの dlit が最低1つは 1 でなければならない．
-    ymuint nfo = node->active_fanout_num();
-    vector<SatLiteral> tmp_lits;
-    tmp_lits.reserve(nfo + 1);
-    tmp_lits.push_back(~dlit);
-    for (ymuint j = 0; j < nfo; ++ j) {
-      const TpgNode* onode = node->active_fanout(j);
-      SatLiteral odlit(dvar_map(onode), false);
-      tmp_lits.push_back(odlit);
-    }
-    solver().add_clause(tmp_lits);
-
-    // immediate dominator がある場合，immediate dominator の dlit も 1 でなければならない．
-    const TpgNode* idom = node->imm_dom();
-    if ( idom != nullptr ) {
-      SatLiteral odlit(dvar_map(idom));
-      solver().add_clause(~dlit, odlit);
-    }
-  }
 }
 
 // @brief チェックを行う．

@@ -16,97 +16,28 @@
 
 BEGIN_NAMESPACE_YM_SATPG
 
-BEGIN_NONAMESPACE
-
-bool debug = false;
-
-struct Lt
-{
-  bool
-  operator()(const TpgNode* left,
-	     const TpgNode* right)
-  {
-    return left->output_id2() < right->output_id2();
-  }
-};
-
-END_NONAMESPACE
-
 // @brief コンストラクタ
 // @param[in] struct_sat StructSat ソルバ
 // @param[in] fnode 故障位置のノード
 MffcCone::MffcCone(StructSat& struct_sat,
 		   const TpgNode* fnode) :
-  mStructSat(struct_sat),
-  mMaxNodeId(struct_sat.max_node_id()),
-  mMarkArray(max_id()),
+  ConeBase(struct_sat),
   mElemList(fnode->mffc_elem_num()),
-  mFvarMap(max_id()),
-  mDvarMap(max_id()),
   mElemVarList(fnode->mffc_elem_num())
 {
-  mNodeList.reserve(max_id());
-
+  vector<int> elem_map(max_id(), -1);
   for (ymuint i = 0; i < fnode->mffc_elem_num(); ++ i) {
-    mElemList[i] = fnode->mffc_elem(i);
+    const TpgNode* node = fnode->mffc_elem(i);
+    mElemList[i] = node;
     mElemVarList[i] = solver().new_var();
+    elem_map[node->id()] = i;
   }
 
   // mElemList に含まれるノードの TFO を mNodeList に加える．
-  vector<int> elem_map(max_id(), -1);
-  for (ymuint i = 0; i < mffc_elem_num(); ++ i) {
-    const TpgNode* node = mffc_elem(i);
-    set_mark(node);
-    elem_map[node->id()] = i;
-  }
-  for (ymuint rpos = 0; rpos < mNodeList.size(); ++ rpos) {
-    const TpgNode* node = mNodeList[rpos];
-    ymuint nfo = node->active_fanout_num();
-    for (ymuint i = 0; i < nfo; ++ i) {
-      const TpgNode* fonode = node->active_fanout(i);
-      if ( !mark(fonode) ) {
-	set_mark(fonode);
-      }
-    }
-  }
-  mTfoNum = mNodeList.size();
+  mark_tfo_tfi(mElemList);
 
-  // mNodeList に含まれるノードの TFI を mNodeList に追加する．
-  for (ymuint rpos = 0; rpos < mNodeList.size(); ++ rpos) {
-    const TpgNode* node = mNodeList[rpos];
-    ymuint ni = node->fanin_num();
-    for (ymuint i = 0; i < ni; ++ i) {
-      const TpgNode* inode = node->fanin(i);
-      if ( !mark(inode) ) {
-	set_mark(inode);
-      }
-    }
-  }
-
-  // 出力のリストを整列しておく．
-  sort(mOutputList.begin(), mOutputList.end(), Lt());
-
-  // focone に含まれるノードに変数を割り当てる．
-  for (ymuint i = 0; i < mTfoNum; ++ i) {
-    const TpgNode* node = mNodeList[i];
-    mStructSat.make_tfi_cnf(node);
-    SatVarId fvar = solver().new_var();
-    SatVarId dvar = solver().new_var();
-    set_fvar(node, fvar);
-    set_dvar(node, dvar);
-    if ( debug ) {
-      cout << "fvar(" << node->name() << ") = " << fvar << endl;
-    }
-  }
-
-  // focone に含まれないノードの fvar を gvar にする．
-  for (ymuint i = mTfoNum; i < mNodeList.size(); ++ i) {
-    const TpgNode* node = mNodeList[i];
-    set_fvar(node, gvar(node));
-  }
-
-  for (ymuint i = 0; i < mTfoNum; ++ i) {
-    const TpgNode* node = mNodeList[i];
+  for (ymuint i = 0; i < tfo_num(); ++ i) {
+    const TpgNode* node = tfo_node(i);
     int fpos = elem_map[node->id()];
     if ( fpos >= 0 ) {
       // 出力に故障挿入変数との XOR ゲートを挿入する．
@@ -133,14 +64,14 @@ MffcCone::MffcCone(StructSat& struct_sat,
     }
 
     // D-Chain 制約を作る．
-    mStructSat.make_dchain_cnf(node, nullptr, fvar_map(), dvar_map());
+    make_dchain_cnf(node);
   }
 
-  ymuint npo = mOutputList.size();
+  ymuint npo = output_num();
   vector<SatLiteral> tmp_lits;
   tmp_lits.reserve(npo);
   for (ymuint i = 0; i < npo; ++ i) {
-    const TpgNode* node = mOutputList[i];
+    const TpgNode* node = output_node(i);
     SatLiteral dlit(dvar(node));
     tmp_lits.push_back(dlit);
   }
@@ -194,8 +125,8 @@ MffcCone::select_fault_node(ymuint pos,
       node_list.push_back(onode);
     }
   }
-  for (ymuint i = 0; i < mTfoNum; ++ i) {
-    const TpgNode* node = mNodeList[i];
+  for (ymuint i = 0; i < tfo_num(); ++ i) {
+    const TpgNode* node = tfo_node(i);
     if ( !mark[node->id()] ) {
       SatLiteral dlit(dvar(node), true);
       assumptions.push_back(dlit);
