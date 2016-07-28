@@ -10,21 +10,21 @@
 
 set (base_SOURCES
   base/FaultMgr.cc
-  base/NodeValList.cc
   base/TestVector.cc
   base/TvMgr.cc
   )
 
 set (sat_engine_SOURCES
-  sat_engine/VidLitMap.cc
+  sat_engine/StructSat.cc
   sat_engine/ConeBase.cc
   sat_engine/FoCone.cc
   sat_engine/MffcCone.cc
+  sat_engine/NodeValList.cc
   sat_engine/Extractor.cc
   sat_engine/LitMap.cc
   sat_engine/ModelValMap.cc
+  sat_engine/VidLitMap.cc
   sat_engine/GenVidMap.cc
-  sat_engine/StructSat.cc
   )
 
 set (dtpg_SOURCES
