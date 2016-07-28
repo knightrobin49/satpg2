@@ -14,3 +14,4 @@ if [string match *.blif $filename] {
 
 puts "minpat $options"
 eval atpg::minpat -print_stats $options
+atpg::print_stats
