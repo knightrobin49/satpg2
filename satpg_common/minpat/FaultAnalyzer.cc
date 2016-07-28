@@ -21,7 +21,6 @@
 #include "FoCone.h"
 #include "ModelValMap.h"
 
-#include "Extractor.h"
 #include "BackTracer.h"
 
 #include "ym/RandGen.h"
@@ -150,28 +149,29 @@ FaultAnalyzer::init(const TpgNetwork& network,
     }
 
     const TpgNode* node = network.active_node(i);
+    if ( node->ffr_root() == node ) {
+      // 故障箇所の TFI of TFI を node_set に記録する．
+      vector<const TpgNode*> tfo_list;
+      HashSet<ymuint> tfo_mark;
+      mark_tfo(node, tfo_mark, tfo_list);
 
-    // 故障箇所の TFI of TFI を node_set に記録する．
-    vector<const TpgNode*> tfo_list;
-    HashSet<ymuint> tfo_mark;
-    mark_tfo(node, tfo_mark, tfo_list);
+      // tfo_list の TFI に含まれる外部入力を mInputListArray に入れる．
+      vector<ymuint>& input_list = mInputListArray[node->id()];
+      HashSet<ymuint> tfi_mark;
+      for (ymuint i = 0; i < tfo_list.size(); ++ i) {
+	const TpgNode* node = tfo_list[i];
+	mark_tfi(node, tfi_mark, input_list);
+      }
+      // ソートしておく．
+      sort(input_list.begin(), input_list.end());
 
-    // tfo_list の TFI に含まれる外部入力を mInputListArray に入れる．
-    vector<ymuint>& input_list = mInputListArray[node->id()];
-    HashSet<ymuint> tfi_mark;
-    for (ymuint i = 0; i < tfo_list.size(); ++ i) {
-      const TpgNode* node = tfo_list[i];
-      mark_tfi(node, tfi_mark, input_list);
+      // 故障箇所の TFI に含まれる入力番号を mInputList2Array に入れる．
+      HashSet<ymuint> tfi_mark2;
+      vector<ymuint>& input_list2 = mInputList2Array[node->id()];
+      mark_tfi(node, tfi_mark2, input_list2);
+      // ソートしておく．
+      sort(input_list2.begin(), input_list2.end());
     }
-    // ソートしておく．
-    sort(input_list.begin(), input_list.end());
-
-    // 故障箇所の TFI に含まれる入力番号を mInputList2Array に入れる．
-    HashSet<ymuint> tfi_mark2;
-    vector<ymuint>& input_list2 = mInputList2Array[node->id()];
-    mark_tfi(node, tfi_mark2, input_list2);
-    // ソートしておく．
-    sort(input_list2.begin(), input_list2.end());
 
     ymuint nf = node->fault_num();
     for (ymuint j = 0; j < nf; ++ j) {
@@ -286,13 +286,10 @@ FaultAnalyzer::analyze_fault(const TpgFault* fault,
   if ( sat_stat == kB3True ) {
     // 割当結果から十分割当を求める．
     NodeValList& suf_list = fi.mSufficientAssignment;
+    focone->get_suf_list(sat_model, fault, suf_list);
     NodeValList& pi_suf_list = fi.mPiSufficientAssignment;
     {
       ModelValMap val_map(focone->gvar_map(), focone->fvar_map(), sat_model);
-
-      Extractor extractor(val_map);
-      extractor(fault, suf_list);
-      suf_list.sort();
 
       BackTracer backtracer(mMaxNodeId);
       backtracer(fault->tpg_onode(), focone->output_list(), val_map, pi_suf_list);
@@ -404,7 +401,9 @@ FaultAnalyzer::input_list(ymuint fid) const
 {
   ASSERT_COND( fid < mMaxFaultId );
   const TpgFault* fault = mFaultInfoArray[fid].fault();
-  return mInputListArray[fault->tpg_onode()->id()];
+  const TpgNode* node = fault->tpg_onode();
+  const TpgNode* ffr_root = node->ffr_root();
+  return mInputListArray[ffr_root->id()];
 }
 
 // @brief 故障のTFIに含まれる入力番号のリスト返す．
@@ -414,7 +413,9 @@ FaultAnalyzer::input_list2(ymuint fid) const
 {
   ASSERT_COND( fid < mMaxFaultId );
   const TpgFault* fault = mFaultInfoArray[fid].fault();
-  return mInputList2Array[fault->tpg_onode()->id()];
+  const TpgNode* node = fault->tpg_onode();
+  const TpgNode* ffr_root = node->ffr_root();
+  return mInputList2Array[ffr_root->id()];
 }
 
 // @brief 等価故障を記録する．
