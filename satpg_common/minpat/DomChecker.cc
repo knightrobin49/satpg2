@@ -581,7 +581,7 @@ DomChecker::get_dom_faults1(const vector<ymuint>& src_list,
   for (ymuint i = 0; i < fault_num; ++ i) {
     ymuint f_id = src_list[i];
     if ( mDomFlag[f_id] ) {
-      mAnalyzer.clear_fault_info(f_id);
+      mAnalyzer.clear_fault_info(f_id, mTvMgr);
     }
     else {
       dst_list.push_back(f_id);

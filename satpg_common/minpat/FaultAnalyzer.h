@@ -83,10 +83,13 @@ public:
   fault_info(ymuint fid) const;
 
   /// @brief 故障の情報をクリアする．
+  /// @param[in] fid 故障番号
+  /// @param[in] tv_mgr テストベクタを管理するクラス
   ///
   /// 非支配故障の情報をクリアすることでメモリを減らす．
   void
-  clear_fault_info(ymuint fid);
+  clear_fault_info(ymuint fid,
+		   TvMgr& tv_mgr);
 
   /// @brief 故障のTFOのTFIに含まれる入力番号のリスト返す．
   /// @param[in] fid 故障番号
@@ -180,9 +183,6 @@ private:
 
   // 故障番号リスト
   vector<ymuint> mOrigFidList;
-
-  // 検出可能故障用のテストベクタリスト
-  vector<TestVector*> mTestVectorList;
 
   // ノードごとに関係する入力の番号のリストを収める配列
   vector<vector<ymuint> > mInputListArray;

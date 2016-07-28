@@ -100,30 +100,13 @@ EqChecker::get_rep_faults(const vector<ymuint>& src_fid_list,
   ymuint nc = mEqSet.class_num();
   for (ymuint i = 0; i < nc; ++ i) {
     // 1つの等価故障候補グループを取り出す．
-    vector<ymuint> elem_list;
-#if 0
-    mEqSet.class_list(i, elem_list);
-
-    {
-      vector<ymuint> size_array(mMaxFaultId);
-      for (ymuint j = 0; j < elem_list.size(); ++ j) {
-	ymuint fid = elem_list[j];
-	const FaultInfo& fi = mAnalyzer.fault_info(fid);
-	if ( fi.single_cube() ) {
-	  size_array[fid] = 0;
-	}
-	else {
-	  size_array[fid] = fi.sufficient_assignment().size() - fi.mandatory_assignment().size();
-	}
-      }
-      stable_sort(elem_list.begin(), elem_list.end(), FaultLt(size_array));
-    }
-#else
     vector<ymuint> tmp_list;
     mEqSet.class_list(i, tmp_list);
 
+    // tmp_list の中で single cube 条件の故障が前に来るように並び替える．
+    vector<ymuint> elem_list;
     elem_list.reserve(tmp_list.size());
-    { // single cube 条件の故障が前に来るようにする．
+    {
       ymuint wpos = 0;
       for (ymuint i = 0; i < tmp_list.size(); ++ i) {
 	ymuint fid = tmp_list[i];
@@ -142,7 +125,6 @@ EqChecker::get_rep_faults(const vector<ymuint>& src_fid_list,
 	elem_list.push_back(fid);
       }
     }
-#endif
 
     // グループから要素を1つ取り出す．
     ymuint n = elem_list.size();
@@ -174,6 +156,7 @@ EqChecker::get_rep_faults(const vector<ymuint>& src_fid_list,
 	  // f2 は以降スキップする．
 	  mark[f2_id] = true;
 	  mAnalyzer.add_eq_fault(f1_id, f2_id);
+	  mAnalyzer.clear_fault_info(f2_id, mTvMgr);
 	  ++ n_success;
 	}
       }

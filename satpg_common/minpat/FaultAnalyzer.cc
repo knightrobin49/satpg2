@@ -140,7 +140,6 @@ FaultAnalyzer::init(const TpgNetwork& network,
   ymuint f_red = 0;
   ymuint f_abt = 0;
 
-  mTestVectorList.clear();
   vector<bool> det_flag(mMaxFaultId, false);
   for (ymuint i = 0; i < nn; ++ i) {
     if ( verbose() > 1 ) {
@@ -342,10 +341,13 @@ FaultAnalyzer::analyze_fault(const TpgFault* fault,
 }
 
 // @brief 故障の情報をクリアする．
+// @param[in] fid 故障番号
+// @param[in] tv_mgr テストベクタを管理するクラス
 //
 // 非支配故障の情報をクリアすることでメモリを減らす．
 void
-FaultAnalyzer::clear_fault_info(ymuint fid)
+FaultAnalyzer::clear_fault_info(ymuint fid,
+				TvMgr& tv_mgr)
 {
   ASSERT_COND( fid < mMaxFaultId );
   FaultInfo& fi = mFaultInfoArray[fid];
@@ -353,6 +355,7 @@ FaultAnalyzer::clear_fault_info(ymuint fid)
   fi.mSufficientAssignment.clear();
   fi.mPiSufficientAssignment.clear();
   fi.mOtherSufListArray.clear();
+  tv_mgr.delete_vector(fi.mTestVector);
 }
 
 // @brief ノード番号の最大値を得る．
