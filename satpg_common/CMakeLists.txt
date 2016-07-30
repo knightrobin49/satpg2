@@ -116,16 +116,10 @@ set (tpg_network_SOURCES
   tpg_network/TpgFault.cc
   tpg_network/TpgInput.cc
   tpg_network/TpgLogic.cc
-  tpg_network/TpgLogic0.cc
-  tpg_network/TpgLogic1.cc
-  tpg_network/TpgLogic2.cc
-  tpg_network/TpgLogic3.cc
-  tpg_network/TpgLogic4.cc
   tpg_network/TpgLogicAND.cc
   tpg_network/TpgLogicBUFF.cc
   tpg_network/TpgLogicC0.cc
   tpg_network/TpgLogicC1.cc
-  tpg_network/TpgLogicN.cc
   tpg_network/TpgLogicNAND.cc
   tpg_network/TpgLogicNOR.cc
   tpg_network/TpgLogicNOT.cc

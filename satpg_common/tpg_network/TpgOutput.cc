@@ -21,14 +21,15 @@ BEGIN_NAMESPACE_YM_SATPG
 // @param[in] id ID番号
 // @param[in] name 名前
 // @param[in] output_id 出力番号
-// @param[in] fanin ファンインのノード
+// @param[in] fanin_array ファンインのノード配列
+// @param[in] fault_array 入力故障の配列
 TpgOutput::TpgOutput(ymuint id,
 		     const char* name,
 		     ymuint output_id,
-		     TpgNode* fanin) :
-  TpgNode(id, name),
-  mOutputId(output_id),
-  mFanin(fanin)
+		     TpgNode** fanin_array,
+		     TpgFault** fault_array) :
+  TpgNode(id, name, 1, fanin_array, fault_array),
+  mOutputId(output_id)
 {
 }
 
@@ -72,22 +73,6 @@ TpgOutput::gate_type() const
   return kGateBUFF;
 }
 
-// @brief ファンイン数を得る．
-ymuint
-TpgOutput::fanin_num() const
-{
-  return 1;
-}
-
-// @brief ファンインを得る．
-// @param[in] pos 位置番号 ( 0 <= pos < fanin_num() )
-TpgNode*
-TpgOutput::fanin(ymuint pos) const
-{
-  ASSERT_COND( pos == 0 );
-  return mFanin;
-}
-
 // @brief 入出力の関係を表す CNF 式を生成する．
 // @param[in] solver SAT ソルバ
 // @param[in] lit_map 入出力とリテラルの対応マップ
@@ -123,30 +108,6 @@ TpgOutput::make_faulty_cnf(SatSolver& solver,
   }
 }
 
-// @brief 入力の故障を得る．
-// @param[in] val 故障値 ( 0 / 1 )
-// @param[in] pos 入力の位置番号
-const TpgFault*
-TpgOutput::input_fault(int val,
-		       ymuint pos) const
-{
-  ASSERT_COND( val == 0 || val == 1 );
-  ASSERT_COND( pos == 0 );
-  return mFaults[val];
-}
-
-// @brief 入力の故障を得る．
-// @param[in] val 故障値 ( 0 / 1 )
-// @param[in] pos 入力の位置番号
-TpgFault*
-TpgOutput::input_fault(int val,
-		       ymuint pos)
-{
-  ASSERT_COND( val == 0 || val == 1 );
-  ASSERT_COND( pos == 0 );
-  return mFaults[val];
-}
-
 // @brief 出力番号2をセットする．
 // @param[in] id セットする番号
 //
@@ -155,20 +116,6 @@ void
 TpgOutput::set_output_id2(ymuint id)
 {
   mOutputId2 = id;
-}
-
-// @brief 入力の故障を設定する．
-// @param[in] val 故障値 ( 0 / 1 )
-// @param[in] pos 入力の位置番号
-// @param[in] fault 故障
-void
-TpgOutput::set_input_fault(int val,
-			   ymuint pos,
-			   TpgFault* fault)
-{
-  ASSERT_COND( val == 0 || val == 1 );
-  ASSERT_COND( pos == 0 );
-  mFaults[val % 2] = fault;
 }
 
 END_NAMESPACE_YM_SATPG

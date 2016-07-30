@@ -96,7 +96,10 @@ TpgNode::new_output(Alloc& alloc,
 		    TpgNode* inode)
 {
   void* p = alloc.get_memory(sizeof(TpgOutput));
-  TpgNode* node = new (p) TpgOutput(id, name, output_id, inode);
+  TpgNode** fanin_array = alloc_array<TpgNode*>(alloc, 1);
+  TpgFault** fault_array = alloc_array<TpgFault*>(alloc, 2);
+  fanin_array[0] = inode;
+  TpgNode* node = new (p) TpgOutput(id, name, output_id, fanin_array, fault_array);
 
   return node;
 }
@@ -118,6 +121,15 @@ TpgNode::new_primitive(Alloc& alloc,
   TpgNode* node = nullptr;
 
   ymuint ni = inode_list.size();
+  TpgNode** fanin_array = nullptr;
+  TpgFault** fault_array = nullptr;
+  if ( ni > 0 ) {
+    fanin_array = alloc_array<TpgNode*>(alloc, ni);
+    for (ymuint i = 0; i < ni; ++ i) {
+      fanin_array[i] = inode_list[i];
+    }
+    fault_array = alloc_array<TpgFault*>(alloc, ni * 2);
+  }
 
   void* p;
   switch ( type ) {
@@ -133,184 +145,44 @@ TpgNode::new_primitive(Alloc& alloc,
 
   case kGateBUFF:
     p = alloc.get_memory(sizeof(TpgLogicBUFF));
-    node = new (p) TpgLogicBUFF(id, name, inode_list[0]);
+    node = new (p) TpgLogicBUFF(id, name, fanin_array, fault_array);
     break;
 
   case kGateNOT:
     p = alloc.get_memory(sizeof(TpgLogicNOT));
-    node = new (p) TpgLogicNOT(id, name, inode_list[0]);
+    node = new (p) TpgLogicNOT(id, name, fanin_array, fault_array);
     break;
 
   case kGateAND:
-    switch ( ni ) {
-    case 2:
-      p = alloc.get_memory(sizeof(TpgLogicAND2));
-      node = new (p) TpgLogicAND2(id, name,
-				  inode_list[0], inode_list[1]);
-      break;
-
-    case 3:
-      p = alloc.get_memory(sizeof(TpgLogicAND3));
-      node = new (p) TpgLogicAND3(id, name,
-				  inode_list[0], inode_list[1],
-				  inode_list[2]);
-      break;
-
-    case 4:
-      p = alloc.get_memory(sizeof(TpgLogicAND4));
-      node = new (p) TpgLogicAND4(id, name,
-				  inode_list[0], inode_list[1],
-				  inode_list[2], inode_list[3]);
-      break;
-
-    default:
-      {
-	TpgNode** fanin_array = alloc_array<TpgNode*>(alloc, ni);
-	for (ymuint i = 0; i < ni; ++ i) {
-	  fanin_array[i] = inode_list[i];
-	}
-	TpgFault** fault_array = alloc_array<TpgFault*>(alloc, ni * 2);
-	p = alloc.get_memory(sizeof(TpgLogicANDN));
-	node = new (p) TpgLogicANDN(id, name, ni, fanin_array, fault_array);
-      }
-      break;
-    }
+    p = alloc.get_memory(sizeof(TpgLogicAND));
+    node = new (p) TpgLogicAND(id, name, ni, fanin_array, fault_array);
     break;
 
   case kGateNAND:
-    switch ( ni ) {
-    case 2:
-      p = alloc.get_memory(sizeof(TpgLogicNAND2));
-      node = new (p) TpgLogicNAND2(id, name,
-				   inode_list[0], inode_list[1]);
-      break;
-
-    case 3:
-      p = alloc.get_memory(sizeof(TpgLogicNAND3));
-      node = new (p) TpgLogicNAND3(id, name,
-				   inode_list[0], inode_list[1],
-				   inode_list[2]);
-      break;
-
-    case 4:
-      p = alloc.get_memory(sizeof(TpgLogicNAND4));
-      node = new (p) TpgLogicNAND4(id, name,
-				   inode_list[0], inode_list[1],
-				   inode_list[2], inode_list[3]);
-      break;
-
-    default:
-      {
-	TpgNode** fanin_array = alloc_array<TpgNode*>(alloc, ni);
-	for (ymuint i = 0; i < ni; ++ i) {
-	  fanin_array[i] = inode_list[i];
-	}
-	TpgFault** fault_array = alloc_array<TpgFault*>(alloc, ni * 2);
-	p = alloc.get_memory(sizeof(TpgLogicNANDN));
-	node = new (p) TpgLogicNANDN(id, name, ni, fanin_array, fault_array);
-      }
-      break;
-    }
+    p = alloc.get_memory(sizeof(TpgLogicNAND));
+    node = new (p) TpgLogicNAND(id, name, ni, fanin_array, fault_array);
     break;
 
   case kGateOR:
-    switch ( ni ) {
-    case 2:
-      p = alloc.get_memory(sizeof(TpgLogicOR2));
-      node = new (p) TpgLogicOR2(id, name,
-				 inode_list[0], inode_list[1]);
-      break;
-
-    case 3:
-      p = alloc.get_memory(sizeof(TpgLogicOR3));
-      node = new (p) TpgLogicOR3(id, name,
-				 inode_list[0], inode_list[1],
-				 inode_list[2]);
-      break;
-
-    case 4:
-      p = alloc.get_memory(sizeof(TpgLogicOR4));
-      node = new (p) TpgLogicOR4(id, name,
-				 inode_list[0], inode_list[1],
-				 inode_list[2], inode_list[3]);
-      break;
-
-    default:
-      {
-	TpgNode** fanin_array = alloc_array<TpgNode*>(alloc, ni);
-	for (ymuint i = 0; i < ni; ++ i) {
-	  fanin_array[i] = inode_list[i];
-	}
-	TpgFault** fault_array = alloc_array<TpgFault*>(alloc, ni * 2);
-	p = alloc.get_memory(sizeof(TpgLogicORN));
-	node = new (p) TpgLogicORN(id, name, ni, fanin_array, fault_array);
-      }
-      break;
-    }
+    p = alloc.get_memory(sizeof(TpgLogicOR));
+    node = new (p) TpgLogicOR(id, name, ni, fanin_array, fault_array);
     break;
 
   case kGateNOR:
-    switch ( ni ) {
-    case 2:
-      p = alloc.get_memory(sizeof(TpgLogicNOR2));
-      node = new (p) TpgLogicNOR2(id, name,
-				  inode_list[0], inode_list[1]);
-      break;
-
-    case 3:
-      p = alloc.get_memory(sizeof(TpgLogicNOR3));
-      node = new (p) TpgLogicNOR3(id, name,
-				  inode_list[0], inode_list[1],
-				  inode_list[2]);
-      break;
-
-    case 4:
-      p = alloc.get_memory(sizeof(TpgLogicNOR4));
-      node = new (p) TpgLogicNOR4(id, name,
-				  inode_list[0], inode_list[1],
-				  inode_list[2], inode_list[3]);
-      break;
-
-    default:
-      {
-	TpgNode** fanin_array = alloc_array<TpgNode*>(alloc, ni);
-	for (ymuint i = 0; i < ni; ++ i) {
-	  fanin_array[i] = inode_list[i];
-	}
-	TpgFault** fault_array = alloc_array<TpgFault*>(alloc, ni * 2);
-	p = alloc.get_memory(sizeof(TpgLogicNORN));
-	node = new (p) TpgLogicNORN(id, name, ni, fanin_array, fault_array);
-      }
-      break;
-    }
+    p = alloc.get_memory(sizeof(TpgLogicNOR));
+    node = new (p) TpgLogicNOR(id, name, ni, fanin_array, fault_array);
     break;
 
   case kGateXOR:
-    switch ( ni ) {
-    case 2:
-      p = alloc.get_memory(sizeof(TpgLogicXOR2));
-      node = new (p) TpgLogicXOR2(id, name,
-				  inode_list[0], inode_list[1]);
-      break;
-
-    default:
-      ASSERT_NOT_REACHED;
-      break;
-    }
+    ASSERT_COND( ni == 2 );
+    p = alloc.get_memory(sizeof(TpgLogicXOR2));
+    node = new (p) TpgLogicXOR2(id, name, fanin_array, fault_array);
     break;
 
   case kGateXNOR:
-    switch ( ni ) {
-    case 2:
-      p = alloc.get_memory(sizeof(TpgLogicXNOR2));
-      node = new TpgLogicXNOR2(id, name,
-			       inode_list[0], inode_list[1]);
-      break;
-
-    default:
-      ASSERT_NOT_REACHED;
-      break;
-    }
+    ASSERT_COND( ni == 2 );
+    p = alloc.get_memory(sizeof(TpgLogicXNOR2));
+    node = new TpgLogicXNOR2(id, name, fanin_array, fault_array);
     break;
 
   default:
@@ -324,10 +196,19 @@ TpgNode::new_primitive(Alloc& alloc,
 // @brief コンストラクタ
 // @param[in] id ID番号
 // @param[in] name 名前
+// @param[in] fanin_num ファンイン数
+// @param[in] fanin_array ファンインの配列
+// @param[in] fault_array 入力の故障の配列
 TpgNode::TpgNode(ymuint id,
-		 const char* name) :
+		 const char* name,
+		 ymuint fanin_num,
+		 TpgNode** fanin_array,
+		 TpgFault** fault_array) :
   mId(id),
-  mName(name)
+  mName(name),
+  mFaninNum(fanin_num),
+  mFaninArray(fanin_array),
+  mInputFaults(fault_array)
 {
   mMap = nullptr;
   mFanoutNum = 0;
@@ -450,20 +331,29 @@ TpgNode::noval() const
   return kValX;
 }
 
-// @brief ファンイン数を得る．
-ymuint
-TpgNode::fanin_num() const
+// @brief 入力の故障を設定する．
+// @param[in] val 故障値 ( 0 / 1 )
+// @param[in] pos 入力の位置番号
+// @param[in] fault 故障
+void
+TpgNode::set_input_fault(int val,
+			 ymuint pos,
+			 TpgFault* fault)
 {
-  return 0;
+  ASSERT_COND( val == 0 || val == 1 );
+  ASSERT_COND( pos < fanin_num() );
+  mInputFaults[((pos % fanin_num()) * 2) + (val % 2)] = fault;
 }
 
-// @brief ファンインを得る．
-// @param[in] pos 位置番号 ( 0 <= pos < fanin_num() )
-TpgNode*
-TpgNode::fanin(ymuint pos) const
+// @brief 出力の故障を設定する．
+// @param[in] val 故障値 ( 0 / 1 )
+// @param[in] fault 故障
+void
+TpgNode::set_output_fault(int val,
+			  TpgFault* fault)
 {
-  ASSERT_NOT_REACHED;
-  return nullptr;
+  ASSERT_COND( val == 0 || val == 1 );
+  mOutputFaults[val % 2] = fault;
 }
 
 // @brief TgNode のファンインに対応するノードを返す．
@@ -535,46 +425,6 @@ TpgNode::make_faulty_cnf(SatSolver& solver,
   ASSERT_NOT_REACHED;
 }
 
-// @brief 出力の故障を得る．
-// @param[in] val 故障値 ( 0 / 1 )
-const TpgFault*
-TpgNode::output_fault(int val) const
-{
-  ASSERT_NOT_REACHED;
-  return nullptr;
-}
-
-// @brief 入力の故障を得る．
-// @param[in] val 故障値 ( 0 / 1 )
-// @param[in] pos 入力の位置番号
-const TpgFault*
-TpgNode::input_fault(int val,
-		     ymuint pos) const
-{
-  ASSERT_NOT_REACHED;
-  return nullptr;
-}
-
-// @brief 出力の故障を得る．
-// @param[in] val 故障値 ( 0 / 1 )
-TpgFault*
-TpgNode::output_fault(int val)
-{
-  ASSERT_NOT_REACHED;
-  return nullptr;
-}
-
-// @brief 入力の故障を得る．
-// @param[in] val 故障値 ( 0 / 1 )
-// @param[in] pos 入力の位置番号
-TpgFault*
-TpgNode::input_fault(int val,
-		     ymuint pos)
-{
-  ASSERT_NOT_REACHED;
-  return nullptr;
-}
-
 // @brief 出力番号2をセットする．
 // @param[in] id セットする番号
 //
@@ -644,28 +494,6 @@ void
 TpgNode::set_imm_dom(TpgNode* dom)
 {
   mImmDom = dom;
-}
-
-// @brief 入力の故障を設定する．
-// @param[in] val 故障値 ( 0 / 1 )
-// @param[in] pos 入力の位置番号
-// @param[in] fault 故障
-void
-TpgNode::set_input_fault(int val,
-			 ymuint pos,
-			 TpgFault* fault)
-{
-  ASSERT_NOT_REACHED;
-}
-
-// @brief 出力の故障を設定する．
-// @param[in] val 故障値 ( 0 / 1 )
-// @param[in] fault 故障
-void
-TpgNode::set_output_fault(int val,
-			  TpgFault* fault)
-{
-  ASSERT_NOT_REACHED;
 }
 
 // @brief 代表故障のリストをセットする．

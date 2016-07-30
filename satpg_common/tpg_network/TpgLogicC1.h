@@ -9,7 +9,7 @@
 /// All rights reserved.
 
 
-#include "TpgLogic0.h"
+#include "TpgLogic.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG
@@ -19,7 +19,7 @@ BEGIN_NAMESPACE_YM_SATPG
 /// @brief constant-1 を表すクラス
 //////////////////////////////////////////////////////////////////////
 class TpgLogicC1 :
-  public TpgLogic0
+  public TpgLogic
 {
 public:
 

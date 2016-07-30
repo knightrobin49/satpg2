@@ -22,7 +22,7 @@ BEGIN_NAMESPACE_YM_SATPG
 // @param[in] name 名前
 TpgLogicC0::TpgLogicC0(ymuint id,
 		       const char* name) :
-  TpgLogic0(id, name)
+  TpgLogic(id, name, 0, nullptr, nullptr)
 {
 }
 

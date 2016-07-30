@@ -20,11 +20,13 @@ BEGIN_NAMESPACE_YM_SATPG
 // @brief コンストラクタ
 // @param[in] id ID番号
 // @param[in] name 名前
-// @param[in] inode ファンインのノード
+// @param[in] fanin_array ファンインの配列
+// @param[in] fault_array 入力の故障の配列
 TpgLogicBUFF::TpgLogicBUFF(ymuint id,
 			   const char* name,
-			   TpgNode* inode) :
-  TpgLogic1(id, name, inode)
+			   TpgNode** fanin_array,
+			   TpgFault** fault_array) :
+  TpgLogic(id, name, 1, fanin_array, fault_array)
 {
 }
 

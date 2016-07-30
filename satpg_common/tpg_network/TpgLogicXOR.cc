@@ -20,12 +20,13 @@ BEGIN_NAMESPACE_YM_SATPG
 // @brief コンストラクタ
 // @param[in] id ID番号
 // @param[in] name 名前
-// @param[in] inode0, inode1 ファンインのノード
+// @param[in] fanin_array ファンインの配列
+// @param[in] fault_array 入力の故障の配列
 TpgLogicXOR2::TpgLogicXOR2(ymuint id,
 			   const char* name,
-			   TpgNode* inode0,
-			   TpgNode* inode1) :
-  TpgLogic2(id, name, inode0, inode1)
+			   TpgNode** fanin_array,
+			   TpgFault** fault_array) :
+  TpgLogic(id, name, 2, fanin_array, fault_array)
 {
 }
 

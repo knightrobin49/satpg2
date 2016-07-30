@@ -78,8 +78,14 @@ public:
   /// @brief コンストラクタ
   /// @param[in] id ID番号
   /// @param[in] name 名前
+  /// @param[in] fanin_num ファンイン数
+  /// @param[in] fanin_array ファンインの配列
+  /// @param[in] fault_array 入力の故障の配列
   TpgNode(ymuint id,
-	  const char* name);
+	  const char* name,
+	  ymuint fanin_num,
+	  TpgNode** fanin_array,
+	  TpgFault** fault_array);
 
   /// @brief デストラクタ
   virtual
@@ -202,13 +208,11 @@ public:
   ipos_map(ymuint pos) const;
 
   /// @brief ファンイン数を得る．
-  virtual
   ymuint
   fanin_num() const;
 
   /// @brief ファンインを得る．
   /// @param[in] pos 位置番号 ( 0 <= pos < fanin_num() )
-  virtual
   TpgNode*
   fanin(ymuint pos) const;
 
@@ -293,28 +297,24 @@ public:
 
   /// @brief 出力の故障を得る．
   /// @param[in] val 故障値 ( 0 / 1 )
-  virtual
   TpgFault*
   output_fault(int val);
 
   /// @brief 入力の故障を得る．
   /// @param[in] val 故障値 ( 0 / 1 )
   /// @param[in] pos 入力の位置番号
-  virtual
   TpgFault*
   input_fault(int val,
 	      ymuint pos);
 
   /// @brief 出力の故障を得る．
   /// @param[in] val 故障値 ( 0 / 1 )
-  virtual
   const TpgFault*
   output_fault(int val) const;
 
   /// @brief 入力の故障を得る．
   /// @param[in] val 故障値 ( 0 / 1 )
   /// @param[in] pos 入力の位置番号
-  virtual
   const TpgFault*
   input_fault(int val,
 	      ymuint pos) const;
@@ -381,7 +381,6 @@ public:
   /// @brief 出力の故障を設定する．
   /// @param[in] val 故障値 ( 0 / 1 )
   /// @param[in] fault 故障
-  virtual
   void
   set_output_fault(int val,
 		   TpgFault* fault);
@@ -390,7 +389,6 @@ public:
   /// @param[in] val 故障値 ( 0 / 1 )
   /// @param[in] pos 入力の位置番号
   /// @param[in] fault 故障
-  virtual
   void
   set_input_fault(int val,
 		  ymuint pos,
@@ -430,6 +428,13 @@ private:
   // nullptr の時は内部ノード
   const TpgMap* mMap;
 
+  // ファンイン数
+  ymuint mFaninNum;
+
+  // ファンインの配列
+  // サイズは mFaninNum
+  TpgNode** mFaninArray;
+
   // ファンアウト数
   ymuint mFanoutNum;
 
@@ -441,6 +446,13 @@ private:
 
   // アクティブなファンアウトの配列
   TpgNode** mActFanouts;
+
+  // 入力の故障の配列
+  // サイズは mFaninNum * 2
+  TpgFault** mInputFaults;
+
+  // 出力の故障
+  TpgFault* mOutputFaults[2];
 
   // 代表故障数
   ymuint mFaultNum;
@@ -478,6 +490,24 @@ print_node(ostream& s,
 // インライン関数の定義
 //////////////////////////////////////////////////////////////////////
 
+// @brief ファンイン数を得る．
+inline
+ymuint
+TpgNode::fanin_num() const
+{
+  return mFaninNum;
+}
+
+// @brief ファンインを得る．
+// @param[in] pos 位置番号 ( 0 <= pos < fanin_num() )
+inline
+TpgNode*
+TpgNode::fanin(ymuint pos) const
+{
+  ASSERT_COND( pos < fanin_num() );
+  return mFaninArray[pos];
+}
+
 // @brief ファンアウト数を得る．
 inline
 ymuint
@@ -512,6 +542,52 @@ TpgNode::active_fanout(ymuint pos) const
 {
   ASSERT_COND( pos < mActFanoutNum );
   return mActFanouts[pos];
+}
+
+// @brief 入力の故障を得る．
+// @param[in] val 故障値 ( 0 / 1 )
+// @param[in] pos 入力の位置番号
+inline
+const TpgFault*
+TpgNode::input_fault(int val,
+		     ymuint pos) const
+{
+  ASSERT_COND( val == 0 || val == 1 );
+  ASSERT_COND( pos < fanin_num() );
+  return mInputFaults[((pos % fanin_num()) * 2) + (val % 2)];
+}
+
+// @brief 入力の故障を得る．
+// @param[in] val 故障値 ( 0 / 1 )
+// @param[in] pos 入力の位置番号
+inline
+TpgFault*
+TpgNode::input_fault(int val,
+		     ymuint pos)
+{
+  ASSERT_COND( val == 0 || val == 1 );
+  ASSERT_COND( pos < fanin_num() );
+  return mInputFaults[((pos % fanin_num()) * 2) + (val % 2)];
+}
+
+// @brief 出力の故障を得る．
+// @param[in] val 故障値 ( 0 / 1 )
+inline
+const TpgFault*
+TpgNode::output_fault(int val) const
+{
+  ASSERT_COND( val == 0 || val == 1 );
+  return mOutputFaults[val % 2];
+}
+
+// @brief 出力の故障を得る．
+// @param[in] val 故障値 ( 0 / 1 )
+inline
+TpgFault*
+TpgNode::output_fault(int val)
+{
+  ASSERT_COND( val == 0 || val == 1 );
+  return mOutputFaults[val % 2];
 }
 
 // @brief このノードに関係する代表故障数を返す．

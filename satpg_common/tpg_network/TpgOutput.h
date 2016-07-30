@@ -27,11 +27,15 @@ public:
   /// @param[in] id ID番号
   /// @param[in] name 名前
   /// @param[in] output_id 出力番号
-  /// @param[in] fanin ファンインのノード
+  /// @param[in] fanin_array ファンインのノード配列
+  /// @param[in] fault_array 入力故障の配列
+  ///
+  /// fanin_array のサイズは 1
   TpgOutput(ymuint id,
 	    const char* name,
 	    ymuint output_id,
-	    TpgNode* fanin);
+	    TpgNode** fanin_array,
+	    TpgFault** fault_array);
 
   /// @brief デストラクタ
   ~TpgOutput();
@@ -69,17 +73,6 @@ public:
   GateType
   gate_type() const;
 
-  /// @brief ファンイン数を得る．
-  virtual
-  ymuint
-  fanin_num() const;
-
-  /// @brief ファンインを得る．
-  /// @param[in] pos 位置番号 ( 0 <= pos < fanin_num() )
-  virtual
-  TpgNode*
-  fanin(ymuint pos) const;
-
   /// @brief 入出力の関係を表す CNF 式を生成する．
   /// @param[in] solver SAT ソルバ
   /// @param[in] lit_map 入出力とリテラルの対応マップ
@@ -102,22 +95,6 @@ public:
 		  int fval,
 		  const LitMap& lit_map) const;
 
-  /// @brief 入力の故障を得る．
-  /// @param[in] val 故障値 ( 0 / 1 )
-  /// @param[in] pos 入力の位置番号
-  virtual
-  const TpgFault*
-  input_fault(int val,
-	      ymuint pos) const;
-
-  /// @brief 入力の故障を得る．
-  /// @param[in] val 故障値 ( 0 / 1 )
-  /// @param[in] pos 入力の位置番号
-  virtual
-  TpgFault*
-  input_fault(int val,
-	      ymuint pos);
-
 
 public:
   //////////////////////////////////////////////////////////////////////
@@ -132,16 +109,6 @@ public:
   void
   set_output_id2(ymuint id);
 
-  /// @brief 入力の故障を設定する．
-  /// @param[in] val 故障値 ( 0 / 1 )
-  /// @param[in] pos 入力の位置番号
-  /// @param[in] fault 故障
-  virtual
-  void
-  set_input_fault(int val,
-		  ymuint pos,
-		  TpgFault* fault);
-
 
 private:
   //////////////////////////////////////////////////////////////////////
@@ -153,12 +120,6 @@ private:
 
   // 出力番号2
   ymuint mOutputId2;
-
-  // ファンイン
-  TpgNode* mFanin;
-
-  // 故障
-  TpgFault* mFaults[2];
 
 };
 

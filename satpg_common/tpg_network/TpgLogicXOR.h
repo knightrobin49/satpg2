@@ -9,7 +9,7 @@
 /// All rights reserved.
 
 
-#include "TpgLogic2.h"
+#include "TpgLogic.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG
@@ -19,18 +19,19 @@ BEGIN_NAMESPACE_YM_SATPG
 /// @brief 2入力XORを表すクラス
 //////////////////////////////////////////////////////////////////////
 class TpgLogicXOR2 :
-  public TpgLogic2
+  public TpgLogic
 {
 public:
 
   /// @brief コンストラクタ
   /// @param[in] id ID番号
   /// @param[in] name 名前
-  /// @param[in] inode0, inode1 ファンインのノード
+  /// @param[in] fanin_array ファンインの配列
+  /// @param[in] fault_array 入力の故障の配列
   TpgLogicXOR2(ymuint id,
 	       const char* name,
-	       TpgNode* inode0,
-	       TpgNode* inode1);
+	       TpgNode** fanin_array,
+	       TpgFault** fault_array);
 
   /// @brief デストラクタ
   ~TpgLogicXOR2();

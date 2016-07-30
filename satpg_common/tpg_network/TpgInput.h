@@ -64,31 +64,11 @@ public:
   make_cnf(SatSolver& solver,
 	   const LitMap& lit_map) const;
 
-  /// @brief 出力の故障を得る．
-  /// @param[in] val 故障値 ( 0 / 1 )
-  virtual
-  const TpgFault*
-  output_fault(int val) const;
-
-  /// @brief 出力の故障を得る．
-  /// @param[in] val 故障値 ( 0 / 1 )
-  virtual
-  TpgFault*
-  output_fault(int val);
-
 
 private:
   //////////////////////////////////////////////////////////////////////
   // 内部で用いられる関数
   //////////////////////////////////////////////////////////////////////
-
-  /// @brief 出力の故障を設定する．
-  /// @param[in] val 故障値 ( 0 / 1 )
-  /// @param[in] fault 故障
-  virtual
-  void
-  set_output_fault(int val,
-		   TpgFault* fault);
 
 
 private:
@@ -98,9 +78,6 @@ private:
 
   // 入力番号
   ymuint mInputId;
-
-  // 故障
-  TpgFault* mFaults[2];
 
 };
 

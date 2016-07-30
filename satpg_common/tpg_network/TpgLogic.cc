@@ -19,9 +19,14 @@ BEGIN_NAMESPACE_YM_SATPG
 // @brief コンストラクタ
 // @param[in] id ID番号
 // @param[in] name 名前
+// @param[in] fanin_array ファンインの配列
+// @param[in] fault_array 入力の故障の配列
 TpgLogic::TpgLogic(ymuint id,
-		   const char* name) :
-  TpgNode(id, name)
+		   const char* name,
+		   ymuint fanin_num,
+		   TpgNode** fanin_array,
+		   TpgFault** fault_array) :
+  TpgNode(id, name, fanin_num, fanin_array, fault_array)
 {
 }
 
@@ -35,35 +40,6 @@ bool
 TpgLogic::is_logic() const
 {
   return true;
-}
-
-// @brief 出力の故障を得る．
-// @param[in] val 故障値 ( 0 / 1 )
-const TpgFault*
-TpgLogic::output_fault(int val) const
-{
-  ASSERT_COND( val == 0 || val == 1 );
-  return mOutputFaults[val % 2];
-}
-
-// @brief 出力の故障を得る．
-// @param[in] val 故障値 ( 0 / 1 )
-TpgFault*
-TpgLogic::output_fault(int val)
-{
-  ASSERT_COND( val == 0 || val == 1 );
-  return mOutputFaults[val % 2];
-}
-
-// @brief 出力の故障を設定する．
-// @param[in] val 故障値 ( 0 / 1 )
-// @param[in] fault 故障
-void
-TpgLogic::set_output_fault(int val,
-			   TpgFault* fault)
-{
-  ASSERT_COND( val == 0 || val == 1 );
-  mOutputFaults[val % 2] = fault;
 }
 
 END_NAMESPACE_YM_SATPG

@@ -9,7 +9,7 @@
 /// All rights reserved.
 
 
-#include "TpgLogic1.h"
+#include "TpgLogic.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG
@@ -19,17 +19,19 @@ BEGIN_NAMESPACE_YM_SATPG
 /// @brief buffer を表すクラス
 //////////////////////////////////////////////////////////////////////
 class TpgLogicNOT :
-  public TpgLogic1
+  public TpgLogic
 {
 public:
 
   /// @brief コンストラクタ
   /// @param[in] id ID番号
   /// @param[in] name 名前
-  /// @param[in] inode ファンインのノード
+  /// @param[in] fanin_array ファンインの配列
+  /// @param[in] fault_array 入力の故障の配列
   TpgLogicNOT(ymuint id,
 	      const char* name,
-	      TpgNode* inode);
+	      TpgNode** fanin_array,
+	      TpgFault** fault_array);
 
   /// @brief デストラクタ
   ~TpgLogicNOT();

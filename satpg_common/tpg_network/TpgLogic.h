@@ -26,8 +26,14 @@ public:
   /// @brief コンストラクタ
   /// @param[in] id ID番号
   /// @param[in] name 名前
+  /// @param[in] fanin_num ファンイン数
+  /// @param[in] fanin_array ファンインの配列
+  /// @param[in] fault_array 入力の故障の配列
   TpgLogic(ymuint id,
-	   const char* name);
+	   const char* name,
+	   ymuint fanin_num,
+	   TpgNode** fanin_array,
+	   TpgFault** fault_array);
 
   /// @brief デストラクタ
   ~TpgLogic();
@@ -43,40 +49,17 @@ public:
   bool
   is_logic() const;
 
-  /// @brief 出力の故障を得る．
-  /// @param[in] val 故障値 ( 0 / 1 )
-  virtual
-  const TpgFault*
-  output_fault(int val) const;
-
-  /// @brief 出力の故障を得る．
-  /// @param[in] val 故障値 ( 0 / 1 )
-  virtual
-  TpgFault*
-  output_fault(int val);
-
 
 private:
   //////////////////////////////////////////////////////////////////////
   // 内部で用いられる関数
   //////////////////////////////////////////////////////////////////////
 
-  /// @brief 出力の故障を設定する．
-  /// @param[in] val 故障値 ( 0 / 1 )
-  /// @param[in] fault 故障
-  virtual
-  void
-  set_output_fault(int val,
-		   TpgFault* fault);
-
 
 private:
   //////////////////////////////////////////////////////////////////////
   // データメンバ
   //////////////////////////////////////////////////////////////////////
-
-  // 出力の故障
-  TpgFault* mOutputFaults[2];
 
 };
 
