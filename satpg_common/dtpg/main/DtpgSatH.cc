@@ -57,14 +57,15 @@ DtpgSatH::~DtpgSatH()
 BEGIN_NONAMESPACE
 
 void
-get_ffr_faults(const TpgNode* node,
+get_ffr_faults(const TpgNetwork& network,
+	       const TpgNode* node,
 	       const vector<bool>& fault_mark,
 	       vector<const TpgFault*>& fault_list)
 {
   // node 上のマークされている故障を fault_list に入れる．
-  ymuint nf = node->fault_num();
+  ymuint nf = network.node_fault_num(node->id());
   for (ymuint i = 0; i < nf; ++ i) {
-    const TpgFault* f = node->fault(i);
+    const TpgFault* f = network.node_fault(node->id(), i);
     if ( fault_mark[f->id()] ) {
       fault_list.push_back(f);
     }
@@ -75,7 +76,7 @@ get_ffr_faults(const TpgNode* node,
   for (ymuint i = 0; i < ni; ++ i) {
     const TpgNode* inode = node->fanin(i);
     if ( inode->ffr_root() == node->ffr_root() ) {
-      get_ffr_faults(inode, fault_mark, fault_list);
+      get_ffr_faults(network, inode, fault_mark, fault_list);
     }
   }
 }
@@ -110,10 +111,10 @@ DtpgSatH::run(TpgNetwork& network,
     fault_mark[fid] = true;
   }
 
-  ymuint nn = network.active_node_num();
+  ymuint nn = network.node_num();
   ymuint max_id = network.node_num();
   for (ymuint i = 0; i < nn; ++ i) {
-    const TpgNode* node = network.active_node(i);
+    const TpgNode* node = network.node(i);
     if ( node->imm_dom() != nullptr ) {
       continue;
     }
@@ -122,7 +123,7 @@ DtpgSatH::run(TpgNetwork& network,
     if ( ne == 1 ) {
       // node を根とする FFR に含まれる故障を求める．
       vector<const TpgFault*> f_list;
-      get_ffr_faults(node, fault_mark, f_list);
+      get_ffr_faults(network, node, fault_mark, f_list);
       if ( f_list.empty() ) {
 	// 故障が残っていないのでパス
 	continue;
@@ -160,7 +161,7 @@ DtpgSatH::run(TpgNetwork& network,
       for (ymuint j = 0; j < ne; ++ j) {
 	const TpgNode* node1 = node->mffc_elem(j);
 	// node1 を根とする FFR に含まれる故障を求める．
-	get_ffr_faults(node1, fault_mark, f_list[j]);
+	get_ffr_faults(network, node1, fault_mark, f_list[j]);
 	nf += f_list[j].size();
       }
       if ( nf == 0 ) {

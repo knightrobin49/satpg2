@@ -120,7 +120,7 @@ FaultAnalyzer::init(const TpgNetwork& network,
   StopWatch local_timer;
   local_timer.start();
 
-  ymuint nn = network.active_node_num();
+  ymuint nn = network.node_num();
   mMaxNodeId = network.node_num();
   mMaxFaultId = network.max_fault_id();
 
@@ -147,7 +147,7 @@ FaultAnalyzer::init(const TpgNetwork& network,
       cout.flush();
     }
 
-    const TpgNode* node = network.active_node(i);
+    const TpgNode* node = network.node(i);
     if ( node->ffr_root() == node ) {
       // 故障箇所の TFI of TFI を node_set に記録する．
       vector<const TpgNode*> tfo_list;
@@ -172,9 +172,9 @@ FaultAnalyzer::init(const TpgNetwork& network,
       sort(input_list2.begin(), input_list2.end());
     }
 
-    ymuint nf = node->fault_num();
+    ymuint nf = network.node_fault_num(node->id());
     for (ymuint j = 0; j < nf; ++ j) {
-      const TpgFault* fault = node->fault(j);
+      const TpgFault* fault = network.node_fault(node->id(), j);
       SatBool3 stat = analyze_fault(fault, tvmgr);
       ++ f_all;
       switch ( stat ) {
@@ -197,8 +197,8 @@ FaultAnalyzer::init(const TpgNetwork& network,
 
   mOrigFidList.clear();
   mOrigFidList.reserve(f_det);
-  for (ymuint i = 0; i < network.active_node_num(); ++ i) {
-    const TpgNode* node = network.active_node(i);
+  for (ymuint i = 0; i < network.node_num(); ++ i) {
+    const TpgNode* node = network.node(i);
 #if 0
     ymuint ni = node->fanin_num();
     bool has_ncfault = false;
@@ -241,9 +241,9 @@ FaultAnalyzer::init(const TpgNetwork& network,
       }
     }
 #else
-    ymuint nf = node->fault_num();
+    ymuint nf = network.node_fault_num(node->id());
     for (ymuint j = 0; j < nf; ++ j) {
-      const TpgFault* fault = node->fault(j);
+      const TpgFault* fault = network.node_fault(node->id(), j);
       if ( det_flag[fault->id()] ) {
 	mOrigFidList.push_back(fault->id());
       }

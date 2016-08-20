@@ -12,13 +12,10 @@
 #include "satpg.h"
 #include "LitMap.h"
 #include "Val3.h"
-#include "ym/Alloc.h"
 #include "ym/ym_sat.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG
-
-class TpgMap;
 
 //////////////////////////////////////////////////////////////////////
 /// @class TpgNode TpgNode.h "TpgNode.h"
@@ -29,66 +26,77 @@ class TpgMap;
 /// せてもとのゲートを表す．
 /// そのため，場合によってはファンインの故障を表すための仮想的な
 /// ノードを挿入する場合もある．
+///
+/// 大規模な回路の場合，データ構造をコンパクトにすることが高速化に
+/// つながるのでちょっとトリッキーなことをしている．
+/// 具体的には TpgNode のインスタンスを生成するときに，ファンイン数と
+/// ファンアウト数を調べ，その分だけ TpgNode の後ろの領域に
+/// TpgNode* の配列分だけ余計に確保する．
+/// こうすることで mNodeList[] があたかも固定の配列のように
+/// (つまり余分な間接参照なしに)アクセスすることができる．
+/// そのため通常のコンストラクタを使うことができないため，
+/// make_XXXX() の形のクラスメソッドを使う．
+///
+/// また，ファンインとファンアウトは一つの配列に続けて格納する．
+/// ファンインは 0 〜 (mFaninNum - 1) まで
+/// ファンアウトは mFaninNum 〜 (mFaninNum + mFanoutNum - 1)
+/// となっている．
 //////////////////////////////////////////////////////////////////////
 class TpgNode
 {
 public:
 
-  /// @brief 入力ノードを生成する．
-  /// @param[in] alloc メモリアロケータ
-  /// @param[in] id ID番号
-  /// @param[in] name ノード名
-  /// @param[in] input_id 入力番号
+  /// @brief 入力ノードを作る．
+  /// @param[in] id ノード番号
+  /// @param[in] iid 入力番号
+  /// @param[in] fanout_num ファンアウト数
+  /// @return 作成したノードを返す．
   static
   TpgNode*
-  new_input(Alloc& alloc,
-	    ymuint id,
-	    const char* name,
-	    ymuint input_id);
+  make_input(ymuint id,
+	     ymuint iid,
+	     ymuint fanout_num);
 
-  /// @brief 出力ノードを生成する．
-  /// @param[in] alloc メモリアロケータ
-  /// @param[in] id ID番号
-  /// @param[in] name ノード名
-  /// @param[in] output_id 入力番号
-  /// @param[in] inode ファンインのノード
+  /// @brief 出力ノードを作る．
+  /// @param[in] id ノード番号
+  /// @param[in] oid 出力番号
+  /// @param[in] inode 入力ノード
+  /// @return 作成したノードを返す．
   static
   TpgNode*
-  new_output(Alloc& alloc,
-	     ymuint id,
-	     const char* name,
-	     ymuint output_id,
-	     TpgNode* inode);
+  make_output(ymuint id,
+	      ymuint oid,
+	      TpgNode* inode);
 
-  /// @brief 組み込み型の論理ゲートを生成する．
-  /// @param[in] alloc メモリアロケータ
-  /// @param[in] id ID番号
-  /// @param[in] name ノード名
-  /// @param[in] type ゲートの型
-  /// @param[in] inode_list ファンインのリスト
-  /// @return 生成したノードを返す．
+  /// @brief 論理ノードを作る．
+  /// @param[in] id ノード番号
+  /// @param[in] gate_type ゲートタイプ
+  /// @param[in] inode_list 入力ノードのリスト
+  /// @param[in] fanout_num ファンアウト数
+  /// @return 作成したノードを返す．
   static
   TpgNode*
-  new_primitive(Alloc& alloc,
-		ymuint id,
-		const char* name,
-		GateType type,
-		const vector<TpgNode*>& inode_list);
+  make_logic(ymuint id,
+	     GateType gate_type,
+	     const vector<TpgNode*>& inode_list,
+	     ymuint fanout_num);
+
+  /// @brief ノードを削除する．
+  static
+  void
+  delete_node(TpgNode* node);
+
+
+private:
+  //////////////////////////////////////////////////////////////////////
+  // ちょっとイレギュラーな使い方をするのでコンストラクタ/デストラクタ
+  // は公開しない．
+  //////////////////////////////////////////////////////////////////////
 
   /// @brief コンストラクタ
-  /// @param[in] id ID番号
-  /// @param[in] name 名前
-  /// @param[in] fanin_num ファンイン数
-  /// @param[in] fanin_array ファンインの配列
-  /// @param[in] fault_array 入力の故障の配列
-  TpgNode(ymuint id,
-	  const char* name,
-	  ymuint fanin_num,
-	  TpgNode** fanin_array,
-	  TpgFault** fault_array);
+  TpgNode();
 
   /// @brief デストラクタ
-  virtual
   ~TpgNode();
 
 
@@ -101,15 +109,8 @@ public:
   ymuint
   id() const;
 
-  /// @brief 名前を得る．
-  ///
-  /// nullptr が返される場合もある．
-  const char*
-  name() const;
-
   /// @brief 外部入力タイプの時 true を返す．
   /// @note FF 出力もここに含まれる．
-  virtual
   bool
   is_input() const;
 
@@ -118,13 +119,11 @@ public:
   /// node = TpgNetwork::input(node->input_id()
   /// の関係を満たす．
   /// is_input() が false の場合の返り値は不定
-  virtual
   ymuint
   input_id() const;
 
   /// @brief 外部出力タイプの時 true を返す．
   /// @note FF 入力もここに含まれる．
-  virtual
   bool
   is_output() const;
 
@@ -133,24 +132,20 @@ public:
   /// node = TpgNetwork::output(node->output_id())
   /// の関係を満たす．
   /// is_output() が false の場合の返り値は不定
-  virtual
   ymuint
   output_id() const;
 
   /// @brief TFIサイズの昇順に並べた時の出力番号を返す．
-  virtual
   ymuint
   output_id2() const;
 
   /// @brief logic タイプの時 true を返す．
-  virtual
   bool
   is_logic() const;
 
   /// @brief ゲートタイプを得る．
   ///
   /// is_logic() が false の場合の返り値は不定
-  virtual
   GateType
   gate_type() const;
 
@@ -158,7 +153,6 @@ public:
   ///
   /// is_logic() が false の場合の返り値は不定
   /// ない場合は kValX を返す．
-  virtual
   Val3
   cval() const;
 
@@ -166,7 +160,6 @@ public:
   ///
   /// is_logic() が false の場合の返り値は不定
   /// ない場合は kValX を返す．
-  virtual
   Val3
   nval() const;
 
@@ -174,7 +167,6 @@ public:
   ///
   /// is_logic() が false の場合の返り値は不定
   /// ない場合は kValX を返す．
-  virtual
   Val3
   coval() const;
 
@@ -182,30 +174,8 @@ public:
   ///
   /// is_logic() が false の場合の返り値は不定
   /// ない場合は kValX を返す．
-  virtual
   Val3
   noval() const;
-
-  /// @brief もとのゲートのファンインに対応するノードを返す．
-  /// @param[in] pos もとの BnNode の入力の位置番号 (!!!)
-  ///
-  /// is_root() が true の時のみ意味を持つ．
-  const TpgNode*
-  input_map(ymuint pos) const;
-
-  /// @brief もとのゲートのファンインに対応するノードを返す．
-  /// @param[in] pos もとの BnNode の入力の位置番号 (!!!)
-  ///
-  /// is_root() が true の時のみ意味を持つ．
-  TpgNode*
-  input_map(ymuint pos);
-
-  /// @brief BnNode のファンインに対応するノードのファンイン番号を返す．
-  /// @param[in] pos もとの BnNode の入力の位置番号 (!!!)
-  ///
-  /// is_root() が true の時のみ意味を持つ．
-  ymuint
-  ipos_map(ymuint pos) const;
 
   /// @brief ファンイン数を得る．
   ymuint
@@ -225,41 +195,58 @@ public:
   TpgNode*
   fanout(ymuint pos) const;
 
-  /// @brief アクティブなファンアウト数を得る．
-  ymuint
-  active_fanout_num() const;
-
-  /// @brief アクティブなファンアウトを得る．
-  /// @param[in] pos 位置番号 ( 0 <= pos < active_fanout_num() )
-  TpgNode*
-  active_fanout(ymuint pos) const;
-
-  /// @brief アクティブの場合 true を返す．
-  bool
-  is_active() const;
-
   /// @brief FFR の根のノードを得る．
   ///
   /// 自分が根の場合には自分自身を返す．
-  TpgNode*
+  const TpgNode*
   ffr_root() const;
 
   /// @brief 直近の dominator を得る．
-  TpgNode*
+  const TpgNode*
   imm_dom() const;
 
-  /// @brief MFFC 内の FFR の根のノードの数を返す．
-  ///
-  /// imm_dom() == nullptr の時のみ意味を持つ．
+  /// @brief MFFC の根の場合に MFFC内の根のノード数を返す．
   ymuint
   mffc_elem_num() const;
 
-  /// @brief MFFC 内の FFR の根のノードを返す．
-  /// @param[in] pos 位置番号 ( 0 <= pos < root_num() )
+  /// @brief MFFC の根の場合に MFFC内の根のノードを返す．
+  /// @param[in] pos 位置番号 ( 0 <= pos < mffc_elem_num() )
   ///
-  /// imm_dom() == nullptr の時のみ意味を持つ．
-  TpgNode*
+  /// pos == 0 の時は常に自分を返す．
+  const TpgNode*
   mffc_elem(ymuint pos) const;
+
+
+public:
+  //////////////////////////////////////////////////////////////////////
+  // 内容を設定する関数
+  //////////////////////////////////////////////////////////////////////
+
+  /// @brief 出力番号2をセットする．
+  /// @param[in] id セットする番号
+  ///
+  /// 出力ノード以外では無効
+  void
+  set_output_id2(ymuint id);
+
+  /// @brief ファンアウトを設定する．
+  /// @param[in] pos 位置番号 ( 0 <= pos < fanout_num() )
+  /// @param[in] fo_node ファンアウト先のノード
+  void
+  set_fanout(ymuint pos,
+	     TpgNode* fo_node);
+
+  /// @brief immediate dominator をセットする．
+  /// @param[in] dom dominator ノード
+  void
+  set_imm_dom(const TpgNode* dom);
+
+  /// @brief MFFC 内の根のノードの情報をセットする．
+  /// @param[in] num 要素数
+  /// @param[in] node_list ノードのリスト
+  void
+  set_mffc_info(ymuint num,
+		TpgNode** node_list);
 
 
 public:
@@ -270,7 +257,6 @@ public:
   /// @brief 入出力の関係を表す CNF 式を生成する．
   /// @param[in] solver SAT ソルバ
   /// @param[in] lit_map 入出力とリテラルの対応マップ
-  virtual
   void
   make_cnf(SatSolver& solver,
 	   const LitMap& lit_map) const;
@@ -282,7 +268,6 @@ public:
   /// @param[in] lit_map 入出力とリテラルの対応マップ
   ///
   /// こちらは入力に故障を仮定したバージョン
-  virtual
   void
   make_faulty_cnf(SatSolver& solver,
 		  ymuint fpos,
@@ -295,122 +280,30 @@ public:
   // 故障に関する関数
   //////////////////////////////////////////////////////////////////////
 
-  /// @brief 出力の故障を得る．
-  /// @param[in] val 故障値 ( 0 / 1 )
-  TpgFault*
-  output_fault(int val);
+  mutable
+  SatVarId mGvar;
 
-  /// @brief 入力の故障を得る．
-  /// @param[in] val 故障値 ( 0 / 1 )
-  /// @param[in] pos 入力の位置番号
-  TpgFault*
-  input_fault(int val,
-	      ymuint pos);
+  mutable
+  SatVarId mFvar;
 
-  /// @brief 出力の故障を得る．
-  /// @param[in] val 故障値 ( 0 / 1 )
-  const TpgFault*
-  output_fault(int val) const;
-
-  /// @brief 入力の故障を得る．
-  /// @param[in] val 故障値 ( 0 / 1 )
-  /// @param[in] pos 入力の位置番号
-  const TpgFault*
-  input_fault(int val,
-	      ymuint pos) const;
-
-  /// @brief このノードに関係する代表故障数を返す．
-  ymuint
-  fault_num() const;
-
-  /// @brief このノードに関係する代表故障を返す．
-  /// @param[in] pos 位置番号 ( 0 <= pos < fault_num() )
-  const TpgFault*
-  fault(ymuint pos) const;
+  mutable
+  SatVarId mDvar;
 
 
-public:
+private:
   //////////////////////////////////////////////////////////////////////
   // 内部で用いられる下請け関数
   //////////////////////////////////////////////////////////////////////
 
-  /// @brief 出力番号2をセットする．
-  /// @param[in] id セットする番号
-  ///
-  /// 出力ノード以外では無効
-  virtual
-  void
-  set_output_id2(ymuint id);
-
-  /// @brief ファンアウト用の配列を初期化する．
-  /// @param[in] nfo ファンアウト数
-  /// @param[in] fo_array ファンアウト用の配列
-  /// @param[in] act_fo_array アクティブなファンアウト用の配列
-  void
-  set_fanout_num(ymuint nfo,
-		 TpgNode** fo_array,
-		 TpgNode** act_fo_array);
-
-  /// @brief ファンアウトを設定する．
-  /// @param[in] pos 位置番号 ( 0 <= pos < fanout_num() )
-  /// @param[in] fo_node ファンアウト先のノード
-  void
-  set_fanout(ymuint pos,
-	     TpgNode* fo_node);
-
-  /// @brief アクティブなファンアウト配列を設定する．
-  /// @param[in] act_fanouts ファンアウト配列のソース
-  void
-  set_active_fanouts(const vector<TpgNode*>& act_fanouts);
-
-  /// @brief TpgMap をセットする．
-  /// @param[in] tmap セットする TpgMap
-  void
-  set_tmap(TpgMap* tmap);
-
-  /// @brief FFR の根のノードをセットする．
-  /// @param[in] root 根のノード
-  void
-  set_ffr_root(TpgNode* root);
-
-  /// @brief immediate dominator をセットする．
-  /// @param[in] dom dominator ノード
-  void
-  set_imm_dom(TpgNode* dom);
-
-  /// @brief 出力の故障を設定する．
-  /// @param[in] val 故障値 ( 0 / 1 )
-  /// @param[in] fault 故障
-  void
-  set_output_fault(int val,
-		   TpgFault* fault);
-
-  /// @brief 入力の故障を設定する．
-  /// @param[in] val 故障値 ( 0 / 1 )
-  /// @param[in] pos 入力の位置番号
-  /// @param[in] fault 故障
-  void
-  set_input_fault(int val,
-		  ymuint pos,
-		  TpgFault* fault);
-
-  /// @brief 代表故障のリストをセットする．
-  void
-  set_fault_list(ymuint nf,
-		 const TpgFault** fault_list);
-
-  /// @brief アクティブにする．
-  void
-  set_active();
-
-  /// @brief アクティブフラグを消す．
-  void
-  clear_active();
-
-  /// @brief MFFC の情報をセットする．
-  void
-  set_root_list(ymuint n,
-		TpgNode** root_list);
+  /// @brief ノードを生成する
+  /// @param[in] id ID番号
+  /// @param[in] fanin_num ファンイン数
+  /// @param[in] fanout_num ファンアウト数
+  static
+  TpgNode*
+  make_node(ymuint id,
+	    ymuint fanin_num,
+	    ymuint fanout_num);
 
 
 private:
@@ -419,61 +312,38 @@ private:
   //////////////////////////////////////////////////////////////////////
 
   // ID 番号
-  ymuint mId;
+  ymuint32 mId;
 
-  // 名前
-  const char* mName;
+  // タイプをパックした情報
+  // - [0:1] ノードタイプ
+  //   0: 未使用
+  //   1: 外部入力
+  //   2: 外部出力
+  //   3: 論理ノード
+  // - [2:31] 入力/出力ノードの場合は通し番号
+  //          論理ノードの場合はゲートタイプ
+  ymuint32 mTypeId;
 
-  // もとのゲートの入力の対応関係
-  // nullptr の時は内部ノード
-  const TpgMap* mMap;
+  // 出力ID2
+  ymuint32 mOutputId2;
 
   // ファンイン数
-  ymuint mFaninNum;
-
-  // ファンインの配列
-  // サイズは mFaninNum
-  TpgNode** mFaninArray;
+  ymuint32 mFaninNum;
 
   // ファンアウト数
-  ymuint mFanoutNum;
+  ymuint32 mFanoutNum;
 
-  // ファンアウトの配列
-  TpgNode** mFanouts;
-
-  // アクティブなファンアウト数
-  ymuint mActFanoutNum;
-
-  // アクティブなファンアウトの配列
-  TpgNode** mActFanouts;
-
-  // 入力の故障の配列
-  // サイズは mFaninNum * 2
-  TpgFault** mInputFaults;
-
-  // 出力の故障
-  TpgFault* mOutputFaults[2];
-
-  // 代表故障数
-  ymuint mFaultNum;
-
-  // 代表故障の配列
-  const TpgFault** mFaultList;
-
-  // いくつかのマークを納めるビットベクタ
-  ymuint32 mMarks;
-
-  // FFR の根のノード
-  TpgNode* mFfrRoot;
+  // MFFC 内の根のノード数
+  ymuint32 mMffcElemNum;
 
   // immediate dominator
-  TpgNode* mImmDom;
+  const TpgNode* mImmDom;
 
-  // MFFC 内の FFR の根のノードの数
-  ymuint mRootNum;
+  // MFFC 内の根のノードのリスト
+  TpgNode** mMffcElemList;
 
-  // MFFC 内の FFR の根のノードの配列
-  TpgNode** mRootList;
+  // ファンインとファンアウトの配列
+  TpgNode* mNodeList[1];
 
 };
 
@@ -483,12 +353,85 @@ private:
 /// @param[in] node 対象のノード
 void
 print_node(ostream& s,
+	   const TpgNetwork& network,
 	   const TpgNode* node);
 
 
 //////////////////////////////////////////////////////////////////////
 // インライン関数の定義
 //////////////////////////////////////////////////////////////////////
+
+// @brief 外部入力タイプの時 true を返す．
+// @note FF 出力もここに含まれる．
+inline
+bool
+TpgNode::is_input() const
+{
+  return (mTypeId & 3U) == 1U;
+}
+
+// @brief 外部入力タイプの時に入力番号を返す．
+//
+// node = TpgNetwork::input(node->input_id()
+// の関係を満たす．
+// is_input() が false の場合の返り値は不定
+inline
+ymuint
+TpgNode::input_id() const
+{
+  ASSERT_COND( is_input() );
+  return (mTypeId >> 2);
+}
+
+// @brief 外部出力タイプの時 true を返す．
+// @note FF 入力もここに含まれる．
+inline
+bool
+TpgNode::is_output() const
+{
+  return (mTypeId & 3U) == 2U;
+}
+
+// @brief 外部出力タイプの時に出力番号を返す．
+//
+// node = TpgNetwork::output(node->output_id())
+// の関係を満たす．
+// is_output() が false の場合の返り値は不定
+inline
+ymuint
+TpgNode::output_id() const
+{
+  ASSERT_COND( is_output() );
+  return (mTypeId >> 2);
+}
+
+// @brief TFIサイズの昇順に並べた時の出力番号を返す．
+inline
+ymuint
+TpgNode::output_id2() const
+{
+  ASSERT_COND( is_output() );
+  return mOutputId2;
+}
+
+// @brief logic タイプの時 true を返す．
+inline
+bool
+TpgNode::is_logic() const
+{
+  return (mTypeId & 3U) == 3U;
+}
+
+// @brief ゲートタイプを得る．
+//
+// is_logic() が false の場合の返り値は不定
+inline
+GateType
+TpgNode::gate_type() const
+{
+  ASSERT_COND( is_logic() );
+  return static_cast<GateType>(mTypeId >> 2);
+}
 
 // @brief ファンイン数を得る．
 inline
@@ -505,7 +448,7 @@ TpgNode*
 TpgNode::fanin(ymuint pos) const
 {
   ASSERT_COND( pos < fanin_num() );
-  return mFaninArray[pos];
+  return mNodeList[pos];
 }
 
 // @brief ファンアウト数を得る．
@@ -523,153 +466,48 @@ TpgNode*
 TpgNode::fanout(ymuint pos) const
 {
   ASSERT_COND( pos < fanout_num() );
-  return mFanouts[pos];
-}
-
-// @brief アクティブなファンアウト数を得る．
-inline
-ymuint
-TpgNode::active_fanout_num() const
-{
-  return mActFanoutNum;
-}
-
-// @brief アクティブなファンアウトを得る．
-// @param[in] pos 位置番号 ( 0 <= pos < active_fanout_num() )
-inline
-TpgNode*
-TpgNode::active_fanout(ymuint pos) const
-{
-  ASSERT_COND( pos < mActFanoutNum );
-  return mActFanouts[pos];
-}
-
-// @brief 入力の故障を得る．
-// @param[in] val 故障値 ( 0 / 1 )
-// @param[in] pos 入力の位置番号
-inline
-const TpgFault*
-TpgNode::input_fault(int val,
-		     ymuint pos) const
-{
-  ASSERT_COND( val == 0 || val == 1 );
-  ASSERT_COND( pos < fanin_num() );
-  return mInputFaults[((pos % fanin_num()) * 2) + (val % 2)];
-}
-
-// @brief 入力の故障を得る．
-// @param[in] val 故障値 ( 0 / 1 )
-// @param[in] pos 入力の位置番号
-inline
-TpgFault*
-TpgNode::input_fault(int val,
-		     ymuint pos)
-{
-  ASSERT_COND( val == 0 || val == 1 );
-  ASSERT_COND( pos < fanin_num() );
-  return mInputFaults[((pos % fanin_num()) * 2) + (val % 2)];
-}
-
-// @brief 出力の故障を得る．
-// @param[in] val 故障値 ( 0 / 1 )
-inline
-const TpgFault*
-TpgNode::output_fault(int val) const
-{
-  ASSERT_COND( val == 0 || val == 1 );
-  return mOutputFaults[val % 2];
-}
-
-// @brief 出力の故障を得る．
-// @param[in] val 故障値 ( 0 / 1 )
-inline
-TpgFault*
-TpgNode::output_fault(int val)
-{
-  ASSERT_COND( val == 0 || val == 1 );
-  return mOutputFaults[val % 2];
-}
-
-// @brief このノードに関係する代表故障数を返す．
-inline
-ymuint
-TpgNode::fault_num() const
-{
-  return mFaultNum;
-}
-
-// @brief このノードに関係する代表故障を返す．
-// @param[in] pos 位置番号 ( 0 <= pos < fault_num() )
-inline
-const TpgFault*
-TpgNode::fault(ymuint pos) const
-{
-  ASSERT_COND( pos < mFaultNum );
-  return mFaultList[pos % mFaultNum];
-}
-
-// @brief アクティブの場合 true を返す．
-inline
-bool
-TpgNode::is_active() const
-{
-  return static_cast<bool>(mMarks & 1U);
-}
-
-// @brief アクティブにする．
-inline
-void
-TpgNode::set_active()
-{
-  mMarks |= 1U;
-}
-
-// @brief アクティブフラグを消す．
-inline
-void
-TpgNode::clear_active()
-{
-  mMarks &= ~1U;
+  return mNodeList[mFaninNum + pos];
 }
 
 // @brief FFR の根のノードを得る．
 //
 // 自分が根の場合には自分自身を返す．
 inline
-TpgNode*
+const TpgNode*
 TpgNode::ffr_root() const
 {
-  return mFfrRoot;
+  if ( fanout_num() == 0 || fanout_num() > 1 ) {
+    return this;
+  }
+  return fanout(0)->ffr_root();
 }
 
 // @brief 直近の dominator を得る．
 inline
-TpgNode*
+const TpgNode*
 TpgNode::imm_dom() const
 {
   return mImmDom;
 }
 
-// @brief MFFC 内の FFR の根のノードの数を返す．
-//
-// imm_dom() == nullptr の時のみ意味を持つ．
+// @brief MFFC の根の場合に MFFC内の根のノード数を返す．
 inline
 ymuint
 TpgNode::mffc_elem_num() const
 {
-  return mRootNum;
+  return mMffcElemNum;
 }
 
-// @brief MFFC 内の FFR の根のノードを返す．
-// @param[in] pos 位置番号 ( 0 <= pos < root_num() )
+// @brief MFFC の根の場合に MFFC内の根のノードを返す．
+// @param[in] pos 位置番号 ( 0 <= pos < mffc_elem_num() )
 //
-// imm_dom() == nullptr の時のみ意味を持つ．
+// pos == 0 の時は常に自分を返す．
 inline
-TpgNode*
+const TpgNode*
 TpgNode::mffc_elem(ymuint pos) const
 {
   ASSERT_COND( pos < mffc_elem_num() );
-  return mRootList[pos];
+  return mMffcElemList[pos];
 }
 
 END_NAMESPACE_YM_SATPG

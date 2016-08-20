@@ -27,9 +27,9 @@ dfs(const TpgNode* node,
   }
   mark.add(node->id());
 
-  ymuint nfo = node->active_fanout_num();
+  ymuint nfo = node->fanout_num();
   for (ymuint i = 0; i < nfo; ++ i) {
-    const TpgNode* onode = node->active_fanout(i);
+    const TpgNode* onode = node->fanout(i);
     dfs(onode, mark);
   }
 }
@@ -94,8 +94,8 @@ Extractor::operator()(const TpgFault* fault,
     for (ymuint i = 0; i < n; ++ i) {
       NodeVal nv = assign_list[i];
       const TpgNode* node = nv.node();
-      print_node(dbg_out, node);
-      dbg_out << ":";
+      dbg_out << "Node#" << node->id()
+	      << ":";
       if ( nv.val() ) {
 	dbg_out << "1";
       }
@@ -116,9 +116,9 @@ Extractor::find_sensitized_output(const TpgNode* node)
     return node;
   }
 
-  ymuint nfo = node->active_fanout_num();
+  ymuint nfo = node->fanout_num();
   for (ymuint i = 0; i < nfo; ++ i) {
-    const TpgNode* onode = node->active_fanout(i);
+    const TpgNode* onode = node->fanout(i);
     if ( mValMap.gval(onode) != mValMap.fval(onode) ) {
       const TpgNode* ans = find_sensitized_output(onode);
       if ( ans != nullptr ) {

@@ -68,7 +68,95 @@ private:
   // 内部で用いられる関数
   //////////////////////////////////////////////////////////////////////
 
+  /// @brief テスト生成を行なう．
+  /// @param[in] fault 対象の故障
+  void
+  run_single(const TpgFault* fault);
+
+  /// @brief TFO マークを調べる．
+  bool
+  tfo_mark(const TpgNode* node) const;
+
+  /// @brief TFO マークをつける．
+  void
+  set_tfo_mark(const TpgNode* node);
+
+  /// @brief TFI マークを調べる．
+  bool
+  tfi_mark(const TpgNode* node) const;
+
+  /// @brief TFI マークをつける．
+  void
+  set_tfi_mark(const TpgNode* node);
+
+  /// @brief TFO マークと TFI マークのいづれかがついていたら true を返す．
+  bool
+  mark(const TpgNode* node);
+
+
+private:
+  //////////////////////////////////////////////////////////////////////
+  // データメンバ
+  //////////////////////////////////////////////////////////////////////
+
+  ymuint mMaxNodeId;
+
+  vector<const TpgNode*> mNodeList;
+
+  vector<ymuint8> mMarkArray;
+
 };
+
+// @brief TFO マークを調べる．
+inline
+bool
+DtpgSatS::tfo_mark(const TpgNode* node) const
+{
+  return static_cast<bool>((mMarkArray[node->id()] >> 0) & 1U);
+}
+
+// @brief TFO マークをつける．
+inline
+void
+DtpgSatS::set_tfo_mark(const TpgNode* node)
+{
+  ymuint id = node->id();
+  if ( ((mMarkArray[id] >> 0) & 1U) == 0U ) {
+    mMarkArray[id] = 1U;
+    mNodeList.push_back(node);
+  }
+}
+
+// @brief TFI マークを調べる．
+inline
+bool
+DtpgSatS::tfi_mark(const TpgNode* node) const
+{
+  return static_cast<bool>((mMarkArray[node->id()] >> 1) & 1U);
+}
+
+// @brief TFI マークをつける．
+inline
+void
+DtpgSatS::set_tfi_mark(const TpgNode* node)
+{
+  ymuint id = node->id();
+  if ( mMarkArray[id] == 0U ) {
+    mMarkArray[node->id()] = 2U;
+    mNodeList.push_back(node);
+  }
+}
+
+// @brief TFO マークと TFI マークのいづれかがついていたら true を返す．
+inline
+bool
+DtpgSatS::mark(const TpgNode* node)
+{
+  if ( mMarkArray[node->id()] ) {
+    return true;
+  }
+  return false;
+}
 
 END_NAMESPACE_YM_SATPG
 

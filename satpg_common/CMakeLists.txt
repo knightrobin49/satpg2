@@ -114,24 +114,11 @@ set (rtpg_SOURCES
 
 set (tpg_network_SOURCES
   tpg_network/TpgFault.cc
-  tpg_network/TpgInput.cc
-  tpg_network/TpgLogic.cc
-  tpg_network/TpgLogicAND.cc
-  tpg_network/TpgLogicBUFF.cc
-  tpg_network/TpgLogicC0.cc
-  tpg_network/TpgLogicC1.cc
-  tpg_network/TpgLogicNAND.cc
-  tpg_network/TpgLogicNOR.cc
-  tpg_network/TpgLogicNOT.cc
-  tpg_network/TpgLogicOR.cc
-  tpg_network/TpgLogicXNOR.cc
-  tpg_network/TpgLogicXOR.cc
   tpg_network/TpgMap.cc
   tpg_network/TpgNetwork.cc
   tpg_network/TpgNode.cc
   tpg_network/TpgNodeInfo.cc
   tpg_network/TpgNodeMap.cc
-  tpg_network/TpgOutput.cc
   )
 
 

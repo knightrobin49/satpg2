@@ -66,9 +66,9 @@ ConeBase::mark_tfo_tfi(const vector<const TpgNode*>& node_list,
     if ( end_mark(node) ) {
       continue;
     }
-    ymuint nfo = node->active_fanout_num();
+    ymuint nfo = node->fanout_num();
     for (ymuint i = 0; i < nfo; ++ i) {
-      const TpgNode* fonode = node->active_fanout(i);
+      const TpgNode* fonode = node->fanout(i);
       if ( !tfo_mark(fonode) ) {
 	set_tfo_mark(fonode);
       }
@@ -104,7 +104,7 @@ ConeBase::mark_tfo_tfi(const vector<const TpgNode*>& node_list,
     SatVarId fvar = solver().new_var();
     set_fvar(node, fvar);
     if ( debug ) {
-      cout << "fvar(" << node->name() << ") = " << fvar << endl;
+      cout << "fvar(Node#" << node->id() << ") = " << fvar << endl;
     }
     if ( use_dvar ) {
       SatVarId dvar = solver().new_var();
@@ -149,12 +149,12 @@ ConeBase::make_dchain_cnf(const TpgNode* node)
   }
   else {
     // dlit が 1 の時，ファンアウトの dlit が最低1つは 1 でなければならない．
-    ymuint nfo = node->active_fanout_num();
+    ymuint nfo = node->fanout_num();
     vector<SatLiteral> tmp_lits;
     tmp_lits.reserve(nfo + 1);
     tmp_lits.push_back(~dlit);
     for (ymuint j = 0; j < nfo; ++ j) {
-      const TpgNode* onode = node->active_fanout(j);
+      const TpgNode* onode = node->fanout(j);
       SatLiteral odlit(dvar(onode), false);
       tmp_lits.push_back(odlit);
     }

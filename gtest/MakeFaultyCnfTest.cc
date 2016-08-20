@@ -76,18 +76,18 @@ MakeFaultyCnfTest::do_test(ymuint ni,
   mIvars.clear();
   mIvars.resize(ni);
   for (ymuint i = 0; i < ni; ++ i) {
-    TpgNode* node = TpgNode::new_input(mAlloc, i, "", i);
+    TpgNode* node = TpgNode::make_input(i, i, 1);
     mInputs[i] = node;
     SatVarId var = mSolver.new_var();
     mIvars[i] = var;
   }
   mOvar = mSolver.new_var();
 
-  TpgNode* node = TpgNode::new_primitive(mAlloc, 0, "", gate_type, mInputs);
+  TpgNode* prim_node = TpgNode::make_logic(ni, gate_type, mInputs, 1);
 
   VectLitMap lit_map(mIvars, mOvar);
 
-  node->make_faulty_cnf(mSolver, fpos, fval, lit_map);
+  prim_node->make_faulty_cnf(mSolver, fpos, fval, lit_map);
 
   ymuint np = (1 << ni);
 

@@ -343,9 +343,9 @@ BtJust2::mark_tfo(const TpgNode* node)
   }
   mTfoMark[node->id()] = true;
 
-  ymuint nfo = node->active_fanout_num();
+  ymuint nfo = node->fanout_num();
   for (ymuint i = 0; i < nfo; ++ i) {
-    const TpgNode* onode = node->active_fanout(i);
+    const TpgNode* onode = node->fanout(i);
     mark_tfo(onode);
   }
 }

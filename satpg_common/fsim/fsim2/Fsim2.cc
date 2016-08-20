@@ -85,7 +85,7 @@ Fsim2::set_network(const TpgNetwork& network)
   ymuint nf = 0;
   for (ymuint i = 0; i < nn; ++ i) {
     const TpgNode* tpgnode = mNetwork->node(i);
-    nf += tpgnode->fault_num();
+    nf += network.node_fault_num(tpgnode->id());
 
     SimNode* node = nullptr;
 
@@ -93,7 +93,8 @@ Fsim2::set_network(const TpgNetwork& network)
       // 外部入力に対応する SimNode の生成
       node = make_input();
       mInputArray[tpgnode->input_id()] = node;
-      node->set_name(tpgnode->name());
+      const char* name = network.node_name(tpgnode->id());
+      node->set_name(name);
     }
     else if ( tpgnode->is_output() ) {
       // 外部出力に対応する SimNode の生成
@@ -102,7 +103,8 @@ Fsim2::set_network(const TpgNetwork& network)
       node = make_node(kGateBUFF, vector<SimNode*>(1, inode));
       node->set_output();
       mOutputArray[tpgnode->output_id()] = node;
-      node->set_name(tpgnode->name());
+      const char* name = network.node_name(tpgnode->id());
+      node->set_name(name);
     }
     else if ( tpgnode->is_logic() ) {
       // 論理ノードに対する SimNode の作成
@@ -120,7 +122,8 @@ Fsim2::set_network(const TpgNetwork& network)
       // 出力の論理を表す SimNode を作る．
       GateType type = tpgnode->gate_type();
       node = make_node(type, inputs);
-      node->set_name(tpgnode->name());
+      const char* name = network.node_name(tpgnode->id());
+      node->set_name(name);
     }
     // 対応表に登録しておく．
     mSimMap[tpgnode->id()] = node;
@@ -195,9 +198,9 @@ Fsim2::set_network(const TpgNetwork& network)
   ymuint fid = 0;
   for (ymuint i = 0; i < nn; ++ i) {
     const TpgNode* tpgnode = network.node(i);
-    ymuint nf1 = tpgnode->fault_num();
+    ymuint nf1 = network.node_fault_num(tpgnode->id());
     for (ymuint j = 0; j < nf1; ++ j) {
-      const TpgFault* fault = tpgnode->fault(j);
+      const TpgFault* fault = network.node_fault(tpgnode->id(), j);
       const TpgNode* tpgnode = fault->tpg_onode();
       SimNode* simnode = find_simnode(tpgnode);
       SimNode* isimnode = nullptr;

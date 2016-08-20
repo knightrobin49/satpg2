@@ -82,7 +82,7 @@ Fsim3::set_network(const TpgNetwork& network)
   ymuint nf = 0;
   for (ymuint i = 0; i < nn; ++ i) {
     const TpgNode* tpgnode = mNetwork->node(i);
-    nf += tpgnode->fault_num();
+    nf += network.node_fault_num(tpgnode->id());
 
     SimNode* node = nullptr;
 
@@ -197,9 +197,9 @@ Fsim3::set_network(const TpgNetwork& network)
   ymuint fid = 0;
   for (ymuint i = 0; i < nn; ++ i) {
     const TpgNode* tpgnode = network.node(i);
-    ymuint nf1 = tpgnode->fault_num();
+    ymuint nf1 = network.node_fault_num(tpgnode->id());
     for (ymuint j = 0; j < nf1; ++ j) {
-      const TpgFault* fault = tpgnode->fault(j);
+      const TpgFault* fault = network.node_fault(tpgnode->id(), j);
       const TpgNode* node = fault->tpg_onode();
       SimNode* simnode = find_simnode(node);
       ymuint ipos = 0;

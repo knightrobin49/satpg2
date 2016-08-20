@@ -34,7 +34,7 @@ DtpgCmd::DtpgCmd(AtpgMgr* mgr) :
 {
   mPoptVerbose = new TclPoptInt(this, "verbose",
 				"specify verbose level (0, 1, 2, ...)");
-  mPoptSat = new TclPopt(this, "sat",
+  mPoptSat = new TclPoptStr(this, "sat",
 			 "SAT mode");
   mPoptSatOption = new TclPoptStr(this, "sat-option",
 			 "SAT option <STRING>");
@@ -44,6 +44,8 @@ DtpgCmd::DtpgCmd(AtpgMgr* mgr) :
 			     "MINISAT mode");
   mPoptMiniSat2 = new TclPopt(this, "minisat2",
 			     "MINISAT-2 mode");
+  mPoptYmSat1 = new TclPopt(this, "ymsat1",
+			    "YmSat1 mode");
   mPoptPrintStats = new TclPopt(this, "print_stats",
 				"print statistics");
   mPoptSingle = new TclPopt(this, "single",
@@ -105,17 +107,7 @@ DtpgCmd::cmd_proc(TclObjVector& objv)
     sat_option = mPoptSatOption->val();
   }
   if ( mPoptSat->is_specified() ) {
-    sat_type = "";
-  }
-  else if ( mPoptSatRec->is_specified() ) {
-    sat_type = "satrec";
-    outp = &cout;
-  }
-  else if ( mPoptMiniSat->is_specified() ) {
-    sat_type = "minisat";
-  }
-  else if ( mPoptMiniSat2->is_specified() ) {
-    sat_type = "minisat2";
+    sat_type = mPoptSat->val();
   }
   else {
     sat_type = "";

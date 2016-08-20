@@ -45,13 +45,15 @@ extra_node_count(const Expr& expr,
     ASSERT_COND( p_num > 0 || n_num > 0 );
     if ( n_num == 0 ) {
       if ( p_num > 1 ) {
-	n = 1;
+	n += 1;
       }
     }
-    else {
-      n = 1;
+    else { // n_num > 0
       if ( p_num > 0 ) {
-	++ n;
+	n += 2;
+      }
+      else {
+	n += 1;
       }
     }
   }

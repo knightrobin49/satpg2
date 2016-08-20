@@ -31,7 +31,7 @@ StructSat::StructSat(ymuint max_node_id,
 		     const string& sat_type,
 		     const string& sat_option,
 		     ostream* sat_outp) :
-  mSolver(sat_type, sat_option, sat_outp),
+  mSolver(sat_type, sat_option),
   mMaxId(max_node_id),
   mMark(max_node_id, false),
   mVarMap(max_node_id)
@@ -208,9 +208,9 @@ StructSat::add_ffr_condition(const TpgNode* root_node,
 
   // FFR の根までの伝搬条件
   for (const TpgNode* node = fault->tpg_onode(); node != root_node;
-       node = node->active_fanout(0)) {
-    ASSERT_COND( node->active_fanout_num() == 1 );
-    const TpgNode* onode = node->active_fanout(0);
+       node = node->fanout(0)) {
+    ASSERT_COND( node->fanout_num() == 1 );
+    const TpgNode* onode = node->fanout(0);
     Val3 nval = onode->nval();
     if ( nval == kValX ) {
       continue;

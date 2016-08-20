@@ -64,7 +64,7 @@ public:
   set_name(const char* name);
 
   /// @brief 名前を得る．
-  string
+  const char*
   name() const;
 
   /// @brief ID番号を返す．
@@ -263,7 +263,7 @@ private:
   PackedVal mFmask;
 
   // 名前
-  string mName;
+  const char* mName;
 
 };
 
@@ -453,7 +453,7 @@ SimNode::set_name(const char* name)
 
 // @brief 名前を得る．
 inline
-string
+const char*
 SimNode::name() const
 {
   return mName;

@@ -115,9 +115,9 @@ MffcCone::select_fault_node(ymuint pos,
   mark[node1->id()] = true;
   for (ymuint rpos = 0; rpos < node_list.size(); ++ rpos) {
     const TpgNode* node = node_list[rpos];
-    ymuint nfo = node->active_fanout_num();
+    ymuint nfo = node->fanout_num();
     for (ymuint i = 0; i < nfo; ++ i) {
-      const TpgNode* onode = node->active_fanout(i);
+      const TpgNode* onode = node->fanout(i);
       if ( mark[onode->id()] ) {
 	continue;
       }

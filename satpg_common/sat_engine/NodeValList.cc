@@ -176,9 +176,8 @@ operator<<(ostream& s,
   ymuint n = src_list.size();
   for (ymuint i = 0; i < n; ++ i) {
     NodeVal nv = src_list[i];
-    s << " ";
-    print_node(s, nv.node());
-    s << ":" << nv.val();
+    s << " Node#" << nv.node()->id()
+      << ":" << nv.val();
   }
   return s;
 }

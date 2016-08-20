@@ -47,7 +47,7 @@ private:
   TclPoptInt* mPoptVerbose;
 
   // sat モードオプションの解析用オブジェクト
-  TclPopt* mPoptSat;
+  TclPoptStr* mPoptSat;
 
   // sat-option オプションの解析用オブジェクト
   TclPoptStr* mPoptSatOption;
@@ -60,6 +60,9 @@ private:
 
   // minisat2 モードオプションの解析用オブジェクト
   TclPopt* mPoptMiniSat2;
+
+  // ymsat1 モードオプションの解析用オブジェクト
+  TclPopt* mPoptYmSat1;
 
   // print_stats オプションの解析用オブジェクト
   TclPopt* mPoptPrintStats;

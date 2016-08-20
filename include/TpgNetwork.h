@@ -22,6 +22,7 @@
 BEGIN_NAMESPACE_YM_SATPG
 
 class TpgNodeInfo;
+class AuxNodeInfo;
 
 //////////////////////////////////////////////////////////////////////
 /// @class TpgNetwork TpgNetwork.h "TpgNetwork.h"
@@ -120,31 +121,57 @@ public:
 
 public:
   //////////////////////////////////////////////////////////////////////
-  // アクティブ領域に関するアクセス関数
+  // ノードに関する情報を取得する関数
   //////////////////////////////////////////////////////////////////////
 
-  /// @brief 一つの外部出力に関係するノードのみをアクティブにする．
-  /// @param[in] po_pos 出力番号
-  void
-  activate_po(ymuint po_pos);
+  /// @brief ノード名を返す．
+  /// @param[in] id ノードID ( 0 <= id < node_num() )
+  const char*
+  node_name(ymuint id) const;
 
-  /// @brief 一つの外部出力に関係するノードのみをアクティブにする．
-  /// @param[in] po 出力ノード
-  void
-  activate_po(TpgNode* po);
+  /// @brief 出力の故障を得る．
+  /// @param[in] id ノードID ( 0 <= id < node_num() )
+  /// @param[in] val 故障値 ( 0 / 1 )
+  TpgFault*
+  _node_output_fault(ymuint id,
+		     int val);
 
-  /// @brief 全てのノードをアクティブにする．
-  void
-  activate_all();
+  /// @brief 入力の故障を得る．
+  /// @param[in] id ノードID ( 0 <= id < node_num() )
+  /// @param[in] val 故障値 ( 0 / 1 )
+  /// @param[in] pos 入力の位置番号
+  TpgFault*
+  _node_input_fault(ymuint id,
+		    int val,
+		    ymuint pos);
 
-  /// @brief アクティブなノード数を得る．
+  /// @brief 出力の故障を得る．
+  /// @param[in] id ノードID ( 0 <= id < node_num() )
+  /// @param[in] val 故障値 ( 0 / 1 )
+  const TpgFault*
+  node_output_fault(ymuint id,
+		    int val) const;
+
+  /// @brief 入力の故障を得る．
+  /// @param[in] id ノードID ( 0 <= id < node_num() )
+  /// @param[in] val 故障値 ( 0 / 1 )
+  /// @param[in] pos 入力の位置番号
+  const TpgFault*
+  node_input_fault(ymuint id,
+		   int val,
+		   ymuint pos) const;
+
+  /// @brief このノードに関係する代表故障数を返す．
+  /// @param[in] id ノードID ( 0 <= id < node_num() )
   ymuint
-  active_node_num() const;
+  node_fault_num(ymuint id) const;
 
-  /// @brief アクティブなノードを得る．
-  /// @param[in] pos 位置番号 ( 0 <= pos < active_node_num() )
-  const TpgNode*
-  active_node(ymuint pos) const;
+  /// @brief このノードに関係する代表故障を返す．
+  /// @param[in] id ノードID ( 0 <= id < node_num() )
+  /// @param[in] pos 位置番号 ( 0 <= pos < fault_num() )
+  const TpgFault*
+  node_fault(ymuint id,
+	     ymuint pos) const;
 
 
 public:
@@ -166,6 +193,47 @@ public:
   bool
   read_iscas89(const string& filename);
 
+
+private:
+  //////////////////////////////////////////////////////////////////////
+  // 内部で用いられるデータ構造
+  //////////////////////////////////////////////////////////////////////
+
+  /// @brief 複合ゲートの入力の情報
+  ///
+  /// もとの入力が実際の TpgNode のどのファンインに
+  /// 対応しているかを表す．
+  struct InodeInfo
+  {
+    InodeInfo(TpgNode* node = nullptr,
+	      ymuint pos = 0) :
+      mNode(node),
+      mPos(pos)
+    {
+    }
+
+    void
+    set(TpgNode* node,
+	ymuint pos)
+    {
+      mNode = node;
+      mPos = pos;
+    }
+
+    TpgNode* mNode;
+    ymuint mPos;
+  };
+
+
+private:
+  //////////////////////////////////////////////////////////////////////
+  // 内部で用いられる下請け関数
+  //////////////////////////////////////////////////////////////////////
+
+  /// @brief 内容をクリアする．
+  void
+  clear();
+
   /// @brief BnBuilder から内容を設定する．
   /// @param[in] builder ビルダーオブジェクト
   void
@@ -174,10 +242,12 @@ public:
   /// @brief 入力ノードを生成する．
   /// @param[in] iid 入力の番号
   /// @param[in] name ノード名
+  /// @param[in] fanout_num ファンアウト数
   /// @return 生成したノードを返す．
   TpgNode*
   make_input_node(ymuint iid,
-		  const string& name);
+		  const string& name,
+		  ymuint fanout_num);
 
   /// @brief 出力ノードを生成する．
   /// @param[in] oid 出力の番号
@@ -193,23 +263,20 @@ public:
   /// @param[in] name ノード名
   /// @param[in] node_info 論理関数の情報
   /// @param[in] fanin_list ファンインのリスト
+  /// @param[in] fanout_num ファンアウト数
   /// @return 生成したノードを返す．
   TpgNode*
   make_logic_node(const string& name,
 		  const TpgNodeInfo* node_info,
-		  const vector<TpgNode*>& fanin_list);
-
-
-private:
-  //////////////////////////////////////////////////////////////////////
-  // 内部で用いられる下請け関数
-  //////////////////////////////////////////////////////////////////////
+		  const vector<TpgNode*>& fanin_list,
+		  ymuint fanout_num);
 
   /// @brief 論理式から TpgNode の木を生成する．
   /// @param[in] name ノード名
   /// @param[in] expr 式
   /// @param[in] leaf_nodes 式のリテラルに対応するノードの配列
-  /// @param[in] input_map ファンインの対応関係を収める配列
+  /// @param[in] inode_array ファンインの対応関係を収める配列
+  /// @param[in] fanout_num ファンアウト数
   /// @return 生成したノードを返す．
   ///
   /// leaf_nodes は 変数番号 * 2 + (0/1) に
@@ -218,70 +285,50 @@ private:
   make_cplx_node(const string& name,
 		 const Expr& expr,
 		 const vector<TpgNode*>& leaf_nodes,
-		 TpgNode** inode_array,
-		 ymuint* ipos_array);
+		 vector<InodeInfo>& inode_array,
+		 ymuint fanout_num);
 
   /// @brief 組み込み型の論理ゲートを生成する．
   /// @param[in] name ノード名
   /// @param[in] type ゲートの型
   /// @param[in] fanin_list ファンインのリスト
+  /// @param[in] fanout_num ファンアウト数
   /// @return 生成したノードを返す．
   TpgNode*
   make_prim_node(const string& name,
 		 GateType type,
-		 const vector<TpgNode*>& fanin_list);
-
-  /// @brief ファンアウト情報の設定を行う．
-  void
-  set_fanouts();
+		 const vector<TpgNode*>& fanin_list,
+		 ymuint fanout_num);
 
   /// @brief 出力の故障を作る．
   /// @param[in] name 故障位置のノード名
   /// @param[in] val 故障値 ( 0 / 1 )
   /// @param[in] node 故障位置のノード
-  const TpgFault*
-  new_ofault(const string& name,
+  void
+  new_ofault(const char* name,
 	     int val,
 	     TpgNode* node);
 
   /// @brief 入力の故障を作る．
   /// @param[in] name 故障位置のノード名
   /// @param[in] ipos 故障位置のファンイン番号
-  /// @param[in] node 故障位置のノード
-  /// @param[in] inode_pos node 上の入力位置
-  /// @param[in] val 故障値
+  /// @param[in] val 故障値 ( 0 / 1 )
+  /// @param[in] inode_info TpgNode 上のノードの情報
   /// @param[in] rep 代表故障
   ///
   /// プリミティブ型の場合は ipos と inode_pos は同一だが
   /// 複合型の場合には異なる．
-  const TpgFault*
-  new_ifault(const string& name,
-	     int val,
+  void
+  new_ifault(const char* name,
 	     ymuint ipos,
-	     TpgNode* node,
-	     ymuint inode_pos,
+	     int val,
+	     const InodeInfo& inode_info,
 	     const TpgFault* rep);
 
   /// @brief 代表故障を設定する．
   /// @param[in] node 対象のノード
   void
   set_rep_faults(TpgNode* node);
-
-  /// @brief ノードの TFI にマークをつける．
-  /// @note 結果は mTmpMark[node->id()] に格納される．
-  /// @note マークの追加ノードは mTmpNodeList[0] - mTmpNodeList[mTmpNodeNum - 1]
-  /// に格納される．
-  void
-  tfimark(TpgNode* node);
-
-  /// @brief TFI マークを消す．
-  /// @note この関数が終了すると mTmpNodeNum は 0 になる．
-  void
-  clear_tfimark();
-
-  /// @brief activate_po(), activate_all() の下請け関数
-  void
-  activate_sub();
 
 
 private:
@@ -320,6 +367,9 @@ private:
   // ノードの配列
   TpgNode** mNodeArray;
 
+  // ノードの付加情報の配列
+  AuxNodeInfo* mAuxInfoArray;
+
   // 外部入力ノードの配列
   TpgNode** mInputArray;
 
@@ -328,23 +378,6 @@ private:
 
   // TFI サイズの降順に整列した外部出力ノードの配列
   TpgNode** mOutputArray2;
-
-  // アクティブなノード数
-  ymuint mActNodeNum;
-
-  // アクティブなノードの配列
-  TpgNode** mActNodeArray;
-
-  // activate_sub() で用いられるマーク用の配列
-  // サイズは mNodeNum
-  bool* mTmpMark;
-
-  // 一時的に用いるノードリスト
-  // サイズは mNodeNum
-  TpgNode** mTmpNodeList;
-
-  // mTmpNodeList の見かけのサイズ
-  ymuint mTmpNodeNum;
 
   // 全故障数
   ymuint mFaultNum;
@@ -485,24 +518,6 @@ ymuint
 TpgNetwork::max_fault_id() const
 {
   return mFaultNum;
-}
-
-// @brief アクティブなノード数を得る．
-inline
-ymuint
-TpgNetwork::active_node_num() const
-{
-  return mActNodeNum;
-}
-
-// @brief アクティブなノードを得る．
-// @param[in] pos 位置番号 ( 0 <= pos < active_node_num() )
-inline
-const TpgNode*
-TpgNetwork::active_node(ymuint pos) const
-{
-  ASSERT_COND( pos < mActNodeNum );
-  return mActNodeArray[pos];
 }
 
 // @brief MFFC 数を返す．

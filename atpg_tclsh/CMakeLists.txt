@@ -61,6 +61,12 @@ target_link_libraries(atpg_tclsh
   ${TCL_LIBRARY}
   )
 
+if ( GPERFTOOLS_FOUND )
+  target_link_libraries ( atpg_tclsh
+    ${GPERFTOOLS_LIBRARIES}
+    )
+endif ()
+
 
 # ===================================================================
 #  release with debug info ターゲットの設定
@@ -124,6 +130,12 @@ target_link_libraries(atpg_tclsh_d
   ${YM_LIB_DEPENDS}
   ${TCL_LIBRARY}
   )
+
+if ( GPERFTOOLS_FOUND )
+  target_link_libraries ( atpg_tclsh_d
+    ${GPERFTOOLS_LIBRARIES}
+    )
+endif ()
 
 
 # ===================================================================

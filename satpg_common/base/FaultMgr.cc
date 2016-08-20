@@ -32,6 +32,7 @@ FaultMgr::clear()
 {
   mStatusArray.clear();
 
+  mRepList.clear();
   mDetList.clear();
   mRemainList.clear();
   mUntestList.clear();
@@ -53,17 +54,11 @@ FaultMgr::set_faults(const TpgNetwork& network)
   ymuint nn = network.node_num();
   for (ymuint i = 0; i < nn; ++ i) {
     const TpgNode* node = network.node(i);
-    ymuint nf = node->fault_num();
+    ymuint nf = network.node_fault_num(node->id());
     for (ymuint j = 0; j < nf; ++ j) {
-      const TpgFault* fault = node->fault(j);
+      const TpgFault* fault = network.node_fault(node->id(), j);
       mRepList.push_back(fault);
-      if ( fault->tpg_onode()->is_active() ) {
-	mRemainList.push_back(fault);
-      }
-      else {
-	mUntestList.push_back(fault);
-	set_status(fault, kFsUntestable);
-      }
+      mRemainList.push_back(fault);
     }
   }
 }

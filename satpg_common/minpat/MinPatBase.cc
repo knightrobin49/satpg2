@@ -323,7 +323,7 @@ MinPatBase::make_testvector(TpgNetwork& network,
     cout << "Error in suf_list: ";
     for (ymuint i = 0; i < suf_list.size(); ++ i) {
       NodeVal nv = suf_list[i];
-      cout << " " << nv.node()->name() << ": " << nv.val();
+      cout << " " << network.node_name(nv.node()->id()) << ": " << nv.val();
     }
     cout << endl;
   }
