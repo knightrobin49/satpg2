@@ -15,7 +15,6 @@
 #include "TpgNetwork.h"
 #include "FaultMgr.h"
 #include "Fsim.h"
-#include "VarMap.h"
 #include "LitMap.h"
 #include "VectLitMap.h"
 #include "ym/SatSolverR.h"

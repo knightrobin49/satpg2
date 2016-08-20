@@ -19,25 +19,16 @@ BEGIN_NAMESPACE_YM_SATPG
 
 // @brief コンストラクタ
 // @param[in] id ID番号
-// @param[in] name 名前
+// @param[in] fanout_num ファンアウト数
 TpgLogicC0::TpgLogicC0(ymuint id,
-		       const char* name) :
-  TpgLogic(id, name, 0, nullptr, nullptr)
+		       ymuint fanout_num) :
+  TpgNode(id, vector<TpgNode*>(), fanout_num)
 {
 }
 
 // @brief デストラクタ
 TpgLogicC0::~TpgLogicC0()
 {
-}
-
-// @brief ゲートタイプを得る．
-//
-// is_logic() が false の場合の返り値は不定
-GateType
-TpgLogicC0::gate_type() const
-{
-  return kGateCONST0;
 }
 
 // @brief 入出力の関係を表す CNF 式を生成する．

@@ -9,7 +9,7 @@
 /// All rights reserved.
 
 
-#include "TpgLogic.h"
+#include "TpgNode.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG
@@ -19,21 +19,17 @@ BEGIN_NAMESPACE_YM_SATPG
 /// @brief N入力ORを表すクラス
 //////////////////////////////////////////////////////////////////////
 class TpgLogicOR :
-  public TpgLogic
+  public TpgNode
 {
 public:
 
   /// @brief コンストラクタ
   /// @param[in] id ID番号
-  /// @param[in] name 名前
-  /// @param[in] fanin_num ファンイン数
-  /// @param[in] fanin_array ファンインの配列
-  /// @param[in] fault_array 入力の故障の配列
+  /// @param[in] fanin_list ファンインのリスト
+  /// @param[in] fanout_num ファンアウト数
   TpgLogicOR(ymuint id,
-	     const char* name,
-	     ymuint fanin_num,
-	     TpgNode** fanin_array,
-	     TpgFault** fault_array);
+	     const vector<TpgNode*>& fanin_list,
+	     ymuint fanout_num);
 
   /// @brief デストラクタ
   ~TpgLogicOR();
@@ -43,13 +39,6 @@ public:
   //////////////////////////////////////////////////////////////////////
   // 外部インターフェイス
   //////////////////////////////////////////////////////////////////////
-
-  /// @brief ゲートタイプを得る．
-  ///
-  /// is_logic() が false の場合の返り値は不定
-  virtual
-  GateType
-  gate_type() const;
 
   /// @brief controling value を得る．
   ///
@@ -117,6 +106,159 @@ private:
   // データメンバ
   //////////////////////////////////////////////////////////////////////
 
+
+};
+
+
+//////////////////////////////////////////////////////////////////////
+/// @class TpgLogicOR2 TpgLogicOR.h "TpgLogicOR.h"
+/// @brief 2入力ANDを表すクラス
+//////////////////////////////////////////////////////////////////////
+class TpgLogicOR2 :
+  public TpgLogicOR
+{
+public:
+
+  /// @brief コンストラクタ
+  /// @param[in] id ID番号
+  /// @param[in] fanin_list ファンインのリスト
+  /// @param[in] fanout_num ファンアウト数
+  TpgLogicOR2(ymuint id,
+	      const vector<TpgNode*>& fanin_list,
+	      ymuint fanout_num);
+
+  /// @brief デストラクタ
+  ~TpgLogicOR2();
+
+
+public:
+  //////////////////////////////////////////////////////////////////////
+  // 外部インターフェイス
+  //////////////////////////////////////////////////////////////////////
+
+  /// @brief 入出力の関係を表す CNF 式を生成する．
+  /// @param[in] solver SAT ソルバ
+  /// @param[in] lit_map 入出力とリテラルの対応マップ
+  virtual
+  void
+  make_cnf(SatSolver& solver,
+	   const LitMap& lit_map) const;
+
+  /// @brief 入出力の関係を表す CNF 式を生成する(故障あり)．
+  /// @param[in] solver SAT ソルバ
+  /// @param[in] fpos 故障のある入力位置
+  /// @param[in] fval 故障値 ( 0 / 1 )
+  /// @param[in] lit_map 入出力とリテラルの対応マップ
+  ///
+  /// こちらは入力に故障を仮定したバージョン
+  virtual
+  void
+  make_faulty_cnf(SatSolver& solver,
+		  ymuint fpos,
+		  int fval,
+		  const LitMap& lit_map) const;
+
+};
+
+
+//////////////////////////////////////////////////////////////////////
+/// @class TpgLogicOR3 TpgLogicOR.h "TpgLogicOR.h"
+/// @brief 3入力ANDを表すクラス
+//////////////////////////////////////////////////////////////////////
+class TpgLogicOR3 :
+  public TpgLogicOR
+{
+public:
+
+  /// @brief コンストラクタ
+  /// @param[in] id ID番号
+  /// @param[in] fanin_list ファンインのリスト
+  /// @param[in] fanout_num ファンアウト数
+  TpgLogicOR3(ymuint id,
+	      const vector<TpgNode*>& fanin_list,
+	      ymuint fanout_num);
+
+  /// @brief デストラクタ
+  ~TpgLogicOR3();
+
+
+public:
+  //////////////////////////////////////////////////////////////////////
+  // 外部インターフェイス
+  //////////////////////////////////////////////////////////////////////
+
+  /// @brief 入出力の関係を表す CNF 式を生成する．
+  /// @param[in] solver SAT ソルバ
+  /// @param[in] lit_map 入出力とリテラルの対応マップ
+  virtual
+  void
+  make_cnf(SatSolver& solver,
+	   const LitMap& lit_map) const;
+
+  /// @brief 入出力の関係を表す CNF 式を生成する(故障あり)．
+  /// @param[in] solver SAT ソルバ
+  /// @param[in] fpos 故障のある入力位置
+  /// @param[in] fval 故障値 ( 0 / 1 )
+  /// @param[in] lit_map 入出力とリテラルの対応マップ
+  ///
+  /// こちらは入力に故障を仮定したバージョン
+  virtual
+  void
+  make_faulty_cnf(SatSolver& solver,
+		  ymuint fpos,
+		  int fval,
+		  const LitMap& lit_map) const;
+
+};
+
+
+//////////////////////////////////////////////////////////////////////
+/// @class TpgLogicOR4 TpgLogicOR.h "TpgLogicOR.h"
+/// @brief 4入力ANDを表すクラス
+//////////////////////////////////////////////////////////////////////
+class TpgLogicOR4 :
+  public TpgLogicOR
+{
+public:
+
+  /// @brief コンストラクタ
+  /// @param[in] id ID番号
+  /// @param[in] fanin_list ファンインのリスト
+  /// @param[in] fanout_num ファンアウト数
+  TpgLogicOR4(ymuint id,
+	      const vector<TpgNode*>& fanin_list,
+	      ymuint fanout_num);
+
+  /// @brief デストラクタ
+  ~TpgLogicOR4();
+
+
+public:
+  //////////////////////////////////////////////////////////////////////
+  // 外部インターフェイス
+  //////////////////////////////////////////////////////////////////////
+
+  /// @brief 入出力の関係を表す CNF 式を生成する．
+  /// @param[in] solver SAT ソルバ
+  /// @param[in] lit_map 入出力とリテラルの対応マップ
+  virtual
+  void
+  make_cnf(SatSolver& solver,
+	   const LitMap& lit_map) const;
+
+  /// @brief 入出力の関係を表す CNF 式を生成する(故障あり)．
+  /// @param[in] solver SAT ソルバ
+  /// @param[in] fpos 故障のある入力位置
+  /// @param[in] fval 故障値 ( 0 / 1 )
+  /// @param[in] lit_map 入出力とリテラルの対応マップ
+  ///
+  /// こちらは入力に故障を仮定したバージョン
+  virtual
+  void
+  make_faulty_cnf(SatSolver& solver,
+		  ymuint fpos,
+		  int fval,
+		  const LitMap& lit_map) const;
 
 };
 

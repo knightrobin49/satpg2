@@ -9,7 +9,7 @@
 /// All rights reserved.
 
 
-#include "TpgLogic.h"
+#include "TpgNode.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG
@@ -19,19 +19,17 @@ BEGIN_NAMESPACE_YM_SATPG
 /// @brief 2入力XORを表すクラス
 //////////////////////////////////////////////////////////////////////
 class TpgLogicXOR2 :
-  public TpgLogic
+  public TpgNode
 {
 public:
 
   /// @brief コンストラクタ
   /// @param[in] id ID番号
-  /// @param[in] name 名前
-  /// @param[in] fanin_array ファンインの配列
-  /// @param[in] fault_array 入力の故障の配列
+  /// @param[in] fanin_list ファンインのリスト
+  /// @param[in] fanout_num ファンアウト数
   TpgLogicXOR2(ymuint id,
-	       const char* name,
-	       TpgNode** fanin_array,
-	       TpgFault** fault_array);
+	       const vector<TpgNode*>& fanin_list,
+	       ymuint fanout_num);
 
   /// @brief デストラクタ
   ~TpgLogicXOR2();
@@ -41,13 +39,6 @@ public:
   //////////////////////////////////////////////////////////////////////
   // 外部インターフェイス
   //////////////////////////////////////////////////////////////////////
-
-  /// @brief ゲートタイプを得る．
-  ///
-  /// is_logic() が false の場合の返り値は不定
-  virtual
-  GateType
-  gate_type() const;
 
   /// @brief controling value を得る．
   ///

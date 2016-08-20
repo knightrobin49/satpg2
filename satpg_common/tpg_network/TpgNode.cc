@@ -10,6 +10,17 @@
 #include "TpgNode.h"
 #include "ym/SatSolver.h"
 
+#include "TpgLogicC0.h"
+#include "TpgLogicC1.h"
+#include "TpgLogicBUFF.h"
+#include "TpgLogicNOT.h"
+#include "TpgLogicAND.h"
+#include "TpgLogicNAND.h"
+#include "TpgLogicOR.h"
+#include "TpgLogicNOR.h"
+#include "TpgLogicXOR.h"
+#include "TpgLogicXNOR.h"
+
 
 BEGIN_NAMESPACE_YM_SATPG
 
@@ -49,7 +60,7 @@ TpgNode::make_input(ymuint id,
 		    ymuint iid,
 		    ymuint fanout_num)
 {
-  TpgNode* node = make_node(id, 0, fanout_num);
+  TpgNode* node = new TpgNode(id, vector<TpgNode*>(), fanout_num);
   node->mTypeId = (1U | (iid << 2));
 
   return node;
@@ -65,9 +76,8 @@ TpgNode::make_output(ymuint id,
 		     ymuint oid,
 		     TpgNode* inode)
 {
-  TpgNode* node = make_node(id, 1, 0);
+  TpgNode* node = new TpgNode(id, vector<TpgNode*>(1, inode), 0);
   node->mTypeId = (2U | (oid << 2));
-  node->mNodeList[0] = inode;
 
   return node;
 }
@@ -85,50 +95,147 @@ TpgNode::make_logic(ymuint id,
 		    ymuint fanout_num)
 {
   ymuint ni = inode_list.size();
-  TpgNode* node = make_node(id, ni, fanout_num);
-  node->mTypeId = (3U | (static_cast<ymuint32>(gate_type) << 2));
-  for (ymuint i = 0; i < ni; ++ i) {
-    node->mNodeList[i] = inode_list[i];
+  TpgNode* node = nullptr;
+  switch ( gate_type ) {
+  case kGateCONST0:
+    node = new TpgLogicC0(id, fanout_num);
+    break;
+
+  case kGateCONST1:
+    node = new TpgLogicC1(id, fanout_num);
+    break;
+
+  case kGateBUFF:
+    node = new TpgLogicBUFF(id, inode_list, fanout_num);
+    break;
+
+  case kGateNOT:
+    node = new TpgLogicNOT(id, inode_list, fanout_num);
+    break;
+
+  case kGateAND:
+    switch ( ni ) {
+    case 2:
+      node = new TpgLogicAND2(id, inode_list, fanout_num);
+      break;
+
+    case 3:
+      node = new TpgLogicAND3(id, inode_list, fanout_num);
+      break;
+
+    case 4:
+      node = new TpgLogicAND4(id, inode_list, fanout_num);
+      break;
+
+    default:
+      node = new TpgLogicAND(id, inode_list, fanout_num);
+      break;
+    }
+    break;
+
+  case kGateNAND:
+    switch ( ni ) {
+    case 2:
+      node = new TpgLogicNAND2(id, inode_list, fanout_num);
+      break;
+
+    case 3:
+      node = new TpgLogicNAND3(id, inode_list, fanout_num);
+      break;
+
+    case 4:
+      node = new TpgLogicNAND4(id, inode_list, fanout_num);
+      break;
+
+    default:
+      node = new TpgLogicNAND(id, inode_list, fanout_num);
+      break;
+    }
+    break;
+
+  case kGateOR:
+    switch ( ni ) {
+    case 2:
+      node = new TpgLogicOR2(id, inode_list, fanout_num);
+      break;
+
+    case 3:
+      node = new TpgLogicOR3(id, inode_list, fanout_num);
+      break;
+
+    case 4:
+      node = new TpgLogicOR4(id, inode_list, fanout_num);
+      break;
+
+    default:
+      node = new TpgLogicOR(id, inode_list, fanout_num);
+      break;
+    }
+    break;
+
+  case kGateNOR:
+    switch ( ni ) {
+    case 2:
+      node = new TpgLogicNOR2(id, inode_list, fanout_num);
+      break;
+
+    case 3:
+      node = new TpgLogicNOR3(id, inode_list, fanout_num);
+      break;
+
+    case 4:
+      node = new TpgLogicNOR4(id, inode_list, fanout_num);
+      break;
+
+    default:
+      node = new TpgLogicNOR(id, inode_list, fanout_num);
+      break;
+    }
+    break;
+
+  case kGateXOR:
+    ASSERT_COND( ni == 2 );
+    node = new TpgLogicXOR2(id, inode_list, fanout_num);
+    break;
+
+  case kGateXNOR:
+    ASSERT_COND( ni == 2 );
+    node = new TpgLogicXNOR2(id, inode_list, fanout_num);
+    break;
+
+  default:
+    ASSERT_NOT_REACHED;
   }
 
-  return node;
-}
-
-// @brief ノードを生成する
-// @param[in] id ID番号
-// @param[in] fanin_num ファンイン数
-// @param[in] fanout_num ファンアウト数
-TpgNode*
-TpgNode::make_node(ymuint id,
-		   ymuint fanin_num,
-		   ymuint fanout_num)
-{
-  ymuint size = sizeof(TpgNode) + (fanin_num + fanout_num - 1) * sizeof(TpgNode*);
-  void* p = new char[size];
-  TpgNode* node = new (p) TpgNode;
-  node->mId = id;
-  node->mFaninNum = fanin_num;
-  node->mFanoutNum = fanout_num;
+  node->mTypeId = (3U | (static_cast<ymuint32>(gate_type) << 2));
 
   return node;
-}
-
-// @brief ノードを削除する．
-void
-TpgNode::delete_node(TpgNode* node)
-{
-  char* p = reinterpret_cast<char*>(node);
-  delete [] p;
 }
 
 // @brief コンストラクタ
-TpgNode::TpgNode()
+// @param[in] id ID番号
+// @param[in] fanin_list ファンインのリスト
+// @param[in] fanout_num ファンアウト数
+TpgNode::TpgNode(ymuint id,
+		 const vector<TpgNode*>& fanin_list,
+		 ymuint fanout_num) :
+  mId(id),
+  mFaninNum(fanin_list.size()),
+  mFanoutNum(fanout_num)
 {
+  mFaninList = new TpgNode*[mFaninNum];
+  for (ymuint i = 0; i < mFaninNum; ++ i) {
+    mFaninList[i] = fanin_list[i];
+  }
+
+  mFanoutList = new TpgNode*[mFanoutNum];
 }
 
 // @brief デストラクタ
 TpgNode::~TpgNode()
 {
+  delete [] mFaninList;
+  delete [] mFanoutList;
 }
 
 // @brief ID番号を得る．
@@ -193,291 +300,7 @@ TpgNode::make_cnf(SatSolver& solver,
     return;
   }
 
-  // is_logic()
-  ymuint ni = fanin_num();
-  switch ( gate_type() ) {
-  case kGateCONST0:
-    //cout << "CONST0" << endl;
-    solver.add_clause(~olit);
-    break;
-
-  case kGateCONST1:
-    //cout << "CONST1" << endl;
-    solver.add_clause( olit);
-    break;
-
-  case kGateBUFF:
-    //cout << "BUFF" << endl;
-    {
-      SatLiteral ilit = lit_map.input(0);
-      solver.add_clause(~ilit,  olit);
-      solver.add_clause( ilit, ~olit);
-    }
-    break;
-
-  case kGateNOT:
-    //cout << "NOT" << endl;
-    {
-      SatLiteral ilit = lit_map.input(0);
-      solver.add_clause( ilit,  olit);
-      solver.add_clause(~ilit, ~olit);
-    }
-    break;
-
-  case kGateAND:
-    //cout << "AND" << endl;
-    switch ( ni ) {
-    case 2:
-      {
-	SatLiteral ilit0 = lit_map.input(0);
-	SatLiteral ilit1 = lit_map.input(1);
-	solver.add_clause(~ilit0, ~ilit1,  olit);
-	solver.add_clause( ilit0,         ~olit);
-	solver.add_clause(         ilit1, ~olit);
-      }
-      break;
-
-    case 3:
-      {
-	SatLiteral ilit0 = lit_map.input(0);
-	SatLiteral ilit1 = lit_map.input(1);
-	SatLiteral ilit2 = lit_map.input(2);
-	solver.add_clause(~ilit0, ~ilit1, ~ilit2,  olit);
-	solver.add_clause( ilit0,                 ~olit);
-	solver.add_clause(         ilit1,         ~olit);
-	solver.add_clause(                 ilit2, ~olit);
-      }
-      break;
-
-    case 4:
-      {
-	SatLiteral ilit0 = lit_map.input(0);
-	SatLiteral ilit1 = lit_map.input(1);
-	SatLiteral ilit2 = lit_map.input(2);
-	SatLiteral ilit3 = lit_map.input(3);
-	solver.add_clause(~ilit0, ~ilit1, ~ilit2, ~ilit3,  olit);
-	solver.add_clause( ilit0,                         ~olit);
-	solver.add_clause(         ilit1,                 ~olit);
-	solver.add_clause(                 ilit2,         ~olit);
-	solver.add_clause(                         ilit3, ~olit);
-      }
-      break;
-
-    default:
-      {
-	vector<SatLiteral> tmp_lits(ni + 1);
-	for (ymuint i = 0; i < ni; ++ i) {
-	  SatLiteral ilit = lit_map.input(i);
-	  tmp_lits[i] = ~ilit;
-	}
-	tmp_lits[ni] = olit;
-	solver.add_clause(tmp_lits);
-	for (ymuint i = 0; i < ni; ++ i) {
-	  SatLiteral ilit = lit_map.input(i);
-	  solver.add_clause( ilit, ~olit);
-	}
-      }
-      break;
-    }
-    break;
-
-  case kGateNAND:
-    //cout << "NAND" << endl;
-    switch ( ni ) {
-    case 2:
-      {
-	SatLiteral ilit0 = lit_map.input(0);
-	SatLiteral ilit1 = lit_map.input(1);
-	solver.add_clause(~ilit0, ~ilit1, ~olit);
-	solver.add_clause( ilit0,          olit);
-	solver.add_clause(         ilit1,  olit);
-      }
-      break;
-
-    case 3:
-      {
-	SatLiteral ilit0 = lit_map.input(0);
-	SatLiteral ilit1 = lit_map.input(1);
-	SatLiteral ilit2 = lit_map.input(2);
-	solver.add_clause(~ilit0, ~ilit1, ~ilit2, ~olit);
-	solver.add_clause( ilit0,                  olit);
-	solver.add_clause(         ilit1,          olit);
-	solver.add_clause(                 ilit2,  olit);
-      }
-      break;
-
-    case 4:
-      {
-	SatLiteral ilit0 = lit_map.input(0);
-	SatLiteral ilit1 = lit_map.input(1);
-	SatLiteral ilit2 = lit_map.input(2);
-	SatLiteral ilit3 = lit_map.input(3);
-	solver.add_clause(~ilit0, ~ilit1, ~ilit2, ~ilit3, ~olit);
-	solver.add_clause( ilit0,                          olit);
-	solver.add_clause(         ilit1,                  olit);
-	solver.add_clause(                 ilit2,          olit);
-	solver.add_clause(                         ilit3,  olit);
-      }
-      break;
-
-    default:
-      {
-	ymuint ni = fanin_num();
-	vector<SatLiteral> tmp_lits(ni + 1);
-	for (ymuint i = 0; i < ni; ++ i) {
-	  SatLiteral ilit = lit_map.input(i);
-	  solver.add_clause( ilit, olit);
-	  tmp_lits[i] = ~ilit;
-	}
-	tmp_lits[ni] = ~olit;
-	solver.add_clause(tmp_lits);
-      }
-      break;
-    }
-    break;
-
-  case kGateOR:
-    //cout << "OR" << endl;
-    switch ( ni ) {
-    case 2:
-      {
-	SatLiteral ilit0 = lit_map.input(0);
-	SatLiteral ilit1 = lit_map.input(1);
-	solver.add_clause( ilit0,  ilit1, ~olit);
-	solver.add_clause(~ilit0,          olit);
-	solver.add_clause(        ~ilit1,  olit);
-      }
-      break;
-
-    case 3:
-      {
-	SatLiteral ilit0 = lit_map.input(0);
-	SatLiteral ilit1 = lit_map.input(1);
-	SatLiteral ilit2 = lit_map.input(2);
-	solver.add_clause( ilit0,  ilit1,  ilit2, ~olit);
-	solver.add_clause(~ilit0,                  olit);
-	solver.add_clause(        ~ilit1,          olit);
-	solver.add_clause(                ~ilit2,  olit);
-      }
-      break;
-
-    case 4:
-      {
-	SatLiteral ilit0 = lit_map.input(0);
-	SatLiteral ilit1 = lit_map.input(1);
-	SatLiteral ilit2 = lit_map.input(2);
-	SatLiteral ilit3 = lit_map.input(3);
-	solver.add_clause( ilit0,  ilit1,  ilit2,  ilit3, ~olit);
-	solver.add_clause(~ilit0,                          olit);
-	solver.add_clause(        ~ilit1,                  olit);
-	solver.add_clause(                ~ilit2,          olit);
-	solver.add_clause(                        ~ilit3,  olit);
-      }
-      break;
-
-    default:
-      {
-	ymuint ni = fanin_num();
-	vector<SatLiteral> tmp_lits(ni + 1);
-	for (ymuint i = 0; i < ni; ++ i) {
-	  SatLiteral ilit = lit_map.input(i);
-	  solver.add_clause(~ilit, olit);
-	  tmp_lits[i] = ilit;
-	}
-	tmp_lits[ni] = ~olit;
-	solver.add_clause(tmp_lits);
-      }
-      break;
-    }
-    break;
-
-  case kGateNOR:
-    //cout << "NOR" << endl;
-    switch ( ni ) {
-    case 2:
-      {
-	SatLiteral ilit0 = lit_map.input(0);
-	SatLiteral ilit1 = lit_map.input(1);
-	solver.add_clause( ilit0,  ilit1,  olit);
-	solver.add_clause(~ilit0,         ~olit);
-	solver.add_clause(        ~ilit1, ~olit);
-      }
-      break;
-
-    case 3:
-      {
-	SatLiteral ilit0 = lit_map.input(0);
-	SatLiteral ilit1 = lit_map.input(1);
-	SatLiteral ilit2 = lit_map.input(2);
-	solver.add_clause( ilit0,  ilit1,  ilit2,  olit);
-	solver.add_clause(~ilit0,                 ~olit);
-	solver.add_clause(        ~ilit1,         ~olit);
-	solver.add_clause(                ~ilit2, ~olit);
-      }
-      break;
-
-    case 4:
-      {
-	SatLiteral ilit0 = lit_map.input(0);
-	SatLiteral ilit1 = lit_map.input(1);
-	SatLiteral ilit2 = lit_map.input(2);
-	SatLiteral ilit3 = lit_map.input(3);
-	solver.add_clause( ilit0,  ilit1,  ilit2,  ilit3,  olit);
-	solver.add_clause(~ilit0,                         ~olit);
-	solver.add_clause(        ~ilit1,                 ~olit);
-	solver.add_clause(                ~ilit2,         ~olit);
-	solver.add_clause(                        ~ilit3, ~olit);
-      }
-      break;
-
-    default:
-      {
-	ymuint ni = fanin_num();
-	vector<SatLiteral> tmp_lits(ni + 1);
-	for (ymuint i = 0; i < ni; ++ i) {
-	  SatLiteral ilit = lit_map.input(i);
-	  solver.add_clause(~ilit, ~olit);
-	  tmp_lits[i] = ilit;
-	}
-	tmp_lits[ni] = olit;
-	solver.add_clause(tmp_lits);
-      }
-      break;
-    }
-    break;
-
-  case kGateXOR:
-    //cout << "XOR" << endl;
-    {
-      ymuint ni = fanin_num();
-      ASSERT_COND( ni == 2 );
-      SatLiteral ilit0 = lit_map.input(0);
-      SatLiteral ilit1 = lit_map.input(1);
-      solver.add_clause(~ilit0,  ilit1,  olit);
-      solver.add_clause( ilit0, ~ilit1,  olit);
-      solver.add_clause( ilit0,  ilit1, ~olit);
-      solver.add_clause(~ilit0, ~ilit1, ~olit);
-    }
-    break;
-
-  case kGateXNOR:
-    //cout << "XNOR" << endl;
-    {
-      ymuint ni = fanin_num();
-      ASSERT_COND( ni == 2 );
-      SatLiteral ilit0 = lit_map.input(0);
-      SatLiteral ilit1 = lit_map.input(1);
-      solver.add_clause(~ilit0,  ilit1, ~olit);
-      solver.add_clause( ilit0, ~ilit1, ~olit);
-      solver.add_clause( ilit0,  ilit1,  olit);
-      solver.add_clause(~ilit0, ~ilit1,  olit);
-    }
-    break;
-
-  default:
-    ASSERT_NOT_REACHED;
-    break;
-  }
+  ASSERT_NOT_REACHED;
 }
 
 // @brief 入出力の関係を表す CNF 式を生成する(故障あり)．
@@ -515,7 +338,7 @@ TpgNode::set_fanout(ymuint pos,
 		    TpgNode* fo_node)
 {
   ASSERT_COND( pos < fanout_num() );
-  mNodeList[mFaninNum + pos] = fo_node;
+  mFanoutList[pos] = fo_node;
 }
 
 // @brief immediate dominator をセットする．

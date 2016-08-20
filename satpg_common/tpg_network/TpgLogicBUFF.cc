@@ -19,29 +19,18 @@ BEGIN_NAMESPACE_YM_SATPG
 
 // @brief コンストラクタ
 // @param[in] id ID番号
-// @param[in] name 名前
-// @param[in] fanin_array ファンインの配列
-// @param[in] fault_array 入力の故障の配列
+// @param[in] fanin_list ファンインのリスト
+// @param[in] fanout_num ファンアウト数
 TpgLogicBUFF::TpgLogicBUFF(ymuint id,
-			   const char* name,
-			   TpgNode** fanin_array,
-			   TpgFault** fault_array) :
-  TpgLogic(id, name, 1, fanin_array, fault_array)
+			   const vector<TpgNode*>& fanin_list,
+			   ymuint fanout_num) :
+  TpgNode(id, fanin_list, fanout_num)
 {
 }
 
 // @brief デストラクタ
 TpgLogicBUFF::~TpgLogicBUFF()
 {
-}
-
-// @brief ゲートタイプを得る．
-//
-// is_logic() が false の場合の返り値は不定
-GateType
-TpgLogicBUFF::gate_type() const
-{
-  return kGateBUFF;
 }
 
 // @brief 入出力の関係を表す CNF 式を生成する．

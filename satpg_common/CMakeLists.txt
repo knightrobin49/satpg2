@@ -14,6 +14,25 @@ set (base_SOURCES
   base/TvMgr.cc
   )
 
+set (tpg_network_SOURCES
+  tpg_network/TpgFault.cc
+  tpg_network/TpgMap.cc
+  tpg_network/TpgNetwork.cc
+  tpg_network/TpgNode.cc
+  tpg_network/TpgNodeInfo.cc
+  tpg_network/TpgNodeMap.cc
+  tpg_network/TpgLogicC0.cc
+  tpg_network/TpgLogicC1.cc
+  tpg_network/TpgLogicBUFF.cc
+  tpg_network/TpgLogicNOT.cc
+  tpg_network/TpgLogicAND.cc
+  tpg_network/TpgLogicNAND.cc
+  tpg_network/TpgLogicOR.cc
+  tpg_network/TpgLogicNOR.cc
+  tpg_network/TpgLogicXOR.cc
+  tpg_network/TpgLogicXNOR.cc
+  )
+
 set (sat_engine_SOURCES
   sat_engine/StructSat.cc
   sat_engine/ConeBase.cc
@@ -110,15 +129,6 @@ set (rtpg_SOURCES
   rtpg/RtpgTImpl.cc
   rtpg/RtpgTP1.cc
   rtpg/RtpgTP2.cc
-  )
-
-set (tpg_network_SOURCES
-  tpg_network/TpgFault.cc
-  tpg_network/TpgMap.cc
-  tpg_network/TpgNetwork.cc
-  tpg_network/TpgNode.cc
-  tpg_network/TpgNodeInfo.cc
-  tpg_network/TpgNodeMap.cc
   )
 
 

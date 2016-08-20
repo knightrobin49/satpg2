@@ -9,7 +9,7 @@
 /// All rights reserved.
 
 
-#include "TpgLogic.h"
+#include "TpgNode.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG
@@ -19,15 +19,15 @@ BEGIN_NAMESPACE_YM_SATPG
 /// @brief constant-1 を表すクラス
 //////////////////////////////////////////////////////////////////////
 class TpgLogicC1 :
-  public TpgLogic
+  public TpgNode
 {
 public:
 
   /// @brief コンストラクタ
   /// @param[in] id ID番号
-  /// @param[in] name 名前
+  /// @param[in] fanout_num ファンアウト数
   TpgLogicC1(ymuint id,
-	     const char* name);
+	     ymuint fanout_num);
 
   /// @brief デストラクタ
   ~TpgLogicC1();
@@ -37,13 +37,6 @@ public:
   //////////////////////////////////////////////////////////////////////
   // 外部インターフェイス
   //////////////////////////////////////////////////////////////////////
-
-  /// @brief ゲートタイプを得る．
-  ///
-  /// is_logic() が false の場合の返り値は不定
-  virtual
-  GateType
-  gate_type() const;
 
   /// @brief 入出力の関係を表す CNF 式を生成する．
   /// @param[in] solver SAT ソルバ

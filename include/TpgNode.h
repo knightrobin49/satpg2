@@ -81,20 +81,19 @@ public:
 	     const vector<TpgNode*>& inode_list,
 	     ymuint fanout_num);
 
-  /// @brief ノードを削除する．
-  static
-  void
-  delete_node(TpgNode* node);
 
-
-private:
+public:
   //////////////////////////////////////////////////////////////////////
-  // ちょっとイレギュラーな使い方をするのでコンストラクタ/デストラクタ
-  // は公開しない．
+  // コンストラクタ/デストラクタ
   //////////////////////////////////////////////////////////////////////
 
   /// @brief コンストラクタ
-  TpgNode();
+  /// @param[in] id ID番号
+  /// @param[in] fanin_list ファンインのリスト
+  /// @param[in] fanout_num ファンアウト数
+  TpgNode(ymuint id,
+	  const vector<TpgNode*>& fanin_list,
+	  ymuint fanout_num);
 
   /// @brief デストラクタ
   ~TpgNode();
@@ -153,6 +152,7 @@ public:
   ///
   /// is_logic() が false の場合の返り値は不定
   /// ない場合は kValX を返す．
+  virtual
   Val3
   cval() const;
 
@@ -160,6 +160,7 @@ public:
   ///
   /// is_logic() が false の場合の返り値は不定
   /// ない場合は kValX を返す．
+  virtual
   Val3
   nval() const;
 
@@ -167,6 +168,7 @@ public:
   ///
   /// is_logic() が false の場合の返り値は不定
   /// ない場合は kValX を返す．
+  virtual
   Val3
   coval() const;
 
@@ -174,6 +176,7 @@ public:
   ///
   /// is_logic() が false の場合の返り値は不定
   /// ない場合は kValX を返す．
+  virtual
   Val3
   noval() const;
 
@@ -257,6 +260,7 @@ public:
   /// @brief 入出力の関係を表す CNF 式を生成する．
   /// @param[in] solver SAT ソルバ
   /// @param[in] lit_map 入出力とリテラルの対応マップ
+  virtual
   void
   make_cnf(SatSolver& solver,
 	   const LitMap& lit_map) const;
@@ -268,6 +272,7 @@ public:
   /// @param[in] lit_map 入出力とリテラルの対応マップ
   ///
   /// こちらは入力に故障を仮定したバージョン
+  virtual
   void
   make_faulty_cnf(SatSolver& solver,
 		  ymuint fpos,
@@ -288,22 +293,6 @@ public:
 
   mutable
   SatVarId mDvar;
-
-
-private:
-  //////////////////////////////////////////////////////////////////////
-  // 内部で用いられる下請け関数
-  //////////////////////////////////////////////////////////////////////
-
-  /// @brief ノードを生成する
-  /// @param[in] id ID番号
-  /// @param[in] fanin_num ファンイン数
-  /// @param[in] fanout_num ファンアウト数
-  static
-  TpgNode*
-  make_node(ymuint id,
-	    ymuint fanin_num,
-	    ymuint fanout_num);
 
 
 private:
@@ -342,8 +331,11 @@ private:
   // MFFC 内の根のノードのリスト
   TpgNode** mMffcElemList;
 
-  // ファンインとファンアウトの配列
-  TpgNode* mNodeList[1];
+  // ファンインの配列
+  TpgNode** mFaninList;
+
+  // ファンアウトの配列
+  TpgNode** mFanoutList;
 
 };
 
@@ -448,7 +440,7 @@ TpgNode*
 TpgNode::fanin(ymuint pos) const
 {
   ASSERT_COND( pos < fanin_num() );
-  return mNodeList[pos];
+  return mFaninList[pos];
 }
 
 // @brief ファンアウト数を得る．
@@ -466,7 +458,7 @@ TpgNode*
 TpgNode::fanout(ymuint pos) const
 {
   ASSERT_COND( pos < fanout_num() );
-  return mNodeList[mFaninNum + pos];
+  return mFanoutList[pos];
 }
 
 // @brief FFR の根のノードを得る．

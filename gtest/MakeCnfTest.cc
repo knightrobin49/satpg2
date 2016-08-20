@@ -23,7 +23,7 @@ public ::testing::Test
 public:
 
   /// @brief コンストラクタ
-  MakeCnfTest() { }
+  MakeCnfTest() : mSolver(string(), string()) { }
 
   /// @brief テストを行う．
   /// @param[in] ni 入力数
@@ -101,8 +101,16 @@ MakeCnfTest::do_test(ymuint ni,
     }
     vector<SatBool3> model;
     SatBool3 stat = mSolver.solve(assumptions, model);
-
     EXPECT_EQ( stat, kB3True );
+
+    if ( vals[p] ) {
+      assumptions[ni] = SatLiteral(mOvar, true);
+    }
+    else {
+      assumptions[ni] = SatLiteral(mOvar, false);
+    }
+    SatBool3 stat2 = mSolver.solve(assumptions, model);
+    EXPECT_EQ( stat2, kB3False );
   }
 }
 

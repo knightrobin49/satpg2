@@ -15,7 +15,6 @@
 #include "TpgStemFault.h"
 #include "TpgBranchFault.h"
 #include "AuxNodeInfo.h"
-#include "MffcInfo.h"
 #include "ym/BnBlifReader.h"
 #include "ym/BnIscas89Reader.h"
 #include "ym/BnBuilder.h"
@@ -336,7 +335,7 @@ TpgNetwork::clear()
 {
   for (ymuint i = 0; i < mNodeNum; ++ i) {
     TpgNode* node = mNodeArray[i];
-    TpgNode::delete_node(node);
+    delete node;
   }
 
   delete [] mNodeArray;
@@ -1196,38 +1195,6 @@ AuxNodeInfo::set_fault_list(const vector<const TpgFault*>& fault_list,
   mFaultList = new (p) const TpgFault*[mFaultNum];
   for (ymuint i = 0; i < mFaultNum; ++ i) {
     mFaultList[i] = fault_list[i];
-  }
-}
-
-
-//////////////////////////////////////////////////////////////////////
-// クラス MffcInfo
-//////////////////////////////////////////////////////////////////////
-
-// @brief コンストラクタ
-MffcInfo::MffcInfo()
-{
-  mRootNum = 0;
-  mRootList = nullptr;
-}
-
-// @brief デストラクタ
-MffcInfo::~MffcInfo()
-{
-}
-
-// @brief ノードのリストを設定する．
-// @param[in] node_list ノードのリスト
-// @param[in] alloc メモリアロケータ
-void
-MffcInfo::set_node_list(const vector<const TpgNode*>& node_list,
-			Alloc& alloc)
-{
-  mRootNum = node_list.size();
-  void* p = alloc.get_memory(sizeof(const TpgNode*) * mRootNum);
-  mRootList = new (p) const TpgNode*[mRootNum];
-  for (ymuint i = 0; i < mRootNum; ++ i) {
-    mRootList[i] = node_list[i];
   }
 }
 
