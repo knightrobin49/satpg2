@@ -119,11 +119,12 @@ DtpgSatH::run(TpgNetwork& network,
       continue;
     }
 
-    ymuint ne = node->mffc_elem_num();
+    const TpgNode* mffc_root = node;
+    ymuint ne = mffc_root->mffc_elem_num();
     if ( ne == 1 ) {
-      // node を根とする FFR に含まれる故障を求める．
+      // mffc_root を根とする FFR に含まれる故障を求める．
       vector<const TpgFault*> f_list;
-      get_ffr_faults(network, node, fault_mark, f_list);
+      get_ffr_faults(network, mffc_root, fault_mark, f_list);
       if ( f_list.empty() ) {
 	// 故障が残っていないのでパス
 	continue;
@@ -131,8 +132,8 @@ DtpgSatH::run(TpgNetwork& network,
 
       cnf_begin();
 
-      StructSat struct_sat(max_id);
-      const FoCone* focone = struct_sat.add_focone(node, kVal1);
+      StructSat struct_sat(max_id, sat_type(), sat_option());
+      const FoCone* focone = struct_sat.add_focone(mffc_root, kVal1);
 
       cnf_end();
 
@@ -145,21 +146,29 @@ DtpgSatH::run(TpgNetwork& network,
 
 	// FFR 内の故障活性化&伝搬条件を求める．
 	NodeValList assignment;
-	struct_sat.add_ffr_condition(node, fault, assignment);
+	struct_sat.add_ffr_condition(mffc_root, fault, assignment);
 
 	vector<SatLiteral> assumption;
 	struct_sat.conv_to_assumption(assignment, assumption);
 
+#if 0
+	cout << fault->str() << ":";
+	for (ymuint i = 0; i < assumption.size(); ++ i) {
+	  cout << " " << assumption[i];
+	}
+	cout << endl;
+#endif
+
 	// 故障に対するテスト生成を行なう．
-	solve(struct_sat.solver(), assumption, fault, node, focone->output_list(),
+	solve(struct_sat.solver(), assumption, fault, mffc_root, focone->output_list(),
 	      focone->gvar_map(), focone->fvar_map());
       }
     }
     else {
-      vector<vector<const TpgFault*> > f_list(ne + 1);
+      vector<vector<const TpgFault*> > f_list(ne);
       ymuint nf = 0;
       for (ymuint j = 0; j < ne; ++ j) {
-	const TpgNode* node1 = node->mffc_elem(j);
+	const TpgNode* node1 = mffc_root->mffc_elem(j);
 	// node1 を根とする FFR に含まれる故障を求める．
 	get_ffr_faults(network, node1, fault_mark, f_list[j]);
 	nf += f_list[j].size();
@@ -171,13 +180,13 @@ DtpgSatH::run(TpgNetwork& network,
 
       cnf_begin();
 
-      StructSat struct_sat(max_id);
-      const MffcCone* mffc_cone = struct_sat.add_mffccone(node);
+      StructSat struct_sat(max_id, sat_type(), sat_option());
+      const MffcCone* mffc_cone = struct_sat.add_mffccone(mffc_root);
 
       cnf_end();
 
       for (ymuint j = 0; j < ne; ++ j) {
-	const TpgNode* node1 = node->mffc_elem(j);
+	const TpgNode* ffr_root = mffc_root->mffc_elem(j);
 	const vector<const TpgFault*>& f_list1 = f_list[j];
 	ymuint nf = f_list1.size();
 	for (ymuint i = 0; i < nf; ++ i) {
@@ -188,16 +197,16 @@ DtpgSatH::run(TpgNetwork& network,
 
 	  // FFR 内の故障活性化&伝搬条件を求める．
 	  NodeValList assignment;
-	  struct_sat.add_ffr_condition(node1, fault, assignment);
+	  struct_sat.add_ffr_condition(ffr_root, fault, assignment);
 
 	  vector<SatLiteral> assumption;
 	  struct_sat.conv_to_assumption(assignment, assumption);
 
-	  // node1 の出力に故障を挿入する．
+	  // ffr_root の出力に故障を挿入する．
 	  mffc_cone->select_fault_node(j, assumption);
 
 	  // 故障に対するテスト生成を行なう．
-	  solve(struct_sat.solver(), assumption, fault, node1, mffc_cone->output_list(),
+	  solve(struct_sat.solver(), assumption, fault, mffc_root, mffc_cone->output_list(),
 		mffc_cone->gvar_map(), mffc_cone->fvar_map());
 	}
       }

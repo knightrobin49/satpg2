@@ -40,6 +40,38 @@ public:
   // 外部インターフェイス
   //////////////////////////////////////////////////////////////////////
 
+  /// @brief controling value を得る．
+  ///
+  /// is_logic() が false の場合の返り値は不定
+  /// ない場合は kValX を返す．
+  virtual
+  Val3
+  cval() const;
+
+  /// @brief noncontroling valueを得る．
+  ///
+  /// is_logic() が false の場合の返り値は不定
+  /// ない場合は kValX を返す．
+  virtual
+  Val3
+  nval() const;
+
+  /// @brief controling output value を得る．
+  ///
+  /// is_logic() が false の場合の返り値は不定
+  /// ない場合は kValX を返す．
+  virtual
+  Val3
+  coval() const;
+
+  /// @brief noncontroling output value を得る．
+  ///
+  /// is_logic() が false の場合の返り値は不定
+  /// ない場合は kValX を返す．
+  virtual
+  Val3
+  noval() const;
+
   /// @brief 入出力の関係を表す CNF 式を生成する．
   /// @param[in] solver SAT ソルバ
   /// @param[in] lit_map 入出力とリテラルの対応マップ

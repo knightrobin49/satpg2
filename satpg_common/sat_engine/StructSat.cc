@@ -178,11 +178,11 @@ StructSat::add_fault_condition(const TpgFault* fault,
   if ( fault->is_branch_fault() ) {
     // 故障の伝搬条件
     const TpgNode* onode = fault->tpg_onode();
+    ymuint ni = onode->fanin_num();
     Val3 nval = onode->nval();
     if ( nval != kValX ) {
       bool val = (nval == kVal1);
       // inode -> onode の伝搬条件
-      ymuint ni = onode->fanin_num();
       for (ymuint i = 0; i < ni; ++ i) {
 	const TpgNode* inode1 = onode->fanin(i);
 	if ( inode1 == inode ) {
@@ -211,12 +211,15 @@ StructSat::add_ffr_condition(const TpgNode* root_node,
        node = node->fanout(0)) {
     ASSERT_COND( node->fanout_num() == 1 );
     const TpgNode* onode = node->fanout(0);
+    ymuint ni = onode->fanin_num();
+    if ( ni == 1 ) {
+      continue;
+    }
     Val3 nval = onode->nval();
     if ( nval == kValX ) {
       continue;
     }
     bool val = (nval == kVal1);
-    ymuint ni = onode->fanin_num();
     for (ymuint i = 0; i < ni; ++ i) {
       const TpgNode* inode = onode->fanin(i);
       if ( inode == node ) {

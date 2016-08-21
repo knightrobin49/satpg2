@@ -1,13 +1,13 @@
 ﻿
-/// @file DtpgSatS.cc
-/// @brief DtpgSatS の実装ファイル
+/// @file DtpgSatS0.cc
+/// @brief DtpgSatS0 の実装ファイル
 /// @author Yusuke Matsunaga (松永 裕介)
 ///
 /// Copyright (C) 2005-2010, 2012-2014 Yusuke Matsunaga
 /// All rights reserved.
 
 
-#include "DtpgSatS.h"
+#include "DtpgSatS0.h"
 #include "DtpgStats.h"
 #include "StructSat.h"
 #include "FoCone.h"
@@ -25,16 +25,195 @@ BEGIN_NAMESPACE_YM_SATPG
 
 BEGIN_NONAMESPACE
 
+class GvarVidMap :
+  public VidMap
+{
+public:
+
+  /// @brief ノードに関連した変数番号を返す．
+  /// @param[in] node 対象のノード
+  SatVarId
+  operator()(const TpgNode* node) const;
+
+};
+
+SatVarId
+GvarVidMap::operator()(const TpgNode* node) const
+{
+  return node->mGvar;
+}
+
+class FvarVidMap :
+  public VidMap
+{
+public:
+
+  /// @brief ノードに関連した変数番号を返す．
+  /// @param[in] node 対象のノード
+  SatVarId
+  operator()(const TpgNode* node) const;
+
+};
+
+SatVarId
+FvarVidMap::operator()(const TpgNode* node) const
+{
+  return node->mFvar;
+}
+
+
+class GvarLitMap :
+  public LitMap
+{
+public:
+
+  /// @brief コンストラクタ
+  /// @param[in] node 対象のノード
+  GvarLitMap(const TpgNode* node);
+
+  /// @brief デストラクタ
+  ~GvarLitMap();
+
+  /// @brief 入力数を返す．
+  virtual
+  ymuint
+  input_size() const;
+
+  /// @brief 入力のリテラルを返す．
+  /// @param[in] pos 入力位置 ( 0 <= pos < input_size() )
+  virtual
+  SatLiteral
+  input(ymuint pos) const;
+
+  /// @brief 出力のリテラルを返す．
+  virtual
+  SatLiteral
+  output() const;
+
+
+private:
+  //////////////////////////////////////////////////////////////////////
+  // データメンバ
+  //////////////////////////////////////////////////////////////////////
+
+  // ノード
+  const TpgNode* mNode;
+
+};
+
+// @brief コンストラクタ
+// @param[in] node 対象のノード
+GvarLitMap::GvarLitMap(const TpgNode* node) :
+  mNode(node)
+{
+}
+
+// @brief デストラクタ
+GvarLitMap::~GvarLitMap()
+{
+}
+
+// @brief 入力数を返す．
+ymuint
+GvarLitMap::input_size() const
+{
+  return mNode->fanin_num();
+}
+
+// @brief 入力のリテラルを返す．
+// @param[in] pos 入力位置 ( 0 <= pos < input_size() )
+SatLiteral
+GvarLitMap::input(ymuint pos) const
+{
+  return SatLiteral(mNode->fanin(pos)->mGvar);
+}
+
+// @brief 出力のリテラルを返す．
+SatLiteral
+GvarLitMap::output() const
+{
+  return SatLiteral(mNode->mGvar);
+}
+
+
+class FvarLitMap :
+  public LitMap
+{
+public:
+
+  /// @brief コンストラクタ
+  /// @param[in] node 対象のノード
+  FvarLitMap(const TpgNode* node);
+
+  ~FvarLitMap();
+
+  /// @brief 入力数を返す．
+  virtual
+  ymuint
+  input_size() const;
+
+  /// @brief 入力のリテラルを返す．
+  /// @param[in] pos 入力位置 ( 0 <= pos < input_size() )
+  virtual
+  SatLiteral
+  input(ymuint pos) const;
+
+  /// @brief 出力のリテラルを返す．
+  virtual
+  SatLiteral
+  output() const;
+
+
+private:
+  //////////////////////////////////////////////////////////////////////
+  // データメンバ
+  //////////////////////////////////////////////////////////////////////
+
+  // ノード
+  const TpgNode* mNode;
+
+};
+
+// @brief コンストラクタ
+// @param[in] node 対象のノード
+FvarLitMap::FvarLitMap(const TpgNode* node) :
+  mNode(node)
+{
+}
+
+FvarLitMap::~FvarLitMap()
+{
+}
+
+// @brief 入力数を返す．
+ymuint
+FvarLitMap::input_size() const
+{
+  return mNode->fanin_num();
+}
+
+// @brief 入力のリテラルを返す．
+// @param[in] pos 入力位置 ( 0 <= pos < input_size() )
+SatLiteral
+FvarLitMap::input(ymuint pos) const
+{
+  return SatLiteral(mNode->fanin(pos)->mFvar);
+}
+
+// @brief 出力のリテラルを返す．
+SatLiteral
+FvarLitMap::output() const
+{
+  return SatLiteral(mNode->mFvar);
+}
+
 void
 make_dchain_cnf(SatSolver& solver,
-		const TpgNode* node,
-		const VidMap& gvar_map,
-		const VidMap& fvar_map,
-		const VidMap& dvar_map)
+		const TpgNode* node)
 {
-  SatLiteral glit(gvar_map(node));
-  SatLiteral flit(fvar_map(node));
-  SatLiteral dlit(dvar_map(node));
+  SatLiteral glit(node->mGvar);
+  SatLiteral flit(node->mFvar);
+  SatLiteral dlit(node->mDvar);
 
   // dlit -> XOR(glit, flit) を追加する．
   // 要するに正常回路と故障回路で異なっているとき dlit が 1 となる．
@@ -49,21 +228,21 @@ make_dchain_cnf(SatSolver& solver,
     // dlit -> ファンアウト先のノードの dlit の一つが 1
     ymuint nfo = node->fanout_num();
     if ( nfo == 1 ) {
-      SatLiteral odlit(dvar_map(node->fanout(0)));
+      SatLiteral odlit(node->fanout(0)->mDvar);
       solver.add_clause(~dlit, odlit);
     }
     else {
       vector<SatLiteral> tmp_lits(nfo + 1);
       for (ymuint i = 0; i < nfo; ++ i) {
 	const TpgNode* onode = node->fanout(i);
-	tmp_lits[i] = SatLiteral(dvar_map(onode));
+	tmp_lits[i] = SatLiteral(onode->mDvar);
       }
       tmp_lits[nfo] = ~dlit;
       solver.add_clause(tmp_lits);
     }
     const TpgNode* imm_dom = node->imm_dom();
     if ( imm_dom != nullptr ) {
-      SatLiteral odlit(dvar_map(imm_dom));
+      SatLiteral odlit(imm_dom->mDvar);
       solver.add_clause(~dlit, odlit);
     }
   }
@@ -79,18 +258,18 @@ END_NONAMESPACE
 // @param[in] dop パタンが求められた時に実行されるファンクタ
 // @param[in] uop 検出不能と判定された時に実行されるファンクタ
 DtpgEngine*
-new_DtpgSatS(const string& sat_type,
-	     const string& sat_option,
-	     ostream* sat_outp,
-	     BackTracer& bt,
-	     DetectOp& dop,
-	     UntestOp& uop)
+new_DtpgSatS0(const string& sat_type,
+	      const string& sat_option,
+	      ostream* sat_outp,
+	      BackTracer& bt,
+	      DetectOp& dop,
+	      UntestOp& uop)
 {
-  return new DtpgSatS(sat_type, sat_option, sat_outp, bt, dop, uop);
+  return new DtpgSatS0(sat_type, sat_option, sat_outp, bt, dop, uop);
 }
 
 // @brief コンストラクタ
-DtpgSatS::DtpgSatS(const string& sat_type,
+DtpgSatS0::DtpgSatS0(const string& sat_type,
 		   const string& sat_option,
 		   ostream* sat_outp,
 		   BackTracer& bt,
@@ -101,7 +280,7 @@ DtpgSatS::DtpgSatS(const string& sat_type,
 }
 
 // @brief デストラクタ
-DtpgSatS::~DtpgSatS()
+DtpgSatS0::~DtpgSatS0()
 {
 }
 
@@ -112,7 +291,7 @@ DtpgSatS::~DtpgSatS()
 // @param[in] fault_list 対象の故障リスト
 // @param[out] stats 結果を格納する構造体
 void
-DtpgSatS::run(TpgNetwork& network,
+DtpgSatS0::run(TpgNetwork& network,
 	      FaultMgr& fmgr,
 	      Fsim& fsim,
 	      const vector<const TpgFault*>& fault_list,
@@ -148,19 +327,7 @@ DtpgSatS::run(TpgNetwork& network,
       }
 
       // 故障に対するテスト生成を行なう．
-#if 0
-      cnf_begin();
-
-      StructSat struct_sat(max_id);
-      const FoCone* focone = struct_sat.add_focone(fault, kVal1);
-
-      cnf_end();
-
-      solve(struct_sat.solver(), vector<SatLiteral>(), fault, node, focone->output_list(),
-	    focone->gvar_map(), focone->fvar_map());
-#else
       run_single(fault);
-#endif
     }
   }
 
@@ -170,7 +337,7 @@ DtpgSatS::run(TpgNetwork& network,
 // @brief テスト生成を行なう．
 // @param[in] fault 対象の故障
 void
-DtpgSatS::run_single(const TpgFault* fault)
+DtpgSatS0::run_single(const TpgFault* fault)
 {
   cnf_begin();
 
@@ -214,18 +381,15 @@ DtpgSatS::run_single(const TpgFault* fault)
   SatSolver solver(sat_type(), sat_option());
 
   // TFO の部分に変数を割り当てる．
-  GenVidMap gvar_map(mMaxNodeId);
-  GenVidMap fvar_map(mMaxNodeId);
-  GenVidMap dvar_map(mMaxNodeId);
   for (ymuint rpos = 0; rpos < tfo_num; ++ rpos) {
     const TpgNode* node = mNodeList[rpos];
     SatVarId gvar = solver.new_var();
     SatVarId fvar = solver.new_var();
     SatVarId dvar = solver.new_var();
 
-    gvar_map.set_vid(node, gvar);
-    fvar_map.set_vid(node, fvar);
-    dvar_map.set_vid(node, dvar);
+    node->mGvar = gvar;
+    node->mFvar = fvar;
+    node->mDvar = dvar;
   }
 
   // TFI の部分に変数を割り当てる．
@@ -233,8 +397,8 @@ DtpgSatS::run_single(const TpgFault* fault)
     const TpgNode* node = mNodeList[rpos];
     SatVarId gvar = solver.new_var();
 
-    gvar_map.set_vid(node, gvar);
-    fvar_map.set_vid(node, gvar);
+    node->mGvar = gvar;
+    node->mFvar = gvar;
   }
 
 
@@ -244,7 +408,7 @@ DtpgSatS::run_single(const TpgFault* fault)
 
   for (ymuint i = 0; i < tfi_num; ++ i) {
     const TpgNode* node = mNodeList[i];
-    node->make_cnf(solver, VidLitMap(node, gvar_map));
+    node->make_cnf(solver, GvarLitMap(node));
   }
 
 
@@ -253,7 +417,7 @@ DtpgSatS::run_single(const TpgFault* fault)
   //////////////////////////////////////////////////////////////////////
 
   if ( fault->is_stem_fault() ) {
-    SatLiteral flit(fvar_map(fnode));
+    SatLiteral flit(fnode->mFvar);
     if ( fault->val() == 0 ) {
       solver.add_clause(~flit);
     }
@@ -271,7 +435,7 @@ DtpgSatS::run_single(const TpgFault* fault)
       }
       else {
 	const TpgNode* inode = fnode->fanin(i);
-	ivars[i] = fvar_map(inode);
+	ivars[i] = inode->mFvar;
       }
     }
     SatLiteral flit(fvar);
@@ -281,25 +445,27 @@ DtpgSatS::run_single(const TpgFault* fault)
     else {
       solver.add_clause(flit);
     }
-    fnode->make_cnf(solver, VectLitMap(ivars, fvar_map(fnode)));
+    fnode->make_cnf(solver, VectLitMap(ivars, fnode->mFvar));
   }
-  make_dchain_cnf(solver, fnode, gvar_map, fvar_map, dvar_map);
+  make_dchain_cnf(solver, fnode);
+
 
   for (ymuint i = 1; i < tfo_num; ++ i) {
     const TpgNode* node = mNodeList[i];
-    node->make_cnf(solver, VidLitMap(node, fvar_map));
+    node->make_cnf(solver, FvarLitMap(node));
 
-    make_dchain_cnf(solver, node, gvar_map, fvar_map, dvar_map);
+    make_dchain_cnf(solver, node);
 
     ymuint ni = node->fanin_num();
     vector<SatLiteral> tmp_lits;
     tmp_lits.reserve(ni + 1);
-    SatLiteral dlit(dvar_map(node));
+
+    SatLiteral dlit(node->mDvar);
     tmp_lits.push_back(~dlit);
     for (ymuint i = 0; i < ni; ++ i) {
       const TpgNode* inode = node->fanin(i);
-      if ( gvar_map(inode) != fvar_map(inode) ) {
-	SatLiteral dlit(dvar_map(inode));
+      if ( inode->mGvar != inode->mFvar ) {
+	SatLiteral dlit(inode->mDvar);
 	tmp_lits.push_back(dlit);
       }
     }
@@ -314,7 +480,7 @@ DtpgSatS::run_single(const TpgFault* fault)
   vector<SatLiteral> odiff(no);
   for (ymuint i = 0; i < no; ++ i) {
     const TpgNode* node = output_list[i];
-    SatLiteral dlit(dvar_map(node));
+    SatLiteral dlit(node->mDvar);
     odiff[i] = dlit;
   }
   solver.add_clause(odiff);
@@ -323,12 +489,13 @@ DtpgSatS::run_single(const TpgFault* fault)
 
   vector<SatLiteral> assumptions;
   for (const TpgNode* node = fnode; node != nullptr; node = node->imm_dom()) {
-    SatLiteral dlit(dvar_map(node));
+    SatLiteral dlit(node->mDvar);
     assumptions.push_back(dlit);
   }
 
   solve(solver, assumptions, fault, fnode, output_list,
-	gvar_map, fvar_map);
+	GvarVidMap(), FvarVidMap());
+
 }
 
 END_NAMESPACE_YM_SATPG

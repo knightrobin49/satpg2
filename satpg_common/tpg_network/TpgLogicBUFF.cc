@@ -33,6 +33,46 @@ TpgLogicBUFF::~TpgLogicBUFF()
 {
 }
 
+// @brief controling value を得る．
+//
+// is_logic() が false の場合の返り値は不定
+// ない場合は kValX を返す．
+Val3
+TpgLogicBUFF::cval() const
+{
+  return kValX;
+}
+
+// @brief noncontroling valueを得る．
+//
+// is_logic() が false の場合の返り値は不定
+// ない場合は kValX を返す．
+Val3
+TpgLogicBUFF::nval() const
+{
+  return kValX;
+}
+
+// @brief controling output value を得る．
+//
+// is_logic() が false の場合の返り値は不定
+// ない場合は kValX を返す．
+Val3
+TpgLogicBUFF::coval() const
+{
+  return kValX;
+}
+
+// @brief noncontroling output value を得る．
+//
+// is_logic() が false の場合の返り値は不定
+// ない場合は kValX を返す．
+Val3
+TpgLogicBUFF::noval() const
+{
+  return kValX;
+}
+
 // @brief 入出力の関係を表す CNF 式を生成する．
 // @param[in] solver SAT ソルバ
 // @param[in] lit_map 入出力とリテラルの対応マップ

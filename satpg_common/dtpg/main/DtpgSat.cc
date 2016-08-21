@@ -167,7 +167,7 @@ DtpgSat::solve(SatSolver& solver,
 
   SatStats sat_stats;
   solver.get_stats(sat_stats);
-  sat_stats -= prev_stats;
+  //sat_stats -= prev_stats;
 
   if ( ans == kB3True ) {
     // パタンが求まった．

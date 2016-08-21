@@ -250,6 +250,7 @@ TpgNode::id() const
 Val3
 TpgNode::cval() const
 {
+  ASSERT_COND( is_output() );
   return kValX;
 }
 
@@ -258,6 +259,7 @@ TpgNode::cval() const
 Val3
 TpgNode::nval() const
 {
+  ASSERT_COND( is_output() );
   return kValX;
 }
 
@@ -266,6 +268,7 @@ TpgNode::nval() const
 Val3
 TpgNode::coval() const
 {
+  ASSERT_COND( is_output() );
   return kValX;;
 }
 
@@ -274,6 +277,7 @@ TpgNode::coval() const
 Val3
 TpgNode::noval() const
 {
+  ASSERT_COND( is_output() );
   return kValX;
 }
 
