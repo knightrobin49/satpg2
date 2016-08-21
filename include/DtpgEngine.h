@@ -72,6 +72,21 @@ public:
 };
 
 
+/// @brief Original Single エンジンを作る．
+/// @param[in] sat_type SATソルバの種類を表す文字列
+/// @param[in] sat_option SATソルバに渡すオプション文字列
+/// @param[in] sat_outp SATソルバ用の出力ストリーム
+/// @param[in] bt バックトレーサー
+/// @param[in] dop パタンが求められた時に実行されるファンクタ
+/// @param[in] uop 検出不能と判定された時に実行されるファンクタ
+DtpgEngine*
+new_DtpgSatS0(const string& sat_type,
+	      const string& sat_option,
+	      ostream* sat_outp,
+	      BackTracer& bt,
+	      DetectOp& dop,
+	      UntestOp& uop);
+
 /// @brief Single エンジンを作る．
 /// @param[in] sat_type SATソルバの種類を表す文字列
 /// @param[in] sat_option SATソルバに渡すオプション文字列
@@ -81,21 +96,6 @@ public:
 /// @param[in] uop 検出不能と判定された時に実行されるファンクタ
 DtpgEngine*
 new_DtpgSatS(const string& sat_type,
-	     const string& sat_option,
-	     ostream* sat_outp,
-	     BackTracer& bt,
-	     DetectOp& dop,
-	     UntestOp& uop);
-
-/// @brief FFR エンジンを作る．
-/// @param[in] sat_type SATソルバの種類を表す文字列
-/// @param[in] sat_option SATソルバに渡すオプション文字列
-/// @param[in] sat_outp SATソルバ用の出力ストリーム
-/// @param[in] bt バックトレーサー
-/// @param[in] dop パタンが求められた時に実行されるファンクタ
-/// @param[in] uop 検出不能と判定された時に実行されるファンクタ
-DtpgEngine*
-new_DtpgSatF(const string& sat_type,
 	     const string& sat_option,
 	     ostream* sat_outp,
 	     BackTracer& bt,
@@ -116,73 +116,6 @@ new_DtpgSatH(const string& sat_type,
 	     BackTracer& bt,
 	     DetectOp& dop,
 	     UntestOp& uop);
-
-/// @brief Single2 エンジンを作る．
-/// @param[in] th_val しきい値
-/// @param[in] sat_type SATソルバの種類を表す文字列
-/// @param[in] sat_option SATソルバに渡すオプション文字列
-/// @param[in] sat_outp SATソルバ用の出力ストリーム
-/// @param[in] max_id ノード番号の最大値 + 1
-/// @param[in] bt バックトレーサー
-/// @param[in] dop パタンが求められた時に実行されるファンクタ
-/// @param[in] uop 検出不能と判定された時に実行されるファンクタ
-DtpgEngine*
-new_DtpgSatS2(ymuint th_val,
-	      const string& sat_type,
-	      const string& sat_option,
-	      ostream* sat_outp,
-	      BackTracer& bt,
-	      DetectOp& dop,
-	      UntestOp& uop);
-
-/// @brief Multi エンジンを作る．
-/// @param[in] sat_type SATソルバの種類を表す文字列
-/// @param[in] sat_option SATソルバに渡すオプション文字列
-/// @param[in] sat_outp SATソルバ用の出力ストリーム
-/// @param[in] max_id ノード番号の最大値 + 1
-/// @param[in] bt バックトレーサー
-/// @param[in] dop パタンが求められた時に実行されるファンクタ
-/// @param[in] uop 検出不能と判定された時に実行されるファンクタ
-DtpgEngine*
-new_DtpgSatM(const string& sat_type,
-	     const string& sat_option,
-	     ostream* sat_outp,
-	     BackTracer& bt,
-	     DetectOp& dop,
-	     UntestOp& uop);
-
-/// @brief Multi2 エンジンを作る．
-/// @param[in] th_val しきい値
-/// @param[in] sat_type SATソルバの種類を表す文字列
-/// @param[in] sat_option SATソルバに渡すオプション文字列
-/// @param[in] sat_outp SATソルバ用の出力ストリーム
-/// @param[in] max_id ノード番号の最大値 + 1
-/// @param[in] bt バックトレーサー
-/// @param[in] dop パタンが求められた時に実行されるファンクタ
-/// @param[in] uop 検出不能と判定された時に実行されるファンクタ
-DtpgEngine*
-new_DtpgSatM2(ymuint th_val,
-	      const string& sat_type,
-	      const string& sat_option,
-	      ostream* sat_outp,
-	      BackTracer& bt,
-	      DetectOp& dop,
-	      UntestOp& uop);
-
-/// @brief SmtSingle エンジンを作る．
-/// @param[in] sat_type SATソルバの種類を表す文字列
-/// @param[in] sat_option SATソルバに渡すオプション文字列
-/// @param[in] sat_outp SATソルバ用の出力ストリーム
-/// @param[in] bt バックトレーサー
-/// @param[in] dop パタンが求められた時に実行されるファンクタ
-/// @param[in] uop 検出不能と判定された時に実行されるファンクタ
-DtpgEngine*
-new_SmtEngineSingle(const string& sat_type,
-		    const string& sat_option,
-		    ostream* sat_outp,
-		    BackTracer& bt,
-		    DetectOp& dop,
-		    UntestOp& uop);
 
 END_NAMESPACE_YM_SATPG
 

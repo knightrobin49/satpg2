@@ -48,6 +48,8 @@ DtpgCmd::DtpgCmd(AtpgMgr* mgr) :
 			    "YmSat1 mode");
   mPoptPrintStats = new TclPopt(this, "print_stats",
 				"print statistics");
+  mPoptSingle0 = new TclPopt(this, "single0",
+			     "original single mode");
   mPoptSingle = new TclPopt(this, "single",
 			    "single mode");
   mPoptMFFC = new TclPopt(this, "mffc",
@@ -71,7 +73,7 @@ DtpgCmd::DtpgCmd(AtpgMgr* mgr) :
 
   new_popt_group(mPoptSat, mPoptMiniSat, mPoptMiniSat2, mPoptSatRec);
 
-  TclPoptGroup* g0 = new_popt_group(mPoptSingle, mPoptMFFC);
+  TclPoptGroup* g0 = new_popt_group(mPoptSingle0, mPoptSingle, mPoptMFFC);
 
   new_popt_group(mPoptTimer, mPoptNoTimer);
 }
@@ -127,6 +129,9 @@ DtpgCmd::cmd_proc(TclObjVector& objv)
       engine_type = "single";
     }
   }
+  else if ( mPoptSingle0->is_specified() ) {
+    engine_type = "single0";
+  }
   else if ( mPoptMFFC->is_specified() ) {
     engine_type = "mffc";
   }
@@ -164,6 +169,9 @@ DtpgCmd::cmd_proc(TclObjVector& objv)
   DtpgEngine* engine = nullptr;
   if ( engine_type == "single" ) {
     engine = new_DtpgSatS(sat_type, sat_option, outp, bt, dop_list, uop_list);
+  }
+  else if ( engine_type == "single0" ) {
+    engine = new_DtpgSatS0(sat_type, sat_option, outp, bt, dop_list, uop_list);
   }
   else if ( engine_type == "mffc" ) {
     engine = new_DtpgSatH(sat_type, sat_option, outp, bt, dop_list, uop_list);

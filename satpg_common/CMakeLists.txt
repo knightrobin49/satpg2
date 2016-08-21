@@ -63,6 +63,7 @@ set (dtpg_SOURCES
   dtpg/dop/FopDrop.cc
 
   dtpg/main/DtpgSat.cc
+  dtpg/main/DtpgSatS0.cc
   dtpg/main/DtpgSatS.cc
   dtpg/main/DtpgSatH.cc
 

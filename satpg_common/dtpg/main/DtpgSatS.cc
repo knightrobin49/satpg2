@@ -16,6 +16,7 @@
 #include "FaultMgr.h"
 #include "Fsim.h"
 #include "LitMap.h"
+#include "VidLitMap.h"
 #include "VectLitMap.h"
 #include "ym/SatSolverR.h"
 
@@ -206,13 +207,18 @@ FvarLitMap::output() const
   return SatLiteral(mNode->mFvar);
 }
 
+#if USE_VIDMAP
+
 void
 make_dchain_cnf(SatSolver& solver,
-		const TpgNode* node)
+		const TpgNode* node,
+		const VidMap& gvar_map,
+		const VidMap& fvar_map,
+		const VidMap& dvar_map)
 {
-  SatLiteral glit(node->mGvar);
-  SatLiteral flit(node->mFvar);
-  SatLiteral dlit(node->mDvar);
+  SatLiteral glit(gvar_map(node));
+  SatLiteral flit(fvar_map(node));
+  SatLiteral dlit(dvar_map(node));
 
   // dlit -> XOR(glit, flit) を追加する．
   // 要するに正常回路と故障回路で異なっているとき dlit が 1 となる．
@@ -227,25 +233,77 @@ make_dchain_cnf(SatSolver& solver,
     // dlit -> ファンアウト先のノードの dlit の一つが 1
     ymuint nfo = node->fanout_num();
     if ( nfo == 1 ) {
-      SatLiteral odlit(node->fanout(0)->mDvar);
+      SatLiteral odlit(dvar_map(node->fanout(0)));
       solver.add_clause(~dlit, odlit);
     }
     else {
       vector<SatLiteral> tmp_lits(nfo + 1);
       for (ymuint i = 0; i < nfo; ++ i) {
 	const TpgNode* onode = node->fanout(i);
-	tmp_lits[i] = SatLiteral(onode->mDvar);
+	tmp_lits[i] = SatLiteral(dvar_map(onode));
       }
       tmp_lits[nfo] = ~dlit;
       solver.add_clause(tmp_lits);
     }
     const TpgNode* imm_dom = node->imm_dom();
     if ( imm_dom != nullptr ) {
-      SatLiteral odlit(imm_dom->mDvar);
+      SatLiteral odlit(dvar_map(imm_dom));
       solver.add_clause(~dlit, odlit);
     }
   }
 }
+
+#else
+
+void
+make_dchain_cnf(SatSolver& solver,
+		const TpgNode* node,
+		const VidMap& fvar_map,
+		const VidMap& dvar_map)
+{
+  SatLiteral glit(node->mGvar);
+  //SatLiteral flit(node->mFvar);
+  //SatLiteral dlit(node->mDvar);
+  SatLiteral flit(fvar_map(node));
+  SatLiteral dlit(dvar_map(node));
+
+  // dlit -> XOR(glit, flit) を追加する．
+  // 要するに正常回路と故障回路で異なっているとき dlit が 1 となる．
+  solver.add_clause(~glit, ~flit, ~dlit);
+  solver.add_clause( glit,  flit, ~dlit);
+
+  if ( node->is_output() ) {
+    solver.add_clause(~glit,  flit,  dlit);
+    solver.add_clause( glit, ~flit,  dlit);
+  }
+  else {
+    // dlit -> ファンアウト先のノードの dlit の一つが 1
+    ymuint nfo = node->fanout_num();
+    if ( nfo == 1 ) {
+      //SatLiteral odlit(node->fanout(0)->mDvar);
+      SatLiteral odlit(dvar_map(node->fanout(0)));
+      solver.add_clause(~dlit, odlit);
+    }
+    else {
+      vector<SatLiteral> tmp_lits(nfo + 1);
+      for (ymuint i = 0; i < nfo; ++ i) {
+	const TpgNode* onode = node->fanout(i);
+	//tmp_lits[i] = SatLiteral(onode->mDvar);
+	tmp_lits[i] = SatLiteral(dvar_map(onode));
+      }
+      tmp_lits[nfo] = ~dlit;
+      solver.add_clause(tmp_lits);
+    }
+    const TpgNode* imm_dom = node->imm_dom();
+    if ( imm_dom != nullptr ) {
+      //SatLiteral odlit(imm_dom->mDvar);
+      SatLiteral odlit(dvar_map(imm_dom));
+      solver.add_clause(~dlit, odlit);
+    }
+  }
+}
+
+#endif
 
 END_NONAMESPACE
 
@@ -397,9 +455,14 @@ DtpgSatS::run_single(const TpgFault* fault)
   //cout << fault->str() << endl;
 
   // TFO の部分に変数を割り当てる．
-#if 0
-  VarMap var_map(mMaxNodeId);
+#if USE_VIDMAP
+  //GenVidMap gvar_map(mMaxNodeId);
+  GvarVidMap gvar_map;
+  GenVidMap fvar_map(mMaxNodeId);
+  GenVidMap dvar_map(mMaxNodeId);
 #else
+  GenVidMap fvar_map(mMaxNodeId);
+  GenVidMap dvar_map(mMaxNodeId);
 #endif
   for (ymuint rpos = 0; rpos < tfo_num; ++ rpos) {
     const TpgNode* node = mNodeList[rpos];
@@ -408,12 +471,17 @@ DtpgSatS::run_single(const TpgFault* fault)
     SatVarId fvar = solver.new_var();
     SatVarId dvar = solver.new_var();
 
-#if 0
-    var_map.set(node->id(), gvar, fvar, dvar);
+#if USE_VIDMAP
+    //gvar_map.set_vid(node, gvar);
+    node->mGvar = gvar;
+    fvar_map.set_vid(node, fvar);
+    dvar_map.set_vid(node, dvar);
 #else
     node->mGvar = gvar;
-    node->mFvar = fvar;
-    node->mDvar = dvar;
+    //node->mFvar = fvar;
+    //node->mDvar = dvar;
+    fvar_map.set_vid(node, fvar);
+    dvar_map.set_vid(node, dvar);
 #endif
   }
 
@@ -423,11 +491,14 @@ DtpgSatS::run_single(const TpgFault* fault)
     //cout << "Node#" << node->id() << endl;
     SatVarId gvar = solver.new_var();
 
-#if 0
-    var_map.set(node->id(), gvar);
+#if USE_VIDMAP
+    //gvar_map.set_vid(node, gvar);
+    node->mGvar = gvar;
+    fvar_map.set_vid(node, gvar);
 #else
     node->mGvar = gvar;
-    node->mFvar = gvar;
+    //node->mFvar = gvar;
+    fvar_map.set_vid(node, gvar);
 #endif
   }
 
@@ -439,7 +510,11 @@ DtpgSatS::run_single(const TpgFault* fault)
   for (ymuint i = 0; i < tfi_num; ++ i) {
     const TpgNode* node = mNodeList[i];
     //cout << "Node#" << node->id() << ": ";
+#if USE_VIDMAP
+    node->make_cnf(solver, VidLitMap(node, gvar_map));
+#else
     node->make_cnf(solver, GvarLitMap(node));
+#endif
   }
 
 
@@ -449,7 +524,12 @@ DtpgSatS::run_single(const TpgFault* fault)
 
   //cout << "Node#" << fnode->id() << ": ";
   if ( fault->is_stem_fault() ) {
-    SatLiteral flit(fnode->mFvar);
+#if USE_VIDMAP
+    SatLiteral flit(fvar_map(fnode));
+#else
+    //SatLiteral flit(fnode->mFvar);
+    SatLiteral flit(fvar_map(fnode));
+#endif
     if ( fault->val() == 0 ) {
       solver.add_clause(~flit);
     }
@@ -467,7 +547,12 @@ DtpgSatS::run_single(const TpgFault* fault)
       }
       else {
 	const TpgNode* inode = fnode->fanin(i);
-	ivars[i] = inode->mFvar;
+#if USE_VIDMAP
+	ivars[i] = fvar_map(inode);
+#else
+	//ivars[i] = inode->mFvar;
+	ivars[i] = fvar_map(inode);
+#endif
       }
     }
     SatLiteral flit(fvar);
@@ -477,28 +562,59 @@ DtpgSatS::run_single(const TpgFault* fault)
     else {
       solver.add_clause(flit);
     }
-    fnode->make_cnf(solver, VectLitMap(ivars, fnode->mFvar));
+#if USE_VIDMAP
+    fnode->make_cnf(solver, VectLitMap(ivars, fvar_map(fnode)));
+#else
+    //fnode->make_cnf(solver, VectLitMap(ivars, fnode->mFvar));
+    fnode->make_cnf(solver, VectLitMap(ivars, fvar_map(fnode)));
+#endif
   }
-  make_dchain_cnf(solver, fnode);
+#if USE_VIDMAP
+  make_dchain_cnf(solver, fnode, gvar_map, fvar_map, dvar_map);
+#else
+  make_dchain_cnf(solver, fnode, fvar_map, dvar_map);
+#endif
 
   for (ymuint i = 1; i < tfo_num; ++ i) {
     const TpgNode* node = mNodeList[i];
     //cout << "Node#" << node->id() << ": ";
-    node->make_cnf(solver, FvarLitMap(node));
+#if USE_VIDMAP
+    node->make_cnf(solver, VidLitMap(node, fvar_map));
+#else
+    //node->make_cnf(solver, FvarLitMap(node));
+    node->make_cnf(solver, VidLitMap(node, fvar_map));
+#endif
 
-    make_dchain_cnf(solver, node);
+#if USE_VIDMAP
+    make_dchain_cnf(solver, node, gvar_map, fvar_map, dvar_map);
+#else
+    make_dchain_cnf(solver, node, fvar_map, dvar_map);
+#endif
 
     ymuint ni = node->fanin_num();
     vector<SatLiteral> tmp_lits;
     tmp_lits.reserve(ni + 1);
-    SatLiteral dlit(node->mDvar);
+#if USE_VIDMAP
+    SatLiteral dlit(dvar_map(node));
+#else
+    //SatLiteral dlit(node->mDvar);
+    SatLiteral dlit(dvar_map(node));
+#endif
     tmp_lits.push_back(~dlit);
     for (ymuint i = 0; i < ni; ++ i) {
       const TpgNode* inode = node->fanin(i);
-      if ( inode->mGvar != inode->mFvar ) {
-	SatLiteral dlit(inode->mDvar);
+#if USE_VIDMAP
+      if ( gvar_map(inode) != fvar_map(inode) ) {
+	SatLiteral dlit(dvar_map(inode));
 	tmp_lits.push_back(dlit);
       }
+#else
+      if ( inode->mGvar != fvar_map(inode) ) {
+	//SatLiteral dlit(inode->mDvar);
+	SatLiteral dlit(dvar_map(inode));
+	tmp_lits.push_back(dlit);
+      }
+#endif
     }
     solver.add_clause(tmp_lits);
   }
@@ -511,7 +627,12 @@ DtpgSatS::run_single(const TpgFault* fault)
   vector<SatLiteral> odiff(no);
   for (ymuint i = 0; i < no; ++ i) {
     const TpgNode* node = output_list[i];
-    SatLiteral dlit(node->mDvar);
+#if USE_VIDMAP
+    SatLiteral dlit(dvar_map(node));
+#else
+    //SatLiteral dlit(node->mDvar);
+    SatLiteral dlit(dvar_map(node));
+#endif
     odiff[i] = dlit;
   }
   solver.add_clause(odiff);
@@ -520,12 +641,22 @@ DtpgSatS::run_single(const TpgFault* fault)
 
   vector<SatLiteral> assumptions;
   for (const TpgNode* node = fnode; node != nullptr; node = node->imm_dom()) {
-    SatLiteral dlit(node->mDvar);
+#if USE_VIDMAP
+    SatLiteral dlit(dvar_map(node));
+#else
+    //SatLiteral dlit(node->mDvar);
+    SatLiteral dlit(dvar_map(node));
+#endif
     assumptions.push_back(dlit);
   }
 
+#if USE_VIDMAP
   solve(solver, assumptions, fault, fnode, output_list,
-	GvarVidMap(), FvarVidMap());
+	gvar_map, fvar_map);
+#else
+  solve(solver, assumptions, fault, fnode, output_list,
+	GvarVidMap(), fvar_map);
+#endif
 
 }
 
