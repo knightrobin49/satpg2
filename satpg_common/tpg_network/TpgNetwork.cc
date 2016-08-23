@@ -287,28 +287,6 @@ TpgNetwork::node_fault(ymuint id,
 
 BEGIN_NONAMESPACE
 
-void
-get_mffc_elem(TpgNode* node,
-	      vector<bool>& mark,
-	      vector<TpgNode*>& tmp_list)
-{
-  if ( mark[node->id()] ) {
-    return;
-  }
-  mark[node->id()] = true;
-  if ( node->imm_dom() != nullptr && node->ffr_root() == node ) {
-    tmp_list.push_back(node);
-  }
-
-  ymuint ni = node->fanin_num();
-  for (ymuint i = 0; i < ni; ++ i) {
-    TpgNode* inode = node->fanin(i);
-    if ( inode->imm_dom() != nullptr ) {
-      get_mffc_elem(inode, mark, tmp_list);
-    }
-  }
-}
-
 // @brief ノードの TFI にマークをつける．
 ymuint
 tfimark(TpgNode* node,
@@ -532,45 +510,102 @@ TpgNetwork::set(const BnBuilder& builder)
   // immediate dominator を求める．
   for (ymuint i = 0; i < mNodeNum; ++ i) {
     TpgNode* node = mNodeArray[mNodeNum - i - 1];
-    ymuint nfo = node->fanout_num();
     const TpgNode* imm_dom = nullptr;
-    if ( nfo == 0 ) {
-      ASSERT_COND( node->is_output() );
-    }
-    else {
+    if ( !node->is_output() ) {
+      ymuint nfo = node->fanout_num();
+      ASSERT_COND( nfo > 0 );
       imm_dom = node->fanout(0);
-      for (ymuint i = 1; i < nfo; ++ i) {
+      for (ymuint i = 1; imm_dom != nullptr && i < nfo; ++ i) {
 	imm_dom = merge(imm_dom, node->fanout(i));
-	if ( imm_dom == nullptr ) {
-	  break;
-	}
       }
     }
     node->set_imm_dom(imm_dom);
   }
 
   // MFFC 内の FFR の情報をセットしておく．
+  ymuint total_mffc_size = 0;
+  ymuint max_mffc_size = 0;
+  ymuint total_mffc_inputs = 0;
+  ymuint max_mffc_inputs = 0;
+
   mMffcNum = 0;
   mFfrNum = 0;
   vector<bool> mark(node_num(), false);
   for (ymuint i = 0; i < mNodeNum; ++ i) {
     TpgNode* node = mNodeArray[i];
-    if ( node->imm_dom() == nullptr ) {
-      // node を根とする MFFC 内の FFR の根のノードのリストを作る．
-      vector<TpgNode*> tmp_list;
-      tmp_list.push_back(node);
-      get_mffc_elem(node, mark, tmp_list);
+    if ( node->imm_dom() != nullptr ) {
+      continue;
+    }
 
-      ymuint n = tmp_list.size();
-      void* p = mAlloc.get_memory(sizeof(TpgNode*) * n);
-      TpgNode** root_list = new (p) TpgNode*[n];
-      for (ymuint i = 0; i < n; ++ i) {
-	root_list[i] = tmp_list[i];
+    // node を根とする MFFC の情報を得る．
+    vector<TpgNode*> node_list;
+    vector<TpgNode*> input_list;
+
+    node_list.push_back(node);
+    mark[node->id()] = true;
+    for (ymuint rpos = 0; rpos < node_list.size(); ++ rpos) {
+      TpgNode* node = node_list[rpos];
+      ymuint ni = node->fanin_num();
+      for (ymuint i = 0; i < ni; ++ i) {
+	TpgNode* inode = node->fanin(i);
+	if ( mark[inode->id()] ) {
+	  continue;
+	}
+	mark[inode->id()] = true;
+	if ( inode->imm_dom() == nullptr ) {
+	  input_list.push_back(inode);
+	}
+	else {
+	  if ( inode->is_input() ) {
+	    // これは例外
+	    input_list.push_back(inode);
+	  }
+	  node_list.push_back(inode);
+	}
       }
-      ASSERT_COND( root_list[0] == node );
-      node->set_mffc_info(n, root_list);
-      ++ mMffcNum;
-      mFfrNum += n;
+    }
+    // マークを消しておく．
+    // ただし根と葉のノードだけで十分
+    mark[node->id()] = false;
+    for (ymuint rpos = 0; rpos < input_list.size(); ++ rpos) {
+      TpgNode* node = input_list[rpos];
+      mark[node->id()] = false;
+    }
+#if 0
+    MffcInfo* mffc_info = new MffcInfo(node_list, input_list);
+    mMffcInfoList.push_back(mffc_info);
+#endif
+    // node を根とする MFFC 内の FFR の根のノードのリストを作る．
+    ymuint elem_num = 0;
+    for (ymuint rpos = 0; rpos < node_list.size(); ++ rpos) {
+      TpgNode* node = node_list[rpos];
+      if ( node->ffr_root() == node ) {
+	++ elem_num;
+      }
+    }
+    void* p = mAlloc.get_memory(sizeof(TpgNode*) * elem_num);
+    TpgNode** root_list = new (p) TpgNode*[elem_num];
+    ymuint wpos = 0;
+    for (ymuint rpos = 0; rpos < node_list.size(); ++ rpos) {
+      TpgNode* node = node_list[rpos];
+      if ( node->ffr_root() == node ) {
+	root_list[wpos] = node;
+	++ wpos;
+      }
+    }
+    node->set_mffc_info(elem_num, root_list);
+    ++ mMffcNum;
+    mFfrNum += elem_num;
+
+    ymuint mffc_size = node_list.size();
+    total_mffc_size += mffc_size;
+    if ( max_mffc_size < mffc_size ) {
+      max_mffc_size = mffc_size;
+    }
+    ymuint input_size = input_list.size();
+    total_mffc_inputs += input_size;
+    if ( max_mffc_inputs < input_size ) {
+      max_mffc_inputs = input_size;
     }
   }
 }
