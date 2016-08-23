@@ -771,15 +771,7 @@ WARN_LOGFILE           = doxygen.warnings
 # spaces. See also FILE_PATTERNS and EXTENSION_MAPPING
 # Note: If this tag is empty the current directory is searched.
 
-INPUT                  = @PROJECT_SOURCE_DIR@/include \
-                         @PROJECT_SOURCE_DIR@/ym-bnet/include \
-                         @PROJECT_SOURCE_DIR@/ym-cell/include \
-                         @PROJECT_SOURCE_DIR@/ym-common/include \
-                         @PROJECT_SOURCE_DIR@/ym-logic/include \
-                         @PROJECT_SOURCE_DIR@/ym-mincov/include \
-                         @PROJECT_SOURCE_DIR@/ym-sat/include \
-                         @PROJECT_SOURCE_DIR@/ym-tclpp/include \
-                         @PROJECT_SOURCE_DIR@/ym-udgraph/include
+INPUT                  = @YM_DOXY_INPUT@
 
 # This tag can be used to specify the character encoding of the source files
 # that doxygen parses. Internally doxygen uses the UTF-8 encoding. Doxygen uses
