@@ -290,7 +290,7 @@ FaultAnalyzer::analyze_fault(const TpgFault* fault,
     {
       ModelValMap val_map(focone->gvar_map(), focone->fvar_map(), sat_model);
 
-      BackTracer backtracer(mMaxNodeId);
+      BackTracer backtracer(2, mMaxNodeId);
       backtracer(fault->tpg_onode(), focone->output_list(), val_map, pi_suf_list);
       pi_suf_list.sort();
     }

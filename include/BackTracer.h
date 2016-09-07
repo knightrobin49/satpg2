@@ -25,8 +25,10 @@ class BackTracer
 public:
 
   /// @brief コンストラクタ
+  /// @param[in] xmode モード
   /// @param[in] max_id ID番号の最大値
-  BackTracer(ymuint max_id);
+  BackTracer(ymuint xmode,
+	     ymuint max_id);
 
   /// @brief デストラクタ
   ~BackTracer();

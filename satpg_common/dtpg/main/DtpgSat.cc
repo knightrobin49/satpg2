@@ -170,6 +170,9 @@ DtpgSat::solve(SatSolver& solver,
   //sat_stats -= prev_stats;
 
   if ( ans == kB3True ) {
+    timer.reset();
+    timer.start();
+
     // パタンが求まった．
     ModelValMap val_map(gvar_map, fvar_map, model);
 
@@ -178,6 +181,9 @@ DtpgSat::solve(SatSolver& solver,
 
     // パタンの登録などを行う．
     mDetectOp(fault, mLastAssign);
+
+    timer.stop();
+    mStats.mBackTraceTime += timer.time();
 
     mStats.update_det(sat_stats, time);
   }

@@ -98,6 +98,9 @@ struct DtpgStats
   /// @brief アボートした時の SAT に要した時間
   USTime mAbortTime;
 
+  /// @brief バックトレースに要した時間
+  USTime mBackTraceTime;
+
 };
 
 

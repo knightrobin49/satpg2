@@ -8,8 +8,9 @@
 
 
 #include "BackTracer.h"
-#include "BtJust2.h"
 #include "BtSimple.h"
+#include "BtJust1.h"
+#include "BtJust2.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG
@@ -20,9 +21,15 @@ BEGIN_NAMESPACE_YM_SATPG
 
 // @brief コンストラクタ
 // @param[in] max_id ID番号の最大値
-BackTracer::BackTracer(ymuint max_id)
+BackTracer::BackTracer(ymuint xmode,
+		       ymuint max_id)
 {
-  mImpl = new BtJust2();
+  switch ( xmode ) {
+  case 0: mImpl = new BtSimple(); break;
+  case 1: mImpl = new BtJust1(); break;
+  case 2: mImpl = new BtJust2(); break;
+  default: mImpl = new BtJust2(); break;
+  }
   mImpl->set_max_id(max_id);
 }
 

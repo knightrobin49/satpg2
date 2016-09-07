@@ -98,6 +98,9 @@ DtpgSatH::run(TpgNetwork& network,
 {
   clear_stats();
 
+  StopWatch timer;
+  timer.start();
+
   // 故障シミュレータに故障リストをセットする．
   fsim.set_faults(fault_list);
 
@@ -130,12 +133,14 @@ DtpgSatH::run(TpgNetwork& network,
 	continue;
       }
 
+      timer.stop();
       cnf_begin();
 
       StructSat struct_sat(max_id, sat_type(), sat_option());
       const FoCone* focone = struct_sat.add_focone(mffc_root, kVal1);
 
       cnf_end();
+      timer.start();
 
       ymuint nf = f_list.size();
       for (ymuint i = 0; i < nf; ++ i) {
@@ -159,9 +164,13 @@ DtpgSatH::run(TpgNetwork& network,
 	cout << endl;
 #endif
 
+	timer.stop();
+
 	// 故障に対するテスト生成を行なう．
 	solve(struct_sat.solver(), assumption, fault, mffc_root, focone->output_list(),
 	      focone->gvar_map(), focone->fvar_map());
+
+	timer.start();
       }
     }
     else {
@@ -178,12 +187,16 @@ DtpgSatH::run(TpgNetwork& network,
 	continue;
       }
 
+      timer.stop();
+
       cnf_begin();
 
       StructSat struct_sat(max_id, sat_type(), sat_option());
       const MffcCone* mffc_cone = struct_sat.add_mffccone(mffc_root);
 
       cnf_end();
+
+      timer.start();
 
       for (ymuint j = 0; j < ne; ++ j) {
 	const TpgNode* ffr_root = mffc_root->mffc_elem(j);
@@ -205,13 +218,23 @@ DtpgSatH::run(TpgNetwork& network,
 	  // ffr_root の出力に故障を挿入する．
 	  mffc_cone->select_fault_node(j, assumption);
 
+	  timer.stop();
+
 	  // 故障に対するテスト生成を行なう．
 	  solve(struct_sat.solver(), assumption, fault, mffc_root, mffc_cone->output_list(),
 		mffc_cone->gvar_map(), mffc_cone->fvar_map());
+
+	  timer.start();
+
 	}
       }
     }
   }
+
+#if 0
+  USTime time = timer.time();
+  cout << "MISC time = " << time << endl;
+#endif
 
   get_stats(stats);
 }

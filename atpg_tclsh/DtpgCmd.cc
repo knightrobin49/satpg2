@@ -152,7 +152,7 @@ DtpgCmd::cmd_proc(TclObjVector& objv)
     xmode = mPoptX->val();
   }
 
-  BackTracer bt(_network().node_num());
+  BackTracer bt(xmode, _network().node_num());
 
   if ( mPoptDrop->is_specified() ) {
     dop_list.add(new_DopDrop(_fault_mgr(), _fsim3()));
@@ -296,6 +296,13 @@ DtpgCmd::cmd_proc(TclObjVector& objv)
 	   << "  " << setw(8) << stats.mAbortTime.sys_time_usec() / stats.mAbortCount
 	   << "s usec" << endl;
     }
+    cout << endl
+	 << "*** backtrace time ***" << endl
+	 << "  " << stats.mBackTraceTime
+	 << "  " << setw(8) << stats.mBackTraceTime.usr_time_usec() / stats.mDetCount
+	 << "u usec"
+	 << "  " << setw(8) << stats.mBackTraceTime.sys_time_usec() / stats.mDetCount
+	 << "s usec" << endl;
     cout.flags(save);
   }
 
