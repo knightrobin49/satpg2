@@ -17,7 +17,8 @@
 #include "AuxNodeInfo.h"
 #include "ym/BnBlifReader.h"
 #include "ym/BnIscas89Reader.h"
-#include "ym/BnBuilder.h"
+#include "ym/BnNetwork.h"
+#include "ym/BnNode.h"
 #include "ym/Expr.h"
 
 #define USE_MYALLOC 1
@@ -179,12 +180,11 @@ bool
 TpgNetwork::read_blif(const string& filename,
 		      const CellLibrary* cell_library)
 {
-  BnBuilder builder;
-  BnBlifReader reader;
-
-  bool stat = reader.read(builder, filename, cell_library);
+  BnNetwork network;
+  bool stat = BnBlifReader::read(network, filename, cell_library);
   if ( stat ) {
-    set(builder);
+    clear();
+    set(network);
   }
 
   return stat;
@@ -196,13 +196,11 @@ TpgNetwork::read_blif(const string& filename,
 bool
 TpgNetwork::read_iscas89(const string& filename)
 {
-  BnBuilder builder;
-  BnIscas89Reader reader;
-
-  bool stat = reader.read(builder, filename);
+  BnNetwork network;
+  bool stat = BnIscas89Reader::read(network, filename);
   if ( stat ) {
     clear();
-    set(builder);
+    set(network);
   }
 
   return stat;
@@ -332,19 +330,19 @@ TpgNetwork::clear()
 }
 
 // @brief 内容を設定する．
-// @param[in] builder ビルダーオブジェクト
+// @param[in] network 設定元のネットワーク
 void
-TpgNetwork::set(const BnBuilder& builder)
+TpgNetwork::set(const BnNetwork& network)
 {
   //////////////////////////////////////////////////////////////////////
   // NodeInfoMgr にノードの論理関数を登録する．
   //////////////////////////////////////////////////////////////////////
   TpgNodeInfoMgr node_info_mgr;
-  ymuint nexpr = builder.expr_num();
+  ymuint nexpr = network.expr_num();
   vector<const TpgNodeInfo*> node_info_list(nexpr);
   ymuint extra_node_num = 0;
   for (ymuint i = 0; i < nexpr; ++ i) {
-    Expr expr = builder.expr(i);
+    Expr expr = network.expr(i);
     ymuint ni = expr.input_size();
     const TpgNodeInfo* node_info = node_info_mgr.complex_type(ni, expr);
     node_info_list[i] = node_info;
@@ -353,16 +351,16 @@ TpgNetwork::set(const BnBuilder& builder)
   //////////////////////////////////////////////////////////////////////
   // 追加で生成されるノード数を数える．
   //////////////////////////////////////////////////////////////////////
-  ymuint nl = builder.logic_num();
+  ymuint nl = network.logic_num();
   for (ymuint i = 0; i < nl; ++ i) {
-    const BnBuilder::NodeInfo src_node_info = builder.logic(i);
-    BnLogicType logic_type = src_node_info.mLogicType;
+    const BnNode* src_node = network.logic(i);
+    BnLogicType logic_type = src_node->logic_type();
     if ( logic_type == kBnLt_EXPR ) {
-      const TpgNodeInfo* node_info = node_info_list[src_node_info.mFuncId];
+      const TpgNodeInfo* node_info = node_info_list[src_node->func_id()];
       extra_node_num += node_info->extra_node_num();
     }
     else if ( logic_type == kBnLt_XOR || logic_type == kBnLt_XNOR ) {
-      ymuint ni = src_node_info.mFaninList.size();
+      ymuint ni = src_node->fanin_num();
       extra_node_num += (ni - 2);
     }
   }
@@ -370,9 +368,9 @@ TpgNetwork::set(const BnBuilder& builder)
   //////////////////////////////////////////////////////////////////////
   // 要素数を数え，必要なメモリ領域を確保する．
   //////////////////////////////////////////////////////////////////////
-  mInputNum = builder.input_num();
-  mOutputNum = builder.output_num();
-  mFFNum = builder.dff_num();
+  mInputNum = network.input_num();
+  mOutputNum = network.output_num();
+  mFFNum = network.dff_num();
 
   ymuint nn = mInputNum + mOutputNum + mFFNum + mFFNum + nl + extra_node_num;
 
@@ -393,12 +391,12 @@ TpgNetwork::set(const BnBuilder& builder)
   // 外部入力を作成する．
   //////////////////////////////////////////////////////////////////////
   for (ymuint i = 0; i < mInputNum; ++ i) {
-    const BnBuilder::NodeInfo& node_info = builder.input(i);
-    ymuint nfo = node_info.mFanoutList.size();
-    TpgNode* node = make_input_node(i, node_info.mName, nfo);
+    const BnNode* src_node = network.input(i);
+    ymuint nfo = src_node->fanout_num();
+    TpgNode* node = make_input_node(i, src_node->name(), nfo);
     mInputArray[i] = node;
 
-    node_map.reg(node_info.mId, node);
+    node_map.reg(src_node->id(), node);
   }
 
   //////////////////////////////////////////////////////////////////////
@@ -406,11 +404,11 @@ TpgNetwork::set(const BnBuilder& builder)
   // ただし mNodeArray は入力からのトポロジカル順になる．
   //////////////////////////////////////////////////////////////////////
   for (ymuint i = 0; i < nl; ++ i) {
-    const BnBuilder::NodeInfo& src_node_info = builder.logic(i);
+    const BnNode* src_node = network.logic(i);
     const TpgNodeInfo* node_info = nullptr;
-    BnLogicType logic_type = src_node_info.mLogicType;
+    BnLogicType logic_type = src_node->logic_type();
     if ( logic_type == kBnLt_EXPR ) {
-      node_info = node_info_list[src_node_info.mFuncId];
+      node_info = node_info_list[src_node->func_id()];
     }
     else {
       ASSERT_COND( logic_type != kBnLt_TV );
@@ -419,26 +417,26 @@ TpgNetwork::set(const BnBuilder& builder)
     }
 
     // ファンインのノードを取ってくる．
-    ymuint ni = src_node_info.mFaninList.size();
+    ymuint ni = src_node->fanin_num();
     vector<TpgNode*> fanin_array(ni);
     for (ymuint j = 0; j < ni; ++ j) {
-      fanin_array[j] = node_map.get(src_node_info.mFaninList[j]);
+      fanin_array[j] = node_map.get(src_node->fanin(j));
     }
-    ymuint nfo = src_node_info.mFanoutList.size();
-    TpgNode* node = make_logic_node(src_node_info.mName, node_info, fanin_array, nfo);
+    ymuint nfo = src_node->fanout_num();
+    TpgNode* node = make_logic_node(src_node->name(), node_info, fanin_array, nfo);
 
     // ノードを登録する．
-    node_map.reg(src_node_info.mId, node);
+    node_map.reg(src_node->id(), node);
   }
 
   //////////////////////////////////////////////////////////////////////
   // 外部出力ノードを作成する．
   //////////////////////////////////////////////////////////////////////
   for (ymuint i = 0; i < mOutputNum; ++ i) {
-    const BnBuilder::NodeInfo& src_node_info = builder.output(i);
-    TpgNode* inode = node_map.get(src_node_info.mFaninList[0]);
+    const BnNode* src_node = network.output(i);
+    TpgNode* inode = node_map.get(src_node->input());
     string buf = "*";
-    buf += src_node_info.mName;
+    buf += src_node->name();
     TpgNode* node = make_output_node(i, buf, inode);
     mOutputArray[i] = node;
   }

@@ -234,10 +234,10 @@ private:
   void
   clear();
 
-  /// @brief BnBuilder から内容を設定する．
-  /// @param[in] builder ビルダーオブジェクト
+  /// @brief BnNetwork から内容を設定する．
+  /// @param[in] network 設定元のネットワーク
   void
-  set(const BnBuilder& builder);
+  set(const BnNetwork& network);
 
   /// @brief 入力ノードを生成する．
   /// @param[in] iid 入力の番号
