@@ -9,6 +9,7 @@
 
 #include "TestVector.h"
 #include "NodeValList.h"
+#include "NodeVal2List.h"
 #include "TpgNode.h"
 
 
@@ -147,6 +148,42 @@ TestVector::set_from_assign_list(const NodeValList& assign_list)
     const TpgNode* node = nv.node();
     if ( node->is_input() ) {
       ymuint id = node->input_id();
+      if ( nv.val() ) {
+	set_val(id, kVal1);
+      }
+      else {
+	set_val(id, kVal0);
+      }
+    }
+  }
+}
+
+// @brief 割当リストから内容を設定する．
+// @param[in] assign_list 割当リスト
+//
+// assign_list に外部入力以外の割当が含まれている場合無視する．
+void
+TestVector::set_from_assign_list(const NodeVal2List& assign_list,
+				 ymuint npi)
+{
+  ymuint n = assign_list.size();
+  for (ymuint i = 0; i < n; ++ i) {
+    NodeVal2 nv = assign_list[i];
+    const TpgNode* node = nv.node();
+    if ( node->is_dff_output() ) {
+      ymuint id = node->input_id();
+      if ( nv.val() ) {
+	set_val(id, kVal1);
+      }
+      else {
+	set_val(id, kVal0);
+      }
+    }
+    else if ( node->is_input() ) {
+      ymuint id = node->input_id();
+      if ( nv.time() == 1 ) {
+	id = input_num() - npi + node->input_id();
+      }
       if ( nv.val() ) {
 	set_val(id, kVal1);
       }

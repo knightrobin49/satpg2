@@ -42,10 +42,15 @@ public:
   clear();
 
   /// @brief 初期化する．
+  /// @param[in] vect_len ベクタ長
   /// @param[in] ni 入力数
-  /// @note 副作用で clear() が呼ばれる．
+  ///
+  /// 副作用で clear() が呼ばれる．
+  /// 組み合わせ回路(スキャン方式)の時は vect_len == ni だが
+  /// ブロードサイド方式の時は vect_len != ni となる．
   void
-  init(ymuint ni);
+  init(ymuint vect_len,
+       ymuint ni);
 
   /// @brief 新しいパタンを生成する．
   /// @return 生成されたパタンを返す．
@@ -56,6 +61,14 @@ public:
   /// @brief パタンを削除する．
   void
   delete_vector(TestVector* tv);
+
+  /// @brief ベクタ長を返す．
+  ymuint
+  vect_len() const;
+
+  /// @brief 入力数を返す．
+  ymuint
+  input_num() const;
 
 
 private:
@@ -81,8 +94,14 @@ private:
   // テストベクタのメモリ確保用のアロケータ
   UnitAlloc* mAlloc;
 
-  // テストベクタの入力数
-  ymuint32 mNi;
+  // テストベクタの長さ
+  ymuint mVectLen;
+
+  // 対象回路の入力数
+  ymuint mInputNum;
+
+  // TestVector の実際のサイズ
+  ymuint mTvSize;
 
 };
 

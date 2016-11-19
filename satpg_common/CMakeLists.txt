@@ -42,6 +42,7 @@ set (sat_engine_SOURCES
   sat_engine/Extractor.cc
   sat_engine/LitMap.cc
   sat_engine/ModelValMap.cc
+  sat_engine/ModelValMap2.cc
   sat_engine/VidLitMap.cc
   sat_engine/GenVidMap.cc
   )
@@ -74,20 +75,20 @@ set (dtpg_SOURCES
   )
 
 set (dtpgt_SOURCES
-#  dtpgt/bt/BackTracer.cc
-#  dtpgt/bt/BtImpl.cc
-#  dtpgt/bt/BtJust1.cc
-#  dtpgt/bt/BtJust2.cc
-#  dtpgt/bt/BtJustBase.cc
-#  dtpgt/bt/BtSimple.cc
+  dtpgt/bt/BackTracer2.cc
+  dtpgt/bt/Bt2Impl.cc
+  dtpgt/bt/Bt2Just1.cc
+  dtpgt/bt/Bt2Just2.cc
+  dtpgt/bt/Bt2JustBase.cc
+  dtpgt/bt/Bt2Simple.cc
 
-#  dtpgt/dop/DopBase.cc
-#  dtpgt/dop/DopDrop.cc
-#  dtpgt/dop/DopDummy.cc
-#  dtpgt/dop/DopList.cc
-#  dtpgt/dop/DopTvList.cc
-#  dtpgt/dop/DopVerify.cc
-#  dtpgt/dop/FopDrop.cc
+  dtpgt/dop/Dop2Base.cc
+ # dtpgt/dop/Dop2Drop.cc
+  dtpgt/dop/Dop2Dummy.cc
+  dtpgt/dop/Dop2List.cc
+  dtpgt/dop/Dop2TvList.cc
+  dtpgt/dop/Dop2Verify.cc
+#  dtpgt/dop/Fop2Drop.cc
 
   dtpgt/main/DtpgTSat.cc
   dtpgt/main/DtpgTSatS.cc
@@ -165,7 +166,7 @@ ym_add_object_library ( satpg_common
   ${base_SOURCES}
   ${sat_engine_SOURCES}
   ${dtpg_SOURCES}
-#  ${dtpgt_SOURCES}
+  ${dtpgt_SOURCES}
   ${fsim_SOURCES}
   ${minpat_SOURCES}
   ${rtpg_SOURCES}

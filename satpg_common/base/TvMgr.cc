@@ -15,7 +15,8 @@ BEGIN_NAMESPACE_YM_SATPG
 // @brief コンストラクタ
 TvMgr::TvMgr() :
   mAlloc(nullptr),
-  mNi(0)
+  mVectLen(0),
+  mInputNum(0)
 {
 }
 
@@ -32,26 +33,34 @@ TvMgr::clear()
   if ( mAlloc != nullptr ) {
     delete mAlloc;
     mAlloc = nullptr;
-    mNi = 0;
+    mVectLen = 0;
+    mInputNum = 0;
   }
 }
 
-// @brief 内容を初期化する．
+// @brief 初期化する．
+// @param[in] vect_len ベクタ長
 // @param[in] ni 入力数
+//
+// 副作用で clear() が呼ばれる．
+// 組み合わせ回路(スキャン方式)の時は vect_len == ni だが
+// ブロードサイド方式の時は vect_len != ni となる．
 void
-TvMgr::init(ymuint ni)
+TvMgr::init(ymuint vect_len,
+	    ymuint ni)
 {
   clear();
 
-  mNi = ni;
-  if ( mNi == 0 ) {
+  mVectLen = vect_len;
+  mInputNum = ni;
+  if ( mVectLen == 0 ) {
     // 0 だとヤバい
-    mNi = 1;
+    mVectLen = 1;
   }
 
-  ymuint nb = TestVector::block_num(mNi);
-  ymuint size = sizeof(TestVector) + kPvBitLen * (nb - 1);
-  mAlloc = new UnitAlloc(size, 1024);
+  ymuint nb = TestVector::block_num(mVectLen);
+  mTvSize = sizeof(TestVector) + kPvBitLen * (nb - 1);
+  mAlloc = new UnitAlloc(mTvSize, 1024);
 }
 
 // @brief 新しいパタンを生成する．
@@ -60,12 +69,11 @@ TvMgr::init(ymuint ni)
 TestVector*
 TvMgr::new_vector()
 {
-  ymuint nb = TestVector::block_num(mNi);
-  ymuint size = sizeof(TestVector) + kPvBitLen * (nb - 1);
-  void* p = mAlloc->get_memory(size);
-  TestVector* tv = new (p) TestVector(mNi);
+  void* p = mAlloc->get_memory(mTvSize);
+  TestVector* tv = new (p) TestVector(mVectLen);
 
   // X に初期化しておく．
+  ymuint nb = TestVector::block_num(mVectLen);
   for (ymuint i = 0; i < nb; ++ i) {
     tv->mPat[i] = kPvAll0;
   }
@@ -77,9 +85,21 @@ TvMgr::new_vector()
 void
 TvMgr::delete_vector(TestVector* tv)
 {
-  ymuint nb = TestVector::block_num(mNi);
-  ymuint size = sizeof(TestVector) + kPvBitLen * (nb - 1);
-  mAlloc->put_memory(size, (void*)tv);
+  mAlloc->put_memory(mTvSize, (void*)tv);
+}
+
+// @brief ベクタ長を返す．
+ymuint
+TvMgr::vect_len() const
+{
+  return mVectLen;
+}
+
+// @brief 入力数を返す．
+ymuint
+TvMgr::input_num() const
+{
+  return mInputNum;
 }
 
 END_NAMESPACE_YM_SATPG

@@ -85,7 +85,7 @@ AtpgMgr::after_set_network()
   mFaultMgr->set_faults(mNetwork);
 
   mTvMgr->clear();
-  mTvMgr->init(mNetwork.input_num());
+  mTvMgr->init(mNetwork.input_num(), mNetwork.input_num() - mNetwork.dff_num());
 
   mFsim->set_network(mNetwork);
   mTFsim->set_network(mNetwork);
