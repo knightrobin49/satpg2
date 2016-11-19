@@ -70,8 +70,8 @@ Fsim3::set_network(const TpgNetwork& network)
   mNetwork = &network;
 
   ymuint nn = mNetwork->node_num();
-  ymuint ni = mNetwork->input_num2();
-  ymuint no = mNetwork->output_num2();
+  ymuint ni = mNetwork->input_num();
+  ymuint no = mNetwork->output_num();
 
   // SimNode の生成
   // 対応付けを行うマップの初期化
@@ -271,7 +271,7 @@ Fsim3::spsfp(TestVector* tv,
   // tv を全ビットにセットしていく．
   mGvalClearArray.clear();
 
-  ymuint npi = mNetwork->input_num2();
+  ymuint npi = mNetwork->input_num();
   for (ymuint i = 0; i < npi; ++ i) {
     SimNode* simnode = mInputArray[i];
     switch ( tv->val3(i) ) {
@@ -381,7 +381,7 @@ void
 Fsim3::sppfp(TestVector* tv,
 	     FsimOp& op)
 {
-  ymuint npi = mNetwork->input_num2();
+  ymuint npi = mNetwork->input_num();
 
   // tv を全ビットにセットしていく．
   mGvalClearArray.clear();
@@ -505,7 +505,7 @@ void
 Fsim3::ppsfp(const vector<TestVector*>& tv_array,
 	     FsimOp& op)
 {
-  ymuint npi = mNetwork->input_num2();
+  ymuint npi = mNetwork->input_num();
   ymuint nb = tv_array.size();
 
   // tv_array を入力ごとに固めてセットしていく．

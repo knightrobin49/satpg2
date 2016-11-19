@@ -61,7 +61,7 @@ TpgNode::make_input(ymuint id,
 		    ymuint fanout_num)
 {
   TpgNode* node = new TpgNode(id, vector<TpgNode*>(), fanout_num);
-  node->mTypeId = (1U | (iid << 2));
+  node->mTypeId = (1U | (iid << 3));
 
   return node;
 }
@@ -77,7 +77,7 @@ TpgNode::make_output(ymuint id,
 		     TpgNode* inode)
 {
   TpgNode* node = new TpgNode(id, vector<TpgNode*>(1, inode), 0);
-  node->mTypeId = (2U | (oid << 2));
+  node->mTypeId = (2U | (oid << 3));
 
   return node;
 }
@@ -207,7 +207,7 @@ TpgNode::make_logic(ymuint id,
     ASSERT_NOT_REACHED;
   }
 
-  node->mTypeId = (3U | (static_cast<ymuint32>(gate_type) << 2));
+  node->mTypeId = (3U | (static_cast<ymuint32>(gate_type) << 3));
 
   return node;
 }
@@ -332,6 +332,17 @@ TpgNode::set_output_id2(ymuint id)
 {
   ASSERT_COND( is_output() );
   mOutputId2 = id;
+}
+
+// @brief DFFの入出力の時に相方のノードを設定する．
+//
+// 同時に mTypeId の 2ビット目もセットする．
+void
+TpgNode::set_alt_node(TpgNode* alt_node)
+{
+  ASSERT_COND( is_input() || is_output() );
+  mTypeId |= 4U;
+  mAltNode = alt_node;
 }
 
 // @brief ファンアウトを設定する．

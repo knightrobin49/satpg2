@@ -121,6 +121,16 @@ public:
   ymuint
   input_id() const;
 
+  /// @brief DFF の出力に接続している外部入力タイプの時 true を返す．
+  bool
+  is_dff_output() const;
+
+  /// @brief DFF の出力に接続している外部入力タイプの時に対応する外部出力を返す．
+  ///
+  /// is_dff_output() == false の時には nullptr を返す．
+  TpgNode*
+  alt_output() const;
+
   /// @brief 外部出力タイプの時 true を返す．
   /// @note FF 入力もここに含まれる．
   bool
@@ -137,6 +147,16 @@ public:
   /// @brief TFIサイズの昇順に並べた時の出力番号を返す．
   ymuint
   output_id2() const;
+
+  /// @brief DFF の入力に接続している外部出力タイプの時 true を返す．
+  bool
+  is_dff_input() const;
+
+  /// @brief DFF の入力に接続している外部出力タイプの時に対応する外部入力を返す．
+  ///
+  /// is_dff_input() == false の時には nullptr を返す．
+  TpgNode*
+  alt_input() const;
 
   /// @brief logic タイプの時 true を返す．
   bool
@@ -232,6 +252,12 @@ public:
   void
   set_output_id2(ymuint id);
 
+  /// @brief DFFの入出力の時に相方のノードを設定する．
+  ///
+  /// 同時に mTypeId の 2ビット目もセットする．
+  void
+  set_alt_node(TpgNode* alt_node);
+
   /// @brief ファンアウトを設定する．
   /// @param[in] pos 位置番号 ( 0 <= pos < fanout_num() )
   /// @param[in] fo_node ファンアウト先のノード
@@ -304,17 +330,22 @@ private:
   ymuint32 mId;
 
   // タイプをパックした情報
-  // - [0:1] ノードタイプ
+  // - [0:2] ノードタイプ
   //   0: 未使用
   //   1: 外部入力
+  //   5: 外部入力(DFFの出力)
   //   2: 外部出力
+  //   6: 外部出力(DFFの入力)
   //   3: 論理ノード
-  // - [2:31] 入力/出力ノードの場合は通し番号
+  // - [3:31] 入力/出力ノードの場合は通し番号
   //          論理ノードの場合はゲートタイプ
   ymuint32 mTypeId;
 
   // 出力ID2
   ymuint32 mOutputId2;
+
+  // DFFの入出力の場合の反対側のノード
+  TpgNode* mAltNode;
 
   // ファンイン数
   ymuint32 mFaninNum;
@@ -372,7 +403,28 @@ ymuint
 TpgNode::input_id() const
 {
   ASSERT_COND( is_input() );
-  return (mTypeId >> 2);
+  return (mTypeId >> 3);
+}
+
+// @brief DFF の出力に接続している外部入力タイプの時 true を返す．
+inline
+bool
+TpgNode::is_dff_output() const
+{
+  return (mTypeId & 7U) == 5U;
+}
+
+// @brief DFF の出力に接続している外部入力タイプの時に対応する外部出力を返す．
+//
+// is_dff_output() == false の時には nullptr を返す．
+inline
+TpgNode*
+TpgNode::alt_output() const
+{
+  if ( is_dff_output() ) {
+    return mAltNode;
+  }
+  return nullptr;
 }
 
 // @brief 外部出力タイプの時 true を返す．
@@ -394,7 +446,7 @@ ymuint
 TpgNode::output_id() const
 {
   ASSERT_COND( is_output() );
-  return (mTypeId >> 2);
+  return (mTypeId >> 3);
 }
 
 // @brief TFIサイズの昇順に並べた時の出力番号を返す．
@@ -404,6 +456,27 @@ TpgNode::output_id2() const
 {
   ASSERT_COND( is_output() );
   return mOutputId2;
+}
+
+// @brief DFF の入力に接続している外部出力タイプの時 true を返す．
+inline
+bool
+TpgNode::is_dff_input() const
+{
+  return (mTypeId & 5U) == 6U;
+}
+
+// @brief DFF の入力に接続している外部出力タイプの時に対応する外部入力を返す．
+//
+// is_dff_input() == false の時には nullptr を返す．
+inline
+TpgNode*
+TpgNode::alt_input() const
+{
+  if ( is_dff_input() ) {
+    return mAltNode;
+  }
+  return nullptr;
 }
 
 // @brief logic タイプの時 true を返す．
@@ -422,7 +495,7 @@ GateType
 TpgNode::gate_type() const
 {
   ASSERT_COND( is_logic() );
-  return static_cast<GateType>(mTypeId >> 2);
+  return static_cast<GateType>(mTypeId >> 3);
 }
 
 // @brief ファンイン数を得る．

@@ -73,8 +73,8 @@ TFsim2::set_network(const TpgNetwork& network)
   mNetwork = &network;
 
   ymuint nn = mNetwork->node_num();
-  ymuint ni = mNetwork->input_num2();
-  ymuint no = mNetwork->output_num2();
+  ymuint ni = mNetwork->input_num();
+  ymuint no = mNetwork->output_num();
 
   // SimNode の生成
   // 対応付けを行うマップの初期化
@@ -275,7 +275,7 @@ void
 TFsim2::sppfp(TestVector* tv,
 	      FsimOp& op)
 {
-  ymuint npi = mNetwork->input_num2();
+  ymuint npi = mNetwork->input_num();
 
   // tv を全ビットにセットしていく．
   for (ymuint i = 0; i < npi; ++ i) {
@@ -294,7 +294,7 @@ void
 TFsim2::sppfp(const NodeValList& assign_list,
 	      FsimOp& op)
 {
-  ymuint npi = mNetwork->input_num2();
+  ymuint npi = mNetwork->input_num();
 
   // デフォルトで 0 にする．
   for (ymuint i = 0; i < npi; ++ i) {
@@ -327,9 +327,9 @@ TFsim2::_sppfp(FsimOp& op)
   }
 
   // 2時刻目のフリップフロップの値を設定する．
-  ymuint npi1 = mNetwork->input_num();
-  ymuint npo1 = mNetwork->output_num();
   ymuint nff = mNetwork->dff_num();
+  ymuint npi1 = mNetwork->input_num() - nff;
+  ymuint npo1 = mNetwork->output_num() - nff;
   for (ymuint i = 0; i < nff; ++ i) {
     SimNode* onode = mOutputArray[i + npo1];
     SimNode* inode = mInputArray[i + npi1];
@@ -410,7 +410,7 @@ void
 TFsim2::ppsfp(const vector<TestVector*>& tv_array,
 	      FsimOp& op)
 {
-  ymuint npi = mNetwork->input_num2();
+  ymuint npi = mNetwork->input_num();
   ymuint nb = tv_array.size();
 
   // tv_array を入力ごとに固めてセットしていく．
@@ -441,9 +441,9 @@ TFsim2::ppsfp(const vector<TestVector*>& tv_array,
 
   // 2時刻目のフリップフロップの値を設定する．
   {
-    ymuint npi1 = mNetwork->input_num();
-    ymuint npo1 = mNetwork->output_num();
     ymuint nff = mNetwork->dff_num();
+    ymuint npi1 = mNetwork->input_num() - nff;
+    ymuint npo1 = mNetwork->output_num() - nff;
     for (ymuint i = 0; i < nff; ++ i) {
       SimNode* onode = mOutputArray[i + npo1];
       SimNode* inode = mInputArray[i + npi1];
@@ -520,7 +520,7 @@ bool
 TFsim2::spsfp(TestVector* tv,
 	      const TpgFault* f)
 {
-  ymuint npi = mNetwork->input_num2();
+  ymuint npi = mNetwork->input_num();
 
   // tv を全ビットにセットしていく．
   for (ymuint i = 0; i < npi; ++ i) {
@@ -541,7 +541,7 @@ bool
 TFsim2::spsfp(const NodeValList& assign_list,
 	      const TpgFault* f)
 {
-  ymuint npi = mNetwork->input_num2();
+  ymuint npi = mNetwork->input_num();
 
   // assign_list にないノードの値は 0 にしておく．
   for (ymuint i = 0; i < npi; ++ i) {
@@ -785,7 +785,7 @@ TFsim2::find_simnode(const TpgNode* node) const
 ymuint
 TFsim2::calc_wsa(TestVector* tv)
 {
-  ymuint npi = mNetwork->input_num2();
+  ymuint npi = mNetwork->input_num();
 
   // tv を全ビットにセットしていく．
   for (ymuint i = 0; i < npi; ++ i) {
@@ -802,9 +802,9 @@ TFsim2::calc_wsa(TestVector* tv)
   }
 
   // 2時刻目のフリップフロップの値を設定する．
-  ymuint npi1 = mNetwork->input_num();
-  ymuint npo1 = mNetwork->output_num();
   ymuint nff = mNetwork->dff_num();
+  ymuint npi1 = mNetwork->input_num() - nff;
+  ymuint npo1 = mNetwork->output_num() - nff;
   for (ymuint i = 0; i < nff; ++ i) {
     SimNode* onode = mOutputArray[i + npo1];
     SimNode* inode = mInputArray[i + npi1];

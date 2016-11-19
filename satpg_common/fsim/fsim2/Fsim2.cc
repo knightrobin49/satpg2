@@ -73,8 +73,8 @@ Fsim2::set_network(const TpgNetwork& network)
   mNetwork = &network;
 
   ymuint nn = mNetwork->node_num();
-  ymuint ni = mNetwork->input_num2();
-  ymuint no = mNetwork->output_num2();
+  ymuint ni = mNetwork->input_num();
+  ymuint no = mNetwork->output_num();
 
   // SimNode の生成
   // 対応付けを行うマップの初期化
@@ -267,7 +267,7 @@ void
 Fsim2::sppfp(TestVector* tv,
 	     FsimOp& op)
 {
-  ymuint npi = mNetwork->input_num2();
+  ymuint npi = mNetwork->input_num();
 
   // tv を全ビットにセットしていく．
   for (ymuint i = 0; i < npi; ++ i) {
@@ -286,7 +286,7 @@ void
 Fsim2::sppfp(const NodeValList& assign_list,
 	     FsimOp& op)
 {
-  ymuint npi = mNetwork->input_num2();
+  ymuint npi = mNetwork->input_num();
 
   // デフォルトで 0 にする．
   for (ymuint i = 0; i < npi; ++ i) {
@@ -385,7 +385,7 @@ void
 Fsim2::ppsfp(const vector<TestVector*>& tv_array,
 	     FsimOp& op)
 {
-  ymuint npi = mNetwork->input_num2();
+  ymuint npi = mNetwork->input_num();
   ymuint nb = tv_array.size();
 
   // tv_array を入力ごとに固めてセットしていく．
@@ -476,7 +476,7 @@ bool
 Fsim2::spsfp(TestVector* tv,
 	     const TpgFault* f)
 {
-  ymuint npi = mNetwork->input_num2();
+  ymuint npi = mNetwork->input_num();
 
   // tv を全ビットにセットしていく．
   for (ymuint i = 0; i < npi; ++ i) {
@@ -497,7 +497,7 @@ bool
 Fsim2::spsfp(const NodeValList& assign_list,
 	     const TpgFault* f)
 {
-  ymuint npi = mNetwork->input_num2();
+  ymuint npi = mNetwork->input_num();
 
   // assign_list にないノードの値は 0 にしておく．
   for (ymuint i = 0; i < npi; ++ i) {

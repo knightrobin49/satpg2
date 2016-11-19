@@ -62,12 +62,8 @@ public:
   ymuint
   input_num() const;
 
-  /// @brief 外部入力数 + FF数を得る．
-  ymuint
-  input_num2() const;
-
   /// @brief 外部入力ノードを得る．
-  /// @param[in] pos 位置番号 ( 0 <= pos < input_num2() )
+  /// @param[in] pos 位置番号 ( 0 <= pos < input_num() )
   TpgNode*
   input(ymuint pos) const;
 
@@ -75,12 +71,8 @@ public:
   ymuint
   output_num() const;
 
-  /// @brief 外部出力数 + FF数を得る．
-  ymuint
-  output_num2() const;
-
   /// @brief 外部出力ノードを得る．
-  /// @param[in] pos 位置番号 ( 0 <= pos < output_num2() )
+  /// @param[in] pos 位置番号 ( 0 <= pos < output_num() )
   TpgNode*
   output(ymuint pos) const;
 
@@ -94,15 +86,11 @@ public:
 
   /// @brief DFFの出力に対応した擬似入力ノードを得る．
   /// @param[in] pos 位置番号 ( 0 <= pos < dff_num() )
-  ///
-  /// 実は input(pos + input_num()) と同じ．
   TpgNode*
   dff_output(ymuint pos) const;
 
   /// @brief DFFの入力に対応した擬似出力ノードを得る．
   /// @param[in] pos 位置番号 ( 0 <= pos < dff_num() )
-  ///
-  /// 実は output(pos + input_num()) と同じ．
   TpgNode*
   dff_input(ymuint pos) const;
 
@@ -418,21 +406,13 @@ TpgNetwork::input_num() const
   return mInputNum;
 }
 
-// @brief 外部入力数 + FF数を得る．
-inline
-ymuint
-TpgNetwork::input_num2() const
-{
-  return mInputNum + mFFNum;
-}
-
 // @brief 外部入力ノードを得る．
-// @param[in] pos 位置番号 ( 0 <= pos < input_num2() )
+// @param[in] pos 位置番号 ( 0 <= pos < input_num() )
 inline
 TpgNode*
 TpgNetwork::input(ymuint pos) const
 {
-  ASSERT_COND( pos < input_num2() );
+  ASSERT_COND( pos < input_num() );
   return mInputArray[pos];
 }
 
@@ -444,21 +424,13 @@ TpgNetwork::output_num() const
   return mOutputNum;
 }
 
-// @brief 外部出力数 + FF数を得る．
-inline
-ymuint
-TpgNetwork::output_num2() const
-{
-  return mOutputNum + mFFNum;
-}
-
 // @brief 外部出力ノードを得る．
-// @param[in] pos 位置番号 ( 0 <= pos < output_num2() )
+// @param[in] pos 位置番号 ( 0 <= pos < output_num() )
 inline
 TpgNode*
 TpgNetwork::output(ymuint pos) const
 {
-  ASSERT_COND( pos < output_num2() );
+  ASSERT_COND( pos < output_num() );
   return mOutputArray[pos];
 }
 
@@ -467,7 +439,7 @@ inline
 TpgNode*
 TpgNetwork::output2(ymuint pos) const
 {
-  ASSERT_COND( pos < output_num2() );
+  ASSERT_COND( pos < output_num() );
   return mOutputArray2[pos];
 }
 
@@ -488,7 +460,8 @@ TpgNode*
 TpgNetwork::dff_output(ymuint pos) const
 {
   ASSERT_COND( pos < dff_num() );
-  return mInputArray[pos + input_num()];
+  ymuint offset = mInputNum - dff_num();
+  return mInputArray[offset + pos];
 }
 
 // @brief DFFの入力に対応した擬似出力ノードを得る．
@@ -500,7 +473,8 @@ TpgNode*
 TpgNetwork::dff_input(ymuint pos) const
 {
   ASSERT_COND( pos < dff_num() );
-  return mOutputArray[pos + output_num()];
+  ymuint offset = mOutputNum - dff_num();
+  return mOutputArray[offset + pos];
 }
 
 // @brief ノードを得る．

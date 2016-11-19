@@ -19,6 +19,7 @@
 #include "ym/BnIscas89Reader.h"
 #include "ym/BnNetwork.h"
 #include "ym/BnNode.h"
+#include "ym/BnDff.h"
 #include "ym/Expr.h"
 
 #define USE_MYALLOC 1
@@ -372,15 +373,15 @@ TpgNetwork::set(const BnNetwork& network)
   mOutputNum = network.output_num();
   mFFNum = network.dff_num();
 
-  ymuint nn = mInputNum + mOutputNum + mFFNum + mFFNum + nl + extra_node_num;
+  ymuint nn = mInputNum + mOutputNum + nl + extra_node_num;
 
   mNodeArray = new TpgNode*[nn];
 
   mAuxInfoArray = new AuxNodeInfo[nn];
 
-  mInputArray = new TpgNode*[input_num2()];
-  mOutputArray = new TpgNode*[output_num2()];
-  mOutputArray2 = new TpgNode*[output_num2()];
+  mInputArray = new TpgNode*[input_num()];
+  mOutputArray = new TpgNode*[output_num()];
+  mOutputArray2 = new TpgNode*[output_num()];
 
   TpgNodeMap node_map;
 
@@ -444,6 +445,17 @@ TpgNetwork::set(const BnNetwork& network)
   ASSERT_COND( mNodeNum == nn );
 
   //////////////////////////////////////////////////////////////////////
+  // DFF の入出力の対応を設定する．
+  //////////////////////////////////////////////////////////////////////
+  for (ymuint i = 0; i < mFFNum; ++ i) {
+    const BnDff* dff = network.dff(i);
+    TpgNode* inode = node_map.get(dff->output());
+    TpgNode* onode = node_map.get(dff->input());
+    inode->set_alt_node(onode);
+    onode->set_alt_node(inode);
+  }
+
+  //////////////////////////////////////////////////////////////////////
   // ファンアウトをセットする．
   //////////////////////////////////////////////////////////////////////
   vector<ymuint> nfo_array(mNodeNum, 0);
@@ -485,7 +497,7 @@ TpgNetwork::set(const BnNetwork& network)
   // TFI のサイズの昇順に並べた出力順を
   // mOutputArray2 に記録する．
   //////////////////////////////////////////////////////////////////////
-  ymuint npo = output_num2();
+  ymuint npo = output_num();
   vector<pair<ymuint, ymuint> > tmp_list(npo);
   for (ymuint i = 0; i < npo; ++ i) {
     TpgNode* onode = output(i);

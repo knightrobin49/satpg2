@@ -73,6 +73,31 @@ set (dtpg_SOURCES
   dtpg/uop/UopSkip.cc
   )
 
+set (dtpgt_SOURCES
+#  dtpgt/bt/BackTracer.cc
+#  dtpgt/bt/BtImpl.cc
+#  dtpgt/bt/BtJust1.cc
+#  dtpgt/bt/BtJust2.cc
+#  dtpgt/bt/BtJustBase.cc
+#  dtpgt/bt/BtSimple.cc
+
+#  dtpgt/dop/DopBase.cc
+#  dtpgt/dop/DopDrop.cc
+#  dtpgt/dop/DopDummy.cc
+#  dtpgt/dop/DopList.cc
+#  dtpgt/dop/DopTvList.cc
+#  dtpgt/dop/DopVerify.cc
+#  dtpgt/dop/FopDrop.cc
+
+  dtpgt/main/DtpgTSat.cc
+  dtpgt/main/DtpgTSatS.cc
+
+#  dtpgt/uop/UopBase.cc
+#  dtpgt/uop/UopDummy.cc
+#  dtpgt/uop/UopList.cc
+#  dtpgt/uop/UopSkip.cc
+  )
+
 set (fsim_SOURCES
   fsim/fop/FopKDet.cc
 
@@ -140,6 +165,7 @@ ym_add_object_library ( satpg_common
   ${base_SOURCES}
   ${sat_engine_SOURCES}
   ${dtpg_SOURCES}
+#  ${dtpgt_SOURCES}
   ${fsim_SOURCES}
   ${minpat_SOURCES}
   ${rtpg_SOURCES}

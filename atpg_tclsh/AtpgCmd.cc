@@ -139,8 +139,8 @@ AtpgCmd::after_set_network()
   int varflag = 0;
   set_var(varname, "input_num", network.input_num(), varflag);
   set_var(varname, "output_num", network.output_num(), varflag);
-  set_var(varname, "ff_num", network.input_num2() - network.input_num(), varflag);
-  set_var(varname, "logic_num", network.node_num() - network.input_num2() - network.output_num2(), varflag);
+  set_var(varname, "ff_num", network.dff_num(), varflag);
+  set_var(varname, "logic_num", network.node_num() - network.input_num() - network.output_num(), varflag);
   set_var(varname, "buff_num", n_buff, varflag);
   set_var(varname, "not_num", n_not, varflag);
   set_var(varname, "and_num", n_and, varflag);
