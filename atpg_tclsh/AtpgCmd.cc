@@ -256,6 +256,20 @@ AtpgCmd::_tv_list()
   return mMgr->_tv_list();
 }
 
+// @brief Tv2Mgr を取り出す．
+Tv2Mgr&
+AtpgCmd::_tv2_mgr()
+{
+  return mMgr->_tv2_mgr();
+}
+
+// @brief テストベクタのリストを取り出す．
+vector<TestVector2*>&
+AtpgCmd::_tv2_list()
+{
+  return mMgr->_tv2_list();
+}
+
 // @brief 2値の故障シミュレータを取り出す．
 Fsim&
 AtpgCmd::_fsim()
@@ -264,10 +278,10 @@ AtpgCmd::_fsim()
 }
 
 // @brief 遷移故障用の2値の故障シミュレータを取り出す．
-Fsim&
-AtpgCmd::_tfsim()
+FsimT&
+AtpgCmd::_fsimt()
 {
-  return mMgr->_tfsim();
+  return mMgr->_fsimt();
 }
 
 // @brief 3値の故障シミュレータを返す．

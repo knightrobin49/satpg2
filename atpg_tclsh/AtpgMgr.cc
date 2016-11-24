@@ -12,7 +12,9 @@
 #include "TpgFault.h"
 #include "FaultMgr.h"
 #include "TvMgr.h"
+#include "Tv2Mgr.h"
 #include "Fsim.h"
+#include "FsimT.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG
@@ -27,9 +29,10 @@ AtpgMgr::AtpgMgr() :
 {
   mFaultMgr = new FaultMgr();
   mTvMgr = new TvMgr();
+  mTv2Mgr = new Tv2Mgr();
 
   mFsim = new_Fsim2();
-  mTFsim = new_TFsim2();
+  mFsimT = new_FsimT2();
   mFsim3 = new_Fsim3();
 }
 
@@ -38,8 +41,9 @@ AtpgMgr::~AtpgMgr()
 {
   delete mFaultMgr;
   delete mTvMgr;
+  delete mTv2Mgr;
   delete mFsim;
-  delete mTFsim;
+  delete mFsimT;
   delete mFsim3;
 }
 
@@ -87,8 +91,11 @@ AtpgMgr::after_set_network()
   mTvMgr->clear();
   mTvMgr->init(mNetwork.input_num(), mNetwork.input_num() - mNetwork.dff_num());
 
+  mTv2Mgr->clear();
+  mTv2Mgr->init(mNetwork.input_num());
+
   mFsim->set_network(mNetwork);
-  mTFsim->set_network(mNetwork);
+  mFsimT->set_network(mNetwork);
   mFsim3->set_network(mNetwork);
 }
 

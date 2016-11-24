@@ -9,7 +9,7 @@
 /// All rights reserved.
 
 
-#include "Rtpg.h"
+#include "RtpgTP.h"
 #include "ym/RandGen.h"
 
 
@@ -20,7 +20,7 @@ BEGIN_NAMESPACE_YM_SATPG
 /// @brief Fsim を使う Rtpg
 //////////////////////////////////////////////////////////////////////
 class RtpgTImpl :
-  public Rtpg
+  public RtpgTP
 {
 public:
 
@@ -56,13 +56,13 @@ public:
   virtual
   void
   run(const vector<const TpgFault*>& fault_list,
-      TvMgr& tvmgr,
-      Fsim& fsim,
+      Tv2Mgr& tvmgr,
+      FsimT& fsim,
       ymuint min_f,
       ymuint max_i,
       ymuint max_pat,
       vector<const TpgFault*>& det_fault_list,
-      vector<TestVector*>& tvlist,
+      vector<TestVector2*>& tvlist,
       RtpgStats& stats);
 
 

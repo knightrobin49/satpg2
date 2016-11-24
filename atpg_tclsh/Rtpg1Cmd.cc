@@ -11,8 +11,9 @@
 #include "RtpgTP.h"
 #include "RtpgStats.h"
 #include "FaultMgr.h"
-#include "Fsim.h"
-#include "TvMgr.h"
+#include "FsimT.h"
+#include "Tv2Mgr.h"
+#include "TestVector2.h"
 #include "ym/TclPopt.h"
 #include "ym/RandGen.h"
 
@@ -101,9 +102,9 @@ Rtpg1Cmd::cmd_proc(TclObjVector& objv)
     // 平均の WSA を求める．
     RandGen randgen;
     ymuint n_count = 10000;
-    Fsim& fsim = _tfsim();
-    TvMgr& tvmgr = _tv_mgr();
-    TestVector* tv = tvmgr.new_vector();
+    FsimT& fsim = _fsimt();
+    Tv2Mgr& tvmgr = _tv2_mgr();
+    TestVector2* tv = tvmgr.new_vector();
     ymuint wsa_sum = 0;
     ymuint wsa_max = 0;
     ymuint wsa_min = 0;
@@ -138,12 +139,12 @@ Rtpg1Cmd::cmd_proc(TclObjVector& objv)
   }
 
   FaultMgr& fmgr = _fault_mgr();
-  Fsim& fsim = _tfsim();
-  TvMgr& tvmgr = _tv_mgr();
+  FsimT& fsim = _fsimt();
+  Tv2Mgr& tvmgr = _tv2_mgr();
   const vector<const TpgFault*>& fault_list = fmgr.remain_list();
 
   vector<const TpgFault*> det_fault_list;
-  vector<TestVector*>& tv_list = _tv_list();
+  vector<TestVector2*>& tv_list = _tv2_list();
   RtpgStats stats;
 
   rtpg->run(fault_list, tvmgr, fsim, min_f, max_i, max_pat, wsa_limit, det_fault_list, tv_list, stats);

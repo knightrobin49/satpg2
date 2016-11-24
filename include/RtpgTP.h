@@ -52,14 +52,14 @@ public:
   virtual
   void
   run(const vector<const TpgFault*>& fault_list,
-      TvMgr& tvmgr,
-      Fsim& fsim,
+      Tv2Mgr& tvmgr,
+      FsimT& fsim,
       ymuint min_f,
       ymuint max_i,
       ymuint max_pat,
       ymuint wsa_limit,
       vector<const TpgFault*>& det_fault_list,
-      vector<TestVector*>& tvlist,
+      vector<TestVector2*>& tvlist,
       RtpgStats& stats) = 0;
 
 };

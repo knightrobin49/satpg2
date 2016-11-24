@@ -120,18 +120,18 @@ public:
   // 故障シミュレーションに関する情報の取得/設定
   //////////////////////////////////////////////////////////////////////
 
-  /// @brief 正常値のセットを行う．(2値版)
+  /// @brief 正常値のセットを行う．
   /// @param[in] pat 値
   /// @note 通常は外部入力に対して行われる．
   /// @note 故障値も同様にセットされる．
   void
   set_gval(PackedVal pat);
 
-  /// @brief 正常値を得る．(2値版)
+  /// @brief 正常値を得る．
   PackedVal
   gval() const;
 
-  /// @brief 故障値をセットする．(2値版)
+  /// @brief 故障値をセットする．
   void
   set_fval(PackedVal pat);
 
@@ -139,7 +139,7 @@ public:
   void
   set_fmask(PackedVal mask);
 
-  /// @brief 故障値を得る．(2値版)
+  /// @brief 故障値を得る．
   PackedVal
   fval() const;
 
@@ -147,16 +147,16 @@ public:
   void
   clear_fval();
 
-  /// @brief 正常値の計算を行う．(2値版)
+  /// @brief 正常値の計算を行う．
   /// @note 結果は mGval にセットされる．
   void
-  calc_gval2();
+  calc_gval();
 
-  /// @brief 故障値の計算を行う．(2値版)
+  /// @brief 故障値の計算を行う．
   /// @return 故障差を返す．
   /// @note 結果は mFval にセットされる．
   PackedVal
-  calc_fval2(PackedVal mask);
+  calc_fval(PackedVal mask);
 
   /// @brief ローカルな obs の計算を行う．
   PackedVal
@@ -199,20 +199,20 @@ public:
   // 派生クラスで実装する仮想関数
   //////////////////////////////////////////////////////////////////////
 
-  /// @brief 正常値の計算を行う．(2値版)
+  /// @brief 正常値の計算を行う．
   virtual
   PackedVal
-  _calc_gval2() = 0;
+  _calc_gval() = 0;
 
-  /// @brief 故障値の計算を行う．(2値版)
+  /// @brief 故障値の計算を行う．
   virtual
   PackedVal
-  _calc_fval2() = 0;
+  _calc_fval() = 0;
 
-  /// @brief ゲートの入力から出力までの可観測性を計算する．(2値版)
+  /// @brief ゲートの入力から出力までの可観測性を計算する．
   virtual
   PackedVal
-  calc_gobs2(ymuint ipos) = 0;
+  calc_gobs(ymuint ipos) = 0;
 
   /// @brief 内容をダンプする．
   virtual
@@ -360,7 +360,7 @@ SimNode::clear_lobs()
   mFanoutIpos &= ~(1U << 1);
 }
 
-// @brief 正常値のセットを行う．(2値版)
+// @brief 正常値のセットを行う．
 // @param[in] val 値
 // @note 通常は外部入力に対して行われる．
 // @note 故障値も同様にセットされる．
@@ -372,7 +372,7 @@ SimNode::set_gval(PackedVal val)
   mFval = val;
 }
 
-// @brief 正常値を得る．(2値版)
+// @brief 正常値を得る．
 inline
 PackedVal
 SimNode::gval() const
@@ -380,7 +380,7 @@ SimNode::gval() const
   return mGval;
 }
 
-// @brief 故障値をセットする．(2値版)
+// @brief 故障値をセットする．
 inline
 void
 SimNode::set_fval(PackedVal pat)
@@ -396,7 +396,7 @@ SimNode::set_fmask(PackedVal mask)
   mFmask = mask;
 }
 
-// @brief 故障値を得る．(2値版)
+// @brief 故障値を得る．
 inline
 PackedVal
 SimNode::fval() const
@@ -413,23 +413,23 @@ SimNode::clear_fval()
   mFmask = kPvAll1;
 }
 
-// @brief 正常値の計算を行う．(2値版)
+// @brief 正常値の計算を行う．
 // @note 結果は mGval にセットされる．
 inline
 void
-SimNode::calc_gval2()
+SimNode::calc_gval()
 {
-  set_gval(_calc_gval2());
+  set_gval(_calc_gval());
 }
 
-// @brief 故障値の計算を行う．(2値版)
+// @brief 故障値の計算を行う．
 // @return 故障差を返す．
 // @note 結果は mFval にセットされる．
 inline
 PackedVal
-SimNode::calc_fval2(PackedVal mask)
+SimNode::calc_fval(PackedVal mask)
 {
-  PackedVal val = _calc_fval2();
+  PackedVal val = _calc_fval();
   PackedVal diff = (mGval ^ val) & mask;
   mFval ^= diff;
   return diff;

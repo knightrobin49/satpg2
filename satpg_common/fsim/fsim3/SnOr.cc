@@ -28,9 +28,9 @@ SnOr::~SnOr()
 {
 }
 
-// @brief 正常値の計算を行う．(3値版)
+// @brief 正常値の計算を行う．
 void
-SnOr::_calc_gval3()
+SnOr::_calc_gval()
 {
   PackedVal val0 = mFanins[0]->gval_0();
   PackedVal val1 = mFanins[0]->gval_1();
@@ -42,11 +42,12 @@ SnOr::_calc_gval3()
   mGval1 = val1;
 }
 
-// @brief 故障値の計算を行う．(3値版)
+// @brief 故障値の計算を行う．
 // @param[in] mask マスク
-// @note 結果は mFval0, mFval1 に格納される．
+//
+// 結果は mFval0, mFval1 に格納される．
 void
-SnOr::_calc_fval3(PackedVal mask)
+SnOr::_calc_fval(PackedVal mask)
 {
   PackedVal val0 = mFanins[0]->fval_0();
   PackedVal val1 = mFanins[0]->fval_1();
@@ -60,9 +61,9 @@ SnOr::_calc_fval3(PackedVal mask)
   mFval1 |= val1 & mask;
 }
 
-// @brief ゲートの入力から出力までの可観測性を計算する．(3値版)
+// @brief ゲートの入力から出力までの可観測性を計算する．
 PackedVal
-SnOr::calc_gobs3(ymuint ipos)
+SnOr::calc_gobs(ymuint ipos)
 {
   PackedVal obs = kPvAll1;
   for (ymuint i = 0; i < ipos; ++ i) {
@@ -103,19 +104,20 @@ SnOr2::~SnOr2()
 {
 }
 
-// @brief 正常値の計算を行う．(3値版)
+// @brief 正常値の計算を行う．
 void
-SnOr2::_calc_gval3()
+SnOr2::_calc_gval()
 {
   mGval0 = mFanins[0]->gval_0() & mFanins[1]->gval_0();
   mGval1 = mFanins[0]->gval_1() | mFanins[1]->gval_1();
 }
 
-// @brief 故障値の計算を行う．(3値版)
+// @brief 故障値の計算を行う．
 // @param[in] mask マスク
-// @note 結果は mFval0, mFval1 に格納される．
+//
+// 結果は mFval0, mFval1 に格納される．
 void
-SnOr2::_calc_fval3(PackedVal mask)
+SnOr2::_calc_fval(PackedVal mask)
 {
   mFval0 &= ~mask;
   mFval0 |= (mFanins[0]->fval_0() & mFanins[1]->fval_0()) & mask;
@@ -123,9 +125,9 @@ SnOr2::_calc_fval3(PackedVal mask)
   mFval1 |= (mFanins[0]->fval_1() | mFanins[1]->fval_1()) & mask;
 }
 
-// @brief ゲートの入力から出力までの可観測性を計算する．(3値版)
+// @brief ゲートの入力から出力までの可観測性を計算する．
 PackedVal
-SnOr2::calc_gobs3(ymuint ipos)
+SnOr2::calc_gobs(ymuint ipos)
 {
   return mFanins[ipos ^ 1]->gval_0();
 }
@@ -156,19 +158,19 @@ SnOr3::~SnOr3()
 {
 }
 
-// @brief 正常値の計算を行う．(3値版)
+// @brief 正常値の計算を行う．
 void
-SnOr3::_calc_gval3()
+SnOr3::_calc_gval()
 {
   mGval0 = mFanins[0]->gval_0() & mFanins[1]->gval_0() & mFanins[2]->gval_0();
   mGval1 = mFanins[0]->gval_1() | mFanins[1]->gval_1() | mFanins[2]->gval_1();
 }
 
-// @brief 故障値の計算を行う．(3値版)
+// @brief 故障値の計算を行う．
 // @param[in] mask マスク
 // @note 結果は mFval0, mFval1 に格納される．
 void
-SnOr3::_calc_fval3(PackedVal mask)
+SnOr3::_calc_fval(PackedVal mask)
 {
   mFval0 &= ~mask;
   mFval0 |= (mFanins[0]->fval_0() & mFanins[1]->fval_0() & mFanins[2]->fval_0()) & mask;
@@ -176,9 +178,9 @@ SnOr3::_calc_fval3(PackedVal mask)
   mFval1 |= (mFanins[0]->fval_1() | mFanins[1]->fval_1() | mFanins[2]->fval_1()) & mask;
 }
 
-// @brief ゲートの入力から出力までの可観測性を計算する．(3値版)
+// @brief ゲートの入力から出力までの可観測性を計算する．
 PackedVal
-SnOr3::calc_gobs3(ymuint ipos)
+SnOr3::calc_gobs(ymuint ipos)
 {
   ymuint idx1 = 0;
   ymuint idx2 = 0;
@@ -234,19 +236,19 @@ SnOr4::~SnOr4()
 {
 }
 
-// @brief 正常値の計算を行う．(3値版)
+// @brief 正常値の計算を行う．
 void
-SnOr4::_calc_gval3()
+SnOr4::_calc_gval()
 {
   mGval0 = mFanins[0]->gval_0() & mFanins[1]->gval_0() & mFanins[2]->gval_0() & mFanins[3]->gval_0();
   mGval1 = mFanins[0]->gval_1() | mFanins[1]->gval_1() | mFanins[2]->gval_1() | mFanins[3]->gval_1();
 }
 
-// @brief 故障値の計算を行う．(3値版)
+// @brief 故障値の計算を行う．
 // @param[in] mask マスク
 // @note 結果は mFval0, mFval1 に格納される．
 void
-SnOr4::_calc_fval3(PackedVal mask)
+SnOr4::_calc_fval(PackedVal mask)
 {
   mFval0 &= ~mask;
   mFval0 |= (mFanins[0]->fval_0() & mFanins[1]->fval_0() & mFanins[2]->fval_0() & mFanins[3]->fval_0()) & mask;
@@ -254,9 +256,9 @@ SnOr4::_calc_fval3(PackedVal mask)
   mFval1 |= (mFanins[0]->fval_1() | mFanins[1]->fval_1() | mFanins[2]->fval_1() | mFanins[3]->fval_1()) & mask;
 }
 
-// @brief ゲートの入力から出力までの可観測性を計算する．(3値版)
+// @brief ゲートの入力から出力までの可観測性を計算する．
 PackedVal
-SnOr4::calc_gobs3(ymuint ipos)
+SnOr4::calc_gobs(ymuint ipos)
 {
   ymuint idx1 = 0;
   ymuint idx2 = 0;
@@ -324,9 +326,9 @@ SnNor::~SnNor()
 {
 }
 
-// @brief 正常値の計算を行う．(3値版)
+// @brief 正常値の計算を行う．
 void
-SnNor::_calc_gval3()
+SnNor::_calc_gval()
 {
   PackedVal val0 = mFanins[0]->gval_0();
   PackedVal val1 = mFanins[0]->gval_1();
@@ -338,11 +340,12 @@ SnNor::_calc_gval3()
   mGval1 = val0;
 }
 
-// @brief 故障値の計算を行う．(3値版)
+// @brief 故障値の計算を行う．
 // @param[in] mask マスク
-// @note 結果は mFval0, mFval1 に格納される．
+//
+// 結果は mFval0, mFval1 に格納される．
 void
-SnNor::_calc_fval3(PackedVal mask)
+SnNor::_calc_fval(PackedVal mask)
 {
   PackedVal val0 = mFanins[0]->fval_0();
   PackedVal val1 = mFanins[0]->fval_1();
@@ -384,19 +387,20 @@ SnNor2::~SnNor2()
 {
 }
 
-// @brief 正常値の計算を行う．(3値版)
+// @brief 正常値の計算を行う．
 void
-SnNor2::_calc_gval3()
+SnNor2::_calc_gval()
 {
   mGval1 = mFanins[0]->gval_0() & mFanins[1]->gval_0();
   mGval0 = mFanins[0]->gval_1() | mFanins[1]->gval_1();
 }
 
-// @brief 故障値の計算を行う．(3値版)
+// @brief 故障値の計算を行う．
 // @param[in] mask マスク
-// @note 結果は mFval0, mFval1 に格納される．
+//
+// 結果は mFval0, mFval1 に格納される．
 void
-SnNor2::_calc_fval3(PackedVal mask)
+SnNor2::_calc_fval(PackedVal mask)
 {
   mFval1 &= ~mask;
   mFval1 |= (mFanins[0]->fval_0() & mFanins[1]->fval_0()) & mask;
@@ -430,19 +434,20 @@ SnNor3::~SnNor3()
 {
 }
 
-// @brief 正常値の計算を行う．(3値版)
+// @brief 正常値の計算を行う．
 void
-SnNor3::_calc_gval3()
+SnNor3::_calc_gval()
 {
   mGval1 = mFanins[0]->gval_0() & mFanins[1]->gval_0() & mFanins[2]->gval_0();
   mGval0 = mFanins[0]->gval_1() | mFanins[1]->gval_1() | mFanins[2]->gval_1();
 }
 
-// @brief 故障値の計算を行う．(3値版)
+// @brief 故障値の計算を行う．
 // @param[in] mask マスク
-// @note 結果は mFval0, mFval1 に格納される．
+//
+// 結果は mFval0, mFval1 に格納される．
 void
-SnNor3::_calc_fval3(PackedVal mask)
+SnNor3::_calc_fval(PackedVal mask)
 {
   mFval1 &= ~mask;
   mFval1 |= (mFanins[0]->fval_0() & mFanins[1]->fval_0() & mFanins[2]->fval_0()) & mask;
@@ -477,19 +482,20 @@ SnNor4::~SnNor4()
 {
 }
 
-// @brief 正常値の計算を行う．(3値版)
+// @brief 正常値の計算を行う．
 void
-SnNor4::_calc_gval3()
+SnNor4::_calc_gval()
 {
   mGval1 = mFanins[0]->gval_0() & mFanins[1]->gval_0() & mFanins[2]->gval_0() & mFanins[3]->gval_0();
   mGval0 = mFanins[0]->gval_1() | mFanins[1]->gval_1() | mFanins[2]->gval_1() | mFanins[3]->gval_1();
 }
 
-// @brief 故障値の計算を行う．(3値版)
+// @brief 故障値の計算を行う．
 // @param[in] mask マスク
-// @note 結果は mFval0, mFval1 に格納される．
+//
+// 結果は mFval0, mFval1 に格納される．
 void
-SnNor4::_calc_fval3(PackedVal mask)
+SnNor4::_calc_fval(PackedVal mask)
 {
   mFval1 &= ~mask;
   mFval1 |= (mFanins[0]->fval_0() & mFanins[1]->fval_0() & mFanins[2]->fval_0() & mFanins[3]->fval_0()) & mask;

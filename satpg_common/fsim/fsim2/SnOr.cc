@@ -28,9 +28,9 @@ SnOr::~SnOr()
 {
 }
 
-// @brief 正常値の計算を行う．(2値版)
+// @brief 正常値の計算を行う．
 PackedVal
-SnOr::_calc_gval2()
+SnOr::_calc_gval()
 {
   ymuint n = mNfi;
   PackedVal new_val = mFanins[0]->gval();
@@ -47,9 +47,9 @@ SnOr::gate_type() const
   return kGateOR;
 }
 
-// @brief 故障値の計算を行う．(2値版)
+// @brief 故障値の計算を行う．
 PackedVal
-SnOr::_calc_fval2()
+SnOr::_calc_fval()
 {
   ymuint n = mNfi;
   PackedVal new_val = mFanins[0]->fval();
@@ -59,9 +59,9 @@ SnOr::_calc_fval2()
   return new_val;
 }
 
-// @brief ゲートの入力から出力までの可観測性を計算する．(2値版)
+// @brief ゲートの入力から出力までの可観測性を計算する．
 PackedVal
-SnOr::calc_gobs2(ymuint ipos)
+SnOr::calc_gobs(ymuint ipos)
 {
   PackedVal obs = kPvAll0;
   for (ymuint i = 0; i < ipos; ++ i) {
@@ -109,27 +109,27 @@ SnOr2::gate_type() const
   return kGateOR;
 }
 
-// @brief 正常値の計算を行う．(2値版)
+// @brief 正常値の計算を行う．
 PackedVal
-SnOr2::_calc_gval2()
+SnOr2::_calc_gval()
 {
   PackedVal pat0 = mFanins[0]->gval();
   PackedVal pat1 = mFanins[1]->gval();
   return pat0 | pat1;
 }
 
-// @brief 故障値の計算を行う．(2値版)
+// @brief 故障値の計算を行う．
 PackedVal
-SnOr2::_calc_fval2()
+SnOr2::_calc_fval()
 {
   PackedVal pat0 = mFanins[0]->fval();
   PackedVal pat1 = mFanins[1]->fval();
   return pat0 | pat1;
 }
 
-// @brief ゲートの入力から出力までの可観測性を計算する．(2値版)
+// @brief ゲートの入力から出力までの可観測性を計算する．
 PackedVal
-SnOr2::calc_gobs2(ymuint ipos)
+SnOr2::calc_gobs(ymuint ipos)
 {
   return ~mFanins[ipos ^ 1]->gval();
 }
@@ -167,9 +167,9 @@ SnOr3::gate_type() const
   return kGateOR;
 }
 
-// @brief 正常値の計算を行う．(2値版)
+// @brief 正常値の計算を行う．
 PackedVal
-SnOr3::_calc_gval2()
+SnOr3::_calc_gval()
 {
   PackedVal pat0 = mFanins[0]->gval();
   PackedVal pat1 = mFanins[1]->gval();
@@ -177,9 +177,9 @@ SnOr3::_calc_gval2()
   return pat0 | pat1 | pat2;
 }
 
-// @brief 故障値の計算を行う．(2値版)
+// @brief 故障値の計算を行う．
 PackedVal
-SnOr3::_calc_fval2()
+SnOr3::_calc_fval()
 {
   PackedVal pat0 = mFanins[0]->fval();
   PackedVal pat1 = mFanins[1]->fval();
@@ -187,9 +187,9 @@ SnOr3::_calc_fval2()
   return pat0 | pat1 | pat2;
 }
 
-// @brief ゲートの入力から出力までの可観測性を計算する．(2値版)
+// @brief ゲートの入力から出力までの可観測性を計算する．
 PackedVal
-SnOr3::calc_gobs2(ymuint ipos)
+SnOr3::calc_gobs(ymuint ipos)
 {
   switch ( ipos ) {
   case 0: return ~(mFanins[1]->gval() | mFanins[2]->gval());
@@ -233,9 +233,9 @@ SnOr4::gate_type() const
   return kGateOR;
 }
 
-// @brief 正常値の計算を行う．(2値版)
+// @brief 正常値の計算を行う．
 PackedVal
-SnOr4::_calc_gval2()
+SnOr4::_calc_gval()
 {
   PackedVal pat0 = mFanins[0]->gval();
   PackedVal pat1 = mFanins[1]->gval();
@@ -244,9 +244,9 @@ SnOr4::_calc_gval2()
   return pat0 | pat1 | pat2 | pat3;
 }
 
-// @brief 故障値の計算を行う．(2値版)
+// @brief 故障値の計算を行う．
 PackedVal
-SnOr4::_calc_fval2()
+SnOr4::_calc_fval()
 {
   PackedVal pat0 = mFanins[0]->fval();
   PackedVal pat1 = mFanins[1]->fval();
@@ -255,9 +255,9 @@ SnOr4::_calc_fval2()
   return pat0 | pat1 | pat2 | pat3;
 }
 
-// @brief ゲートの入力から出力までの可観測性を計算する．(2値版)
+// @brief ゲートの入力から出力までの可観測性を計算する．
 PackedVal
-SnOr4::calc_gobs2(ymuint ipos)
+SnOr4::calc_gobs(ymuint ipos)
 {
   switch ( ipos ) {
   case 0: return ~(mFanins[1]->gval() | mFanins[2]->gval() | mFanins[3]->gval());
@@ -303,9 +303,9 @@ SnNor::gate_type() const
   return kGateNOR;
 }
 
-// @brief 正常値の計算を行う．(2値版)
+// @brief 正常値の計算を行う．
 PackedVal
-SnNor::_calc_gval2()
+SnNor::_calc_gval()
 {
   ymuint n = mNfi;
   PackedVal new_val = mFanins[0]->gval();
@@ -315,9 +315,9 @@ SnNor::_calc_gval2()
   return ~new_val;
 }
 
-// @brief 故障値の計算を行う．(2値版)
+// @brief 故障値の計算を行う．
 PackedVal
-SnNor::_calc_fval2()
+SnNor::_calc_fval()
 {
   ymuint n = mNfi;
   PackedVal new_val = mFanins[0]->fval();
@@ -363,18 +363,18 @@ SnNor2::gate_type() const
   return kGateNOR;
 }
 
-// @brief 正常値の計算を行う．(2値版)
+// @brief 正常値の計算を行う．
 PackedVal
-SnNor2::_calc_gval2()
+SnNor2::_calc_gval()
 {
   PackedVal pat0 = mFanins[0]->gval();
   PackedVal pat1 = mFanins[1]->gval();
   return ~(pat0 | pat1);
 }
 
-// @brief 故障値の計算を行う．(2値版)
+// @brief 故障値の計算を行う．
 PackedVal
-SnNor2::_calc_fval2()
+SnNor2::_calc_fval()
 {
   PackedVal pat0 = mFanins[0]->fval();
   PackedVal pat1 = mFanins[1]->fval();
@@ -414,9 +414,9 @@ SnNor3::gate_type() const
   return kGateNOR;
 }
 
-// @brief 正常値の計算を行う．(2値版)
+// @brief 正常値の計算を行う．
 PackedVal
-SnNor3::_calc_gval2()
+SnNor3::_calc_gval()
 {
   PackedVal pat0 = mFanins[0]->gval();
   PackedVal pat1 = mFanins[1]->gval();
@@ -424,9 +424,9 @@ SnNor3::_calc_gval2()
   return ~(pat0 | pat1 | pat2);
 }
 
-// @brief 故障値の計算を行う．(2値版)
+// @brief 故障値の計算を行う．
 PackedVal
-SnNor3::_calc_fval2()
+SnNor3::_calc_fval()
 {
   PackedVal pat0 = mFanins[0]->fval();
   PackedVal pat1 = mFanins[1]->fval();
@@ -468,9 +468,9 @@ SnNor4::gate_type() const
   return kGateNOR;
 }
 
-// @brief 正常値の計算を行う．(2値版)
+// @brief 正常値の計算を行う．
 PackedVal
-SnNor4::_calc_gval2()
+SnNor4::_calc_gval()
 {
   PackedVal pat0 = mFanins[0]->gval();
   PackedVal pat1 = mFanins[1]->gval();
@@ -479,9 +479,9 @@ SnNor4::_calc_gval2()
   return ~(pat0 | pat1 | pat2 | pat3);
 }
 
-// @brief 故障値の計算を行う．(2値版)
+// @brief 故障値の計算を行う．
 PackedVal
-SnNor4::_calc_fval2()
+SnNor4::_calc_fval()
 {
   PackedVal pat0 = mFanins[0]->fval();
   PackedVal pat1 = mFanins[1]->fval();

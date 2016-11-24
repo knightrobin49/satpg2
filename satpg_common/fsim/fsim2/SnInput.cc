@@ -52,23 +52,23 @@ SnInput::fanin(ymuint pos) const
   return nullptr;
 }
 
-// @brief 正常値の計算を行う．(2値版)
+// @brief 正常値の計算を行う．
 PackedVal
-SnInput::_calc_gval2()
+SnInput::_calc_gval()
 {
   return kPvAll0;
 }
 
-// @brief 故障値の計算を行う．(2値版)
+// @brief 故障値の計算を行う．
 PackedVal
-SnInput::_calc_fval2()
+SnInput::_calc_fval()
 {
   return kPvAll0;
 }
 
-// @brief ゲートの入力から出力までの可観測性を計算する．(2値版)
+// @brief ゲートの入力から出力までの可観測性を計算する．
 PackedVal
-SnInput::calc_gobs2(ymuint ipos)
+SnInput::calc_gobs(ymuint ipos)
 {
   return kPvAll0;
 }
@@ -104,23 +104,23 @@ SnBuff::gate_type() const
   return kGateBUFF;
 }
 
-// @brief 正常値の計算を行う．(2値版)
+// @brief 正常値の計算を行う．
 PackedVal
-SnBuff::_calc_gval2()
+SnBuff::_calc_gval()
 {
   return mFanin->gval();
 }
 
-// @brief 故障値の計算を行う．(2値版)
+// @brief 故障値の計算を行う．
 PackedVal
-SnBuff::_calc_fval2()
+SnBuff::_calc_fval()
 {
   return mFanin->fval();
 }
 
-// @brief ゲートの入力から出力までの可観測性を計算する．(2値版)
+// @brief ゲートの入力から出力までの可観測性を計算する．
 PackedVal
-SnBuff::calc_gobs2(ymuint ipos)
+SnBuff::calc_gobs(ymuint ipos)
 {
   return kPvAll1;
 }
@@ -156,16 +156,16 @@ SnNot::gate_type() const
   return kGateNOT;
 }
 
-// @brief 正常値の計算を行う．(2値版)
+// @brief 正常値の計算を行う．
 PackedVal
-SnNot::_calc_gval2()
+SnNot::_calc_gval()
 {
   return ~mFanin->gval();
 }
 
-// @brief 故障値の計算を行う．(2値版)
+// @brief 故障値の計算を行う．
 PackedVal
-SnNot::_calc_fval2()
+SnNot::_calc_fval()
 {
   return ~mFanin->fval();
 }

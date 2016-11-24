@@ -8,7 +8,7 @@
 
 
 #include "Dop2TvList.h"
-#include "TvMgr.h"
+#include "Tv2Mgr.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG
@@ -17,8 +17,8 @@ BEGIN_NAMESPACE_YM_SATPG
 // @param[in] tvmgr テストベクタのマネージャ
 // @param[in] tvlist テストベクタのリスト
 DetectOp2*
-new_Dop2TvList(TvMgr& tvmgr,
-	       vector<TestVector*>& tvlist)
+new_Dop2TvList(Tv2Mgr& tvmgr,
+	       vector<TestVector2*>& tvlist)
 {
   return new Dop2TvList(tvmgr, tvlist);
 }
@@ -31,8 +31,8 @@ new_Dop2TvList(TvMgr& tvmgr,
 // @brief コンストラクタ
 // @param[in] tvmgr テストベクタのマネージャ
 // @param[in] tvlist テストベクタのリスト
-Dop2TvList::Dop2TvList(TvMgr& tvmgr,
-		       vector<TestVector*>& tvlist) :
+Dop2TvList::Dop2TvList(Tv2Mgr& tvmgr,
+		       vector<TestVector2*>& tvlist) :
   mTvMgr(tvmgr),
   mTvList(tvlist)
 {
@@ -50,8 +50,8 @@ void
 Dop2TvList::operator()(const TpgFault* f,
 		       const NodeVal2List& assign_list)
 {
-  TestVector* tv = mTvMgr.new_vector();
-  tv->set_from_assign_list(assign_list, mTvMgr.input_num());
+  TestVector2* tv = mTvMgr.new_vector();
+  tv->set_from_assign_list(assign_list);
   mTvList.push_back(tv);
 }
 

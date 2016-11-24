@@ -114,7 +114,9 @@ class DetectOp;
 class DetectOp2;
 class UntestOp;
 class TestVector;
+class TestVector2;
 class TvMgr;
+class Tv2Mgr;
 class Dtpg;
 class DtpgEngine;
 class DtpgStats;
@@ -132,6 +134,7 @@ class MinPat;
 class MinPatStats;
 class Fsim;
 class FsimOp;
+class FsimT;
 
 END_NAMESPACE_YM_SATPG
 

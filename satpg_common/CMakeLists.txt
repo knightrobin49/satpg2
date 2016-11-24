@@ -11,7 +11,9 @@
 set (base_SOURCES
   base/FaultMgr.cc
   base/TestVector.cc
+  base/TestVector2.cc
   base/TvMgr.cc
+  base/Tv2Mgr.cc
   )
 
 set (tpg_network_SOURCES
@@ -120,14 +122,23 @@ set (fsim_SOURCES
   fsim/fsim3/SnOr.cc
   fsim/fsim3/SnXor.cc
 
-  fsim/tfsim2/EventQ.cc
-  fsim/tfsim2/TFsim2.cc
-  fsim/tfsim2/SimNode.cc
-  fsim/tfsim2/SnAnd.cc
-  fsim/tfsim2/SnGate.cc
-  fsim/tfsim2/SnInput.cc
-  fsim/tfsim2/SnOr.cc
-  fsim/tfsim2/SnXor.cc
+  fsim/fsimt2/EventQ.cc
+  fsim/fsimt2/FsimT2.cc
+  fsim/fsimt2/SimNode.cc
+  fsim/fsimt2/SnAnd.cc
+  fsim/fsimt2/SnGate.cc
+  fsim/fsimt2/SnInput.cc
+  fsim/fsimt2/SnOr.cc
+  fsim/fsimt2/SnXor.cc
+
+#  fsim/tfsim2/EventQ.cc
+#  fsim/tfsim2/TFsim2.cc
+#  fsim/tfsim2/SimNode.cc
+#  fsim/tfsim2/SnAnd.cc
+#  fsim/tfsim2/SnGate.cc
+#  fsim/tfsim2/SnInput.cc
+#  fsim/tfsim2/SnOr.cc
+#  fsim/tfsim2/SnXor.cc
   )
 
 set (minpat_SOURCES
@@ -152,8 +163,9 @@ set (minpat_SOURCES
 
 set (rtpg_SOURCES
   rtpg/FopRtpg.cc
+  rtpg/FopRtpgT.cc
   rtpg/RtpgImpl.cc
-  rtpg/RtpgTImpl.cc
+#  rtpg/RtpgTImpl.cc
   rtpg/RtpgTP1.cc
   rtpg/RtpgTP2.cc
   )

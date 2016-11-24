@@ -328,7 +328,7 @@ Fsim3::_spsfp(const TpgFault* f)
   if ( f->is_branch_fault() ) {
     SimNode* simnode = find_simnode(f->tpg_onode());
     ymuint ipos = f->tpg_pos();
-    lobs = simnode->calc_lobs() & simnode->calc_gobs3(ipos);
+    lobs = simnode->calc_lobs() & simnode->calc_gobs(ipos);
     clear_lobs(simnode);
   }
   else {
@@ -682,7 +682,7 @@ Fsim3::ffr_simulate(SimFFR* ffr)
     if ( f->is_branch_fault() ) {
       // 入力の故障
       ymuint ipos = ff->mIpos;
-      lobs &= simnode->calc_gobs3(ipos);
+      lobs &= simnode->calc_gobs(ipos);
     }
 
     PackedVal valdiff;
@@ -714,21 +714,23 @@ Fsim3::ffr_simulate(SimFFR* ffr)
 }
 
 // @brief 正常値の計算を行う．
-// @note 値の変わったノードは mGvalClearArray に積まれる．
+//
+// 値の変わったノードは mGvalClearArray に積まれる．
 void
 Fsim3::calc_gval()
 {
   for ( ; ; ) {
     SimNode* node = mEventQ.get();
     if ( node == nullptr ) break;
-    if ( node->calc_gval3() ) {
+    if ( node->calc_gval() ) {
       update_gval(node);
     }
   }
 }
 
 // @brief 正常値をクリアする．
-// @note mGvalClearArray を使う．
+//
+// mGvalClearArray を使う．
 void
 Fsim3::clear_gval()
 {
@@ -747,7 +749,7 @@ Fsim3::calc_fval()
   for ( ; ; ) {
     SimNode* node = mEventQ.get();
     if ( node == nullptr ) break;
-    PackedVal diff = node->calc_fval3(~obs);
+    PackedVal diff = node->calc_fval(~obs);
     if ( diff != kPvAll0 ) {
       mFvalClearArray.push_back(node);
       if ( node->is_output() ) {
@@ -824,14 +826,6 @@ SimNode*
 Fsim3::find_simnode(const TpgNode* node) const
 {
   return mSimMap[node->id()];
-}
-
-// @brief WSA を計算する．
-// @param[in] tv テストベクタ
-ymuint
-Fsim3::calc_wsa(TestVector* tv)
-{
-  return 0;
 }
 
 END_NAMESPACE_YM_SATPG_FSIM

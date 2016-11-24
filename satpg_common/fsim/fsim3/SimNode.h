@@ -109,8 +109,9 @@ public:
 
   /// @brief 正常値のセットを行う．(3値版)
   /// @param[in] val_0, val_1 値
-  /// @note 通常は外部入力に対して行われる．
-  /// @note 故障値も同様にセットされる．
+  ///
+  /// 通常は外部入力に対して行われる．
+  /// 故障値も同様にセットされる．
   void
   set_gval(PackedVal val_0,
 	   PackedVal val_1);
@@ -145,18 +146,20 @@ public:
   void
   clear_fval();
 
-  /// @brief 正常値の計算を行う．(3値版)
+  /// @brief 正常値の計算を行う．
   /// @return 結果が X でなければ true を返す．
-  /// @note 結果は mGval にセットされる．
+  ///
+  /// 結果は mGval にセットされる．
   bool
-  calc_gval3();
+  calc_gval();
 
-  /// @brief 故障値の計算を行う．(3値版)
+  /// @brief 故障値の計算を行う．
   /// @param[in] mask マスク
   /// @return 故障差を返す．
-  /// @note 結果は mFval にセットされる．
+  ///
+  /// 結果は mFval にセットされる．
   PackedVal
-  calc_fval3(PackedVal mask);
+  calc_fval(PackedVal mask);
 
   /// @brief ローカルな obs の計算を行う．
   PackedVal
@@ -199,23 +202,25 @@ public:
   // 派生クラスで実装する仮想関数
   //////////////////////////////////////////////////////////////////////
 
-  /// @brief 正常値の計算を行う．(3値版)
-  /// @note 結果は mGval0, mGval1 に格納される．
+  /// @brief 正常値の計算を行う．
+  ///
+  /// 結果は mGval0, mGval1 に格納される．
   virtual
   void
-  _calc_gval3() = 0;
+  _calc_gval() = 0;
 
-  /// @brief 故障値の計算を行う．(3値版)
+  /// @brief 故障値の計算を行う．
   /// @param[in] mask マスク
-  /// @note 結果は mFval0, mFval1 に格納される．
+  ///
+  /// 結果は mFval0, mFval1 に格納される．
   virtual
   void
-  _calc_fval3(PackedVal mask) = 0;
+  _calc_fval(PackedVal mask) = 0;
 
-  /// @brief ゲートの入力から出力までの可観測性を計算する．(3値版)
+  /// @brief ゲートの入力から出力までの可観測性を計算する
   virtual
   PackedVal
-  calc_gobs3(ymuint ipos) = 0;
+  calc_gobs(ymuint ipos) = 0;
 
   /// @brief 内容をダンプする．
   virtual
@@ -371,8 +376,9 @@ SimNode::clear_lobs()
 
 // @brief 正常値のセットを行う．(3値版)
 // @param[in] val_0, val_1 値
-// @note 通常は外部入力に対して行われる．
-// @note 故障値も同様にセットされる．
+//
+// 通常は外部入力に対して行われる．
+// 故障値も同様にセットされる．
 inline
 void
 SimNode::set_gval(PackedVal val_0,
@@ -401,7 +407,7 @@ SimNode::gval_1() const
   return mGval1;
 }
 
-// @brief 故障値をセットする．(3値版)
+// @brief 故障値をセットする．
 // @param[in] val_0, val_1 値
 inline
 void
@@ -446,27 +452,29 @@ SimNode::clear_fval()
   mFmask = kPvAll1;
 }
 
-// @brief 正常値の計算を行う．(3値版)
+// @brief 正常値の計算を行う．
 // @return 結果が X でなければ true を返す．
-// @note 結果は mGval にセットされる．
+//
+// 結果は mGval にセットされる．
 inline
 bool
-SimNode::calc_gval3()
+SimNode::calc_gval()
 {
-  _calc_gval3();
+  _calc_gval();
   mFval0 = mGval0;
   mFval1 = mGval1;
   return (mGval0 | mGval1) != kPvAll0;
 }
 
-// @brief 故障値の計算を行う．(3値版)
+// @brief 故障値の計算を行う．
 // @return 故障差を返す．
-// @note 結果は mFval にセットされる．
+//
+// 結果は mFval にセットされる．
 inline
 PackedVal
-SimNode::calc_fval3(PackedVal mask)
+SimNode::calc_fval(PackedVal mask)
 {
-  _calc_fval3(mFmask & mask);
+  _calc_fval(mFmask & mask);
   return (mGval0 ^ mFval0) | (mGval1 ^ mFval1);
 }
 

@@ -52,23 +52,23 @@ public:
   SimNode*
   fanin(ymuint pos) const;
 
-  /// @brief 正常値の計算を行う．(2値版)
+  /// @brief 正常値の計算を行う．
   virtual
   PackedVal
-  _calc_gval2();
+  _calc_gval();
 
-  /// @brief 故障値の計算を行う．(2値版)
+  /// @brief 故障値の計算を行う．
   /// @retval true 新しい値に更新された．
   /// @retval false 値は変わらなかった．
   /// @note 結果は mFval にセットされる．
   virtual
   PackedVal
-  _calc_fval2();
+  _calc_fval();
 
-  /// @brief ゲートの入力から出力までの可観測性を計算する．(2値版)
+  /// @brief ゲートの入力から出力までの可観測性を計算する．
   virtual
   PackedVal
-  calc_gobs2(ymuint ipos);
+  calc_gobs(ymuint ipos);
 
   /// @brief 内容をダンプする．
   virtual
@@ -103,20 +103,20 @@ public:
   GateType
   gate_type() const;
 
-  /// @brief 正常値の計算を行う．(2値版)
+  /// @brief 正常値の計算を行う．
   virtual
   PackedVal
-  _calc_gval2();
+  _calc_gval();
 
-  /// @brief 故障値の計算を行う．(2値版)
+  /// @brief 故障値の計算を行う．
   virtual
   PackedVal
-  _calc_fval2();
+  _calc_fval();
 
-  /// @brief ゲートの入力から出力までの可観測性を計算する．(2値版)
+  /// @brief ゲートの入力から出力までの可観測性を計算する．
   virtual
   PackedVal
-  calc_gobs2(ymuint ipos);
+  calc_gobs(ymuint ipos);
 
   /// @brief 内容をダンプする．
   virtual
@@ -151,15 +151,15 @@ public:
   GateType
   gate_type() const;
 
-  /// @brief 正常値の計算を行う．(2値版)
+  /// @brief 正常値の計算を行う．
   virtual
   PackedVal
-  _calc_gval2();
+  _calc_gval();
 
-  /// @brief 故障値の計算を行う．(2値版)
+  /// @brief 故障値の計算を行う．
   virtual
   PackedVal
-  _calc_fval2();
+  _calc_fval();
 
   /// @brief 内容をダンプする．
   virtual

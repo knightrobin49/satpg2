@@ -57,13 +57,21 @@ public:
   vector<TestVector*>&
   _tv_list();
 
+  /// @brief Tv2Mgr を取り出す．
+  Tv2Mgr&
+  _tv2_mgr();
+
+  /// @brief テストベクタのリストを取り出す．
+  vector<TestVector2*>&
+  _tv2_list();
+
   /// @brief 2値の故障シミュレータを取り出す．
   Fsim&
   _fsim();
 
   /// @brief 2値の故障シミュレータを取り出す．(遷移故障用)
-  Fsim&
-  _tfsim();
+  FsimT&
+  _fsimt();
 
   /// @brief 3値の故障シミュレータを返す．
   Fsim&
@@ -139,11 +147,17 @@ private:
   // テストベクタのリスト
   vector<TestVector*> mTvList;
 
+  // テストベクタを管理するオブジェクト
+  Tv2Mgr* mTv2Mgr;
+
+  // テストベクタのリスト
+  vector<TestVector2*> mTv2List;
+
   // 故障シミュレータ
   Fsim* mFsim;
 
   // 遷移故障用の故障シミュレータ
-  Fsim* mTFsim;
+  FsimT* mFsimT;
 
   // 3値の故障シミュレータ
   Fsim* mFsim3;
@@ -193,6 +207,22 @@ AtpgMgr::_tv_list()
   return mTvList;
 }
 
+// @brief TvMgr を取り出す．
+inline
+Tv2Mgr&
+AtpgMgr::_tv2_mgr()
+{
+  return *mTv2Mgr;
+}
+
+// @brief テストベクタのリストを取り出す．
+inline
+vector<TestVector2*>&
+AtpgMgr::_tv2_list()
+{
+  return mTv2List;
+}
+
 // @brief 2値の故障シミュレータを取り出す．
 inline
 Fsim&
@@ -203,10 +233,10 @@ AtpgMgr::_fsim()
 
 // @brief 2値の故障シミュレータを取り出す．(遷移故障用)
 inline
-Fsim&
-AtpgMgr::_tfsim()
+FsimT&
+AtpgMgr::_fsimt()
 {
-  return *mTFsim;
+  return *mFsimT;
 }
 
 // @brief 3値の故障シミュレータを返す．

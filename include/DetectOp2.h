@@ -58,8 +58,8 @@ new_Dop2Drop(FaultMgr& fmgr,
 /// @param[in] tvmgr テストベクタのマネージャ
 /// @param[in] tvlist テストベクタのリスト
 DetectOp2*
-new_Dop2TvList(TvMgr& tvmgr,
-	       vector<TestVector*>& tvlist);
+new_Dop2TvList(Tv2Mgr& tvmgr,
+	       vector<TestVector2*>& tvlist);
 
 /// @brief 'verify' タイプを生成する．
 /// @param[in] fsim 故障シミュレータ

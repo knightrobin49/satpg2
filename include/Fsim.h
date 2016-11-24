@@ -103,12 +103,6 @@ public:
   ppsfp(const vector<TestVector*>& tv_array,
 	FsimOp& op) = 0;
 
-  /// @brief WSA を計算する．
-  /// @param[in] tv テストベクタ
-  virtual
-  ymuint
-  calc_wsa(TestVector* tv) = 0;
-
 };
 
 
@@ -125,11 +119,6 @@ new_Fsim2();
 extern
 Fsim*
 new_Fsim3();
-
-/// @brief 遷移故障用の2値版の故障シミュレータ
-extern
-Fsim*
-new_TFsim2();
 
 END_NAMESPACE_YM_SATPG
 

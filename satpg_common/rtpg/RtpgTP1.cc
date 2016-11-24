@@ -9,11 +9,11 @@
 
 #include "RtpgTP1.h"
 #include "FaultMgr.h"
-#include "TvMgr.h"
-#include "TestVector.h"
-#include "Fsim.h"
+#include "Tv2Mgr.h"
+#include "TestVector2.h"
+#include "FsimT.h"
 #include "RtpgStats.h"
-#include "FopRtpg.h"
+#include "FopRtpgT.h"
 #include "ym/StopWatch.h"
 
 
@@ -61,14 +61,14 @@ RtpgTP1::init(ymuint32 seed)
 // @param[out] stats 実行結果の情報を格納する変数
 void
 RtpgTP1::run(const vector<const TpgFault*>& fault_list,
-	     TvMgr& tvmgr,
-	     Fsim& fsim,
+	     Tv2Mgr& tvmgr,
+	     FsimT& fsim,
 	     ymuint min_f,
 	     ymuint max_i,
 	     ymuint max_pat,
 	     ymuint wsa_limit,
 	     vector<const TpgFault*>& det_fault_list,
-	     vector<TestVector*>& tvlist,
+	     vector<TestVector2*>& tvlist,
 	     RtpgStats& stats)
 {
   StopWatch local_timer;
@@ -80,9 +80,9 @@ RtpgTP1::run(const vector<const TpgFault*>& fault_list,
   ymuint epat_num = 0;
   ymuint total_det_count = 0;
 
-  TestVector* tv = tvmgr.new_vector();
+  TestVector2* tv = tvmgr.new_vector();
 
-  FopRtpg op(fsim);
+  FopRtpgT op(fsim);
 
   fsim.set_faults(fault_list);
   op.init();

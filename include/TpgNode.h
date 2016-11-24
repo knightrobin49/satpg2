@@ -115,7 +115,7 @@ public:
 
   /// @brief 外部入力タイプの時に入力番号を返す．
   ///
-  /// node = TpgNetwork::input(node->input_id()
+  /// node = TpgNetwork::input(node->input_id())
   /// の関係を満たす．
   /// is_input() が false の場合の返り値は不定
   ymuint

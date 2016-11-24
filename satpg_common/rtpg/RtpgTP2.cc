@@ -9,11 +9,11 @@
 
 #include "RtpgTP2.h"
 #include "FaultMgr.h"
-#include "TvMgr.h"
-#include "TestVector.h"
-#include "Fsim.h"
+#include "Tv2Mgr.h"
+#include "TestVector2.h"
+#include "FsimT.h"
 #include "RtpgStats.h"
-#include "FopRtpg.h"
+#include "FopRtpgT.h"
 #include "ym/StopWatch.h"
 #include "ym/RandCombiGen.h"
 
@@ -51,8 +51,8 @@ evaluate(ymuint sa,
 }
 
 void
-gen_neighbor(const TestVector* tv1,
-	     TestVector* tv2,
+gen_neighbor(const TestVector2* tv1,
+	     TestVector2* tv2,
 	     RandGen& randgen,
 	     ymuint nbits)
 {
@@ -70,8 +70,8 @@ gen_neighbor(const TestVector* tv1,
   rcg.generate(randgen);
   for (ymuint i = 0; i < nbits; ++ i) {
     ymuint pos = rcg.elem(i);
-    Val3 val = tv2->val3(pos);
-    tv2->set_val(pos, ~val);
+    Val3 val = tv2->cur_val3(pos);
+    tv2->set_cur_val(pos, ~val);
   }
 }
 
@@ -112,14 +112,14 @@ RtpgTP2::init(ymuint32 seed)
 // @param[out] stats 実行結果の情報を格納する変数
 void
 RtpgTP2::run(const vector<const TpgFault*>& fault_list,
-	     TvMgr& tvmgr,
-	     Fsim& fsim,
+	     Tv2Mgr& tvmgr,
+	     FsimT& fsim,
 	     ymuint min_f,
 	     ymuint max_i,
 	     ymuint max_pat,
 	     ymuint wsa_limit,
 	     vector<const TpgFault*>& det_fault_list,
-	     vector<TestVector*>& tvlist,
+	     vector<TestVector2*>& tvlist,
 	     RtpgStats& stats)
 {
   StopWatch local_timer;
@@ -131,10 +131,10 @@ RtpgTP2::run(const vector<const TpgFault*>& fault_list,
   ymuint epat_num = 0;
   ymuint total_det_count = 0;
 
-  TestVector* tv1 = tvmgr.new_vector();
-  TestVector* tv2 = tvmgr.new_vector();
+  TestVector2* tv1 = tvmgr.new_vector();
+  TestVector2* tv2 = tvmgr.new_vector();
 
-  FopRtpg op(fsim);
+  FopRtpgT op(fsim);
 
   fsim.set_faults(fault_list);
   op.init();

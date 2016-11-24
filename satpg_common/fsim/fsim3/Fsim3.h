@@ -109,12 +109,6 @@ public:
   ppsfp(const vector<TestVector*>& tv_array,
 	FsimOp& op);
 
-  /// @brief WSA を計算する．
-  /// @param[in] tv テストベクタ
-  virtual
-  ymuint
-  calc_wsa(TestVector* tv);
-
 
 private:
   //////////////////////////////////////////////////////////////////////
@@ -146,7 +140,8 @@ private:
   ffr_simulate(SimFFR* ffr);
 
   /// @brief 正常値の計算を行う．
-  /// @note 値の変わったノードは mGvalClearArray に積まれる．
+  ///
+  /// 値の変わったノードは mGvalClearArray に積まれる．
   void
   calc_gval();
 
@@ -155,12 +150,14 @@ private:
   update_gval(SimNode* node);
 
   /// @brief 正常値をクリアする．
-  /// @note mGvalClearArray を使う．
+  ///
+  /// mGvalClearArray を使う．
   void
   clear_gval();
 
   /// @brief 故障値の計算を行う．
-  /// @note この関数を抜けた時点で故障値はクリアされている．
+  ///
+  /// この関数を抜けた時点で故障値はクリアされている．
   PackedVal
   calc_fval();
 

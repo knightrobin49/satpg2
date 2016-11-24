@@ -43,25 +43,25 @@ SnInput::fanin(ymuint pos) const
   return nullptr;
 }
 
-// @brief 正常値の計算を行う．(3値版)
+// @brief 正常値の計算を行う．
 void
-SnInput::_calc_gval3()
+SnInput::_calc_gval()
 {
   ASSERT_NOT_REACHED;
 }
 
-// @brief 故障値の計算を行う．(3値版)
+// @brief 故障値の計算を行う．
 // @param[in] mask マスク
 // @note 結果は mFval0, mFval1 に格納される．
 void
-SnInput::_calc_fval3(PackedVal mask)
+SnInput::_calc_fval(PackedVal mask)
 {
   ASSERT_NOT_REACHED;
 }
 
-// @brief ゲートの入力から出力までの可観測性を計算する．(3値版)
+// @brief ゲートの入力から出力までの可観測性を計算する．
 PackedVal
-SnInput::calc_gobs3(ymuint ipos)
+SnInput::calc_gobs(ymuint ipos)
 {
   return kPvAll0;
 }
@@ -90,19 +90,19 @@ SnBuff::~SnBuff()
 {
 }
 
-// @brief 正常値の計算を行う．(3値版)
+// @brief 正常値の計算を行う．
 void
-SnBuff::_calc_gval3()
+SnBuff::_calc_gval()
 {
   mGval0 = mFanin->gval_0();
   mGval1 = mFanin->gval_1();
 }
 
-// @brief 故障値の計算を行う．(3値版)
+// @brief 故障値の計算を行う．
 // @param[in] mask マスク
 // @note 結果は mFval0, mFval1 に格納される．
 void
-SnBuff::_calc_fval3(PackedVal mask)
+SnBuff::_calc_fval(PackedVal mask)
 {
   mFval0 &= ~mask;
   mFval0 |= mFanin->fval_0() & mask;
@@ -110,9 +110,9 @@ SnBuff::_calc_fval3(PackedVal mask)
   mFval1 |= mFanin->fval_1() & mask;
 }
 
-// @brief ゲートの入力から出力までの可観測性を計算する．(3値版)
+// @brief ゲートの入力から出力までの可観測性を計算する．
 PackedVal
-SnBuff::calc_gobs3(ymuint ipos)
+SnBuff::calc_gobs(ymuint ipos)
 {
   return kPvAll1;
 }
@@ -141,19 +141,20 @@ SnNot::~SnNot()
 {
 }
 
-// @brief 正常値の計算を行う．(3値版)
+// @brief 正常値の計算を行う．
 void
-SnNot::_calc_gval3()
+SnNot::_calc_gval()
 {
   mGval1 = mFanin->gval_0();
   mGval0 = mFanin->gval_1();
 }
 
-// @brief 故障値の計算を行う．(3値版)
+// @brief 故障値の計算を行う．
 // @param[in] mask マスク
-// @note 結果は mFval0, mFval1 に格納される．
+//
+// 結果は mFval0, mFval1 に格納される．
 void
-SnNot::_calc_fval3(PackedVal mask)
+SnNot::_calc_fval(PackedVal mask)
 {
   mFval1 &= ~mask;
   mFval1 |= mFanin->fval_0() & mask;

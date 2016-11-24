@@ -70,13 +70,21 @@ protected:
   vector<TestVector*>&
   _tv_list();
 
+  /// @brief TvMgr を取り出す．
+  Tv2Mgr&
+  _tv2_mgr();
+
+  /// @brief テストベクタのリストを取り出す．
+  vector<TestVector2*>&
+  _tv2_list();
+
   /// @brief 2値の故障シミュレータを取り出す．
   Fsim&
   _fsim();
 
   /// @brief 遷移故障用の2値の故障シミュレータを取り出す．
-  Fsim&
-  _tfsim();
+  FsimT&
+  _fsimt();
 
   /// @brief 3値の故障シミュレータを返す．
   Fsim&

@@ -34,23 +34,25 @@ public:
 
 public:
 
-  /// @brief 正常値の計算を行う．(3値版)
-  /// @note 結果は mGval0, mGval1 に格納される．
+  /// @brief 正常値の計算を行う．
+  ///
+  /// 結果は mGval0, mGval1 に格納される．
   virtual
   void
-  _calc_gval3();
+  _calc_gval();
 
-  /// @brief 故障値の計算を行う．(3値版)
+  /// @brief 故障値の計算を行う．
   /// @param[in] mask マスク
-  /// @note 結果は mFval0, mFval1 に格納される．
+  ///
+  /// 結果は mFval0, mFval1 に格納される．
   virtual
   void
-  _calc_fval3(PackedVal mask);
+  _calc_fval(PackedVal mask);
 
-  /// @brief ゲートの入力から出力までの可観測性を計算する．(3値版)
+  /// @brief ゲートの入力から出力までの可観測性を計算する．
   virtual
   PackedVal
-  calc_gobs3(ymuint ipos);
+  calc_gobs(ymuint ipos);
 
   /// @brief 内容をダンプする．
   virtual
@@ -80,23 +82,25 @@ public:
 
 public:
 
-  /// @brief 正常値の計算を行う．(3値版)
-  /// @note 結果は mGval0, mGval1 に格納される．
+  /// @brief 正常値の計算を行う．
+  ///
+  /// 結果は mGval0, mGval1 に格納される．
   virtual
   void
-  _calc_gval3();
+  _calc_gval();
 
-  /// @brief 故障値の計算を行う．(3値版)
+  /// @brief 故障値の計算を行う．
   /// @param[in] mask マスク
-  /// @note 結果は mFval0, mFval1 に格納される．
+  ///
+  /// 結果は mFval0, mFval1 に格納される．
   virtual
   void
-  _calc_fval3(PackedVal mask);
+  _calc_fval(PackedVal mask);
 
-  /// @brief ゲートの入力から出力までの可観測性を計算する．(3値版)
+  /// @brief ゲートの入力から出力までの可観測性を計算する．
   virtual
   PackedVal
-  calc_gobs3(ymuint ipos);
+  calc_gobs(ymuint ipos);
 
   /// @brief 内容をダンプする．
   virtual
@@ -126,18 +130,20 @@ public:
 
 public:
 
-  /// @brief 正常値の計算を行う．(3値版)
-  /// @note 結果は mGval0, mGval1 に格納される．
+  /// @brief 正常値の計算を行う．
+  ///
+  /// 結果は mGval0, mGval1 に格納される．
   virtual
   void
-  _calc_gval3();
+  _calc_gval();
 
-  /// @brief 故障値の計算を行う．(3値版)
+  /// @brief 故障値の計算を行う．
   /// @param[in] mask マスク
-  /// @note 結果は mFval0, mFval1 に格納される．
+  ///
+  /// 結果は mFval0, mFval1 に格納される．
   virtual
   void
-  _calc_fval3(PackedVal mask);
+  _calc_fval(PackedVal mask);
 
   /// @brief 内容をダンプする．
   virtual
@@ -167,18 +173,20 @@ public:
 
 public:
 
-  /// @brief 正常値の計算を行う．(3値版)
-  /// @note 結果は mGval0, mGval1 に格納される．
+  /// @brief 正常値の計算を行う．
+  ///
+  /// 結果は mGval0, mGval1 に格納される．
   virtual
   void
-  _calc_gval3();
+  _calc_gval();
 
-  /// @brief 故障値の計算を行う．(3値版)
+  /// @brief 故障値の計算を行う．
   /// @param[in] mask マスク
-  /// @note 結果は mFval0, mFval1 に格納される．
+  ///
+  /// 結果は mFval0, mFval1 に格納される．
   virtual
   void
-  _calc_fval3(PackedVal mask);
+  _calc_fval(PackedVal mask);
 
   /// @brief 内容をダンプする．
   virtual

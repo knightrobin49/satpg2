@@ -315,7 +315,7 @@ Fsim2::_sppfp(FsimOp& op)
   for (vector<SimNode*>::iterator q = mLogicArray.begin();
        q != mLogicArray.end(); ++ q) {
     SimNode* node = *q;
-    node->calc_gval2();
+    node->calc_gval();
   }
 
   ymuint bitpos = 0;
@@ -411,7 +411,7 @@ Fsim2::ppsfp(const vector<TestVector*>& tv_array,
   for (vector<SimNode*>::iterator q = mLogicArray.begin();
        q != mLogicArray.end(); ++ q) {
     SimNode* node = *q;
-    node->calc_gval2();
+    node->calc_gval();
   }
 
   // FFR ごとに処理を行う．
@@ -528,7 +528,7 @@ Fsim2::_spsfp(const TpgFault* f)
   for (vector<SimNode*>::iterator q = mLogicArray.begin();
        q != mLogicArray.end(); ++ q) {
     SimNode* node = *q;
-    node->calc_gval2();
+    node->calc_gval();
   }
 
   // FFR 内の故障伝搬を行う．
@@ -536,7 +536,7 @@ Fsim2::_spsfp(const TpgFault* f)
   if ( f->is_branch_fault() ) {
     SimNode* simnode = find_simnode(f->tpg_onode());
     ymuint ipos = f->tpg_pos();
-    lobs = simnode->calc_lobs() & simnode->calc_gobs2(ipos);
+    lobs = simnode->calc_lobs() & simnode->calc_gobs(ipos);
     clear_lobs(simnode);
   }
   else {
@@ -627,7 +627,7 @@ Fsim2::ffr_simulate(SimFFR* ffr)
     if ( f->is_branch_fault() ) {
       // 入力の故障
       ymuint ipos = ff->mIpos;
-      lobs &= simnode->calc_gobs2(ipos);
+      lobs &= simnode->calc_gobs(ipos);
     }
     if ( f->val() == 1 ) {
       valdiff = ~valdiff;
@@ -661,7 +661,7 @@ Fsim2::eventq_simulate()
     if ( node == nullptr ) break;
     // すでに検出済みのビットはマスクしておく
     // これは無駄なイベントの発生を抑える．
-    PackedVal diff = node->calc_fval2(~obs);
+    PackedVal diff = node->calc_fval(~obs);
     if ( diff != kPvAll0 ) {
       mClearArray.push_back(node);
       if ( node->is_output() ) {
@@ -727,14 +727,6 @@ SimNode*
 Fsim2::find_simnode(const TpgNode* node) const
 {
   return mSimMap[node->id()];
-}
-
-// @brief WSA を計算する．
-// @param[in] tv テストベクタ
-ymuint
-Fsim2::calc_wsa(TestVector* tv)
-{
-  return 0;
 }
 
 END_NAMESPACE_YM_SATPG_FSIM2

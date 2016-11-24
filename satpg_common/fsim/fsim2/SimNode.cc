@@ -159,7 +159,7 @@ SimNode::calc_lobs()
   if ( !check_lobs() ) {
     SimNode* onode = fanout(0);
     ymuint pos = fanout_ipos();
-    mLobs = onode->calc_lobs() & onode->calc_gobs2(pos);
+    mLobs = onode->calc_lobs() & onode->calc_gobs(pos);
     set_lobs();
   }
   return mLobs;
