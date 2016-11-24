@@ -11,7 +11,7 @@ foreach (dir
   list ( APPEND YM_DOXY_SRCS ${dir} )
 endforeach()
 foreach ( dir
-    "."
+    "satpg_common"
     "ym-bnet"
     "ym-cell"
     "ym-common"
