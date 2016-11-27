@@ -104,11 +104,11 @@ add_subdirectory ( ym-mincov )
 add_subdirectory ( ym-sat )
 add_subdirectory ( ym-tclpp )
 
-add_subdirectory ( tests )
+#add_subdirectory ( tests )
 add_subdirectory ( gtest )
 add_subdirectory ( satpg_common )
 add_subdirectory ( atpg_tclsh )
-add_subdirectory ( python )
+#add_subdirectory ( python )
 
 if ( DOXYGEN_FOUND )
   add_subdirectory ( doxygen-src )

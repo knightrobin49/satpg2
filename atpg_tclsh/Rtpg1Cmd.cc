@@ -8,12 +8,12 @@
 
 
 #include "Rtpg1Cmd.h"
-#include "RtpgTP.h"
-#include "RtpgStats.h"
 #include "FaultMgr.h"
-#include "FsimT.h"
-#include "Tv2Mgr.h"
-#include "TestVector2.h"
+#include "td/Rtpg.h"
+#include "td/RtpgStats.h"
+#include "td/Fsim.h"
+#include "td/TvMgr.h"
+#include "td/TestVector.h"
 #include "ym/TclPopt.h"
 #include "ym/RandGen.h"
 
@@ -61,13 +61,13 @@ Rtpg1Cmd::cmd_proc(TclObjVector& objv)
     return TCL_ERROR;
   }
 
-  RtpgTP* rtpg = nullptr;
+  nsTd::Rtpg* rtpg = nullptr;
   if ( mPoptMcmc->is_specified() ) {
     ymuint nbits = mPoptMcmc->val();
-    rtpg = new_RtpgTP2(nbits);
+    rtpg = nsTd::new_RtpgP2(nbits);
   }
   else {
-    rtpg = new_RtpgTP1();
+    rtpg = nsTd::new_RtpgP1();
   }
 
   bool n_flag = false;
@@ -102,9 +102,9 @@ Rtpg1Cmd::cmd_proc(TclObjVector& objv)
     // 平均の WSA を求める．
     RandGen randgen;
     ymuint n_count = 10000;
-    FsimT& fsim = _fsimt();
-    Tv2Mgr& tvmgr = _tv2_mgr();
-    TestVector2* tv = tvmgr.new_vector();
+    TdFsim& fsim = _td_fsim();
+    TdTvMgr& tvmgr = _td_tv_mgr();
+    TdTestVector* tv = tvmgr.new_vector();
     ymuint wsa_sum = 0;
     ymuint wsa_max = 0;
     ymuint wsa_min = 0;
@@ -139,13 +139,13 @@ Rtpg1Cmd::cmd_proc(TclObjVector& objv)
   }
 
   FaultMgr& fmgr = _fault_mgr();
-  FsimT& fsim = _fsimt();
-  Tv2Mgr& tvmgr = _tv2_mgr();
+  TdFsim& fsim = _td_fsim();
+  TdTvMgr& tvmgr = _td_tv_mgr();
   const vector<const TpgFault*>& fault_list = fmgr.remain_list();
 
   vector<const TpgFault*> det_fault_list;
-  vector<TestVector2*>& tv_list = _tv2_list();
-  RtpgStats stats;
+  vector<TdTestVector*>& tv_list = _td_tv_list();
+  nsTd::RtpgStats stats;
 
   rtpg->run(fault_list, tvmgr, fsim, min_f, max_i, max_pat, wsa_limit, det_fault_list, tv_list, stats);
 

@@ -11,15 +11,15 @@
 #include "ym/TclPopt.h"
 #include "AtpgMgr.h"
 #include "TpgNetwork.h"
-#include "DtpgStats.h"
-#include "DtpgEngine.h"
+#include "sa/DtpgStats.h"
+#include "sa/Dtpg.h"
 #include "FaultMgr.h"
-#include "Fsim.h"
-#include "BackTracer.h"
-#include "DetectOp.h"
-#include "DopList.h"
-#include "UntestOp.h"
-#include "UopList.h"
+#include "sa/Fsim.h"
+#include "sa/BackTracer.h"
+#include "sa/DetectOp.h"
+#include "sa/DopList.h"
+#include "sa/UntestOp.h"
+#include "sa/UopList.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG
@@ -138,27 +138,27 @@ DtpgCmd::cmd_proc(TclObjVector& objv)
 
   string option_str = mPoptOpt->val();
 
-  DopList dop_list;
-  UopList uop_list;
+  nsSa::DopList dop_list;
+  nsSa::UopList uop_list;
 
   if ( !mPoptNoPat->is_specified() ) {
-    dop_list.add(new_DopTvList(_tv_mgr(), _tv_list()));
+    dop_list.add(nsSa::new_DopTvList(_sa_tv_mgr(), _sa_tv_list()));
   }
-  dop_list.add(new_DopBase(_fault_mgr()));
-  uop_list.add(new_UopBase(_fault_mgr()));
+  dop_list.add(nsSa::new_DopBase(_fault_mgr()));
+  uop_list.add(nsSa::new_UopBase(_fault_mgr()));
 
   ymuint xmode = 0;
   if ( mPoptX->is_specified() ) {
     xmode = mPoptX->val();
   }
 
-  BackTracer bt(xmode, _network().node_num());
+  nsSa::BackTracer bt(xmode, _network().node_num());
 
   if ( mPoptDrop->is_specified() ) {
-    dop_list.add(new_DopDrop(_fault_mgr(), _fsim3()));
+    dop_list.add(nsSa::new_DopDrop(_fault_mgr(), _sa_fsim3()));
   }
   if ( mPoptVerify->is_specified() ) {
-    dop_list.add(new_DopVerify(_fsim3()));
+    dop_list.add(nsSa::new_DopVerify(_sa_fsim3()));
   }
 
   bool timer_enable = true;
@@ -166,27 +166,27 @@ DtpgCmd::cmd_proc(TclObjVector& objv)
     timer_enable = false;
   }
 
-  DtpgEngine* engine = nullptr;
+  nsSa::Dtpg* engine = nullptr;
   if ( engine_type == "single" ) {
-    engine = new_DtpgSatS(sat_type, sat_option, outp, bt, dop_list, uop_list);
+    engine = nsSa::new_DtpgSatS(sat_type, sat_option, outp, bt, dop_list, uop_list);
   }
   else if ( engine_type == "single0" ) {
-    engine = new_DtpgSatS0(sat_type, sat_option, outp, bt, dop_list, uop_list);
+    engine = nsSa::new_DtpgSatS0(sat_type, sat_option, outp, bt, dop_list, uop_list);
   }
   else if ( engine_type == "mffc" ) {
-    engine = new_DtpgSatH(sat_type, sat_option, outp, bt, dop_list, uop_list);
+    engine = nsSa::new_DtpgSatH(sat_type, sat_option, outp, bt, dop_list, uop_list);
   }
   else {
     // デフォルトフォールバック
-    engine = new_DtpgSatS(sat_type, sat_option, outp, bt, dop_list, uop_list);
+    engine = nsSa::new_DtpgSatS(sat_type, sat_option, outp, bt, dop_list, uop_list);
   }
 
   engine->set_option(option_str);
   engine->timer_enable(timer_enable);
 
   const vector<const TpgFault*>& fault_list = _fault_mgr().remain_list();
-  DtpgStats stats;
-  engine->run(_network(), _fault_mgr(), _fsim3(), fault_list, stats);
+  nsSa::DtpgStats stats;
+  engine->run(_network(), _fault_mgr(), _sa_fsim3(), fault_list, stats);
 
   delete engine;
 

@@ -1,16 +1,18 @@
 ﻿#ifndef ATPGCMD_H
 #define ATPGCMD_H
 
-/// @file include/AtpgCmd.h
+/// @file AtpgCmd.h
 /// @brief AtpgCmd のヘッダファイル
 ///
 /// @author Yusuke Matsunaga (松永 裕介)
 ///
-/// Copyright (C) 2005-2010, 2012, 2014 Yusuke Matsunaga
+/// Copyright (C) 2016 Yusuke Matsunaga
 /// All rights reserved.
 
 
 #include "satpg.h"
+#include "sa/satpg_sa.h"
+#include "td/satpg_td.h"
 #include "ym/TclCmd.h"
 #include "ym/USTime.h"
 
@@ -18,8 +20,6 @@
 BEGIN_NAMESPACE_YM_SATPG
 
 // 前方参照のためのクラス宣言
-class FaultMgr;
-class TvMgr;
 class AtpgMgr;
 
 //////////////////////////////////////////////////////////////////////
@@ -63,32 +63,32 @@ protected:
   _fault_mgr();
 
   /// @brief TvMgr を取り出す．
-  TvMgr&
-  _tv_mgr();
+  nsSa::TvMgr&
+  _sa_tv_mgr();
 
   /// @brief テストベクタのリストを取り出す．
-  vector<TestVector*>&
-  _tv_list();
-
-  /// @brief TvMgr を取り出す．
-  Tv2Mgr&
-  _tv2_mgr();
-
-  /// @brief テストベクタのリストを取り出す．
-  vector<TestVector2*>&
-  _tv2_list();
+  vector<nsSa::TestVector*>&
+  _sa_tv_list();
 
   /// @brief 2値の故障シミュレータを取り出す．
-  Fsim&
-  _fsim();
-
-  /// @brief 遷移故障用の2値の故障シミュレータを取り出す．
-  FsimT&
-  _fsimt();
+  nsSa::Fsim&
+  _sa_fsim();
 
   /// @brief 3値の故障シミュレータを返す．
-  Fsim&
-  _fsim3();
+  nsSa::Fsim&
+  _sa_fsim3();
+
+  /// @brief TvMgr を取り出す．
+  nsTd::TvMgr&
+  _td_tv_mgr();
+
+  /// @brief テストベクタのリストを取り出す．
+  vector<nsTd::TestVector*>&
+  _td_tv_list();
+
+  /// @brief 遷移故障用の2値の故障シミュレータを取り出す．
+  nsTd::Fsim&
+  _td_fsim();
 
   /// @brief ファイル読み込みに関わる時間を得る．
   USTime

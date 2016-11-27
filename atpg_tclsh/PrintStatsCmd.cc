@@ -74,7 +74,7 @@ PrintStatsCmd::cmd_proc(TclObjVector& objv)
   fprintf(stdout, "#B: # of detected faults    = %7lu\n", fmgr.det_list().size());
   fprintf(stdout, "#C: # of redundant faults   = %7lu\n", fmgr.untest_list().size());
   fprintf(stdout, "#D: # of undetected faults  = %7lu\n", fmgr.remain_list().size());
-  fprintf(stdout, "#E: # of generated patterns = %7lu\n", _tv_list().size());
+  fprintf(stdout, "#E: # of generated patterns = %7lu\n", _sa_tv_list().size());
   fprintf(stdout, "#F: # of MFFCs              = %7u\n", _network().mffc_num());
   fprintf(stdout, "#G: # of FFRs               = %7u\n", _network().ffr_num());
   fprintf(stdout, "#H:   Total CPU time        = %7.2fu %7.2fs\n",

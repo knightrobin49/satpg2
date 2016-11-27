@@ -100,41 +100,17 @@ enum {
 
 class TpgFault;
 class FaultMgr;
-class FoCone;
-class MffcCone;
-class StructSat;
 class TpgNetwork;
 class TpgNode;
-class NodeSet;
-class NodeValList;
-class NodeVal2List;
-class BackTracer;
-class BackTracer2;
-class DetectOp;
-class DetectOp2;
-class UntestOp;
-class TestVector;
-class TestVector2;
-class TvMgr;
-class Tv2Mgr;
-class Dtpg;
-class DtpgEngine;
-class DtpgStats;
-class SatEngine;
-class GvalCnf;
-class FvalCnf;
-class MvalCnf;
-class ValMap;
-class ValMap2;
-class VidMap;
+class TpgNodeInfo;
+class MffcInfo;
+
 class LitMap;
-class Rtpg;
-class RtpgStats;
-class MinPat;
-class MinPatStats;
-class Fsim;
-class FsimOp;
-class FsimT;
+class VectLitMap;
+class VidLitMap;
+
+class VidMap;
+class GenVidMap;
 
 END_NAMESPACE_YM_SATPG
 

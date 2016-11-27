@@ -3,7 +3,7 @@
 /// @brief AtpgCmd の実装ファイル
 /// @author Yusuke Matsunaga (松永 裕介)
 ///
-/// Copyright (C) 2005-2010, 2012, 2014 Yusuke Matsunaga
+/// Copyright (C) 2016 Yusuke Matsunaga
 /// All rights reserved.
 
 
@@ -243,52 +243,52 @@ AtpgCmd::_fault_mgr()
 }
 
 // @brief TvMgr を取り出す．
-TvMgr&
-AtpgCmd::_tv_mgr()
+nsSa::TvMgr&
+AtpgCmd::_sa_tv_mgr()
 {
-  return mMgr->_tv_mgr();
+  return mMgr->_sa_tv_mgr();
 }
 
 // @brief テストベクタのリストを取り出す．
-vector<TestVector*>&
-AtpgCmd::_tv_list()
+vector<nsSa::TestVector*>&
+AtpgCmd::_sa_tv_list()
 {
-  return mMgr->_tv_list();
-}
-
-// @brief Tv2Mgr を取り出す．
-Tv2Mgr&
-AtpgCmd::_tv2_mgr()
-{
-  return mMgr->_tv2_mgr();
-}
-
-// @brief テストベクタのリストを取り出す．
-vector<TestVector2*>&
-AtpgCmd::_tv2_list()
-{
-  return mMgr->_tv2_list();
+  return mMgr->_sa_tv_list();
 }
 
 // @brief 2値の故障シミュレータを取り出す．
-Fsim&
-AtpgCmd::_fsim()
+nsSa::Fsim&
+AtpgCmd::_sa_fsim()
 {
-  return mMgr->_fsim();
-}
-
-// @brief 遷移故障用の2値の故障シミュレータを取り出す．
-FsimT&
-AtpgCmd::_fsimt()
-{
-  return mMgr->_fsimt();
+  return mMgr->_sa_fsim();
 }
 
 // @brief 3値の故障シミュレータを返す．
-Fsim&
-AtpgCmd::_fsim3()
+nsSa::Fsim&
+AtpgCmd::_sa_fsim3()
 {
-  return mMgr->_fsim3();
+  return mMgr->_sa_fsim3();
+}
+
+// @brief TvMgr を取り出す．
+nsTd::TvMgr&
+AtpgCmd::_td_tv_mgr()
+{
+  return mMgr->_td_tv_mgr();
+}
+
+// @brief テストベクタのリストを取り出す．
+vector<nsTd::TestVector*>&
+AtpgCmd::_td_tv_list()
+{
+  return mMgr->_td_tv_list();
+}
+
+// @brief 遷移故障用の2値の故障シミュレータを取り出す．
+nsTd::Fsim&
+AtpgCmd::_td_fsim()
+{
+  return mMgr->_td_fsim();
 }
 
 // @brief ファイル読み込みに関わる時間を得る．

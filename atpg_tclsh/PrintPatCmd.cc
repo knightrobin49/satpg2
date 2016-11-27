@@ -9,7 +9,7 @@
 
 #include "PrintPatCmd.h"
 #include "AtpgMgr.h"
-#include "TestVector.h"
+#include "sa/TestVector.h"
 #include "ym/TclPopt.h"
 
 
@@ -65,10 +65,10 @@ PrintPatCmd::cmd_proc(TclObjVector& objv)
   bool hex_flag = mPoptHex->is_specified();
   bool num_flag = mPoptNum->is_specified();
 
-  vector<TestVector*>& tvlist = _tv_list();
+  vector<SaTestVector*>& tvlist = _sa_tv_list();
   ymuint n = tvlist.size();
   for (ymuint i = 0; i < n; ++ i) {
-    TestVector* tv = tvlist[i];
+    SaTestVector* tv = tvlist[i];
     if ( num_flag ) {
       out << setw(5) << setfill('0') << (i + 1) << ": ";
     }

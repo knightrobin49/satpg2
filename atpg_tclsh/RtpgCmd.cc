@@ -8,10 +8,10 @@
 
 
 #include "RtpgCmd.h"
-#include "Rtpg.h"
-#include "RtpgStats.h"
 #include "FaultMgr.h"
-#include "Fsim.h"
+#include "sa/Rtpg.h"
+#include "sa/RtpgStats.h"
+#include "sa/Fsim.h"
 #include "ym/TclPopt.h"
 
 
@@ -54,7 +54,7 @@ RtpgCmd::cmd_proc(TclObjVector& objv)
     return TCL_ERROR;
   }
 
-  Rtpg* rtpg = new_Rtpg();
+  nsSa::Rtpg* rtpg = nsSa::new_Rtpg();
 
   bool n_flag = false;
   ymuint max_pat = 100000;
@@ -90,13 +90,13 @@ RtpgCmd::cmd_proc(TclObjVector& objv)
   }
 
   FaultMgr& fmgr = _fault_mgr();
-  Fsim& fsim = _fsim();
-  TvMgr& tvmgr = _tv_mgr();
+  SaFsim& fsim = _sa_fsim();
+  SaTvMgr& tvmgr = _sa_tv_mgr();
   const vector<const TpgFault*>& fault_list = fmgr.remain_list();
 
   vector<const TpgFault*> det_fault_list;
-  vector<TestVector*>& tv_list = _tv_list();
-  RtpgStats stats;
+  vector<SaTestVector*>& tv_list = _sa_tv_list();
+  nsSa::RtpgStats stats;
 
   rtpg->run(fault_list, tvmgr, fsim, min_f, max_i, max_pat, det_fault_list, tv_list, stats);
 

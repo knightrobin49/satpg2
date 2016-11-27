@@ -11,10 +11,12 @@
 #include "TpgNetwork.h"
 #include "TpgFault.h"
 #include "FaultMgr.h"
-#include "TvMgr.h"
-#include "Tv2Mgr.h"
-#include "Fsim.h"
-#include "FsimT.h"
+
+#include "sa/TvMgr.h"
+#include "sa/Fsim.h"
+
+#include "td/TvMgr.h"
+#include "td/Fsim.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG
@@ -28,23 +30,26 @@ AtpgMgr::AtpgMgr() :
   mTimer(TM_SIZE, TM_MISC)
 {
   mFaultMgr = new FaultMgr();
-  mTvMgr = new TvMgr();
-  mTv2Mgr = new Tv2Mgr();
 
-  mFsim = new_Fsim2();
-  mFsimT = new_FsimT2();
-  mFsim3 = new_Fsim3();
+  mSaTvMgr = new nsSa::TvMgr();
+  mSaFsim = nsSa::new_Fsim2();
+  mSaFsim3 = nsSa::new_Fsim3();
+
+  mTdTvMgr = new nsTd::TvMgr();
+  mTdFsim = nsTd::new_Fsim2();
 }
 
 // @brief デストラクタ
 AtpgMgr::~AtpgMgr()
 {
   delete mFaultMgr;
-  delete mTvMgr;
-  delete mTv2Mgr;
-  delete mFsim;
-  delete mFsimT;
-  delete mFsim3;
+
+  delete mSaTvMgr;
+  delete mSaFsim;
+  delete mSaFsim3;
+
+  delete mTdTvMgr;
+  delete mTdFsim;
 }
 
 // @brief ファイル読み込みに関わる時間を得る．
@@ -88,15 +93,14 @@ AtpgMgr::after_set_network()
 {
   mFaultMgr->set_faults(mNetwork);
 
-  mTvMgr->clear();
-  mTvMgr->init(mNetwork.input_num(), mNetwork.input_num() - mNetwork.dff_num());
+  mSaTvMgr->clear();
+  mSaTvMgr->init(mNetwork.input_num());
+  mSaFsim->set_network(mNetwork);
+  mSaFsim3->set_network(mNetwork);
 
-  mTv2Mgr->clear();
-  mTv2Mgr->init(mNetwork.input_num());
-
-  mFsim->set_network(mNetwork);
-  mFsimT->set_network(mNetwork);
-  mFsim3->set_network(mNetwork);
+  mTdTvMgr->clear();
+  mTdTvMgr->init(mNetwork.input_num());
+  mTdFsim->set_network(mNetwork);
 }
 
 END_NAMESPACE_YM_SATPG
