@@ -17,7 +17,7 @@
 #include "TpgMap.h"
 #include "ym/BnBlifReader.h"
 #include "ym/BnIscas89Reader.h"
-#include "ym/BnBuilder.h"
+#include "ym/BnNetwork.h"
 #include "ym/Cell.h"
 #include "ym/Expr.h"
 
@@ -142,12 +142,10 @@ bool
 TpgNetwork::read_blif(const string& filename,
 		      const CellLibrary* cell_library)
 {
-  BnBuilder builder;
-  BnBlifReader reader;
-
-  bool stat = reader.read(builder, filename, cell_library);
+  BnNetwork src_network;
+  bool stat = BnBlifReader::read(src_network, filename, cell_library);
   if ( stat ) {
-    set(builder);
+    set(src_network);
   }
 
   return stat;
@@ -159,12 +157,10 @@ TpgNetwork::read_blif(const string& filename,
 bool
 TpgNetwork::read_iscas89(const string& filename)
 {
-  BnBuilder builder;
-  BnIscas89Reader reader;
-
-  bool stat = reader.read(builder, filename);
+  BnNetwork src_network;
+  bool stat = BnIscas89Reader::read(builder, filename);
   if ( stat ) {
-    set(builder);
+    set(src_network);
   }
 
   return stat;
@@ -197,9 +193,9 @@ get_mffc_elem(TpgNode* node,
 END_NONAMESPACE
 
 // @brief 内容を設定する．
-// @param[in] builder ビルダーオブジェクト
+// @param[in] src_network もとのネットワーク
 void
-TpgNetwork::set(const BnBuilder& builder)
+TpgNetwork::set(const BnNetwork& src_network)
 {
   mAlloc.destroy();
 
@@ -207,11 +203,11 @@ TpgNetwork::set(const BnBuilder& builder)
   // NodeInfoMgr にノードの論理関数を登録する．
   //////////////////////////////////////////////////////////////////////
   TpgNodeInfoMgr node_info_mgr;
-  ymuint nexpr = builder.expr_num();
+  ymuint nexpr = src_network.expr_num();
   vector<const TpgNodeInfo*> node_info_list(nexpr);
   ymuint extra_node_num = 0;
   for (ymuint i = 0; i < nexpr; ++ i) {
-    Expr expr = builder.expr(i);
+    Expr expr = src_network.expr(i);
     ymuint ni = expr.input_size();
     const TpgNodeInfo* node_info = node_info_mgr.complex_type(ni, expr);
     node_info_list[i] = node_info;
@@ -220,12 +216,12 @@ TpgNetwork::set(const BnBuilder& builder)
   //////////////////////////////////////////////////////////////////////
   // 追加で生成されるノード数を数える．
   //////////////////////////////////////////////////////////////////////
-  ymuint nl = builder.logic_num();
+  ymuint nl = src_network.logic_num();
   for (ymuint i = 0; i < nl; ++ i) {
-    const BnBuilder::NodeInfo src_node_info = builder.logic(i);
-    BnLogicType logic_type = src_node_info.mLogicType;
+    const BnNode* src_node = src_network.logic(i);
+    BnLogicType logic_type = src_node->logic_type();
     if ( logic_type == kBnLt_EXPR ) {
-      const TpgNodeInfo* node_info = node_info_list[src_node_info.mFuncId];
+      const TpgNodeInfo* node_info = node_info_list[src_node->expr_id()];
       extra_node_num += node_info->extra_node_num();
     }
   }
