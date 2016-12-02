@@ -238,6 +238,16 @@ private:
 		  const string& name,
 		  ymuint fanout_num);
 
+  /// @brief DFFの出力ノードを生成する．
+  /// @param[in] iid 入力の番号
+  /// @param[in] name ノード名
+  /// @param[in] fanout_num ファンアウト数
+  /// @return 生成したノードを返す．
+  TpgNode*
+  make_dff_output_node(ymuint iid,
+		  const string& name,
+		  ymuint fanout_num);
+
   /// @brief 出力ノードを生成する．
   /// @param[in] oid 出力の番号
   /// @param[in] name ノード名
@@ -247,6 +257,16 @@ private:
   make_output_node(ymuint oid,
 		   const string& name,
 		   TpgNode* inode);
+
+  /// @brief DFFの入力ノードを生成する．
+  /// @param[in] oid 出力の番号
+  /// @param[in] name ノード名
+  /// @param[in] inode 入力のノード
+  /// @return 生成したノードを返す．
+  TpgNode*
+  make_dff_input_node(ymuint oid,
+		      const string& name,
+		      TpgNode* inode);
 
   /// @brief 論理ノードを生成する．
   /// @param[in] name ノード名

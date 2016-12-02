@@ -254,12 +254,22 @@ TpgNode::TpgNode(ymuint id,
   mFaninNum(fanin_list.size()),
   mFanoutNum(fanout_num)
 {
-  mFaninList = new TpgNode*[mFaninNum];
-  for (ymuint i = 0; i < mFaninNum; ++ i) {
-    mFaninList[i] = fanin_list[i];
+  if ( mFaninNum > 0 ) {
+    mFaninList = new TpgNode*[mFaninNum];
+    for (ymuint i = 0; i < mFaninNum; ++ i) {
+      mFaninList[i] = fanin_list[i];
+    }
+  }
+  else {
+    mFaninList = nullptr;
   }
 
-  mFanoutList = new TpgNode*[mFanoutNum];
+  if ( mFanoutNum > 0 ) {
+    mFanoutList = new TpgNode*[mFanoutNum];
+  }
+  else {
+    mFanoutList = nullptr;
+  }
 }
 
 // @brief デストラクタ

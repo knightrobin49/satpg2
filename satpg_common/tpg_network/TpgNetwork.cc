@@ -421,6 +421,7 @@ TpgNetwork::set(const BnNetwork& network)
   mNodeNum = 0;
   mFaultNum = 0;
 
+
   //////////////////////////////////////////////////////////////////////
   // 入力ノードを作成する．
   //////////////////////////////////////////////////////////////////////
@@ -434,12 +435,17 @@ TpgNetwork::set(const BnNetwork& network)
 
     node_map.reg(id, node);
   }
+
+
+  //////////////////////////////////////////////////////////////////////
+  // DFFの出力ノードを作成する．
+  //////////////////////////////////////////////////////////////////////
   for (ymuint i = 0; i < mFFNum; ++ i) {
     ymuint id = dff_output_map[i];
     const BnNode* src_node = network.node(i);
     ASSERT_COND( src_node->is_input() );
     ymuint nfo = src_node->fanout_num();
-    TpgNode* node = make_input_node(i + mInputNum, src_node->name(), nfo);
+    TpgNode* node = make_dff_output_node(i + mInputNum, src_node->name(), nfo);
     mInputArray[i + mInputNum] = node;
 
     node_map.reg(id, node);
@@ -490,6 +496,11 @@ TpgNetwork::set(const BnNetwork& network)
     TpgNode* node = make_output_node(i, buf, inode);
     mOutputArray[i] = node;
   }
+
+
+  //////////////////////////////////////////////////////////////////////
+  // DFFの入力ノードを作成する．
+  //////////////////////////////////////////////////////////////////////
   for (ymuint i = 0; i < mFFNum; ++ i) {
     ymuint id = dff_input_map[i];
     const BnNode* src_node = network.node(id);
@@ -497,13 +508,14 @@ TpgNetwork::set(const BnNetwork& network)
     TpgNode* inode = node_map.get(src_node->fanin());
     string buf = "*";
     buf += src_node->name();
-    TpgNode* node = make_output_node(i + mOutputNum, buf, inode);
+    TpgNode* node = make_dff_input_node(i + mOutputNum, buf, inode);
     mOutputArray[i + mOutputNum] = node;
 
     // 対応する入力ノードを求める．
     const BnDff* dff = network.dff(i);
     TpgNode* alt_node = node_map.get(dff->output());
     ASSERT_COND( alt_node != nullptr );
+    ASSERT_COND( alt_node->is_dff_output() );
     alt_node->set_alt_node(node);
     node->set_alt_node(alt_node);
   }
@@ -526,12 +538,20 @@ TpgNetwork::set(const BnNetwork& network)
     }
   }
   { // 検証
+    ymuint error = 0;
     for (ymuint i = 0; i < mNodeNum; ++ i) {
       TpgNode* node = mNodeArray[i];
       if ( nfo_array[node->id()] != node->fanout_num() ) {
-	cerr << "Error in TpgNetwork()";
-	abort();
+	if ( error == 0 ) {
+	  cerr << "Error in TpgNetwork()" << endl;
+	}
+	cerr << "nfo_array[Node#" << node->id() << "] = " << nfo_array[node->id()] << endl
+	     << "node->fanout_num()    = " << node->fanout_num() << endl;
+	++ error;
       }
+    }
+    if ( error ) {
+      abort();
     }
     // 接続が正しいかチェックする．
     check_network_connection(*this);
@@ -732,6 +752,31 @@ TpgNetwork::make_input_node(ymuint iid,
   return node;
 }
 
+// @brief 入力ノードを生成する．
+// @param[in] iid 入力の番号
+// @param[in] name ノード名
+// @param[in] fanout_num ファンアウト数
+// @return 生成したノードを返す．
+TpgNode*
+TpgNetwork::make_dff_output_node(ymuint iid,
+				 const string& name,
+				 ymuint fanout_num)
+{
+  TpgNode* node = TpgNode::make_dff_output(mNodeNum, iid, fanout_num);
+  mNodeArray[mNodeNum] = node;
+  ++ mNodeNum;
+
+  mAuxInfoArray[node->id()].set_name(name, mAlloc);
+
+  // 出力位置の故障を生成
+  const char* c_name = node_name(node->id());
+  for (int val = 0; val < 2; ++ val) {
+    new_ofault(c_name, val, node);
+  }
+
+  return node;
+}
+
 // @brief 出力ノードを生成する．
 // @param[in] oid 出力の番号
 // @param[in] name ノード名
@@ -744,6 +789,34 @@ TpgNetwork::make_output_node(ymuint oid,
 			     TpgNode* inode)
 {
   TpgNode* node = TpgNode::make_output(mNodeNum, oid, inode);
+  mNodeArray[mNodeNum] = node;
+  ++ mNodeNum;
+
+  mAuxInfoArray[node->id()].set_name(name, mAlloc);
+  mAuxInfoArray[node->id()].set_fanin_num(1, mAlloc);
+
+  // 入力位置の故障を生成
+  const char* c_name = node_name(node->id());
+  ymuint ipos = 0;
+  for (int val = 0; val < 2; ++ val) {
+    new_ifault(c_name, ipos, val, InodeInfo(node, ipos), nullptr);
+  }
+
+  return node;
+}
+
+// @brief DFFの入力ノードを生成する．
+// @param[in] oid 出力の番号
+// @param[in] name ノード名
+// @param[in] inode 入力のノード
+// @param[in] fanout_num ファンアウト数
+// @return 生成したノードを返す．
+TpgNode*
+TpgNetwork::make_dff_input_node(ymuint oid,
+				const string& name,
+				TpgNode* inode)
+{
+  TpgNode* node = TpgNode::make_dff_input(mNodeNum, oid, inode);
   mNodeArray[mNodeNum] = node;
   ++ mNodeNum;
 
