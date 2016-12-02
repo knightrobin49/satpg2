@@ -15,11 +15,13 @@
 #include "TpgStemFault.h"
 #include "TpgBranchFault.h"
 #include "AuxNodeInfo.h"
+
 #include "ym/BnBlifReader.h"
 #include "ym/BnIscas89Reader.h"
 #include "ym/BnNetwork.h"
-#include "ym/BnNode.h"
+#include "ym/BnPort.h"
 #include "ym/BnDff.h"
+#include "ym/BnNode.h"
 #include "ym/Expr.h"
 
 #define USE_MYALLOC 1
@@ -369,19 +371,50 @@ TpgNetwork::set(const BnNetwork& network)
   //////////////////////////////////////////////////////////////////////
   // 要素数を数え，必要なメモリ領域を確保する．
   //////////////////////////////////////////////////////////////////////
-  mInputNum = network.input_num();
-  mOutputNum = network.output_num();
-  mFFNum = network.dff_num();
 
-  ymuint nn = mInputNum + mOutputNum + nl + extra_node_num;
+  // BnPort は複数ビットの場合があり，さらに入出力が一緒なのでめんどくさい
+  vector<ymuint> input_map;
+  vector<ymuint> output_map;
+  vector<ymuint> dff_output_map;
+  vector<ymuint> dff_input_map;
+  ymuint np = network.port_num();
+  for (ymuint i = 0; i < np; ++ i) {
+    const BnPort* port = network.port(i);
+    ymuint nb = port->bit_width();
+    for (ymuint j = 0; j < nb; ++ j) {
+      ymuint id = port->bit(j);
+      const BnNode* node = network.node(id);
+      if ( node->is_input() ) {
+	input_map.push_back(id);
+      }
+      else if ( node->is_output() ) {
+	output_map.push_back(id);
+      }
+      else {
+	ASSERT_NOT_REACHED;
+      }
+    }
+  }
+  mInputNum = input_map.size();
+  mOutputNum = output_map.size();
+  mFFNum = network.dff_num();
+  for (ymuint i = 0; i < mFFNum; ++ i) {
+    const BnDff* dff = network.dff(i);
+    ymuint input = dff->input();
+    dff_input_map.push_back(input);
+    ymuint output = dff->output();
+    dff_output_map.push_back(output);
+  }
+
+  ymuint nn = mInputNum + mOutputNum + mFFNum * 2 + nl + extra_node_num;
 
   mNodeArray = new TpgNode*[nn];
 
   mAuxInfoArray = new AuxNodeInfo[nn];
 
-  mInputArray = new TpgNode*[input_num()];
-  mOutputArray = new TpgNode*[output_num()];
-  mOutputArray2 = new TpgNode*[output_num()];
+  mInputArray = new TpgNode*[mInputNum + mFFNum];
+  mOutputArray = new TpgNode*[mOutputNum + mFFNum];
+  mOutputArray2 = new TpgNode*[mOutputNum + mFFNum];
 
   TpgNodeMap node_map;
 
@@ -389,16 +422,29 @@ TpgNetwork::set(const BnNetwork& network)
   mFaultNum = 0;
 
   //////////////////////////////////////////////////////////////////////
-  // 外部入力を作成する．
+  // 入力ノードを作成する．
   //////////////////////////////////////////////////////////////////////
   for (ymuint i = 0; i < mInputNum; ++ i) {
-    const BnNode* src_node = network.input(i);
+    ymuint id = input_map[i];
+    const BnNode* src_node = network.node(i);
+    ASSERT_COND( src_node->is_input() );
     ymuint nfo = src_node->fanout_num();
     TpgNode* node = make_input_node(i, src_node->name(), nfo);
     mInputArray[i] = node;
 
-    node_map.reg(src_node->id(), node);
+    node_map.reg(id, node);
   }
+  for (ymuint i = 0; i < mFFNum; ++ i) {
+    ymuint id = dff_output_map[i];
+    const BnNode* src_node = network.node(i);
+    ASSERT_COND( src_node->is_input() );
+    ymuint nfo = src_node->fanout_num();
+    TpgNode* node = make_input_node(i, src_node->name(), nfo);
+    mInputArray[i + mInputNum] = node;
+
+    node_map.reg(id, node);
+  }
+
 
   //////////////////////////////////////////////////////////////////////
   // 論理ノードを作成する．
@@ -430,30 +476,39 @@ TpgNetwork::set(const BnNetwork& network)
     node_map.reg(src_node->id(), node);
   }
 
+
   //////////////////////////////////////////////////////////////////////
-  // 外部出力ノードを作成する．
+  // 出力ノードを作成する．
   //////////////////////////////////////////////////////////////////////
   for (ymuint i = 0; i < mOutputNum; ++ i) {
-    const BnNode* src_node = network.output(i);
-    TpgNode* inode = node_map.get(src_node->input());
+    ymuint id = output_map[i];
+    const BnNode* src_node = network.node(id);
+    ASSERT_COND( src_node->is_output() );
+    TpgNode* inode = node_map.get(src_node->fanin());
     string buf = "*";
     buf += src_node->name();
     TpgNode* node = make_output_node(i, buf, inode);
     mOutputArray[i] = node;
   }
+  for (ymuint i = 0; i < mFFNum; ++ i) {
+    ymuint id = dff_input_map[i];
+    const BnNode* src_node = network.node(id);
+    ASSERT_COND( src_node->is_output() );
+    TpgNode* inode = node_map.get(src_node->fanin());
+    string buf = "*";
+    buf += src_node->name();
+    TpgNode* node = make_output_node(i, buf, inode);
+    mOutputArray[i + mOutputNum] = node;
+    // 対応する入力ノードを求める．
+    const BnDff* dff = network.dff(i);
+    TpgNode* alt_node = node_map.get(dff->output());
+    ASSERT_COND( alt_node != nullptr );
+    alt_node->set_alt_node(node);
+    node->set_alt_node(alt_node);
+  }
 
   ASSERT_COND( mNodeNum == nn );
 
-  //////////////////////////////////////////////////////////////////////
-  // DFF の入出力の対応を設定する．
-  //////////////////////////////////////////////////////////////////////
-  for (ymuint i = 0; i < mFFNum; ++ i) {
-    const BnDff* dff = network.dff(i);
-    TpgNode* inode = node_map.get(dff->output());
-    TpgNode* onode = node_map.get(dff->input());
-    inode->set_alt_node(onode);
-    onode->set_alt_node(inode);
-  }
 
   //////////////////////////////////////////////////////////////////////
   // ファンアウトをセットする．

@@ -12,6 +12,7 @@
 #include "satpg.h"
 #include "Val3.h"
 #include "TpgNode.h"
+
 #include "ym/ym_bnet.h"
 #include "ym/ym_cell.h"
 #include "ym/ym_logic.h"
