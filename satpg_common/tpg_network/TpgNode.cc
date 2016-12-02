@@ -10,6 +10,11 @@
 #include "TpgNode.h"
 #include "ym/SatSolver.h"
 
+#include "TpgInput.h"
+#include "TpgOutput.h"
+#include "TpgDffInput.h"
+#include "TpgDffOutput.h"
+
 #include "TpgLogicC0.h"
 #include "TpgLogicC1.h"
 #include "TpgLogicBUFF.h"
@@ -60,8 +65,7 @@ TpgNode::make_input(ymuint id,
 		    ymuint iid,
 		    ymuint fanout_num)
 {
-  TpgNode* node = new TpgNode(id, vector<TpgNode*>(), fanout_num);
-  node->mTypeId = (1U | (iid << 3));
+  TpgNode* node = new TpgInput(id, iid, fanout_num);
 
   return node;
 }
@@ -76,8 +80,37 @@ TpgNode::make_output(ymuint id,
 		     ymuint oid,
 		     TpgNode* inode)
 {
-  TpgNode* node = new TpgNode(id, vector<TpgNode*>(1, inode), 0);
-  node->mTypeId = (2U | (oid << 3));
+  TpgNode* node = new TpgOutput(id, oid, inode);
+
+  return node;
+}
+
+// @brief DFFの入力ノードを作る．
+// @param[in] id ノード番号
+// @param[in] oid 出力番号
+// @param[in] inode 入力ノード
+// @return 作成したノードを返す．
+TpgNode*
+TpgNode::make_dff_input(ymuint id,
+			ymuint oid,
+			TpgNode* inode)
+{
+  TpgNode* node = new TpgDffInput(id, oid, inode);
+
+  return node;
+}
+
+// @brief DFFの出力ノードを作る．
+// @param[in] id ノード番号
+// @param[in] iid 入力番号
+// @param[in] fanout_num ファンアウト数
+// @return 作成したノードを返す．
+TpgNode*
+TpgNode::make_dff_output(ymuint id,
+			 ymuint iid,
+			 ymuint fanout_num)
+{
+  TpgNode* node = new TpgDffOutput(id, iid, fanout_num);
 
   return node;
 }
@@ -207,8 +240,6 @@ TpgNode::make_logic(ymuint id,
     ASSERT_NOT_REACHED;
   }
 
-  node->mTypeId = (3U | (static_cast<ymuint32>(gate_type) << 3));
-
   return node;
 }
 
@@ -238,11 +269,102 @@ TpgNode::~TpgNode()
   delete [] mFanoutList;
 }
 
-// @brief ID番号を得る．
-ymuint
-TpgNode::id() const
+// @brief 外部入力タイプの時 true を返す．
+// @note FF 出力もここに含まれる．
+bool
+TpgNode::is_input() const
 {
-  return mId;
+  return false;
+}
+
+// @brief DFF の出力に接続している外部入力タイプの時 true を返す．
+bool
+TpgNode::is_dff_output() const
+{
+  return false;
+}
+
+// @brief 外部出力タイプの時 true を返す．
+// @note FF 入力もここに含まれる．
+bool
+TpgNode::is_output() const
+{
+  return false;
+}
+
+// @brief DFF の入力に接続している外部出力タイプの時 true を返す．
+bool
+TpgNode::is_dff_input() const
+{
+  return false;
+}
+
+// @brief logic タイプの時 true を返す．
+bool
+TpgNode::is_logic() const
+{
+  return false;
+}
+
+// @brief 外部入力タイプの時に入力番号を返す．
+//
+// node = TpgNetwork::input(node->input_id()
+// の関係を満たす．
+// is_input() が false の場合の返り値は不定
+ymuint
+TpgNode::input_id() const
+{
+  ASSERT_NOT_REACHED;
+  return 0;
+}
+
+// @brief DFF の出力に接続している外部入力タイプの時に対応する外部出力を返す．
+//
+// is_dff_output() == false の時には nullptr を返す．
+TpgNode*
+TpgNode::alt_output() const
+{
+  ASSERT_NOT_REACHED;
+  return nullptr;
+}
+
+// @brief 外部出力タイプの時に出力番号を返す．
+//
+// node = TpgNetwork::output(node->output_id())
+// の関係を満たす．
+// is_output() が false の場合の返り値は不定
+ymuint
+TpgNode::output_id() const
+{
+  ASSERT_NOT_REACHED;
+  return 0;
+}
+
+// @brief TFIサイズの昇順に並べた時の出力番号を返す．
+ymuint
+TpgNode::output_id2() const
+{
+  ASSERT_NOT_REACHED;
+  return 0;
+}
+
+// @brief DFF の入力に接続している外部出力タイプの時に対応する外部入力を返す．
+//
+// is_dff_input() == false の時には nullptr を返す．
+TpgNode*
+TpgNode::alt_input() const
+{
+  return nullptr;
+}
+
+// @brief ゲートタイプを得る．
+//
+// is_logic() が false の場合の返り値は不定
+GateType
+TpgNode::gate_type() const
+{
+  ASSERT_NOT_REACHED;
+  return kGateCONST0;
 }
 
 // @brief controling value を得る．
@@ -330,8 +452,7 @@ TpgNode::make_faulty_cnf(SatSolver& solver,
 void
 TpgNode::set_output_id2(ymuint id)
 {
-  ASSERT_COND( is_output() );
-  mOutputId2 = id;
+  ASSERT_NOT_REACHED;
 }
 
 // @brief DFFの入出力の時に相方のノードを設定する．
@@ -340,9 +461,7 @@ TpgNode::set_output_id2(ymuint id)
 void
 TpgNode::set_alt_node(TpgNode* alt_node)
 {
-  ASSERT_COND( is_input() || is_output() );
-  mTypeId |= 4U;
-  mAltNode = alt_node;
+  ASSERT_NOT_REACHED;
 }
 
 // @brief ファンアウトを設定する．

@@ -68,6 +68,28 @@ public:
 	      ymuint oid,
 	      TpgNode* inode);
 
+  /// @brief DFFの出力ノードを作る．
+  /// @param[in] id ノード番号
+  /// @param[in] iid 入力番号
+  /// @param[in] fanout_num ファンアウト数
+  /// @return 作成したノードを返す．
+  static
+  TpgNode*
+  make_dff_output(ymuint id,
+		  ymuint iid,
+		  ymuint fanout_num);
+
+  /// @brief DFFの入力ノードを作る．
+  /// @param[in] id ノード番号
+  /// @param[in] oid 出力番号
+  /// @param[in] inode 入力ノード
+  /// @return 作成したノードを返す．
+  static
+  TpgNode*
+  make_dff_input(ymuint id,
+		 ymuint oid,
+		 TpgNode* inode);
+
   /// @brief 論理ノードを作る．
   /// @param[in] id ノード番号
   /// @param[in] gate_type ゲートタイプ
@@ -110,61 +132,72 @@ public:
 
   /// @brief 外部入力タイプの時 true を返す．
   /// @note FF 出力もここに含まれる．
+  virtual
   bool
   is_input() const;
+
+  /// @brief DFF の出力に接続している外部入力タイプの時 true を返す．
+  virtual
+  bool
+  is_dff_output() const;
+
+  /// @brief 外部出力タイプの時 true を返す．
+  /// @note FF 入力もここに含まれる．
+  virtual
+  bool
+  is_output() const;
+
+  /// @brief DFF の入力に接続している外部出力タイプの時 true を返す．
+  virtual
+  bool
+  is_dff_input() const;
+
+  /// @brief logic タイプの時 true を返す．
+  virtual
+  bool
+  is_logic() const;
 
   /// @brief 外部入力タイプの時に入力番号を返す．
   ///
   /// node = TpgNetwork::input(node->input_id())
   /// の関係を満たす．
   /// is_input() が false の場合の返り値は不定
+  virtual
   ymuint
   input_id() const;
-
-  /// @brief DFF の出力に接続している外部入力タイプの時 true を返す．
-  bool
-  is_dff_output() const;
 
   /// @brief DFF の出力に接続している外部入力タイプの時に対応する外部出力を返す．
   ///
   /// is_dff_output() == false の時には nullptr を返す．
+  virtual
   TpgNode*
   alt_output() const;
-
-  /// @brief 外部出力タイプの時 true を返す．
-  /// @note FF 入力もここに含まれる．
-  bool
-  is_output() const;
 
   /// @brief 外部出力タイプの時に出力番号を返す．
   ///
   /// node = TpgNetwork::output(node->output_id())
   /// の関係を満たす．
   /// is_output() が false の場合の返り値は不定
+  virtual
   ymuint
   output_id() const;
 
   /// @brief TFIサイズの昇順に並べた時の出力番号を返す．
+  virtual
   ymuint
   output_id2() const;
-
-  /// @brief DFF の入力に接続している外部出力タイプの時 true を返す．
-  bool
-  is_dff_input() const;
 
   /// @brief DFF の入力に接続している外部出力タイプの時に対応する外部入力を返す．
   ///
   /// is_dff_input() == false の時には nullptr を返す．
+  virtual
   TpgNode*
   alt_input() const;
-
-  /// @brief logic タイプの時 true を返す．
-  bool
-  is_logic() const;
 
   /// @brief ゲートタイプを得る．
   ///
   /// is_logic() が false の場合の返り値は不定
+  virtual
   GateType
   gate_type() const;
 
@@ -249,12 +282,12 @@ public:
   /// @param[in] id セットする番号
   ///
   /// 出力ノード以外では無効
+  virtual
   void
   set_output_id2(ymuint id);
 
   /// @brief DFFの入出力の時に相方のノードを設定する．
-  ///
-  /// 同時に mTypeId の 2ビット目もセットする．
+  virtual
   void
   set_alt_node(TpgNode* alt_node);
 
@@ -306,21 +339,6 @@ public:
 		  const LitMap& lit_map) const;
 
 
-public:
-  //////////////////////////////////////////////////////////////////////
-  // 故障に関する関数
-  //////////////////////////////////////////////////////////////////////
-
-  mutable
-  SatVarId mGvar;
-
-  mutable
-  SatVarId mFvar;
-
-  mutable
-  SatVarId mDvar;
-
-
 private:
   //////////////////////////////////////////////////////////////////////
   // データメンバ
@@ -328,24 +346,6 @@ private:
 
   // ID 番号
   ymuint32 mId;
-
-  // タイプをパックした情報
-  // - [0:2] ノードタイプ
-  //   0: 未使用
-  //   1: 外部入力
-  //   5: 外部入力(DFFの出力)
-  //   2: 外部出力
-  //   6: 外部出力(DFFの入力)
-  //   3: 論理ノード
-  // - [3:31] 入力/出力ノードの場合は通し番号
-  //          論理ノードの場合はゲートタイプ
-  ymuint32 mTypeId;
-
-  // 出力ID2
-  ymuint32 mOutputId2;
-
-  // DFFの入出力の場合の反対側のノード
-  TpgNode* mAltNode;
 
   // ファンイン数
   ymuint32 mFaninNum;
@@ -384,118 +384,12 @@ print_node(ostream& s,
 // インライン関数の定義
 //////////////////////////////////////////////////////////////////////
 
-// @brief 外部入力タイプの時 true を返す．
-// @note FF 出力もここに含まれる．
-inline
-bool
-TpgNode::is_input() const
-{
-  return (mTypeId & 3U) == 1U;
-}
-
-// @brief 外部入力タイプの時に入力番号を返す．
-//
-// node = TpgNetwork::input(node->input_id()
-// の関係を満たす．
-// is_input() が false の場合の返り値は不定
+// @brief ID番号を得る．
 inline
 ymuint
-TpgNode::input_id() const
+TpgNode::id() const
 {
-  ASSERT_COND( is_input() );
-  return (mTypeId >> 3);
-}
-
-// @brief DFF の出力に接続している外部入力タイプの時 true を返す．
-inline
-bool
-TpgNode::is_dff_output() const
-{
-  return (mTypeId & 7U) == 5U;
-}
-
-// @brief DFF の出力に接続している外部入力タイプの時に対応する外部出力を返す．
-//
-// is_dff_output() == false の時には nullptr を返す．
-inline
-TpgNode*
-TpgNode::alt_output() const
-{
-  if ( is_dff_output() ) {
-    return mAltNode;
-  }
-  return nullptr;
-}
-
-// @brief 外部出力タイプの時 true を返す．
-// @note FF 入力もここに含まれる．
-inline
-bool
-TpgNode::is_output() const
-{
-  return (mTypeId & 3U) == 2U;
-}
-
-// @brief 外部出力タイプの時に出力番号を返す．
-//
-// node = TpgNetwork::output(node->output_id())
-// の関係を満たす．
-// is_output() が false の場合の返り値は不定
-inline
-ymuint
-TpgNode::output_id() const
-{
-  ASSERT_COND( is_output() );
-  return (mTypeId >> 3);
-}
-
-// @brief TFIサイズの昇順に並べた時の出力番号を返す．
-inline
-ymuint
-TpgNode::output_id2() const
-{
-  ASSERT_COND( is_output() );
-  return mOutputId2;
-}
-
-// @brief DFF の入力に接続している外部出力タイプの時 true を返す．
-inline
-bool
-TpgNode::is_dff_input() const
-{
-  return (mTypeId & 5U) == 6U;
-}
-
-// @brief DFF の入力に接続している外部出力タイプの時に対応する外部入力を返す．
-//
-// is_dff_input() == false の時には nullptr を返す．
-inline
-TpgNode*
-TpgNode::alt_input() const
-{
-  if ( is_dff_input() ) {
-    return mAltNode;
-  }
-  return nullptr;
-}
-
-// @brief logic タイプの時 true を返す．
-inline
-bool
-TpgNode::is_logic() const
-{
-  return (mTypeId & 3U) == 3U;
-}
-
-// @brief ゲートタイプを得る．
-//
-// is_logic() が false の場合の返り値は不定
-inline
-GateType
-TpgNode::gate_type() const
-{
-  ASSERT_COND( is_logic() );
-  return static_cast<GateType>(mTypeId >> 3);
+  return mId;
 }
 
 // @brief ファンイン数を得る．

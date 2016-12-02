@@ -24,13 +24,22 @@ BEGIN_NAMESPACE_YM_SATPG
 TpgLogicNAND::TpgLogicNAND(ymuint id,
 			   const vector<TpgNode*>& fanin_list,
 			   ymuint fanout_num) :
-  TpgNode(id, fanin_list, fanout_num)
+  TpgLogic(id, fanin_list, fanout_num)
 {
 }
 
 // @brief デストラクタ
 TpgLogicNAND::~TpgLogicNAND()
 {
+}
+
+// @brief ゲートタイプを得る．
+//
+// is_logic() が false の場合の返り値は不定
+GateType
+TpgLogicNAND::gate_type() const
+{
+  return kGateNAND;
 }
 
 // @brief controling value を得る．

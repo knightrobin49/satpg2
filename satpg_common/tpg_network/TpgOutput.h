@@ -25,17 +25,11 @@ public:
 
   /// @brief コンストラクタ
   /// @param[in] id ID番号
-  /// @param[in] name 名前
   /// @param[in] output_id 出力番号
-  /// @param[in] fanin_array ファンインのノード配列
-  /// @param[in] fault_array 入力故障の配列
-  ///
-  /// fanin_array のサイズは 1
+  /// @param[in] fanin ファンインのノード
   TpgOutput(ymuint id,
-	    const char* name,
 	    ymuint output_id,
-	    TpgNode** fanin_array,
-	    TpgFault** fault_array);
+	    TpgNode* fanin);
 
   /// @brief デストラクタ
   ~TpgOutput();
@@ -65,13 +59,6 @@ public:
   virtual
   ymuint
   output_id2() const;
-
-  /// @brief ゲートタイプを得る．
-  ///
-  /// is_logic() が false の場合の返り値は不定
-  virtual
-  GateType
-  gate_type() const;
 
   /// @brief 入出力の関係を表す CNF 式を生成する．
   /// @param[in] solver SAT ソルバ

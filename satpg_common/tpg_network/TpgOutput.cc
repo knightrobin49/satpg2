@@ -8,6 +8,7 @@
 
 
 #include "TpgOutput.h"
+#include "TpgDffInput.h"
 #include "ym/SatSolver.h"
 
 
@@ -19,18 +20,15 @@ BEGIN_NAMESPACE_YM_SATPG
 
 // @brief コンストラクタ
 // @param[in] id ID番号
-// @param[in] name 名前
 // @param[in] output_id 出力番号
-// @param[in] fanin_array ファンインのノード配列
-// @param[in] fault_array 入力故障の配列
+// @param[in] fanin ファンインのノード
 TpgOutput::TpgOutput(ymuint id,
-		     const char* name,
 		     ymuint output_id,
-		     TpgNode** fanin_array,
-		     TpgFault** fault_array) :
-  TpgNode(id, name, 1, fanin_array, fault_array),
+		     TpgNode* fanin) :
+  TpgNode(id, vector<TpgNode*>(1, fanin), 0),
   mOutputId(output_id)
 {
+  mOutputId2 = 0;
 }
 
 // @brief デストラクタ
@@ -62,15 +60,6 @@ ymuint
 TpgOutput::output_id2() const
 {
   return mOutputId2;
-}
-
-// @brief ゲートタイプを得る．
-//
-// is_logic() が false の場合の返り値は不定
-GateType
-TpgOutput::gate_type() const
-{
-  return kGateBUFF;
 }
 
 // @brief 入出力の関係を表す CNF 式を生成する．
@@ -116,6 +105,50 @@ void
 TpgOutput::set_output_id2(ymuint id)
 {
   mOutputId2 = id;
+}
+
+
+//////////////////////////////////////////////////////////////////////
+// クラス TpgDffInput
+//////////////////////////////////////////////////////////////////////
+
+// @brief コンストラクタ
+// @param[in] id ID番号
+// @param[in] output_id 出力番号
+// @param[in] fanin ファンインのノード
+TpgDffInput::TpgDffInput(ymuint id,
+			 ymuint output_id,
+			 TpgNode* fanin) :
+  TpgOutput(id, output_id, fanin)
+{
+}
+
+// @brief デストラクタ
+TpgDffInput::~TpgDffInput()
+{
+}
+
+// @brief DFF の入力に接続している外部出力タイプの時 true を返す．
+bool
+TpgDffInput::is_dff_input() const
+{
+  return true;
+}
+
+// @brief DFF の入力に接続している外部出力タイプの時に対応する外部入力を返す．
+//
+// is_dff_input() == false の時には nullptr を返す．
+TpgNode*
+TpgDffInput::alt_input() const
+{
+  return mAltNode;
+}
+
+// @brief DFFの入出力の時に相方のノードを設定する．
+void
+TpgDffInput::set_alt_node(TpgNode* alt_node)
+{
+  mAltNode = alt_node;
 }
 
 END_NAMESPACE_YM_SATPG

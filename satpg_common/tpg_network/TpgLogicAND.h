@@ -9,17 +9,17 @@
 /// All rights reserved.
 
 
-#include "TpgNode.h"
+#include "TpgLogic.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG
 
 //////////////////////////////////////////////////////////////////////
-/// @class TpgLogicANDN TpgLogicAND.h "TpgLogicAND.h"
+/// @class TpgLogicAND TpgLogicAND.h "TpgLogicAND.h"
 /// @brief N入力ANDを表すクラス
 //////////////////////////////////////////////////////////////////////
 class TpgLogicAND :
-  public TpgNode
+  public TpgLogic
 {
 public:
 
@@ -39,6 +39,13 @@ public:
   //////////////////////////////////////////////////////////////////////
   // 外部インターフェイス
   //////////////////////////////////////////////////////////////////////
+
+  /// @brief ゲートタイプを得る．
+  ///
+  /// is_logic() が false の場合の返り値は不定
+  virtual
+  GateType
+  gate_type() const;
 
   /// @brief controling value を得る．
   ///

@@ -170,9 +170,6 @@ DtpgCmd::cmd_proc(TclObjVector& objv)
   if ( engine_type == "single" ) {
     engine = nsSa::new_DtpgSatS(sat_type, sat_option, outp, bt, dop_list, uop_list);
   }
-  else if ( engine_type == "single0" ) {
-    engine = nsSa::new_DtpgSatS0(sat_type, sat_option, outp, bt, dop_list, uop_list);
-  }
   else if ( engine_type == "mffc" ) {
     engine = nsSa::new_DtpgSatH(sat_type, sat_option, outp, bt, dop_list, uop_list);
   }

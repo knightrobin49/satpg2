@@ -24,13 +24,22 @@ BEGIN_NAMESPACE_YM_SATPG
 TpgLogicAND::TpgLogicAND(ymuint id,
 			 const vector<TpgNode*>& fanin_list,
 			 ymuint fanout_num) :
-  TpgNode(id, fanin_list, fanout_num)
+  TpgLogic(id, fanin_list, fanout_num)
 {
 }
 
 // @brief デストラクタ
 TpgLogicAND::~TpgLogicAND()
 {
+}
+
+// @brief ゲートタイプを得る．
+//
+// is_logic() が false の場合の返り値は不定
+GateType
+TpgLogicAND::gate_type() const
+{
+  return kGateAND;
 }
 
 // @brief controling value を得る．

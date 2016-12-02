@@ -439,7 +439,7 @@ TpgNetwork::set(const BnNetwork& network)
     const BnNode* src_node = network.node(i);
     ASSERT_COND( src_node->is_input() );
     ymuint nfo = src_node->fanout_num();
-    TpgNode* node = make_input_node(i, src_node->name(), nfo);
+    TpgNode* node = make_input_node(i + mInputNum, src_node->name(), nfo);
     mInputArray[i + mInputNum] = node;
 
     node_map.reg(id, node);
@@ -497,8 +497,9 @@ TpgNetwork::set(const BnNetwork& network)
     TpgNode* inode = node_map.get(src_node->fanin());
     string buf = "*";
     buf += src_node->name();
-    TpgNode* node = make_output_node(i, buf, inode);
+    TpgNode* node = make_output_node(i + mOutputNum, buf, inode);
     mOutputArray[i + mOutputNum] = node;
+
     // 対応する入力ノードを求める．
     const BnDff* dff = network.dff(i);
     TpgNode* alt_node = node_map.get(dff->output());

@@ -19,6 +19,9 @@ set (tpg_network_SOURCES
   tpg_network/TpgNode.cc
   tpg_network/TpgNodeInfo.cc
   tpg_network/TpgNodeMap.cc
+  tpg_network/TpgInput.cc
+  tpg_network/TpgOutput.cc
+  tpg_network/TpgLogic.cc
   tpg_network/TpgLogicC0.cc
   tpg_network/TpgLogicC1.cc
   tpg_network/TpgLogicBUFF.cc
@@ -48,7 +51,6 @@ set (sa_test_SOURCES
   sa_test/dtpg/dop/FopDrop.cc
 
   sa_test/dtpg/main/DtpgSat.cc
-  sa_test/dtpg/main/DtpgSatS0.cc
   sa_test/dtpg/main/DtpgSatS.cc
   sa_test/dtpg/main/DtpgSatH.cc
 

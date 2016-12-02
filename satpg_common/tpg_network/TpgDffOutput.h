@@ -1,25 +1,25 @@
-#ifndef TPGINPUT_H
-#define TPGINPUT_H
+#ifndef TPGDFFOUTPUT_H
+#define TPGDFFOUTPUT_H
 
-/// @file TpgInput.h
-/// @brief TpgInput のヘッダファイル
+/// @file TpgDffOutput.h
+/// @brief TpgDffOutput のヘッダファイル
 /// @author Yusuke Matsunaga (松永 裕介)
 ///
 /// Copyright (C) 2016 Yusuke Matsunaga
 /// All rights reserved.
 
 
-#include "TpgNode.h"
+#include "TpgInput.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG
 
 //////////////////////////////////////////////////////////////////////
-/// @class TpgInput TpgInput.h "TpgInput.h"
-/// @brief 入力ノードを表すクラス
+/// @class TpgDffOutput TpgDffOutput.h "TpgDffOutput.h"
+/// @brief DFF の出力ノードを表すクラス
 //////////////////////////////////////////////////////////////////////
-class TpgInput :
-  public TpgNode
+class TpgDffOutput :
+  public TpgInput
 {
 public:
 
@@ -27,13 +27,13 @@ public:
   /// @param[in] id ID番号
   /// @param[in] input_id 入力番号
   /// @param[in] fanout_num ファンアウト数
-  TpgInput(ymuint id,
-	   ymuint input_id,
-	   ymuint fanout_num);
+  TpgDffOutput(ymuint id,
+	       ymuint input_id,
+	       ymuint fanout_num);
 
   /// @brief デストラクタ
   virtual
-  ~TpgInput();
+  ~TpgDffOutput();
 
 
 public:
@@ -41,28 +41,22 @@ public:
   // 外部インターフェイス
   //////////////////////////////////////////////////////////////////////
 
-  /// @brief 外部入力タイプの時 true を返す．
-  /// @note FF 出力もここに含まれる．
+  /// @brief DFF の出力に接続している外部入力タイプの時 true を返す．
   virtual
   bool
-  is_input() const;
+  is_dff_output() const;
 
-  /// @brief 外部入力タイプの時に入力番号を返す．
+  /// @brief DFF の出力に接続している外部入力タイプの時に対応する外部出力を返す．
   ///
-  /// node = TpgNetwork::input(node->input_id()
-  /// の関係を満たす．
-  /// is_input() が false の場合の返り値は不定
+  /// is_dff_output() == false の時には nullptr を返す．
   virtual
-  ymuint
-  input_id() const;
+  TpgNode*
+  alt_output() const;
 
-  /// @brief 入出力の関係を表す CNF 式を生成する．
-  /// @param[in] solver SAT ソルバ
-  /// @param[in] lit_map 入出力とリテラルの対応マップ
+  /// @brief DFFの入出力の時に相方のノードを設定する．
   virtual
   void
-  make_cnf(SatSolver& solver,
-	   const LitMap& lit_map) const;
+  set_alt_node(TpgNode* alt_node);
 
 
 private:
@@ -76,11 +70,11 @@ private:
   // データメンバ
   //////////////////////////////////////////////////////////////////////
 
-  // 入力番号
-  ymuint mInputId;
+  // 対応する DFF の入力ノード
+  TpgNode* mAltNode;
 
 };
 
 END_NAMESPACE_YM_SATPG
 
-#endif // TPGINPUT_H
+#endif // TPGDFFOUTPUT_H

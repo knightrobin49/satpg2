@@ -24,13 +24,22 @@ BEGIN_NAMESPACE_YM_SATPG
 TpgLogicOR::TpgLogicOR(ymuint id,
 		       const vector<TpgNode*>& fanin_list,
 		       ymuint fanout_num) :
-  TpgNode(id, fanin_list, fanout_num)
+  TpgLogic(id, fanin_list, fanout_num)
 {
 }
 
 // @brief デストラクタ
 TpgLogicOR::~TpgLogicOR()
 {
+}
+
+// @brief ゲートタイプを得る．
+//
+// is_logic() が false の場合の返り値は不定
+GateType
+TpgLogicOR::gate_type() const
+{
+  return kGateOR;
 }
 
 // @brief controling value を得る．

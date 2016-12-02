@@ -9,7 +9,7 @@
 /// All rights reserved.
 
 
-#include "TpgNode.h"
+#include "TpgLogic.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG
@@ -19,7 +19,7 @@ BEGIN_NAMESPACE_YM_SATPG
 /// @brief N入力NANDを表すクラス
 //////////////////////////////////////////////////////////////////////
 class TpgLogicNAND :
-  public TpgNode
+  public TpgLogic
 {
 public:
 
@@ -39,6 +39,13 @@ public:
   //////////////////////////////////////////////////////////////////////
   // 外部インターフェイス
   //////////////////////////////////////////////////////////////////////
+
+  /// @brief ゲートタイプを得る．
+  ///
+  /// is_logic() が false の場合の返り値は不定
+  virtual
+  GateType
+  gate_type() const;
 
   /// @brief controling value を得る．
   ///
