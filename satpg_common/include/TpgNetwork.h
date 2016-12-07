@@ -95,23 +95,23 @@ public:
   ///
   /// = input_num() + dff_num()
   ymuint
-  pseudo_input_num() const;
+  ppi_num() const;
 
   /// @brief スキャン方式の擬似外部入力を得る．
-  /// @param[in] pos 位置番号 ( 0 <= pos < pseudo_input_num() )
+  /// @param[in] pos 位置番号 ( 0 <= pos < ppi_num() )
   TpgNode*
-  pseudo_input(ymuint pos) const;
+  ppi(ymuint pos) const;
 
   /// @brief スキャン方式の擬似外部出力数を得る．
   ///
   /// = output_num() + dff_num()
   ymuint
-  pseudo_output_num() const;
+  ppo_num() const;
 
   /// @brief スキャン方式の擬似外部出力を得る．
   /// @param[in] pos 位置番号 ( 0 <= pos < pseudo_output_num() )
   TpgNode*
-  pseudo_output(ymuint pos) const;
+  ppo(ymuint pos) const;
 
   /// @brief 故障IDの最大値+1を返す．
   ymuint
@@ -434,14 +434,14 @@ private:
   // ノードの付加情報の配列
   AuxNodeInfo* mAuxInfoArray;
 
-  // 外部入力ノードの配列
-  TpgNode** mInputArray;
+  // PPIノードの配列
+  TpgNode** mPPIArray;
 
-  // 外部出力ノードの配列
-  TpgNode** mOutputArray;
+  // PPOノードの配列
+  TpgNode** mPPOArray;
 
-  // TFI サイズの降順に整列した外部出力ノードの配列
-  TpgNode** mOutputArray2;
+  // TFI サイズの降順に整列したPPOノードの配列
+  TpgNode** mPPOArray2;
 
   // 全故障数
   ymuint mFaultNum;
@@ -489,7 +489,7 @@ TpgNode*
 TpgNetwork::input(ymuint pos) const
 {
   ASSERT_COND( pos < input_num() );
-  return mInputArray[pos];
+  return mPPIArray[pos];
 }
 
 // @brief 外部出力数を得る．
@@ -507,7 +507,7 @@ TpgNode*
 TpgNetwork::output(ymuint pos) const
 {
   ASSERT_COND( pos < output_num() );
-  return mOutputArray[pos];
+  return mPPIArray[pos];
 }
 
 // @brief サイズの降順で整列した順番で外部出力ノードを取り出す．
@@ -516,7 +516,7 @@ TpgNode*
 TpgNetwork::output2(ymuint pos) const
 {
   ASSERT_COND( pos < output_num() );
-  return mOutputArray2[pos];
+  return mPPOArray2[pos];
 }
 
 // @brief DFF数を得る．
@@ -542,19 +542,19 @@ TpgNetwork::dff(ymuint pos) const
 // = input_num() + dff_num()
 inline
 ymuint
-TpgNetwork::pseudo_input_num() const
+TpgNetwork::ppi_num() const
 {
   return mInputNum + mDffNum;
 }
 
 // @brief スキャン方式の擬似外部入力を得る．
-// @param[in] pos 位置番号 ( 0 <= pos < pseudo_input_num() )
+// @param[in] pos 位置番号 ( 0 <= pos < ppi_num() )
 inline
 TpgNode*
-TpgNetwork::pseudo_input(ymuint pos) const
+TpgNetwork::ppi(ymuint pos) const
 {
-  ASSERT_COND( pos < pseudo_input_num() );
-  return mInputArray[pos];
+  ASSERT_COND( pos < ppi_num() );
+  return mPPIArray[pos];
 }
 
 // @brief スキャン方式の擬似外部出力数を得る．
@@ -562,19 +562,19 @@ TpgNetwork::pseudo_input(ymuint pos) const
 // = output_num() + dff_num()
 inline
 ymuint
-TpgNetwork::pseudo_output_num() const
+TpgNetwork::ppo_num() const
 {
   return mOutputNum + mDffNum;
 }
 
 // @brief スキャン方式の擬似外部出力を得る．
-// @param[in] pos 位置番号 ( 0 <= pos < pseudo_output_num() )
+// @param[in] pos 位置番号 ( 0 <= pos < ppo_num() )
 inline
 TpgNode*
-TpgNetwork::pseudo_output(ymuint pos) const
+TpgNetwork::ppo(ymuint pos) const
 {
-  ASSERT_COND( pos < pseudo_output_num() );
-  return mOutputArray[pos];
+  ASSERT_COND( pos < ppo_num() );
+  return mPPOArray[pos];
 }
 
 // @brief ノードを得る．

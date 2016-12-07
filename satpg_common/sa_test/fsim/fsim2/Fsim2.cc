@@ -79,8 +79,8 @@ Fsim2::set_network(const TpgNetwork& network)
   ymuint npi = mNetwork->input_num();
   ymuint npo = mNetwork->output_num();
   ymuint nn = mNetwork->node_num();
-  ymuint ni = mNetwork->pseudo_input_num();
-  ymuint no = mNetwork->pseudo_output_num();
+  ymuint ni = mNetwork->ppi_num();
+  ymuint no = mNetwork->ppo_num();
 
   // SimNode の生成
   // 対応付けを行うマップの初期化

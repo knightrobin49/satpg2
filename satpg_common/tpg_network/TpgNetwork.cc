@@ -162,9 +162,9 @@ TpgNetwork::TpgNetwork() :
   mNodeNum = 0;
   mNodeArray = nullptr;
   mAuxInfoArray = nullptr;
-  mInputArray = nullptr;
-  mOutputArray = nullptr;
-  mOutputArray2 = nullptr;
+  mPPIArray = nullptr;
+  mPPOArray = nullptr;
+  mPPOArray2 = nullptr;
   mFaultNum = 0;
   mMffcNum = 0;
   mFfrNum = 0;
@@ -321,18 +321,18 @@ TpgNetwork::clear()
   delete [] mDffArray;
   delete [] mNodeArray;
   delete [] mAuxInfoArray;
-  delete [] mInputArray;
-  delete [] mOutputArray;
-  delete [] mOutputArray2;
+  delete [] mPPIArray;
+  delete [] mPPOArray;
+  delete [] mPPOArray2;
 
   mAlloc.destroy();
 
   mDffArray = nullptr;
   mNodeArray = nullptr;
   mAuxInfoArray = nullptr;
-  mInputArray = nullptr;
-  mOutputArray = nullptr;
-  mOutputArray2 = nullptr;
+  mPPIArray = nullptr;
+  mPPOArray = nullptr;
+  mPPOArray2 = nullptr;
 }
 
 // @brief 内容を設定する．
@@ -426,9 +426,9 @@ TpgNetwork::set(const BnNetwork& network)
 
   mAuxInfoArray = new AuxNodeInfo[nn];
 
-  mInputArray = new TpgNode*[mInputNum + mDffNum];
-  mOutputArray = new TpgNode*[mOutputNum + mDffNum];
-  mOutputArray2 = new TpgNode*[mOutputNum + mDffNum];
+  mPPIArray = new TpgNode*[mInputNum + mDffNum];
+  mPPOArray = new TpgNode*[mOutputNum + mDffNum];
+  mPPOArray2 = new TpgNode*[mOutputNum + mDffNum];
 
   TpgNodeMap node_map;
 
@@ -445,7 +445,7 @@ TpgNetwork::set(const BnNetwork& network)
     ASSERT_COND( src_node->is_input() );
     ymuint nfo = src_node->fanout_num();
     TpgNode* node = make_input_node(i, src_node->name(), nfo);
-    mInputArray[i] = node;
+    mPPIArray[i] = node;
 
     node_map.reg(id, node);
   }
@@ -461,7 +461,7 @@ TpgNetwork::set(const BnNetwork& network)
     ymuint nfo = src_node->fanout_num();
     TpgDff* dff = &mDffArray[i];
     TpgNode* node = make_dff_output_node(i + mInputNum, dff, src_node->name(), nfo);
-    mInputArray[i + mInputNum] = node;
+    mPPIArray[i + mInputNum] = node;
     dff->mOutput = node;
 
     node_map.reg(src_node->id(), node);
@@ -510,7 +510,7 @@ TpgNetwork::set(const BnNetwork& network)
     string buf = "*";
     buf += src_node->name();
     TpgNode* node = make_output_node(i, buf, inode);
-    mOutputArray[i] = node;
+    mPPOArray[i] = node;
   }
 
 
@@ -526,7 +526,7 @@ TpgNetwork::set(const BnNetwork& network)
     string input_name = dff_name + ".input";
     TpgDff* dff = &mDffArray[i];
     TpgNode* node = make_dff_input_node(i + mOutputNum, dff, input_name, inode);
-    mOutputArray[i + mOutputNum] = node;
+    mPPOArray[i + mOutputNum] = node;
     dff->mInput = node;
 
     // クロック端子を作る．
@@ -594,19 +594,31 @@ TpgNetwork::set(const BnNetwork& network)
 
 
   //////////////////////////////////////////////////////////////////////
+  // データ系のノードに印をつける．
+  //////////////////////////////////////////////////////////////////////
+  vector<bool> marks(mNodeNum, false);
+  for (ymuint i = 0; i < ppo_num(); ++ i) {
+    TpgNode* node = ppo(i);
+    tfimark(node, marks);
+  }
+
+
+  //////////////////////////////////////////////////////////////////////
   // 代表故障を求める．
   //////////////////////////////////////////////////////////////////////
   for (ymuint i = 0; i < mNodeNum; ++ i) {
     // ノードごとに代表故障を設定する．
     // この処理は出力側から行う必要がある．
     TpgNode* node = mNodeArray[mNodeNum - i - 1];
-    set_rep_faults(node);
+    if ( marks[node->id()] ) {
+      set_rep_faults(node);
+    }
   }
 
 
   //////////////////////////////////////////////////////////////////////
   // TFI のサイズの昇順に並べた出力順を
-  // mOutputArray2 に記録する．
+  // mPPOArray2 に記録する．
   //////////////////////////////////////////////////////////////////////
   ymuint npo = output_num();
   vector<pair<ymuint, ymuint> > tmp_list(npo);
@@ -620,11 +632,11 @@ TpgNetwork::set(const BnNetwork& network)
 
   // TFI のサイズの昇順にソートする．
   sort(tmp_list.begin(), tmp_list.end(), Lt());
-  // tmp_list の順に mOutputArray2 にセットする．
+  // tmp_list の順に mPPOArray2 にセットする．
   for (ymuint i = 0; i < npo; ++ i) {
     ymuint opos = tmp_list[i].second;
-    TpgNode* onode = mOutputArray[opos];
-    mOutputArray2[i] = onode;
+    TpgNode* onode = mPPOArray[opos];
+    mPPOArray2[i] = onode;
     onode->set_output_id2(i);
   }
 
