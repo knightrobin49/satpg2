@@ -180,9 +180,11 @@ private:
   vector<SimNode*> mNodeArray;
 
   // 外部入力に対応する SimNode を納めた配列
+  // サイズは mNetwork->pseudo_input_num()
   vector<SimNode*> mInputArray;
 
   // 外部出力に対応する SimNode を納めた配列
+  // サイズは mNetwork->pseudo_output_num()
   vector<SimNode*> mOutputArray;
 
   // 入力からのトポロジカル順に並べた logic ノードの配列

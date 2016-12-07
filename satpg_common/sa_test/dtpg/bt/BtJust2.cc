@@ -104,7 +104,7 @@ BtJust2::justify(const TpgNode* node,
   }
   set_justified(node);
 
-  if ( node->is_input() ) {
+  if ( node->is_ppi() ) {
     // val を記録
     mJustArray[node->id()] = new_list_cell(node);
     return mJustArray[node->id()];

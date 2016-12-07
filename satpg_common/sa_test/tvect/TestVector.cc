@@ -145,7 +145,7 @@ TestVector::set_from_assign_list(const NodeValList& assign_list)
   for (ymuint i = 0; i < n; ++ i) {
     NodeVal nv = assign_list[i];
     const TpgNode* node = nv.node();
-    if ( node->is_input() ) {
+    if ( node->is_ppi() ) {
       ymuint id = node->input_id();
       if ( nv.val() ) {
 	set_val(id, kVal1);

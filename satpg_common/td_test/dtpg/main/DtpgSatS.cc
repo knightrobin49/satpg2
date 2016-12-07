@@ -13,6 +13,7 @@
 #include "td/FoCone.h"
 #include "TpgFault.h"
 #include "TpgNetwork.h"
+#include "TpgDff.h"
 #include "FaultMgr.h"
 
 #include "LitMap.h"
@@ -44,7 +45,7 @@ make_dchain_cnf(SatSolver& solver,
   solver.add_clause(~glit, ~flit, ~dlit);
   solver.add_clause( glit,  flit, ~dlit);
 
-  if ( node->is_output() ) {
+  if ( node->is_ppo() ) {
     solver.add_clause(~glit,  flit,  dlit);
     solver.add_clause( glit, ~flit,  dlit);
   }
@@ -176,7 +177,7 @@ DtpgSatS::run_single(const TpgFault* fault)
 
   // fnode の TFO を mNodeList に入れる．
   set_tfo_mark(fnode);
-  if ( fnode->is_output() ) {
+  if ( fnode->is_ppo() ) {
     output_list.push_back(fnode);
   }
   for (ymuint rpos = 0; rpos < mNodeList.size(); ++ rpos) {
@@ -185,7 +186,7 @@ DtpgSatS::run_single(const TpgFault* fault)
     for (ymuint i = 0; i < nfo; ++ i) {
       const TpgNode* onode = node->fanout(i);
       set_tfo_mark(onode);
-      if ( onode->is_output() ) {
+      if ( onode->is_ppo() ) {
 	output_list.push_back(onode);
       }
     }
@@ -207,7 +208,8 @@ DtpgSatS::run_single(const TpgFault* fault)
   for (ymuint i = 0; i < tfi_num; ++ i) {
     const TpgNode* node = mNodeList[i];
     if ( node->is_dff_output() ) {
-      const TpgNode* alt_node = node->alt_output();
+      const TpgDff* dff = node->dff();
+      const TpgNode* alt_node = dff->input();
       mNodeList2.push_back(alt_node);
     }
   }

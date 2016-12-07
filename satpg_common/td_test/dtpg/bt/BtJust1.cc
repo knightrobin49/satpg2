@@ -8,6 +8,7 @@
 
 
 #include "BtJust1.h"
+#include "TpgDff.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG_TD
@@ -74,15 +75,16 @@ BtJust1::justify(const TpgNode* node,
   }
   set_justified(node);
 
-  if ( node->is_dff_output() ) {
-    const TpgNode* alt_node = node->alt_output();
-    justify0(alt_node, val_map, assign_list);
+  if ( node->is_primary_input() ) {
+    // val を記録
+    record_value(node, val_map, assign_list);
     return;
   }
 
-  if ( node->is_input() ) {
-    // val を記録
-    record_value(node, val_map, assign_list);
+  if ( node->is_dff_output() ) {
+    const TpgDff* dff = node->dff();
+    const TpgNode* alt_node = dff->input();
+    justify0(alt_node, val_map, assign_list);
     return;
   }
 
@@ -226,7 +228,7 @@ BtJust1::justify0(const TpgNode* node,
   }
   set_justified0(node);
 
-  if ( node->is_input() ) {
+  if ( node->is_primary_input() ) {
     // val を記録
     record_value0(node, val_map, assign_list);
     return;

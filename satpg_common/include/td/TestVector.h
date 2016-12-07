@@ -21,11 +21,11 @@ BEGIN_NAMESPACE_YM_SATPG_TD
 /// @brief テストベクタを表すクラス
 ///
 /// 基本的には3値(0, 1, X)のベクタを表している．
-/// 生成/破壊は Tv2Mgr のみが行う．
-/// 同じ Tv2Mgr が扱うテストベクタのサイズはすべて同じ．
+/// 生成/破壊は TvMgr のみが行う．
+/// 同じ TvMgr が扱うテストベクタのサイズはすべて同じ．
 ///
 /// こちらはブロードサイド方式の遷移故障用ベクタなので
-/// 2時刻分のベクタを持つ．
+/// 2時刻分の外部入力と1時刻分のDFFのベクタを持つ．
 //////////////////////////////////////////////////////////////////////
 class TestVector
 {
@@ -37,20 +37,33 @@ public:
   //////////////////////////////////////////////////////////////////////
 
   /// @brief 外部入力数を得る．
-  ///
-  /// FF数も含む．
   ymuint
   input_num() const;
+
+  /// @brief DFF数を得る．
+  ymuint
+  dff_num() const;
+
+  /// @brief ベクタ長を返す．
+  ///
+  /// = input_num() * 2 + dff_num()
+  ymuint
+  vect_len() const;
 
   /// @brief 1時刻前の外部入力の値を得る．
   /// @param[in] pos 入力の位置番号 ( 0 <= pos < input_num() )
   Val3
-  prev_val3(ymuint pos) const;
+  prev_input_val(ymuint pos) const;
 
   /// @brief 外部入力の値を得る．
   /// @param[in] pos 入力の位置番号 ( 0 <= pos < input_num() )
   Val3
-  cur_val3(ymuint pos) const;
+  cur_input_val(ymuint pos) const;
+
+  /// @brief 1時刻前のDFFの値を得る．
+  /// @param[in] pos DFFの位置番号 ( 0 <= pos < dff_num() )
+  Val3
+  prev_dff_val(ymuint pos) const;
 
   /// @brief X の個数を得る．
   ymuint
@@ -109,15 +122,22 @@ public:
   /// @param[in] pos 入力の位置番号 ( 0 <= pos < input_num() )
   /// @param[in] val 値
   void
-  set_prev_val(ymuint pos,
-	       Val3 val);
+  set_prev_input_val(ymuint pos,
+		     Val3 val);
 
   /// @breif 外部入力の値を設定する．
   /// @param[in] pos 入力の位置番号 ( 0 <= pos < input_num() )
   /// @param[in] val 値
   void
-  set_cur_val(ymuint pos,
-	      Val3 val);
+  set_cur_input_val(ymuint pos,
+		    Val3 val);
+
+  /// @breif 1時刻前のDFFの値を設定する．
+  /// @param[in] pos DFFの位置番号 ( 0 <= pos < dff_num() )
+  /// @param[in] val 値
+  void
+  set_prev_dff_val(ymuint pos,
+		   Val3 val);
 
   /// @brief 割当リストから内容を設定する．
   /// @param[in] assign_list 割当リスト
@@ -161,10 +181,6 @@ private:
   //////////////////////////////////////////////////////////////////////
   // 内部で用いられる便利関数
   //////////////////////////////////////////////////////////////////////
-
-  /// @brief ベクタ長を返す．
-  ymuint
-  _vect_len() const;
 
   /// @brief pos 番めの値を得る．
   /// @param[in] pos 入力の位置番号 ( 0 <= pos < input_num() )
@@ -232,8 +248,11 @@ private:
   // データメンバ
   //////////////////////////////////////////////////////////////////////
 
-  // 入力数(FF数も含む)
+  // 外部入力数
   ymuint mInputNum;
+
+  // DFF数
+  ymuint mDffNum;
 
   // 最後のブロックのマスク
   PackedVal mMask;
@@ -317,11 +336,27 @@ TestVector::input_num() const
   return mInputNum;
 }
 
+// @brief DFF数を得る．
+inline
+ymuint
+TestVector::dff_num() const
+{
+  return mDffNum;
+}
+
+// @brief ベクタ長を返す．
+inline
+ymuint
+TestVector::vect_len() const
+{
+  return input_num() * 2 + dff_num();
+}
+
 // @brief 1時刻前の外部入力の値を得る．
 // @param[in] pos 入力の位置番号 ( 0 <= pos < input_num() )
 inline
 Val3
-TestVector::prev_val3(ymuint pos) const
+TestVector::prev_input_val(ymuint pos) const
 {
   return _val3(pos);
 }
@@ -330,9 +365,18 @@ TestVector::prev_val3(ymuint pos) const
 // @param[in] pos 入力の位置番号 ( 0 <= pos < input_num() )
 inline
 Val3
-TestVector::cur_val3(ymuint pos) const
+TestVector::cur_input_val(ymuint pos) const
 {
   return _val3(pos + input_num());
+}
+
+// @brief 1時刻前のDFFの値を得る．
+// @param[in] pos DFFの位置番号 ( 0 <= pos < dff_num() )
+inline
+Val3
+TestVector::prev_dff_val(ymuint pos) const
+{
+  return _val3(pos + input_num() * 2);
 }
 
 // @breif 1時刻前の外部入力の値を設定する．
@@ -340,8 +384,8 @@ TestVector::cur_val3(ymuint pos) const
 // @param[in] val 値
 inline
 void
-TestVector::set_prev_val(ymuint pos,
-			 Val3 val)
+TestVector::set_prev_input_val(ymuint pos,
+			       Val3 val)
 {
   _set_val3(pos, val);
 }
@@ -351,18 +395,21 @@ TestVector::set_prev_val(ymuint pos,
 // @param[in] val 値
 inline
 void
-TestVector::set_cur_val(ymuint pos,
-			Val3 val)
+TestVector::set_cur_input_val(ymuint pos,
+			      Val3 val)
 {
   _set_val3(pos + input_num(), val);
 }
 
-// @brief ベクタ長を返す．
+// @breif 1時刻前のDFFの値を設定する．
+// @param[in] pos DFFの位置番号 ( 0 <= pos < dff_num() )
+// @param[in] val 値
 inline
-ymuint
-TestVector::_vect_len() const
+void
+TestVector::set_prev_dff_val(ymuint pos,
+			     Val3 val)
 {
-  return input_num() + input_num();
+  _set_val3(pos + input_num() * 2, val);
 }
 
 // @brief pos 番めの値を得る．

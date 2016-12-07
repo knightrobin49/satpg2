@@ -1,39 +1,38 @@
-#ifndef TPGINPUT_H
-#define TPGINPUT_H
+#ifndef TPGDFFCONTROL_H
+#define TPGDFFCONTROL_H
 
-/// @file TpgInput.h
-/// @brief TpgInput のヘッダファイル
+/// @file TpgDffControl.h
+/// @brief TpgDffControl のヘッダファイル
 /// @author Yusuke Matsunaga (松永 裕介)
 ///
 /// Copyright (C) 2016 Yusuke Matsunaga
 /// All rights reserved.
 
 
-#include "TpgPPI.h"
+#include "TpgNode.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG
 
 //////////////////////////////////////////////////////////////////////
-/// @class TpgInput TpgInput.h "TpgInput.h"
-/// @brief 入力ノードを表すクラス
+/// @class TpgDffControl TpgDffControl.h "TpgDffControl.h"
+/// @brief DFFの制御端子を表すクラス
 //////////////////////////////////////////////////////////////////////
-class TpgInput :
-  public TpgPPI
+class TpgDffControl :
+  public TpgNode
 {
 public:
 
   /// @brief コンストラクタ
   /// @param[in] id ID番号
-  /// @param[in] input_id 入力番号
-  /// @param[in] fanout_num ファンアウト数
-  TpgInput(ymuint id,
-	   ymuint input_id,
-	   ymuint fanout_num);
+  /// @param[in] dff 接続しているDFF
+  /// @param[in] fanin ファンインのノード
+  TpgDffControl(ymuint id,
+		TpgDff* dff,
+		TpgNode* fanin);
 
   /// @brief デストラクタ
-  virtual
-  ~TpgInput();
+  ~TpgDffControl();
 
 
 public:
@@ -41,13 +40,16 @@ public:
   // 外部インターフェイス
   //////////////////////////////////////////////////////////////////////
 
-  /// @brief 外部入力タイプの時 true を返す．
+  /// @brief 接続している DFF を返す．
+  ///
+  /// is_dff_input() | is_dff_output() | is_dff_clock() | is_dff_clear() | is_dff_preset()
+  /// の時に意味を持つ．
   virtual
-  bool
-  is_primary_input() const;
+  TpgDff*
+  dff() const;
 
 
-private:
+public:
   //////////////////////////////////////////////////////////////////////
   // 内部で用いられる関数
   //////////////////////////////////////////////////////////////////////
@@ -58,8 +60,11 @@ private:
   // データメンバ
   //////////////////////////////////////////////////////////////////////
 
+  // 対応する DFF
+  TpgDff* mDff;
+
 };
 
 END_NAMESPACE_YM_SATPG
 
-#endif // TPGINPUT_H
+#endif // TPGDFFCONTROL_H

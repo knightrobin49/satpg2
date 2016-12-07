@@ -112,7 +112,7 @@ Extractor::operator()(const TpgFault* fault,
 const TpgNode*
 Extractor::find_sensitized_output(const TpgNode* node)
 {
-  if ( node->is_output() ) {
+  if ( node->is_ppo() ) {
     return node;
   }
 

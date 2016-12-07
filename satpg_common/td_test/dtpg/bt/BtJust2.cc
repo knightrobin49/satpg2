@@ -112,11 +112,13 @@ BtJust2::justify(const TpgNode* node,
   }
   set_justified(node);
 
-  if ( node->is_input() ) {
+  if ( node->is_primary_input() ) {
     // val を記録
     mJustArray[node->id()] = new_list_cell(node, 1);
     return mJustArray[node->id()];
   }
+
+#warning "TODO: node->is_dff_output() の処理"
 
   Val3 gval = val_map.gval(node);
   Val3 fval = val_map.fval(node);
@@ -293,7 +295,7 @@ BtJust2::justify0(const TpgNode* node,
   }
   set_justified0(node);
 
-  if ( node->is_input() ) {
+  if ( node->is_primary_input() ) {
     // val を記録
     mJust0Array[node->id()] = new_list_cell(node, 0);
     return mJust0Array[node->id()];

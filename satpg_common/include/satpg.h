@@ -101,6 +101,7 @@ enum {
 class TpgFault;
 class FaultMgr;
 class TpgNetwork;
+class TpgDff;
 class TpgNode;
 class TpgNodeInfo;
 class MffcInfo;

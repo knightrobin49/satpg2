@@ -17,6 +17,7 @@ TvMgr::TvMgr() :
   mAlloc(nullptr),
   mVectLen(0),
   mInputNum(0),
+  mDffNum(0),
   mTvSize(0)
 {
 }
@@ -36,21 +37,25 @@ TvMgr::clear()
     mAlloc = nullptr;
     mVectLen = 0;
     mInputNum = 0;
+    mDffNum = 0;
     mTvSize = 0;
   }
 }
 
 // @brief 初期化する．
 // @param[in] input_num 入力数
+// @param[in] dff_num DFF数
 //
-// 副作用で clear() が呼ばれる．
+// 副作用で最初に clear() が呼ばれる．
 void
-TvMgr::init(ymuint input_num)
+TvMgr::init(ymuint input_num,
+	    ymuint dff_num)
 {
   clear();
 
   mInputNum = input_num;
-  mVectLen = input_num + input_num;
+  mDffNum = dff_num;
+  mVectLen = input_num + input_num + dff_num;
   if ( mVectLen == 0 ) {
     // 0 だとヤバい
     mVectLen = 1;
@@ -98,6 +103,13 @@ ymuint
 TvMgr::input_num() const
 {
   return mInputNum;
+}
+
+// @brief DFF数を返す．
+ymuint
+TvMgr::dff_num() const
+{
+  return mDffNum;
 }
 
 END_NAMESPACE_YM_SATPG_TD

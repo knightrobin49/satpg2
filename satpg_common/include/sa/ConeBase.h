@@ -325,7 +325,7 @@ ConeBase::set_tfo_mark(const TpgNode* node)
 {
   mMarkArray[node->id()] |= 1U;
   mNodeList.push_back(node);
-  if ( node->is_output() || end_mark(node) ) {
+  if ( node->is_ppo() || end_mark(node) ) {
     mOutputList.push_back(node);
   }
 }

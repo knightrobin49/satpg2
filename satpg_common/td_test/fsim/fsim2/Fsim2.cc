@@ -93,14 +93,15 @@ Fsim2::set_network(const TpgNetwork& network)
 
     SimNode* node = nullptr;
 
-    if ( tpgnode->is_input() ) {
+#warning "TODO: is_dff_input(), is_dff_output() の時の処理"
+    if ( tpgnode->is_primary_input() ) {
       // 外部入力に対応する SimNode の生成
       node = make_input();
       mInputArray[tpgnode->input_id()] = node;
       const char* name = network.node_name(tpgnode->id());
       node->set_name(name);
     }
-    else if ( tpgnode->is_output() ) {
+    else if ( tpgnode->is_primary_output() ) {
       // 外部出力に対応する SimNode の生成
       SimNode* inode = find_simnode(tpgnode->fanin(0));
       // 実際にはバッファタイプのノードに出力の印をつけるだけ．
@@ -272,14 +273,18 @@ Fsim2::sppfp(TestVector* tv,
 	     FsimOp& op)
 {
   ymuint npi = mNetwork->input_num();
+  ymuint ndff = mNetwork->dff_num();
 
   // tv を全ビットにセットしていく．
   for (ymuint i = 0; i < npi; ++ i) {
     SimNode* simnode = mInputArray[i];
-    PackedVal val0 = (tv->prev_val3(i) == kVal1) ? kPvAll1 : kPvAll0;
+    PackedVal val0 = (tv->prev_input_val(i) == kVal1) ? kPvAll1 : kPvAll0;
     simnode->set_hval(val0);
-    PackedVal val1 = (tv->cur_val3(i) == kVal1) ? kPvAll1 : kPvAll0;
+    PackedVal val1 = (tv->cur_input_val(i) == kVal1) ? kPvAll1 : kPvAll0;
     simnode->set_gval(val1);
+  }
+  for (ymuint i = 0; i < ndff; ++ i) {
+#warning "TODO: dff の出力に対する値のセット";
   }
 
   _sppfp(op);
@@ -406,20 +411,20 @@ Fsim2::ppsfp(const vector<TestVector*>& tv_array,
     PackedVal cur_val = kPvAll0;
     PackedVal bit = 1UL;
     for (ymuint j = 0; j < nb; ++ j, bit <<= 1) {
-      if ( tv_array[j]->cur_val3(i) == kVal1 ) {
+      if ( tv_array[j]->cur_input_val(i) == kVal1 ) {
 	cur_val |= bit;
       }
-      if ( tv_array[j]->prev_val3(i) == kVal1 ) {
+      if ( tv_array[j]->prev_input_val(i) == kVal1 ) {
 	prev_val |= bit;
       }
     }
     // 残ったビットには 0 番めのパタンを詰めておく．
-    if ( tv_array[0]->cur_val3(i) == kVal1 ) {
+    if ( tv_array[0]->cur_input_val(i) == kVal1 ) {
       for (ymuint j = nb; j < kPvBitLen; ++ j, bit <<= 1) {
 	cur_val |= bit;
       }
     }
-    if ( tv_array[0]->prev_val3(i) == kVal1 ) {
+    if ( tv_array[0]->prev_input_val(i) == kVal1 ) {
       for (ymuint j = nb; j < kPvBitLen; ++ j, bit <<= 1) {
 	prev_val |= bit;
       }
@@ -428,6 +433,7 @@ Fsim2::ppsfp(const vector<TestVector*>& tv_array,
     simnode->set_hval(prev_val);
     simnode->set_gval(cur_val);
   }
+#warning "TODO: dff の分もセットする．"
 
   // 正常値の計算を行う．
   for (vector<SimNode*>::iterator q = mLogicArray.begin();
@@ -503,11 +509,12 @@ Fsim2::spsfp(TestVector* tv,
   // tv を全ビットにセットしていく．
   for (ymuint i = 0; i < npi; ++ i) {
     SimNode* simnode = mInputArray[i];
-    PackedVal cur_val = (tv->cur_val3(i) == kVal1) ? kPvAll1 : kPvAll0;
+    PackedVal cur_val = (tv->cur_input_val(i) == kVal1) ? kPvAll1 : kPvAll0;
     simnode->set_gval(cur_val);
-    PackedVal prev_val = (tv->prev_val3(i) == kVal1) ? kPvAll1 : kPvAll0;
+    PackedVal prev_val = (tv->prev_input_val(i) == kVal1) ? kPvAll1 : kPvAll0;
     simnode->set_hval(prev_val);
   }
+#warning "TODO: dff の分もセットする．"
 
   return _spsfp(f);
 }
@@ -519,7 +526,7 @@ Fsim2::spsfp(TestVector* tv,
 // @retval false 故障の検出が行えなかった．
 bool
 Fsim2::spsfp(const NodeValList& assign_list,
-	      const TpgFault* f)
+	     const TpgFault* f)
 {
   ymuint npi = mNetwork->input_num();
 
@@ -769,11 +776,12 @@ Fsim2::calc_wsa(TestVector* tv)
   // tv を全ビットにセットしていく．
   for (ymuint i = 0; i < npi; ++ i) {
     SimNode* simnode = mInputArray[i];
-    PackedVal cur_val = (tv->cur_val3(i) == kVal1) ? kPvAll1 : kPvAll0;
+    PackedVal cur_val = (tv->cur_input_val(i) == kVal1) ? kPvAll1 : kPvAll0;
     simnode->set_gval(cur_val);
-    PackedVal prev_val = (tv->cur_val3(i) == kVal1) ? kPvAll1 : kPvAll0;
+    PackedVal prev_val = (tv->cur_input_val(i) == kVal1) ? kPvAll1 : kPvAll0;
     simnode->set_hval(prev_val);
   }
+#warning "TODO: DFFの分もセットする．"
 
   // 1時刻目の正常値の計算を行う．
   for (vector<SimNode*>::iterator q = mLogicArray.begin();

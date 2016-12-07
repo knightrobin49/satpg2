@@ -16,11 +16,20 @@ set (tpg_network_SOURCES
   tpg_network/TpgFault.cc
   tpg_network/TpgMap.cc
   tpg_network/TpgNetwork.cc
+  tpg_network/TpgDff.cc
   tpg_network/TpgNode.cc
   tpg_network/TpgNodeInfo.cc
   tpg_network/TpgNodeMap.cc
+  tpg_network/TpgPPI.cc
+  tpg_network/TpgPPO.cc
   tpg_network/TpgInput.cc
   tpg_network/TpgOutput.cc
+  tpg_network/TpgDffInput.cc
+  tpg_network/TpgDffOutput.cc
+  tpg_network/TpgDffControl.cc
+  tpg_network/TpgDffClock.cc
+  tpg_network/TpgDffClear.cc
+  tpg_network/TpgDffPreset.cc
   tpg_network/TpgLogic.cc
   tpg_network/TpgLogicC0.cc
   tpg_network/TpgLogicC1.cc

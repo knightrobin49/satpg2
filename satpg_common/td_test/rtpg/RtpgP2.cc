@@ -70,9 +70,10 @@ gen_neighbor(const TestVector* tv1,
   rcg.generate(randgen);
   for (ymuint i = 0; i < nbits; ++ i) {
     ymuint pos = rcg.elem(i);
-    Val3 val = tv2->cur_val3(pos);
-    tv2->set_cur_val(pos, ~val);
+    Val3 val = tv2->cur_input_val(pos);
+    tv2->set_cur_input_val(pos, ~val);
   }
+#warning "TODO: dff も考慮する．"
 }
 
 

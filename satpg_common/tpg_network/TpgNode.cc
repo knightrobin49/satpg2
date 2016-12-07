@@ -12,8 +12,12 @@
 
 #include "TpgInput.h"
 #include "TpgOutput.h"
+
 #include "TpgDffInput.h"
 #include "TpgDffOutput.h"
+#include "TpgDffClock.h"
+#include "TpgDffClear.h"
+#include "TpgDffPreset.h"
 
 #include "TpgLogicC0.h"
 #include "TpgLogicC1.h"
@@ -88,14 +92,16 @@ TpgNode::make_output(ymuint id,
 // @brief DFFの入力ノードを作る．
 // @param[in] id ノード番号
 // @param[in] oid 出力番号
+// @param[in] dff 接続しているDFF
 // @param[in] inode 入力ノード
 // @return 作成したノードを返す．
 TpgNode*
 TpgNode::make_dff_input(ymuint id,
 			ymuint oid,
+			TpgDff* dff,
 			TpgNode* inode)
 {
-  TpgNode* node = new TpgDffInput(id, oid, inode);
+  TpgNode* node = new TpgDffInput(id, oid, dff, inode);
 
   return node;
 }
@@ -103,14 +109,61 @@ TpgNode::make_dff_input(ymuint id,
 // @brief DFFの出力ノードを作る．
 // @param[in] id ノード番号
 // @param[in] iid 入力番号
+// @param[in] dff 接続しているDFF
 // @param[in] fanout_num ファンアウト数
 // @return 作成したノードを返す．
 TpgNode*
 TpgNode::make_dff_output(ymuint id,
 			 ymuint iid,
+			 TpgDff* dff,
 			 ymuint fanout_num)
 {
-  TpgNode* node = new TpgDffOutput(id, iid, fanout_num);
+  TpgNode* node = new TpgDffOutput(id, iid, dff, fanout_num);
+
+  return node;
+}
+
+// @brief DFFのクロック端子を作る．
+// @param[in] id ノード番号
+// @param[in] dff 接続しているDFF
+// @param[in] inode 入力ノード
+// @return 作成したノードを返す．
+TpgNode*
+TpgNode::make_dff_clock(ymuint id,
+			TpgDff* dff,
+			TpgNode* inode)
+{
+  TpgNode* node = new TpgDffClock(id, dff, inode);
+
+  return node;
+}
+
+// @brief DFFのクリア端子を作る．
+// @param[in] id ノード番号
+// @param[in] dff 接続しているDFF
+// @param[in] inode 入力ノード
+// @return 作成したノードを返す．
+TpgNode*
+TpgNode::make_dff_clear(ymuint id,
+			TpgDff* dff,
+			TpgNode* inode)
+{
+  TpgNode* node = new TpgDffClear(id, dff, inode);
+
+  return node;
+}
+
+// @brief DFFのプリセット端子を作る．
+// @param[in] id ノード番号
+// @param[in] dff 接続しているDFF
+// @param[in] inode 入力ノード
+// @return 作成したノードを返す．
+TpgNode*
+TpgNode::make_dff_preset(ymuint id,
+			 TpgDff* dff,
+			 TpgNode* inode)
+{
+  TpgNode* node = new TpgDffPreset(id, dff, inode);
 
   return node;
 }
@@ -280,31 +333,68 @@ TpgNode::~TpgNode()
 }
 
 // @brief 外部入力タイプの時 true を返す．
-// @note FF 出力もここに含まれる．
 bool
-TpgNode::is_input() const
+TpgNode::is_primary_input() const
 {
   return false;
 }
 
-// @brief DFF の出力に接続している外部入力タイプの時 true を返す．
+// @brief 外部出力タイプの時 true を返す．
+bool
+TpgNode::is_primary_output() const
+{
+  return false;
+}
+
+// @brief DFF の入力に接続している出力タイプの時 true を返す．
+bool
+TpgNode::is_dff_input() const
+{
+  return false;
+}
+
+// @brief DFF の出力に接続している入力タイプの時 true を返す．
 bool
 TpgNode::is_dff_output() const
 {
   return false;
 }
 
-// @brief 外部出力タイプの時 true を返す．
-// @note FF 入力もここに含まれる．
+// @brief DFF のクロック端子に接続している出力タイプの時 true を返す．
 bool
-TpgNode::is_output() const
+TpgNode::is_dff_clock() const
 {
   return false;
 }
 
-// @brief DFF の入力に接続している外部出力タイプの時 true を返す．
+// @brief DFF のクリア端子に接続している出力タイプの時 true を返す．
 bool
-TpgNode::is_dff_input() const
+TpgNode::is_dff_clear() const
+{
+  return false;
+}
+
+// @brief DFF のプリセット端子に接続している出力タイプの時 true を返す．
+bool
+TpgNode::is_dff_preset() const
+{
+  return false;
+}
+
+// @brief 入力タイプの時 true を返す．
+//
+// 具体的には is_input() || is_dff_output()
+bool
+TpgNode::is_ppi() const
+{
+  return false;
+}
+
+// @brief 出力タイプの時 true を返す．
+//
+// 具体的には is_output() || is_dff_input()
+bool
+TpgNode::is_ppo() const
 {
   return false;
 }
@@ -328,16 +418,6 @@ TpgNode::input_id() const
   return 0;
 }
 
-// @brief DFF の出力に接続している外部入力タイプの時に対応する外部出力を返す．
-//
-// is_dff_output() == false の時には nullptr を返す．
-TpgNode*
-TpgNode::alt_output() const
-{
-  ASSERT_NOT_REACHED;
-  return nullptr;
-}
-
 // @brief 外部出力タイプの時に出力番号を返す．
 //
 // node = TpgNetwork::output(node->output_id())
@@ -358,12 +438,14 @@ TpgNode::output_id2() const
   return 0;
 }
 
-// @brief DFF の入力に接続している外部出力タイプの時に対応する外部入力を返す．
+// @brief 接続している DFF を返す．
 //
-// is_dff_input() == false の時には nullptr を返す．
-TpgNode*
-TpgNode::alt_input() const
+// is_dff_input() | is_dff_output() | is_dff_clock() | is_dff_clear() | is_dff_preset()
+// の時に意味を持つ．
+TpgDff*
+TpgNode::dff() const
 {
+  ASSERT_NOT_REACHED;
   return nullptr;
 }
 
@@ -382,7 +464,7 @@ TpgNode::gate_type() const
 Val3
 TpgNode::cval() const
 {
-  ASSERT_COND( is_output() );
+  ASSERT_COND( is_ppo() );
   return kValX;
 }
 
@@ -391,7 +473,7 @@ TpgNode::cval() const
 Val3
 TpgNode::nval() const
 {
-  ASSERT_COND( is_output() );
+  ASSERT_COND( is_ppo() );
   return kValX;
 }
 
@@ -400,7 +482,7 @@ TpgNode::nval() const
 Val3
 TpgNode::coval() const
 {
-  ASSERT_COND( is_output() );
+  ASSERT_COND( is_ppo() );
   return kValX;;
 }
 
@@ -409,7 +491,7 @@ TpgNode::coval() const
 Val3
 TpgNode::noval() const
 {
-  ASSERT_COND( is_output() );
+  ASSERT_COND( is_ppo() );
   return kValX;
 }
 
@@ -420,22 +502,6 @@ void
 TpgNode::make_cnf(SatSolver& solver,
 		  const LitMap& lit_map) const
 {
-  if ( is_input() ) {
-    //cout << "INPUT" << endl;
-    // なにもしない．
-    return;
-  }
-
-  SatLiteral olit = lit_map.output();
-  if ( is_output() ) {
-    //cout << "OUTPUT" << endl;
-    SatLiteral ilit = lit_map.input(0);
-    solver.add_clause( ilit, ~olit);
-    solver.add_clause(~ilit,  olit);
-
-    return;
-  }
-
   ASSERT_NOT_REACHED;
 }
 
@@ -461,15 +527,6 @@ TpgNode::make_faulty_cnf(SatSolver& solver,
 // 出力ノード以外では無効
 void
 TpgNode::set_output_id2(ymuint id)
-{
-  ASSERT_NOT_REACHED;
-}
-
-// @brief DFFの入出力の時に相方のノードを設定する．
-//
-// 同時に mTypeId の 2ビット目もセットする．
-void
-TpgNode::set_alt_node(TpgNode* alt_node)
 {
   ASSERT_NOT_REACHED;
 }

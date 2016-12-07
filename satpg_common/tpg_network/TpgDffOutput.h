@@ -9,7 +9,7 @@
 /// All rights reserved.
 
 
-#include "TpgInput.h"
+#include "TpgPPI.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG
@@ -19,16 +19,18 @@ BEGIN_NAMESPACE_YM_SATPG
 /// @brief DFF の出力ノードを表すクラス
 //////////////////////////////////////////////////////////////////////
 class TpgDffOutput :
-  public TpgInput
+  public TpgPPI
 {
 public:
 
   /// @brief コンストラクタ
   /// @param[in] id ID番号
   /// @param[in] input_id 入力番号
+  /// @param[in] dff 接続しているDFF
   /// @param[in] fanout_num ファンアウト数
   TpgDffOutput(ymuint id,
 	       ymuint input_id,
+	       TpgDff* dff,
 	       ymuint fanout_num);
 
   /// @brief デストラクタ
@@ -46,17 +48,13 @@ public:
   bool
   is_dff_output() const;
 
-  /// @brief DFF の出力に接続している外部入力タイプの時に対応する外部出力を返す．
+  /// @brief 接続している DFF を返す．
   ///
-  /// is_dff_output() == false の時には nullptr を返す．
+  /// is_dff_input() | is_dff_output() | is_dff_clock() | is_dff_clear() | is_dff_preset()
+  /// の時に意味を持つ．
   virtual
-  TpgNode*
-  alt_output() const;
-
-  /// @brief DFFの入出力の時に相方のノードを設定する．
-  virtual
-  void
-  set_alt_node(TpgNode* alt_node);
+  TpgDff*
+  dff() const;
 
 
 private:
@@ -70,8 +68,8 @@ private:
   // データメンバ
   //////////////////////////////////////////////////////////////////////
 
-  // 対応する DFF の入力ノード
-  TpgNode* mAltNode;
+  // 対応する DFF
+  TpgDff* mDff;
 
 };
 

@@ -43,7 +43,7 @@ mark_tfo(const TpgNode* node,
   }
   tfo_mark.add(node->id());
 
-  if ( node->is_output() ) {
+  if ( node->is_ppo() ) {
     node_list.push_back(node);
   }
 
@@ -64,7 +64,7 @@ mark_tfi(const TpgNode* node,
   }
   tfi_mark.add(node->id());
 
-  if ( node->is_input() ) {
+  if ( node->is_ppi() ) {
     input_list.push_back(node->input_id());
   }
   else {
@@ -302,7 +302,7 @@ FaultAnalyzer::analyze_fault(const TpgFault* fault,
     for (ymuint i = 0; i < npi; ++ i) {
       NodeVal nv = pi_suf_list[i];
       const TpgNode* node = nv.node();
-      ASSERT_COND ( node->is_input() );
+      ASSERT_COND ( node->is_ppi() );
       ymuint id = node->input_id();
       if ( nv.val() ) {
 	tv->set_val(id, kVal1);

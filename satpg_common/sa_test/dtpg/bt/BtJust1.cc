@@ -74,7 +74,7 @@ BtJust1::justify(const TpgNode* node,
   }
   set_justified(node);
 
-  if ( node->is_input() ) {
+  if ( node->is_ppi() ) {
     // val を記録
     record_value(node, val_map, assign_list);
     return;

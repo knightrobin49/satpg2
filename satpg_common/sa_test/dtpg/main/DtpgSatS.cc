@@ -43,7 +43,7 @@ make_dchain_cnf(SatSolver& solver,
   solver.add_clause(~glit, ~flit, ~dlit);
   solver.add_clause( glit,  flit, ~dlit);
 
-  if ( node->is_output() ) {
+  if ( node->is_ppo() ) {
     solver.add_clause(~glit,  flit,  dlit);
     solver.add_clause( glit, ~flit,  dlit);
   }
@@ -186,7 +186,7 @@ DtpgSatS::run_single(const TpgFault* fault)
 
   // fnode の TFO を mNodeList に入れる．
   set_tfo_mark(fnode);
-  if ( fnode->is_output() ) {
+  if ( fnode->is_ppo() ) {
     output_list.push_back(fnode);
   }
   for (ymuint rpos = 0; rpos < mNodeList.size(); ++ rpos) {
@@ -195,7 +195,7 @@ DtpgSatS::run_single(const TpgFault* fault)
     for (ymuint i = 0; i < nfo; ++ i) {
       const TpgNode* onode = node->fanout(i);
       set_tfo_mark(onode);
-      if ( onode->is_output() ) {
+      if ( onode->is_ppo() ) {
 	output_list.push_back(onode);
       }
     }

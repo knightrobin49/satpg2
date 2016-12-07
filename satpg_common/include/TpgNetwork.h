@@ -11,6 +11,7 @@
 
 #include "satpg.h"
 #include "Val3.h"
+#include "TpgDff.h"
 #include "TpgNode.h"
 
 #include "ym/ym_bnet.h"
@@ -85,15 +86,32 @@ public:
   ymuint
   dff_num() const;
 
-  /// @brief DFFの出力に対応した擬似入力ノードを得る．
+  /// @brief DFF を得る．
   /// @param[in] pos 位置番号 ( 0 <= pos < dff_num() )
-  TpgNode*
-  dff_output(ymuint pos) const;
+  const TpgDff*
+  dff(ymuint pos) const;
 
-  /// @brief DFFの入力に対応した擬似出力ノードを得る．
-  /// @param[in] pos 位置番号 ( 0 <= pos < dff_num() )
+  /// @brief スキャン方式の擬似外部入力数を得る．
+  ///
+  /// = input_num() + dff_num()
+  ymuint
+  pseudo_input_num() const;
+
+  /// @brief スキャン方式の擬似外部入力を得る．
+  /// @param[in] pos 位置番号 ( 0 <= pos < pseudo_input_num() )
   TpgNode*
-  dff_input(ymuint pos) const;
+  pseudo_input(ymuint pos) const;
+
+  /// @brief スキャン方式の擬似外部出力数を得る．
+  ///
+  /// = output_num() + dff_num()
+  ymuint
+  pseudo_output_num() const;
+
+  /// @brief スキャン方式の擬似外部出力を得る．
+  /// @param[in] pos 位置番号 ( 0 <= pos < pseudo_output_num() )
+  TpgNode*
+  pseudo_output(ymuint pos) const;
 
   /// @brief 故障IDの最大値+1を返す．
   ymuint
@@ -238,16 +256,6 @@ private:
 		  const string& name,
 		  ymuint fanout_num);
 
-  /// @brief DFFの出力ノードを生成する．
-  /// @param[in] iid 入力の番号
-  /// @param[in] name ノード名
-  /// @param[in] fanout_num ファンアウト数
-  /// @return 生成したノードを返す．
-  TpgNode*
-  make_dff_output_node(ymuint iid,
-		  const string& name,
-		  ymuint fanout_num);
-
   /// @brief 出力ノードを生成する．
   /// @param[in] oid 出力の番号
   /// @param[in] name ノード名
@@ -260,13 +268,57 @@ private:
 
   /// @brief DFFの入力ノードを生成する．
   /// @param[in] oid 出力の番号
+  /// @param[in] dff 接続しているDFF
   /// @param[in] name ノード名
   /// @param[in] inode 入力のノード
   /// @return 生成したノードを返す．
   TpgNode*
   make_dff_input_node(ymuint oid,
+		      TpgDff* dff,
 		      const string& name,
 		      TpgNode* inode);
+
+  /// @brief DFFの出力ノードを生成する．
+  /// @param[in] iid 入力の番号
+  /// @param[in] dff 接続しているDFF
+  /// @param[in] name ノード名
+  /// @param[in] fanout_num ファンアウト数
+  /// @return 生成したノードを返す．
+  TpgNode*
+  make_dff_output_node(ymuint iid,
+		       TpgDff* dff,
+		       const string& name,
+		       ymuint fanout_num);
+
+  /// @brief DFFのクロック端子を生成する．
+  /// @param[in] dff 接続しているDFF
+  /// @param[in] name ノード名
+  /// @param[in] inode 入力のノード
+  /// @return 生成したノードを返す．
+  TpgNode*
+  make_dff_clock_node(TpgDff* dff,
+		      const string& name,
+		      TpgNode* inode);
+
+  /// @brief DFFのクリア端子を生成する．
+  /// @param[in] dff 接続しているDFF
+  /// @param[in] name ノード名
+  /// @param[in] inode 入力のノード
+  /// @return 生成したノードを返す．
+  TpgNode*
+  make_dff_clear_node(TpgDff* dff,
+		      const string& name,
+		      TpgNode* inode);
+
+  /// @brief DFFのプリセット端子を生成する．
+  /// @param[in] dff 接続しているDFF
+  /// @param[in] name ノード名
+  /// @param[in] inode 入力のノード
+  /// @return 生成したノードを返す．
+  TpgNode*
+  make_dff_preset_node(TpgDff* dff,
+		       const string& name,
+		       TpgNode* inode);
 
   /// @brief 論理ノードを生成する．
   /// @param[in] name ノード名
@@ -367,8 +419,11 @@ private:
   // 外部出力数
   ymuint mOutputNum;
 
-  // FF数
-  ymuint mFFNum;
+  // DFF数
+  ymuint mDffNum;
+
+  // DFFの実体の配列
+  TpgDff* mDffArray;
 
   // ノード数(mNodeArrayの要素数)
   ymuint mNodeNum;
@@ -469,33 +524,57 @@ inline
 ymuint
 TpgNetwork::dff_num() const
 {
-  return mFFNum;
+  return mDffNum;
 }
 
-// @brief DFFの出力に対応した擬似入力ノードを得る．
+// @brief DFF を得る．
 // @param[in] pos 位置番号 ( 0 <= pos < dff_num() )
-//
-// 実は input(pos + input_num()) と同じ．
 inline
-TpgNode*
-TpgNetwork::dff_output(ymuint pos) const
+const TpgDff*
+TpgNetwork::dff(ymuint pos) const
 {
   ASSERT_COND( pos < dff_num() );
-  ymuint offset = mInputNum - dff_num();
-  return mInputArray[offset + pos];
+  return &mDffArray[pos];
 }
 
-// @brief DFFの入力に対応した擬似出力ノードを得る．
-// @param[in] pos 位置番号 ( 0 <= pos < dff_num() )
+// @brief スキャン方式の擬似外部入力数を得る．
 //
-// 実は output(pos + input_num()) と同じ．
+// = input_num() + dff_num()
+inline
+ymuint
+TpgNetwork::pseudo_input_num() const
+{
+  return mInputNum + mDffNum;
+}
+
+// @brief スキャン方式の擬似外部入力を得る．
+// @param[in] pos 位置番号 ( 0 <= pos < pseudo_input_num() )
 inline
 TpgNode*
-TpgNetwork::dff_input(ymuint pos) const
+TpgNetwork::pseudo_input(ymuint pos) const
 {
-  ASSERT_COND( pos < dff_num() );
-  ymuint offset = mOutputNum - dff_num();
-  return mOutputArray[offset + pos];
+  ASSERT_COND( pos < pseudo_input_num() );
+  return mInputArray[pos];
+}
+
+// @brief スキャン方式の擬似外部出力数を得る．
+//
+// = output_num() + dff_num()
+inline
+ymuint
+TpgNetwork::pseudo_output_num() const
+{
+  return mOutputNum + mDffNum;
+}
+
+// @brief スキャン方式の擬似外部出力を得る．
+// @param[in] pos 位置番号 ( 0 <= pos < pseudo_output_num() )
+inline
+TpgNode*
+TpgNetwork::pseudo_output(ymuint pos) const
+{
+  ASSERT_COND( pos < pseudo_output_num() );
+  return mOutputArray[pos];
 }
 
 // @brief ノードを得る．

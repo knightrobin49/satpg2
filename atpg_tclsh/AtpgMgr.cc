@@ -94,13 +94,13 @@ AtpgMgr::after_set_network()
   mFaultMgr->set_faults(mNetwork);
 
   mSaTvMgr->clear();
-  mSaTvMgr->init(mNetwork.input_num());
+  mSaTvMgr->init(mNetwork.pseudo_input_num());
   mSaFsim->set_network(mNetwork);
   mSaFsim3->set_network(mNetwork);
 
-  mTdTvMgr->clear();
-  mTdTvMgr->init(mNetwork.input_num());
-  mTdFsim->set_network(mNetwork);
+  //mTdTvMgr->clear();
+  //mTdTvMgr->init(mNetwork.input_num(), mNetwork.dff_num());
+  //mTdFsim->set_network(mNetwork);
 }
 
 END_NAMESPACE_YM_SATPG

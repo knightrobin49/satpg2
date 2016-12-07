@@ -43,10 +43,12 @@ public:
 
   /// @brief 初期化する．
   /// @param[in] input_num 入力数
+  /// @param[in] dff_num DFF数
   ///
-  /// 副作用で clear() が呼ばれる．
+  /// 副作用で最初に clear() が呼ばれる．
   void
-  init(ymuint input_num);
+  init(ymuint input_num,
+       ymuint dff_num);
 
   /// @brief 新しいパタンを生成する．
   /// @return 生成されたパタンを返す．
@@ -65,6 +67,10 @@ public:
   /// @brief 入力数を返す．
   ymuint
   input_num() const;
+
+  /// @brief DFF数を返す．
+  ymuint
+  dff_num() const;
 
 
 private:
@@ -96,7 +102,10 @@ private:
   // 対象回路の入力数
   ymuint mInputNum;
 
-  // TestVector2 の実際のサイズ
+  // 対象回路の DFF 数
+  ymuint mDffNum;
+
+  // TestVector の実際のサイズ
   ymuint mTvSize;
 
 };

@@ -68,7 +68,7 @@ BtSimple::tfi_recur(const TpgNode* node,
   }
   mMark[node->id()] = true;
 
-  if ( node->is_input() ) {
+  if ( node->is_ppi() ) {
     record_value(node, val_map, assign_list);
   }
   else {

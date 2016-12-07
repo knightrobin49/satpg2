@@ -9,6 +9,7 @@
 
 #include "td/TestVector.h"
 #include "td/NodeValList.h"
+#include "TpgDff.h"
 #include "TpgNode.h"
 
 
@@ -19,7 +20,7 @@ BEGIN_NAMESPACE_YM_SATPG_TD
 TestVector::TestVector(ymuint input_num) :
   mInputNum(input_num)
 {
-  ymuint k = _vect_len() % kPvBitLen;
+  ymuint k = vect_len() % kPvBitLen;
   mMask = kPvAll1 << (kPvBitLen - k);
 }
 
@@ -32,14 +33,14 @@ TestVector::~TestVector()
 ymuint
 TestVector::x_num() const
 {
-  ymuint nb = block_num(_vect_len());
+  ymuint nb = block_num(vect_len());
   ymint n = 0;
   for (ymuint i = 0; i < nb; i += 2) {
     PackedVal v = mPat[i] | mPat[i + 1];
     // v 中の1の数を数える．
     n += count_ones(v);
   }
-  return _vect_len() - n;
+  return vect_len() - n;
 }
 
 // @brief 2つのベクタが両立しないとき true を返す．
@@ -48,7 +49,7 @@ TestVector::is_conflict(const TestVector& tv1,
 			const TestVector& tv2)
 {
   ASSERT_COND( tv1.input_num() == tv2.input_num() );
-  ymuint nb = block_num(tv1._vect_len());
+  ymuint nb = block_num(tv1.vect_len());
   for (ymuint i = 0; i < nb; i += 2) {
     ymuint i0 = i;
     ymuint i1 = i + 1;
@@ -68,7 +69,7 @@ bool
 TestVector::operator==(const TestVector& right) const
 {
   ASSERT_COND( input_num() == right.input_num() );
-  ymuint nb = block_num(_vect_len());
+  ymuint nb = block_num(vect_len());
   for (ymuint i = 0; i < nb; ++ i) {
     if ( mPat[i] != right.mPat[i] ) {
       return false;
@@ -85,7 +86,7 @@ bool
 TestVector::operator<(const TestVector& right) const
 {
   ASSERT_COND( input_num() == right.input_num() );
-  ymuint nb = block_num(_vect_len());
+  ymuint nb = block_num(vect_len());
   bool diff = false;
   for (ymuint i = 0; i < nb; ++ i) {
     PackedVal val1 = mPat[i];
@@ -109,7 +110,7 @@ bool
 TestVector::operator<=(const TestVector& right) const
 {
   ASSERT_COND( input_num() == right.input_num() );
-  ymuint nb = block_num(_vect_len());
+  ymuint nb = block_num(vect_len());
   for (ymuint i = 0; i < nb; ++ i) {
     PackedVal val1 = mPat[i];
     PackedVal val2 = right.mPat[i];
@@ -124,7 +125,7 @@ TestVector::operator<=(const TestVector& right) const
 void
 TestVector::init()
 {
-  ymuint nb = block_num(_vect_len());
+  ymuint nb = block_num(vect_len());
   for (ymuint i = 0; i < nb; i += 2) {
     ymuint i0 = i;
     ymuint i1 = i + 1;
@@ -143,15 +144,21 @@ TestVector::set_from_assign_list(const NodeValList& assign_list)
   ymuint n = assign_list.size();
   for (ymuint i = 0; i < n; ++ i) {
     NodeVal nv = assign_list[i];
-    const TpgNode* node = nv.node();
-    ASSERT_COND ( node->is_input() );
     Val3 val = nv.val() ? kVal1 : kVal0;
-    ymuint id = node->input_id();
-    if ( nv.time() == 1 ) {
-      set_cur_val(id, val);
+    const TpgNode* node = nv.node();
+    if ( node->is_primary_input() ) {
+      ymuint id = node->input_id();
+      if ( nv.time() == 1 ) {
+	set_cur_input_val(id, val);
+      }
+      else {
+	set_prev_input_val(id, val);
+      }
     }
-    else {
-      set_prev_val(id, val);
+    else if ( node->is_dff_output() ) {
+      ASSERT_COND( nv.time() == 0 );
+      ymuint id = node->dff()->id();
+      set_prev_dff_val(id, val);
     }
   }
 }
@@ -165,7 +172,7 @@ bool
 TestVector::set_from_hex(const string& hex_string)
 {
   // よく問題になるが，ここでは最下位ビット側から入力する．
-  ymuint nl = hex_length(_vect_len());
+  ymuint nl = hex_length(vect_len());
   ymuint sft = 0;
   ymuint blk = 0;
   PackedVal pat = kPvAll0;
@@ -207,7 +214,7 @@ TestVector::set_from_hex(const string& hex_string)
 void
 TestVector::set_from_random(RandGen& randgen)
 {
-  ymuint nb = block_num(_vect_len());
+  ymuint nb = block_num(vect_len());
   for (ymuint i = 0; i < nb; i += 2) {
     PackedVal v = randgen.uint64();
     ymuint i0 = i;
@@ -228,7 +235,7 @@ TestVector::set_from_random(RandGen& randgen)
 void
 TestVector::fix_x_from_random(RandGen& randgen)
 {
-  ymuint nb = block_num(_vect_len());
+  ymuint nb = block_num(vect_len());
   for (ymuint i = 0; i < nb; i += 2) {
     ymuint i0 = i;
     ymuint i1 = i + 1;
@@ -251,7 +258,7 @@ TestVector::fix_x_from_random(RandGen& randgen)
 void
 TestVector::copy(const TestVector& src)
 {
-  ymuint nb = block_num(_vect_len());
+  ymuint nb = block_num(vect_len());
   for (ymuint i = 0; i < nb; i += 2) {
     ymuint i0 = i;
     ymuint i1 = i + 1;
@@ -268,7 +275,7 @@ TestVector::copy(const TestVector& src)
 bool
 TestVector::merge(const TestVector& src)
 {
-  ymuint nb = block_num(_vect_len());
+  ymuint nb = block_num(vect_len());
 
   // コンフリクトチェック
   for (ymuint i = 0; i < nb; i += 2) {
@@ -297,7 +304,7 @@ TestVector::bin_str() const
 {
   // よく問題になるが，ここでは最下位ビット側から出力する．
   string ans;
-  for (ymuint i = 0; i < _vect_len(); ++ i) {
+  for (ymuint i = 0; i < vect_len(); ++ i) {
     switch ( _val3(i) ) {
     case kVal0: ans += '0'; break;
     case kVal1: ans += '1'; break;
@@ -317,7 +324,7 @@ TestVector::hex_str() const
   ymuint bit = 1U;
   string ans;
   for (ymuint i = 0; ; ++ i) {
-    if ( i < _vect_len() ) {
+    if ( i < vect_len() ) {
       if ( _val3(i) == kVal1 ) {
 	// 面倒くさいので kValX は kVal0 と同じとみなす．
 	tmp += bit;

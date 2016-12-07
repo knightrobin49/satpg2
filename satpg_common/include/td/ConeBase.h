@@ -305,7 +305,7 @@ ConeBase::set_fvar(const TpgNode* node,
 inline
 void
 ConeBase::set_dvar(const TpgNode* node,
-		 SatVarId dvar)
+		   SatVarId dvar)
 {
   mDvarMap.set_vid(node, dvar);
 }
@@ -325,7 +325,7 @@ ConeBase::set_tfo_mark(const TpgNode* node)
 {
   mMarkArray[node->id()] |= 1U;
   mNodeList.push_back(node);
-  if ( node->is_output() || end_mark(node) ) {
+  if ( node->is_ppo() || end_mark(node) ) {
     mOutputList.push_back(node);
   }
 }

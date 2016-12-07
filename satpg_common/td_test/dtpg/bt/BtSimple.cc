@@ -8,6 +8,7 @@
 
 
 #include "BtSimple.h"
+#include "TpgDff.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG_TD
@@ -68,12 +69,13 @@ BtSimple::tfi_recur(const TpgNode* node,
   }
   mMark[node->id()] = true;
 
-  if ( node->is_dff_output() ) {
-    const TpgNode* alt_node = node->alt_output();
-    tfi_recur2(alt_node, val_map, assign_list);
-  }
-  else if ( node->is_input() ) {
+  if ( node->is_primary_input() ) {
     record_value(node, val_map, assign_list);
+  }
+  else if ( node->is_dff_output() ) {
+    const TpgDff* dff = node->dff();
+    const TpgNode* alt_node = dff->input();
+    tfi_recur2(alt_node, val_map, assign_list);
   }
   else {
     ymuint ni = node->fanin_num();
@@ -98,7 +100,7 @@ BtSimple::tfi_recur2(const TpgNode* node,
   }
   mMark2[node->id()] = true;
 
-  if ( node->is_input() ) {
+  if ( node->is_primary_input() ) {
     record_value0(node, val_map, assign_list);
   }
   else {

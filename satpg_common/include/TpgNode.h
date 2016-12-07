@@ -68,27 +68,64 @@ public:
 	      ymuint oid,
 	      TpgNode* inode);
 
-  /// @brief DFFの出力ノードを作る．
-  /// @param[in] id ノード番号
-  /// @param[in] iid 入力番号
-  /// @param[in] fanout_num ファンアウト数
-  /// @return 作成したノードを返す．
-  static
-  TpgNode*
-  make_dff_output(ymuint id,
-		  ymuint iid,
-		  ymuint fanout_num);
-
   /// @brief DFFの入力ノードを作る．
   /// @param[in] id ノード番号
   /// @param[in] oid 出力番号
+  /// @param[in] dff 接続しているDFF
   /// @param[in] inode 入力ノード
   /// @return 作成したノードを返す．
   static
   TpgNode*
   make_dff_input(ymuint id,
 		 ymuint oid,
+		 TpgDff* dff,
 		 TpgNode* inode);
+
+  /// @brief DFFの出力ノードを作る．
+  /// @param[in] id ノード番号
+  /// @param[in] iid 入力番号
+  /// @param[in] dff 接続しているDFF
+  /// @param[in] fanout_num ファンアウト数
+  /// @return 作成したノードを返す．
+  static
+  TpgNode*
+  make_dff_output(ymuint id,
+		  ymuint iid,
+		  TpgDff* dff,
+		  ymuint fanout_num);
+
+  /// @brief DFFのクロック端子を作る．
+  /// @param[in] id ノード番号
+  /// @param[in] dff 接続しているDFF
+  /// @param[in] inode 入力ノード
+  /// @return 作成したノードを返す．
+  static
+  TpgNode*
+  make_dff_clock(ymuint id,
+		 TpgDff* dff,
+		 TpgNode* inode);
+
+  /// @brief DFFのクリア端子を作る．
+  /// @param[in] id ノード番号
+  /// @param[in] dff 接続しているDFF
+  /// @param[in] inode 入力ノード
+  /// @return 作成したノードを返す．
+  static
+  TpgNode*
+  make_dff_clear(ymuint id,
+		 TpgDff* dff,
+		 TpgNode* inode);
+
+  /// @brief DFFのプリセット端子を作る．
+  /// @param[in] id ノード番号
+  /// @param[in] dff 接続しているDFF
+  /// @param[in] inode 入力ノード
+  /// @return 作成したノードを返す．
+  static
+  TpgNode*
+  make_dff_preset(ymuint id,
+		  TpgDff* dff,
+		  TpgNode* inode);
 
   /// @brief 論理ノードを作る．
   /// @param[in] id ノード番号
@@ -131,26 +168,57 @@ public:
   id() const;
 
   /// @brief 外部入力タイプの時 true を返す．
-  /// @note FF 出力もここに含まれる．
   virtual
   bool
-  is_input() const;
+  is_primary_input() const;
 
-  /// @brief DFF の出力に接続している外部入力タイプの時 true を返す．
+  /// @brief 外部出力タイプの時 true を返す．
+  virtual
+  bool
+  is_primary_output() const;
+
+  /// @brief DFF の入力に接続している出力タイプの時 true を返す．
+  ///
+  /// 紛らわしいが is_pseudo_output() でもある．
+  virtual
+  bool
+  is_dff_input() const;
+
+  /// @brief DFF の出力に接続している入力タイプの時 true を返す．
+  ///
+  /// 紛らわしいが is_pseudo_input() でもある．
   virtual
   bool
   is_dff_output() const;
 
-  /// @brief 外部出力タイプの時 true を返す．
-  /// @note FF 入力もここに含まれる．
+  /// @brief DFF のクロック端子に接続している出力タイプの時 true を返す．
   virtual
   bool
-  is_output() const;
+  is_dff_clock() const;
 
-  /// @brief DFF の入力に接続している外部出力タイプの時 true を返す．
+  /// @brief DFF のクリア端子に接続している出力タイプの時 true を返す．
   virtual
   bool
-  is_dff_input() const;
+  is_dff_clear() const;
+
+  /// @brief DFF のプリセット端子に接続している出力タイプの時 true を返す．
+  virtual
+  bool
+  is_dff_preset() const;
+
+  /// @brief 入力タイプの時 true を返す．
+  ///
+  /// 具体的には is_primary_input() || is_dff_output()
+  virtual
+  bool
+  is_ppi() const;
+
+  /// @brief 出力タイプの時 true を返す．
+  ///
+  /// 具体的には is_primary_output() || is_dff_input()
+  virtual
+  bool
+  is_ppo() const;
 
   /// @brief logic タイプの時 true を返す．
   virtual
@@ -166,13 +234,6 @@ public:
   ymuint
   input_id() const;
 
-  /// @brief DFF の出力に接続している外部入力タイプの時に対応する外部出力を返す．
-  ///
-  /// is_dff_output() == false の時には nullptr を返す．
-  virtual
-  TpgNode*
-  alt_output() const;
-
   /// @brief 外部出力タイプの時に出力番号を返す．
   ///
   /// node = TpgNetwork::output(node->output_id())
@@ -187,12 +248,13 @@ public:
   ymuint
   output_id2() const;
 
-  /// @brief DFF の入力に接続している外部出力タイプの時に対応する外部入力を返す．
+  /// @brief 接続している DFF を返す．
   ///
-  /// is_dff_input() == false の時には nullptr を返す．
+  /// is_dff_input() | is_dff_output() | is_dff_clock() | is_dff_clear() | is_dff_preset()
+  /// の時に意味を持つ．
   virtual
-  TpgNode*
-  alt_input() const;
+  TpgDff*
+  dff() const;
 
   /// @brief ゲートタイプを得る．
   ///
@@ -285,11 +347,6 @@ public:
   virtual
   void
   set_output_id2(ymuint id);
-
-  /// @brief DFFの入出力の時に相方のノードを設定する．
-  virtual
-  void
-  set_alt_node(TpgNode* alt_node);
 
   /// @brief ファンアウトを設定する．
   /// @param[in] pos 位置番号 ( 0 <= pos < fanout_num() )

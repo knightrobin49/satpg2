@@ -10,6 +10,7 @@
 #include "Fsim2.h"
 
 #include "TpgNetwork.h"
+#include "TpgDff.h"
 #include "TpgNode.h"
 #include "TpgFault.h"
 
@@ -75,9 +76,11 @@ Fsim2::set_network(const TpgNetwork& network)
 
   mNetwork = &network;
 
+  ymuint npi = mNetwork->input_num();
+  ymuint npo = mNetwork->output_num();
   ymuint nn = mNetwork->node_num();
-  ymuint ni = mNetwork->input_num();
-  ymuint no = mNetwork->output_num();
+  ymuint ni = mNetwork->pseudo_input_num();
+  ymuint no = mNetwork->pseudo_output_num();
 
   // SimNode の生成
   // 対応付けを行うマップの初期化
@@ -92,14 +95,14 @@ Fsim2::set_network(const TpgNetwork& network)
 
     SimNode* node = nullptr;
 
-    if ( tpgnode->is_input() ) {
+    if ( tpgnode->is_ppi() ) {
       // 外部入力に対応する SimNode の生成
       node = make_input();
       mInputArray[tpgnode->input_id()] = node;
       const char* name = network.node_name(tpgnode->id());
       node->set_name(name);
     }
-    else if ( tpgnode->is_output() ) {
+    else if ( tpgnode->is_ppo() ) {
       // 外部出力に対応する SimNode の生成
       SimNode* inode = find_simnode(tpgnode->fanin(0));
       // 実際にはバッファタイプのノードに出力の印をつけるだけ．
