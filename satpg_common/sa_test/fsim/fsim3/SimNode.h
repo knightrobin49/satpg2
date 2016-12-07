@@ -59,6 +59,14 @@ public:
   // 構造に関する情報の取得
   //////////////////////////////////////////////////////////////////////
 
+  /// @brief 名前を設定する．
+  void
+  set_name(const char* name);
+
+  /// @brief 名前を得る．
+  const char*
+  name() const;
+
   /// @brief ID番号を返す．
   ymuint32
   id() const;
@@ -279,6 +287,9 @@ private:
   // 故障値に対するマスク
   PackedVal mFmask;
 
+  // 名前
+  const char* mName;
+
 };
 
 
@@ -484,6 +495,22 @@ void
 SimNode::set_ffr(SimFFR* ffr)
 {
   mFFR = ffr;
+}
+
+// @brief 名前を設定する．
+inline
+void
+SimNode::set_name(const char* name)
+{
+  mName = name;
+}
+
+// @brief 名前を得る．
+inline
+const char*
+SimNode::name() const
+{
+  return mName;
 }
 
 END_NAMESPACE_YM_SATPG_FSIM

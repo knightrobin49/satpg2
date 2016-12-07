@@ -99,8 +99,6 @@ Fsim2::set_network(const TpgNetwork& network)
       // 外部入力に対応する SimNode の生成
       node = make_input();
       mInputArray[tpgnode->input_id()] = node;
-      const char* name = network.node_name(tpgnode->id());
-      node->set_name(name);
     }
     else if ( tpgnode->is_ppo() ) {
       // 外部出力に対応する SimNode の生成
@@ -109,8 +107,15 @@ Fsim2::set_network(const TpgNetwork& network)
       node = make_node(kGateBUFF, vector<SimNode*>(1, inode));
       node->set_output();
       mOutputArray[tpgnode->output_id()] = node;
-      const char* name = network.node_name(tpgnode->id());
-      node->set_name(name);
+    }
+    else if ( tpgnode->is_dff_clock() ||
+	      tpgnode->is_dff_clear() ||
+	      tpgnode->is_dff_preset() ) {
+      // DFFの制御端子に対応する SimNode の生成
+      SimNode* inode = find_simnode(tpgnode->fanin(0));
+      // 実際にはバッファタイプのノードに出力の印をつけるだけ．
+      node = make_node(kGateBUFF, vector<SimNode*>(1, inode));
+      node->set_output();
     }
     else if ( tpgnode->is_logic() ) {
       // 論理ノードに対する SimNode の作成
@@ -128,11 +133,13 @@ Fsim2::set_network(const TpgNetwork& network)
       // 出力の論理を表す SimNode を作る．
       GateType type = tpgnode->gate_type();
       node = make_node(type, inputs);
-      const char* name = network.node_name(tpgnode->id());
-      node->set_name(name);
     }
     // 対応表に登録しておく．
     mSimMap[tpgnode->id()] = node;
+
+    // 名前をつける．
+    const char* name = network.node_name(tpgnode->id());
+    node->set_name(name);
   }
 
   // 各ノードのファンアウトリストの設定

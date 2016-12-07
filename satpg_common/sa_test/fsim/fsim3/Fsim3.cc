@@ -106,6 +106,15 @@ Fsim3::set_network(const TpgNetwork& network)
       node->set_output();
       mOutputArray[tpgnode->output_id()] = node;
     }
+    else if ( tpgnode->is_dff_clock() ||
+	      tpgnode->is_dff_clear() ||
+	      tpgnode->is_dff_preset() ) {
+      // DFFの制御端子に対応する SimNode の生成
+      SimNode* inode = find_simnode(tpgnode->fanin(0));
+      // 実際にはバッファタイプのノードに出力の印をつけるだけ．
+      node = make_node(kGateBUFF, vector<SimNode*>(1, inode));
+      node->set_output();
+    }
     else if ( tpgnode->is_logic() ) {
       // 論理ノードに対応する SimNode の生成
       ymuint ni = tpgnode->fanin_num();
@@ -125,6 +134,10 @@ Fsim3::set_network(const TpgNetwork& network)
     }
     // 対応表に登録しておく
     mSimMap[tpgnode->id()] = node;
+
+    // 名前をつける．
+    const char* name = network.node_name(tpgnode->id());
+    node->set_name(name);
   }
 
   // 各ノードのファンアウトリストの設定
@@ -209,6 +222,7 @@ Fsim3::set_network(const TpgNetwork& network)
       const TpgFault* fault = network.node_fault(tpgnode->id(), j);
       const TpgNode* node = fault->tpg_onode();
       SimNode* simnode = find_simnode(node);
+      ASSERT_COND( simnode != nullptr );
       ymuint ipos = 0;
       SimNode* isimnode = nullptr;
       if ( fault->is_branch_fault() ) {
@@ -225,6 +239,7 @@ Fsim3::set_network(const TpgNetwork& network)
       ++ fid;
     }
   }
+  ASSERT_COND( fid == nf );
 }
 
 // @brief 故障にスキップマークをつける．
