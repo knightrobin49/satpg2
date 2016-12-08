@@ -10,6 +10,7 @@
 
 
 #include "satpg.h"
+#include "ym/SatBool3.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG
@@ -168,6 +169,21 @@ operator<<(ostream& s,
 	   Val3 val)
 {
   return s << value_name1(val);
+}
+
+// @brief SatBool3 から Val3 への変換
+inline
+Val3
+bool3_to_val3(SatBool3 bval)
+{
+  switch ( bval ) {
+  case kB3True:  return kVal1;
+  case kB3False: return kVal0;
+  case kB3X:     return kValX;
+  default: break;
+  }
+  ASSERT_NOT_REACHED;
+  return kValX;
 }
 
 END_NAMESPACE_YM_SATPG

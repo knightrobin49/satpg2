@@ -1,21 +1,21 @@
-﻿#ifndef SA_EXTRACTOR_H
-#define SA_EXTRACTOR_H
+﻿#ifndef TD_EXTRACTOR_H
+#define TD_EXTRACTOR_H
 
-/// @file sa/Extractor.h
+/// @file td/Extractor.h
 /// @brief Extractor のヘッダファイル
 /// @author Yusuke Matsunaga (松永 裕介)
 ///
-/// Copyright (C) 2005-2014 Yusuke Matsunaga
+/// Copyright (C) 2016 Yusuke Matsunaga
 /// All rights reserved.
 
 
-#include "sa/satpg_sa.h"
-#include "sa/ValMap.h"
+#include "td/satpg_td.h"
+#include "td/ValMap.h"
 #include "ym/HashSet.h"
 #include "ym/HashMap.h"
 
 
-BEGIN_NAMESPACE_YM_SATPG_SA
+BEGIN_NAMESPACE_YM_SATPG_TD
 
 //////////////////////////////////////////////////////////////////////
 /// @class Extractor Extractor.h "sa/Extractor.h"
@@ -102,6 +102,6 @@ private:
 
 };
 
-END_NAMESPACE_YM_SATPG_SA
+END_NAMESPACE_YM_SATPG_TD
 
-#endif // SA_EXTRACTOR_H
+#endif // TD_EXTRACTOR_H

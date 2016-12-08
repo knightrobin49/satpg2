@@ -3,9 +3,6 @@
 # サブディレクトリの設定
 # ===================================================================
 
-add_subdirectory( sa_test/fsim/fsim2/gtest )
-add_subdirectory( td_test/fsim/fsim2/gtest )
-
 
 # ===================================================================
 #  ソースファイルの設定
@@ -151,8 +148,13 @@ set (td_test_SOURCES
   td_test/rtpg/RtpgP1.cc
   td_test/rtpg/RtpgP2.cc
 
-  td_test/struct_sat/ModelValMap.cc
+  td_test/struct_sat/StructSat.cc
+  td_test/struct_sat/ConeBase.cc
+  td_test/struct_sat/FoCone.cc
+  td_test/struct_sat/MffcCone.cc
   td_test/struct_sat/NodeValList.cc
+  td_test/struct_sat/ModelValMap.cc
+  td_test/struct_sat/Extractor.cc
 
   td_test/tvect/TestVector.cc
   td_test/tvect/TvMgr.cc

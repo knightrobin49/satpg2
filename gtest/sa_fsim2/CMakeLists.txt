@@ -3,8 +3,7 @@
 # インクルードパスの設定
 # ===================================================================
 include_directories(
-  ${GTEST_INCLUDE_DIR}
-  ${CMAKE_CURRENT_SOURCE_DIR}/../
+  ${PROJECT_SOURCE_DIR}/satpg_common/sa_test/fsim/fsim2
   )
 
 
@@ -22,7 +21,7 @@ include_directories(
 #  テスト用のターゲットの設定
 # ===================================================================
 
-add_executable ( TdFsim2SimNodeTest
+add_executable ( SaFsim2SimNodeTest
   SimNodeTest.cc
   $<TARGET_OBJECTS:satpg_common_d>
   $<TARGET_OBJECTS:ym_common_d>
@@ -34,16 +33,16 @@ add_executable ( TdFsim2SimNodeTest
   $<TARGET_OBJECTS:ym_udgraph_d>
   )
 
-target_compile_options ( TdFsim2SimNodeTest
+target_compile_options ( SaFsim2SimNodeTest
   PRIVATE "-g"
   )
 
-target_link_libraries ( TdFsim2SimNodeTest
+target_link_libraries ( SaFsim2SimNodeTest
   ${YM_LIB_DEPENDS}
   pthread
   ${GTEST_BOTH_LIBRARIES}
   )
 
-add_test ( TdFsim2Test
-  TdFsim2SimNodeTest
+add_test ( SaFsim2Test
+  SaFsim2SimNodeTest
   )

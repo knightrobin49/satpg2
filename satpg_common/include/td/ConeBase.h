@@ -64,6 +64,10 @@ public:
   const vector<const TpgNode*>&
   output_list() const;
 
+  /// @brief 1時刻前の正常回路の変数マップを得る．
+  const VidMap&
+  hvar_map() const;
+
   /// @brief 正常回路の変数マップを得る．
   const VidMap&
   gvar_map() const;
@@ -75,6 +79,10 @@ public:
   /// @brief 伝搬条件の変数マップを得る．
   const VidMap&
   dvar_map() const;
+
+  /// @brief 1時刻前の正常値の変数を得る．
+  SatVarId
+  hvar(const TpgNode* node) const;
 
   /// @brief 正常値の変数を得る．
   SatVarId
@@ -240,12 +248,20 @@ ConeBase::output_list() const
   return mOutputList;
 }
 
+// @brief 1時刻前の正常回路の変数マップを得る．
+inline
+const VidMap&
+ConeBase::hvar_map() const
+{
+  return mStructSat.hvar_map();
+}
+
 // @brief 正常回路の変数マップを得る．
 inline
 const VidMap&
 ConeBase::gvar_map() const
 {
-  return mStructSat.var_map();
+  return mStructSat.gvar_map();
 }
 
 // @brief 故障回路の変数マップを得る．
@@ -264,12 +280,20 @@ ConeBase::dvar_map() const
   return mDvarMap;
 }
 
+// @brief 1時刻前の正常値の変数を得る．
+inline
+SatVarId
+ConeBase::hvar(const TpgNode* node) const
+{
+  return mStructSat.hvar(node);
+}
+
 // @brief 正常値の変数を得る．
 inline
 SatVarId
 ConeBase::gvar(const TpgNode* node) const
 {
-  return mStructSat.var(node);
+  return mStructSat.gvar(node);
 }
 
 // @brief 故障値の変数を得る．
@@ -294,7 +318,7 @@ ConeBase::dvar(const TpgNode* node) const
 inline
 void
 ConeBase::set_fvar(const TpgNode* node,
-		 SatVarId fvar)
+		   SatVarId fvar)
 {
   mFvarMap.set_vid(node, fvar);
 }

@@ -54,14 +54,23 @@ public:
   ymuint
   max_node_id() const;
 
-  /// @brief 変数マップを得る．
+  /// @brief 1時刻前の変数マップを得る．
   const VidMap&
-  var_map() const;
+  hvar_map() const;
 
-  /// @brief 変数番号を得る．
+  /// @brief 現在の変数マップを得る．
+  const VidMap&
+  gvar_map() const;
+
+  /// @brief 1時刻前の変数番号を得る．
   /// @param[in] node ノード
   SatVarId
-  var(const TpgNode* node) const;
+  hvar(const TpgNode* node) const;
+
+  /// @brief 現在の変数番号を得る．
+  /// @param[in] node ノード
+  SatVarId
+  gvar(const TpgNode* node) const;
 
 
 public:
@@ -158,16 +167,10 @@ public:
   void
   make_tfi_cnf(const TpgNode* node);
 
-  /// @brief node に関する故障伝搬条件を作る．
+  /// @brief node の TFI の CNF を作る．(1時刻前用)
   /// @param[in] node 対象のノード
-  /// @param[in] dst_node 終点のノード
-  /// @param[in] fvar_map 故障回路用の変数マップ
-  /// @param[in] dvar_map 故障差伝搬用の変数マップ
   void
-  make_dchain_cnf(const TpgNode* node,
-		  const TpgNode* dst_node,
-		  const VidMap& fvar_map,
-		  const VidMap& dvar_map);
+  make_tfi_cnf0(const TpgNode* node);
 
 
 public:
@@ -231,12 +234,19 @@ private:
   // 内部で用いられる関数
   //////////////////////////////////////////////////////////////////////
 
-  /// @brief ノードに正常値用の変数番号を割り当てる．
+  /// @brief ノードに1時刻前の正常値用の変数番号を割り当てる．
   /// @param[in] node ノード
   /// @param[in] var 変数番号
   void
-  set_var(const TpgNode* node,
-	  SatVarId var);
+  set_hvar(const TpgNode* node,
+	   SatVarId var);
+
+  /// @brief ノードに現在の正常値用の変数番号を割り当てる．
+  /// @param[in] node ノード
+  /// @param[in] var 変数番号
+  void
+  set_gvar(const TpgNode* node,
+	   SatVarId var);
 
   /// @brief ノードのマークを調べる．
   /// @param[in] node ノード
@@ -247,6 +257,16 @@ private:
   /// @param[in] node ノード
   void
   set_mark(const TpgNode* node);
+
+  /// @brief ノードのマークを調べる．
+  /// @param[in] node ノード
+  bool
+  mark0(const TpgNode* node) const;
+
+  /// @brief ノードにマークをつける．
+  /// @param[in] node ノード
+  void
+  set_mark0(const TpgNode* node);
 
 
 private:
@@ -263,8 +283,14 @@ private:
   // 処理済みのノードの印
   vector<bool> mMark;
 
-  // 変数マップ
-  GenVidMap mVarMap;
+  // 処理済みのノードの印(１時刻前用)
+  vector<bool> mMark0;
+
+  // 1時刻前の変数マップ
+  GenVidMap mHvarMap;
+
+  // 現在の変数マップ
+  GenVidMap mGvarMap;
 
   // fanout cone のリスト
   vector<FoCone*> mFoConeList;
@@ -298,21 +324,38 @@ StructSat::max_node_id() const
   return mMaxId;
 }
 
-// @brief 変数マップを得る．
+// @brief 1時刻前の変数マップを得る．
 inline
 const VidMap&
-StructSat::var_map() const
+StructSat::hvar_map() const
 {
-  return mVarMap;
+  return mHvarMap;
 }
 
-// @brief 変数番号を得る．
+// @brief 現在の変数マップを得る．
+inline
+const VidMap&
+StructSat::gvar_map() const
+{
+  return mGvarMap;
+}
+
+// @brief 1時刻前の変数番号を得る．
 // @param[in] node ノード
 inline
 SatVarId
-StructSat::var(const TpgNode* node) const
+StructSat::hvar(const TpgNode* node) const
 {
-  return mVarMap(node);
+  return mHvarMap(node);
+}
+
+// @brief 現在の変数番号を得る．
+// @param[in] node ノード
+inline
+SatVarId
+StructSat::gvar(const TpgNode* node) const
+{
+  return mGvarMap(node);
 }
 
 // @brief ノードのマークを調べる．
@@ -333,15 +376,44 @@ StructSat::set_mark(const TpgNode* node)
   mMark[node->id()] = true;
 }
 
-// @brief ノードに正常値用の変数番号を割り当てる．
+// @brief ノードのマークを調べる．
+// @param[in] node ノード
+inline
+bool
+StructSat::mark0(const TpgNode* node) const
+{
+  return mMark0[node->id()];
+}
+
+// @brief ノードにマークをつける．
+// @param[in] node ノード
+inline
+void
+StructSat::set_mark0(const TpgNode* node)
+{
+  mMark0[node->id()] = true;
+}
+
+// @brief ノードに1時刻前の正常値用の変数番号を割り当てる．
 // @param[in] node ノード
 // @param[in] var 変数番号
 inline
 void
-StructSat::set_var(const TpgNode* node,
-		   SatVarId var)
+StructSat::set_hvar(const TpgNode* node,
+		    SatVarId var)
 {
-  mVarMap.set_vid(node, var);
+  mHvarMap.set_vid(node, var);
+}
+
+// @brief ノードに現在の正常値用の変数番号を割り当てる．
+// @param[in] node ノード
+// @param[in] var 変数番号
+inline
+void
+StructSat::set_gvar(const TpgNode* node,
+		    SatVarId var)
+{
+  mGvarMap.set_vid(node, var);
 }
 
 // @brief チェックを行う．

@@ -158,17 +158,6 @@ public:
   void
   make_tfi_cnf(const TpgNode* node);
 
-  /// @brief node に関する故障伝搬条件を作る．
-  /// @param[in] node 対象のノード
-  /// @param[in] dst_node 終点のノード
-  /// @param[in] fvar_map 故障回路用の変数マップ
-  /// @param[in] dvar_map 故障差伝搬用の変数マップ
-  void
-  make_dchain_cnf(const TpgNode* node,
-		  const TpgNode* dst_node,
-		  const VidMap& fvar_map,
-		  const VidMap& dvar_map);
-
 
 public:
   //////////////////////////////////////////////////////////////////////
