@@ -28,6 +28,18 @@ SnOr::~SnOr()
 {
 }
 
+// @brief 1時刻前の正常値の計算を行う．
+PackedVal
+SnOr::_calc_hval()
+{
+  ymuint n = mNfi;
+  PackedVal new_val = mFanins[0]->hval();
+  for (ymuint i = 1; i < n; ++ i) {
+    new_val |= mFanins[i]->hval();
+  }
+  return new_val;
+}
+
 // @brief 正常値の計算を行う．
 PackedVal
 SnOr::_calc_gval()
@@ -109,6 +121,15 @@ SnOr2::gate_type() const
   return kGateOR;
 }
 
+// @brief 1時刻前の正常値の計算を行う．
+PackedVal
+SnOr2::_calc_hval()
+{
+  PackedVal pat0 = mFanins[0]->hval();
+  PackedVal pat1 = mFanins[1]->hval();
+  return pat0 | pat1;
+}
+
 // @brief 正常値の計算を行う．
 PackedVal
 SnOr2::_calc_gval()
@@ -165,6 +186,16 @@ GateType
 SnOr3::gate_type() const
 {
   return kGateOR;
+}
+
+// @brief 1時刻前の正常値の計算を行う．
+PackedVal
+SnOr3::_calc_hval()
+{
+  PackedVal pat0 = mFanins[0]->hval();
+  PackedVal pat1 = mFanins[1]->hval();
+  PackedVal pat2 = mFanins[2]->hval();
+  return pat0 | pat1 | pat2;
 }
 
 // @brief 正常値の計算を行う．
@@ -231,6 +262,17 @@ GateType
 SnOr4::gate_type() const
 {
   return kGateOR;
+}
+
+// @brief 1時刻前の正常値の計算を行う．
+PackedVal
+SnOr4::_calc_hval()
+{
+  PackedVal pat0 = mFanins[0]->hval();
+  PackedVal pat1 = mFanins[1]->hval();
+  PackedVal pat2 = mFanins[2]->hval();
+  PackedVal pat3 = mFanins[3]->hval();
+  return pat0 | pat1 | pat2 | pat3;
 }
 
 // @brief 正常値の計算を行う．
@@ -303,6 +345,18 @@ SnNor::gate_type() const
   return kGateNOR;
 }
 
+// @brief 1時刻前の正常値の計算を行う．
+PackedVal
+SnNor::_calc_hval()
+{
+  ymuint n = mNfi;
+  PackedVal new_val = mFanins[0]->hval();
+  for (ymuint i = 1; i < n; ++ i) {
+    new_val |= mFanins[i]->hval();
+  }
+  return ~new_val;
+}
+
 // @brief 正常値の計算を行う．
 PackedVal
 SnNor::_calc_gval()
@@ -363,6 +417,15 @@ SnNor2::gate_type() const
   return kGateNOR;
 }
 
+// @brief 1時刻前の正常値の計算を行う．
+PackedVal
+SnNor2::_calc_hval()
+{
+  PackedVal pat0 = mFanins[0]->hval();
+  PackedVal pat1 = mFanins[1]->hval();
+  return ~(pat0 | pat1);
+}
+
 // @brief 正常値の計算を行う．
 PackedVal
 SnNor2::_calc_gval()
@@ -412,6 +475,16 @@ GateType
 SnNor3::gate_type() const
 {
   return kGateNOR;
+}
+
+// @brief 1時刻前の正常値の計算を行う．
+PackedVal
+SnNor3::_calc_hval()
+{
+  PackedVal pat0 = mFanins[0]->hval();
+  PackedVal pat1 = mFanins[1]->hval();
+  PackedVal pat2 = mFanins[2]->hval();
+  return ~(pat0 | pat1 | pat2);
 }
 
 // @brief 正常値の計算を行う．
@@ -466,6 +539,17 @@ GateType
 SnNor4::gate_type() const
 {
   return kGateNOR;
+}
+
+// @brief 1時刻前の正常値の計算を行う．
+PackedVal
+SnNor4::_calc_hval()
+{
+  PackedVal pat0 = mFanins[0]->hval();
+  PackedVal pat1 = mFanins[1]->hval();
+  PackedVal pat2 = mFanins[2]->hval();
+  PackedVal pat3 = mFanins[3]->hval();
+  return ~(pat0 | pat1 | pat2 | pat3);
 }
 
 // @brief 正常値の計算を行う．

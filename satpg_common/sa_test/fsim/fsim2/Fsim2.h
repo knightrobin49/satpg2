@@ -127,6 +127,12 @@ private:
   void
   _sppfp(FsimOp& op);
 
+  /// @brief 正常値の計算を行う．
+  ///
+  /// 入力ノードに gval の設定は済んでいるものとする．
+  void
+  _calc_gval();
+
   /// @brief FFR 内の故障シミュレーションを行う．
   PackedVal
   ffr_simulate(SimFFR* ffr);

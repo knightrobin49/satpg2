@@ -35,6 +35,18 @@ SnAnd::gate_type() const
   return kGateAND;
 }
 
+// @brief 1時刻前の正常値の計算を行う．
+PackedVal
+SnAnd::_calc_hval()
+{
+  ymuint n = mNfi;
+  PackedVal new_val = mFanins[0]->hval();
+  for (ymuint i = 1; i < n; ++ i) {
+    new_val &= mFanins[i]->hval();
+  }
+  return new_val;
+}
+
 // @brief 正常値の計算を行う．
 PackedVal
 SnAnd::_calc_gval()
@@ -109,6 +121,15 @@ SnAnd2::gate_type() const
   return kGateAND;
 }
 
+// @brief 1時刻前の正常値の計算を行う．
+PackedVal
+SnAnd2::_calc_hval()
+{
+  PackedVal pat0 = mFanins[0]->hval();
+  PackedVal pat1 = mFanins[1]->hval();
+  return pat0 & pat1;
+}
+
 // @brief 正常値の計算を行う．
 PackedVal
 SnAnd2::_calc_gval()
@@ -165,6 +186,16 @@ GateType
 SnAnd3::gate_type() const
 {
   return kGateAND;
+}
+
+// @brief 1時刻前の正常値の計算を行う．
+PackedVal
+SnAnd3::_calc_hval()
+{
+  PackedVal pat0 = mFanins[0]->hval();
+  PackedVal pat1 = mFanins[1]->hval();
+  PackedVal pat2 = mFanins[2]->hval();
+  return pat0 & pat1 & pat2;
 }
 
 // @brief 正常値の計算を行う．
@@ -231,6 +262,17 @@ GateType
 SnAnd4::gate_type() const
 {
   return kGateAND;
+}
+
+// @brief 1時刻前の正常値の計算を行う．
+PackedVal
+SnAnd4::_calc_hval()
+{
+  PackedVal pat0 = mFanins[0]->hval();
+  PackedVal pat1 = mFanins[1]->hval();
+  PackedVal pat2 = mFanins[2]->hval();
+  PackedVal pat3 = mFanins[3]->hval();
+  return pat0 & pat1 & pat2 & pat3;
 }
 
 // @brief 正常値の計算を行う．
@@ -303,6 +345,18 @@ SnNand::gate_type() const
   return kGateNAND;
 }
 
+// @brief 1時刻前の正常値の計算を行う．
+PackedVal
+SnNand::_calc_hval()
+{
+  ymuint n = mNfi;
+  PackedVal new_val = mFanins[0]->hval();
+  for (ymuint i = 1; i < n; ++ i) {
+    new_val &= mFanins[i]->hval();
+  }
+  return ~new_val;
+}
+
 // @brief 正常値の計算を行う．
 PackedVal
 SnNand::_calc_gval()
@@ -363,6 +417,15 @@ SnNand2::gate_type() const
   return kGateNAND;
 }
 
+// @brief 1時刻前の正常値の計算を行う．
+PackedVal
+SnNand2::_calc_hval()
+{
+  PackedVal pat0 = mFanins[0]->hval();
+  PackedVal pat1 = mFanins[1]->hval();
+  return ~(pat0 & pat1);
+}
+
 // @brief 正常値の計算を行う．
 PackedVal
 SnNand2::_calc_gval()
@@ -412,6 +475,16 @@ GateType
 SnNand3::gate_type() const
 {
   return kGateNAND;
+}
+
+// @brief 1時刻前の正常値の計算を行う．
+PackedVal
+SnNand3::_calc_hval()
+{
+  PackedVal pat0 = mFanins[0]->hval();
+  PackedVal pat1 = mFanins[1]->hval();
+  PackedVal pat2 = mFanins[2]->hval();
+  return ~(pat0 & pat1 & pat2);
 }
 
 // @brief 正常値の計算を行う．
@@ -466,6 +539,17 @@ GateType
 SnNand4::gate_type() const
 {
   return kGateNAND;
+}
+
+// @brief 1時刻前の正常値の計算を行う．
+PackedVal
+SnNand4::_calc_hval()
+{
+  PackedVal pat0 = mFanins[0]->hval();
+  PackedVal pat1 = mFanins[1]->hval();
+  PackedVal pat2 = mFanins[2]->hval();
+  PackedVal pat3 = mFanins[3]->hval();
+  return ~(pat0 & pat1 & pat2 & pat3);
 }
 
 // @brief 正常値の計算を行う．

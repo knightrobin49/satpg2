@@ -158,6 +158,11 @@ public:
   void
   clear_fval();
 
+  /// @brief 1時刻前の正常値の計算を行う．
+  /// @note 結果は mHval にセットされる．
+  void
+  calc_hval();
+
   /// @brief 正常値の計算を行う．
   /// @note 結果は mGval にセットされる．
   void
@@ -209,6 +214,11 @@ public:
   //////////////////////////////////////////////////////////////////////
   // 派生クラスで実装する仮想関数
   //////////////////////////////////////////////////////////////////////
+
+  /// @brief 1時刻前の正常値の計算を行う．
+  virtual
+  PackedVal
+  _calc_hval() = 0;
 
   /// @brief 正常値の計算を行う．
   virtual
@@ -444,6 +454,15 @@ SimNode::clear_fval()
 {
   mFval = mGval;
   mFmask = kPvAll1;
+}
+
+// @brief 1時刻前の正常値の計算を行う．
+// @note 結果は mHval にセットされる．
+inline
+void
+SimNode::calc_hval()
+{
+  set_hval(_calc_hval());
 }
 
 // @brief 正常値の計算を行う．

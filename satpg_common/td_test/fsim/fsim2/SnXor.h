@@ -39,6 +39,11 @@ public:
   GateType
   gate_type() const;
 
+  /// @brief 1時刻前の正常値の計算を行う．
+  virtual
+  PackedVal
+  _calc_hval();
+
   /// @brief 正常値の計算を行う．
   virtual
   PackedVal
@@ -86,6 +91,11 @@ public:
   virtual
   GateType
   gate_type() const;
+
+  /// @brief 1時刻前の正常値の計算を行う．
+  virtual
+  PackedVal
+  _calc_hval();
 
   /// @brief 正常値の計算を行う．
   virtual
@@ -135,6 +145,11 @@ public:
   GateType
   gate_type() const;
 
+  /// @brief 1時刻前の正常値の計算を行う．
+  virtual
+  PackedVal
+  _calc_hval();
+
   /// @brief 正常値の計算を行う．
   virtual
   PackedVal
@@ -177,6 +192,11 @@ public:
   virtual
   GateType
   gate_type() const;
+
+  /// @brief 1時刻前の正常値の計算を行う．
+  virtual
+  PackedVal
+  _calc_hval();
 
   /// @brief 正常値の計算を行う．
   virtual

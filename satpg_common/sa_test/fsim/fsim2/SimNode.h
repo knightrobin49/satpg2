@@ -40,6 +40,9 @@ public:
 
 
 public:
+  //////////////////////////////////////////////////////////////////////
+  // 生成用のクラスメソッド
+  //////////////////////////////////////////////////////////////////////
 
   /// @brief 入力ノードを生成するクラスメソッド
   static
@@ -134,10 +137,6 @@ public:
   /// @brief 故障値をセットする．
   void
   set_fval(PackedVal pat);
-
-  /// @brief 故障値のマスクをセットする．
-  void
-  set_fmask(PackedVal mask);
 
   /// @brief 故障値を得る．
   PackedVal
@@ -258,9 +257,6 @@ private:
 
   // FFR 内のローカルな obs
   PackedVal mLobs;
-
-  // 故障値に対するマスク
-  PackedVal mFmask;
 
   // 名前
   const char* mName;
@@ -388,14 +384,6 @@ SimNode::set_fval(PackedVal pat)
   mFval = pat;
 }
 
-// @brief 故障値のマスクをセットする．
-inline
-void
-SimNode::set_fmask(PackedVal mask)
-{
-  mFmask = mask;
-}
-
 // @brief 故障値を得る．
 inline
 PackedVal
@@ -410,7 +398,6 @@ void
 SimNode::clear_fval()
 {
   mFval = mGval;
-  mFmask = kPvAll1;
 }
 
 // @brief 正常値の計算を行う．

@@ -52,6 +52,13 @@ SnInput::fanin(ymuint pos) const
   return nullptr;
 }
 
+// @brief 1時刻前の正常値の計算を行う．
+PackedVal
+SnInput::_calc_hval()
+{
+  return kPvAll0;
+}
+
 // @brief 正常値の計算を行う．
 PackedVal
 SnInput::_calc_gval()
@@ -104,6 +111,13 @@ SnBuff::gate_type() const
   return kGateBUFF;
 }
 
+// @brief 1時刻前の正常値の計算を行う．
+PackedVal
+SnBuff::_calc_hval()
+{
+  return mFanin->hval();
+}
+
 // @brief 正常値の計算を行う．
 PackedVal
 SnBuff::_calc_gval()
@@ -154,6 +168,13 @@ GateType
 SnNot::gate_type() const
 {
   return kGateNOT;
+}
+
+// @brief 1時刻前の正常値の計算を行う．
+PackedVal
+SnNot::_calc_hval()
+{
+  return ~mFanin->hval();
 }
 
 // @brief 正常値の計算を行う．

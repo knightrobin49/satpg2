@@ -35,6 +35,18 @@ SnXor::gate_type() const
   return kGateXOR;
 }
 
+// @brief 1時刻前の正常値の計算を行う．
+PackedVal
+SnXor::_calc_hval()
+{
+  ymuint n = mNfi;
+  PackedVal new_val = mFanins[0]->hval();
+  for (ymuint i = 1; i < n; ++ i) {
+    new_val ^= mFanins[i]->hval();
+  }
+  return new_val;
+}
+
 // @brief 正常値の計算を行う．
 PackedVal
 SnXor::_calc_gval()
@@ -102,6 +114,15 @@ SnXor2::gate_type() const
   return kGateXOR;
 }
 
+// @brief 1時刻前の正常値の計算を行う．
+PackedVal
+SnXor2::_calc_hval()
+{
+  PackedVal pat0 = mFanins[0]->hval();
+  PackedVal pat1 = mFanins[1]->hval();
+  return pat0 ^ pat1;
+}
+
 // @brief 正常値の計算を行う．
 PackedVal
 SnXor2::_calc_gval()
@@ -158,6 +179,18 @@ GateType
 SnXnor::gate_type() const
 {
   return kGateXNOR;
+}
+
+// @brief 1時刻前の正常値の計算を行う．
+PackedVal
+SnXnor::_calc_hval()
+{
+  ymuint n = mNfi;
+  PackedVal val = mFanins[0]->hval();
+  for (ymuint i = 1; i < n; ++ i) {
+    val ^= mFanins[i]->hval();
+  }
+  return ~val;
 }
 
 // @brief 正常値の計算を行う．
@@ -218,6 +251,15 @@ GateType
 SnXnor2::gate_type() const
 {
   return kGateXNOR;
+}
+
+// @brief 1時刻前の正常値の計算を行う．
+PackedVal
+SnXnor2::_calc_hval()
+{
+  PackedVal pat0 = mFanins[0]->hval();
+  PackedVal pat1 = mFanins[1]->hval();
+  return ~(pat0 ^ pat1);
 }
 
 // @brief 正常値の計算を行う．
