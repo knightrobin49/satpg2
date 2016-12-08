@@ -73,13 +73,7 @@ TestVector*
 TvMgr::new_vector()
 {
   void* p = mAlloc->get_memory(mTvSize);
-  TestVector* tv = new (p) TestVector(mInputNum);
-
-  // X に初期化しておく．
-  ymuint nb = TestVector::block_num(mVectLen);
-  for (ymuint i = 0; i < nb; ++ i) {
-    tv->mPat[i] = kPvAll0;
-  }
+  TestVector* tv = new (p) TestVector(mInputNum, mDffNum);
 
   return tv;
 }

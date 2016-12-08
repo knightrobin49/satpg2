@@ -17,9 +17,19 @@ BEGIN_NAMESPACE_YM_SATPG_TD
 
 // @brief コンストラクタ
 // @param[in] input_num 入力数
-TestVector::TestVector(ymuint input_num) :
-  mInputNum(input_num)
+// @param[in] dff_num DFF数
+TestVector::TestVector(ymuint input_num,
+		       ymuint dff_num) :
+  mInputNum(input_num),
+  mDffNum(dff_num)
 {
+  // X に初期化しておく．
+  ymuint nb = block_num(vect_len());
+  for (ymuint i = 0; i < nb; ++ i) {
+    mPat[i] = kPvAll0;
+  }
+
+  // マスクを設定する．
   ymuint k = vect_len() % kPvBitLen;
   mMask = kPvAll1 << (kPvBitLen - k);
 }

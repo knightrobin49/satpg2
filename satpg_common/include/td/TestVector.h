@@ -227,8 +227,10 @@ private:
 
   /// @brief コンストラクタ
   /// @param[in] input_num 入力数
+  /// @param[in] dff_num DFF数
   explicit
-  TestVector(ymuint input_num);
+  TestVector(ymuint input_num,
+	     ymuint dff_num);
 
   /// @brief デストラクタ
   ~TestVector();

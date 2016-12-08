@@ -19,6 +19,13 @@ BEGIN_NAMESPACE_YM_SATPG_SA
 TestVector::TestVector(ymuint input_num) :
   mInputNum(input_num)
 {
+  // X に初期化しておく．
+  ymuint nb = block_num(input_num);
+  for (ymuint i = 0; i < nb; ++ i) {
+    mPat[i] = kPvAll0;
+  }
+
+  // マスクを設定する．
   ymuint k = input_num % kPvBitLen;
   mMask = kPvAll1 << (kPvBitLen - k);
 }
