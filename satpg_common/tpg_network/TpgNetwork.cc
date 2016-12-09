@@ -9,11 +9,11 @@
 
 #include "TpgNetwork.h"
 #include "TpgNode.h"
-#include "TpgNodeInfo.h"
-#include "TpgNodeMap.h"
+#include "TpgGateInfo.h"
 #include "TpgFault.h"
 #include "TpgStemFault.h"
 #include "TpgBranchFault.h"
+#include "NodeMap.h"
 #include "AuxNodeInfo.h"
 
 #include "ym/BnBlifReader.h"
@@ -343,14 +343,14 @@ TpgNetwork::set(const BnNetwork& network)
   //////////////////////////////////////////////////////////////////////
   // NodeInfoMgr にノードの論理関数を登録する．
   //////////////////////////////////////////////////////////////////////
-  TpgNodeInfoMgr node_info_mgr;
+  TpgGateInfoMgr node_info_mgr;
   ymuint nexpr = network.expr_num();
-  vector<const TpgNodeInfo*> node_info_list(nexpr);
+  vector<const TpgGateInfo*> node_info_list(nexpr);
   ymuint extra_node_num = 0;
   for (ymuint i = 0; i < nexpr; ++ i) {
     Expr expr = network.expr(i);
     ymuint ni = expr.input_size();
-    const TpgNodeInfo* node_info = node_info_mgr.complex_type(ni, expr);
+    const TpgGateInfo* node_info = node_info_mgr.complex_type(ni, expr);
     node_info_list[i] = node_info;
   }
 
@@ -362,7 +362,7 @@ TpgNetwork::set(const BnNetwork& network)
     const BnNode* src_node = network.logic(i);
     BnLogicType logic_type = src_node->logic_type();
     if ( logic_type == kBnLt_EXPR ) {
-      const TpgNodeInfo* node_info = node_info_list[src_node->func_id()];
+      const TpgGateInfo* node_info = node_info_list[src_node->func_id()];
       extra_node_num += node_info->extra_node_num();
     }
     else if ( logic_type == kBnLt_XOR || logic_type == kBnLt_XNOR ) {
@@ -430,7 +430,7 @@ TpgNetwork::set(const BnNetwork& network)
   mPPOArray = new TpgNode*[mOutputNum + mDffNum];
   mPPOArray2 = new TpgNode*[mOutputNum + mDffNum];
 
-  TpgNodeMap node_map;
+  NodeMap node_map;
 
   mNodeNum = 0;
   mFaultNum = 0;
@@ -474,7 +474,7 @@ TpgNetwork::set(const BnNetwork& network)
   //////////////////////////////////////////////////////////////////////
   for (ymuint i = 0; i < nl; ++ i) {
     const BnNode* src_node = network.logic(i);
-    const TpgNodeInfo* node_info = nullptr;
+    const TpgGateInfo* node_info = nullptr;
     BnLogicType logic_type = src_node->logic_type();
     if ( logic_type == kBnLt_EXPR ) {
       node_info = node_info_list[src_node->func_id()];
@@ -975,7 +975,7 @@ TpgNetwork::make_dff_preset_node(TpgDff* dff,
 // @return 生成したノードを返す．
 TpgNode*
 TpgNetwork::make_logic_node(const string& src_name,
-			    const TpgNodeInfo* node_info,
+			    const TpgGateInfo* node_info,
 			    const vector<TpgNode*>& fanin_list,
 			    ymuint fanout_num)
 {

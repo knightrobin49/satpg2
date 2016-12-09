@@ -102,8 +102,8 @@ class TpgFault;
 class FaultMgr;
 class TpgNetwork;
 class TpgDff;
+class TpgGateInfo;
 class TpgNode;
-class TpgNodeInfo;
 class MffcInfo;
 
 class LitMap;

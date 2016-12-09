@@ -328,7 +328,7 @@ private:
   /// @return 生成したノードを返す．
   TpgNode*
   make_logic_node(const string& name,
-		  const TpgNodeInfo* node_info,
+		  const TpgGateInfo* node_info,
 		  const vector<TpgNode*>& fanin_list,
 		  ymuint fanout_num);
 

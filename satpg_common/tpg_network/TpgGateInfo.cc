@@ -1,15 +1,15 @@
 
-/// @file TpgNodeInfo.cc
-/// @brief TpgNodeInfo の実装ファイル
+/// @file TpgGateInfo.cc
+/// @brief TpgGateInfo の実装ファイル
 /// @author Yusuke Matsunaga (松永 裕介)
 ///
 /// Copyright (C) 2016 Yusuke Matsunaga
 /// All rights reserved.
 
 
-#include "TpgNodeInfo.h"
-#include "SimpleTpgNodeInfo.h"
-#include "CplxTpgNodeInfo.h"
+#include "TpgGateInfo.h"
+#include "SimpleGateInfo.h"
+#include "CplxGateInfo.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG
@@ -199,12 +199,12 @@ END_NONAMESPACE
 
 
 //////////////////////////////////////////////////////////////////////
-// クラス SimpleTpgNodeInfo
+// クラス SimpleGateInfo
 //////////////////////////////////////////////////////////////////////
 
 // @brief コンストラクタ
 // @param[in] gate_type ゲートタイプ
-SimpleTpgNodeInfo::SimpleTpgNodeInfo(GateType gate_type) :
+SimpleGateInfo::SimpleGateInfo(GateType gate_type) :
   mGateType(gate_type)
 {
   mCVal[0] = c_val(gate_type, kVal0);
@@ -212,20 +212,20 @@ SimpleTpgNodeInfo::SimpleTpgNodeInfo(GateType gate_type) :
 }
 
 // @brief デストラクタ
-SimpleTpgNodeInfo::~SimpleTpgNodeInfo()
+SimpleGateInfo::~SimpleGateInfo()
 {
 }
 
 // @brief ゲートタイプを返す．
 GateType
-SimpleTpgNodeInfo::gate_type() const
+SimpleGateInfo::gate_type() const
 {
   return mGateType;
 }
 
 // @brief 論理式を返す．
 Expr
-SimpleTpgNodeInfo::expr() const
+SimpleGateInfo::expr() const
 {
   // ダミー
   return Expr::make_zero();
@@ -233,7 +233,7 @@ SimpleTpgNodeInfo::expr() const
 
 // @brief 追加ノード数を返す．
 ymuint
-SimpleTpgNodeInfo::extra_node_num() const
+SimpleGateInfo::extra_node_num() const
 {
   return 0;
 }
@@ -242,8 +242,8 @@ SimpleTpgNodeInfo::extra_node_num() const
 // @param[in] pos 入力位置
 // @param[in] val 値
 Val3
-SimpleTpgNodeInfo::cval(ymuint pos,
-			Val3 val) const
+SimpleGateInfo::cval(ymuint pos,
+		     Val3 val) const
 {
   int bval = (val == kVal0) ? 0 : 1;
   return mCVal[bval];
@@ -251,13 +251,13 @@ SimpleTpgNodeInfo::cval(ymuint pos,
 
 
 //////////////////////////////////////////////////////////////////////
-// クラス CplxTpgNodeInfo
+// クラス CplxGateInfo
 //////////////////////////////////////////////////////////////////////
 
 // @brief コンストラクタ
 // @param[in] expr 論理式
-CplxTpgNodeInfo::CplxTpgNodeInfo(ymuint ni,
-				 const Expr& expr) :
+CplxGateInfo::CplxGateInfo(ymuint ni,
+			   const Expr& expr) :
   mExpr(expr),
   mCVal(ni * 2)
 {
@@ -269,27 +269,27 @@ CplxTpgNodeInfo::CplxTpgNodeInfo(ymuint ni,
 }
 
 // @brief デストラクタ
-CplxTpgNodeInfo::~CplxTpgNodeInfo()
+CplxGateInfo::~CplxGateInfo()
 {
 }
 
 // @brief ゲートタイプを返す．
 GateType
-CplxTpgNodeInfo::gate_type() const
+CplxGateInfo::gate_type() const
 {
   return kGateCPLX;
 }
 
 // @brief 論理式を返す．
 Expr
-CplxTpgNodeInfo::expr() const
+CplxGateInfo::expr() const
 {
   return mExpr;
 }
 
 // @brief 追加ノード数を返す．
 ymuint
-CplxTpgNodeInfo::extra_node_num() const
+CplxGateInfo::extra_node_num() const
 {
   return mExtraNodeNum;
 }
@@ -298,8 +298,8 @@ CplxTpgNodeInfo::extra_node_num() const
 // @param[in] pos 入力位置
 // @param[in] val 値
 Val3
-CplxTpgNodeInfo::cval(ymuint pos,
-		      Val3 val) const
+CplxGateInfo::cval(ymuint pos,
+		   Val3 val) const
 {
   int bval = (val == kVal0) ? 0 : 1;
   return mCVal[pos * 2 + bval];
@@ -307,26 +307,26 @@ CplxTpgNodeInfo::cval(ymuint pos,
 
 
 //////////////////////////////////////////////////////////////////////
-// クラス TpgNodeInfoMgr
+// クラス TpgGateInfoMgr
 //////////////////////////////////////////////////////////////////////
 
 // @brief コンストラクタ
-TpgNodeInfoMgr::TpgNodeInfoMgr()
+TpgGateInfoMgr::TpgGateInfoMgr()
 {
-  mSimpleType[0] = new SimpleTpgNodeInfo(kGateCONST0);
-  mSimpleType[1] = new SimpleTpgNodeInfo(kGateCONST1);
-  mSimpleType[2] = new SimpleTpgNodeInfo(kGateBUFF);
-  mSimpleType[3] = new SimpleTpgNodeInfo(kGateNOT);
-  mSimpleType[4] = new SimpleTpgNodeInfo(kGateAND);
-  mSimpleType[5] = new SimpleTpgNodeInfo(kGateNAND);
-  mSimpleType[6] = new SimpleTpgNodeInfo(kGateOR);
-  mSimpleType[7] = new SimpleTpgNodeInfo(kGateNOR);
-  mSimpleType[8] = new SimpleTpgNodeInfo(kGateXOR);
-  mSimpleType[9] = new SimpleTpgNodeInfo(kGateXNOR);
+  mSimpleType[0] = new SimpleGateInfo(kGateCONST0);
+  mSimpleType[1] = new SimpleGateInfo(kGateCONST1);
+  mSimpleType[2] = new SimpleGateInfo(kGateBUFF);
+  mSimpleType[3] = new SimpleGateInfo(kGateNOT);
+  mSimpleType[4] = new SimpleGateInfo(kGateAND);
+  mSimpleType[5] = new SimpleGateInfo(kGateNAND);
+  mSimpleType[6] = new SimpleGateInfo(kGateOR);
+  mSimpleType[7] = new SimpleGateInfo(kGateNOR);
+  mSimpleType[8] = new SimpleGateInfo(kGateXOR);
+  mSimpleType[9] = new SimpleGateInfo(kGateXNOR);
 }
 
 // @brief デストラクタ
-TpgNodeInfoMgr::~TpgNodeInfoMgr()
+TpgGateInfoMgr::~TpgGateInfoMgr()
 {
   for (ymuint i = 0; i < 10; ++ i) {
     delete mSimpleType[i];
@@ -338,8 +338,8 @@ TpgNodeInfoMgr::~TpgNodeInfoMgr()
 
 // @brief 組み込み型のオブジェクトを返す．
 // @param[in] gate_type ゲートタイプ
-const TpgNodeInfo*
-TpgNodeInfoMgr::simple_type(GateType gate_type)
+const TpgGateInfo*
+TpgGateInfoMgr::simple_type(GateType gate_type)
 {
   switch ( gate_type ) {
   case kGateCONST0: return mSimpleType[0];
@@ -361,11 +361,11 @@ TpgNodeInfoMgr::simple_type(GateType gate_type)
 // @brief 複合型のオブジェクトを返す．
 // @param[in] ni 入力数
 // @param[in] expr 論理式
-const TpgNodeInfo*
-TpgNodeInfoMgr::complex_type(ymuint ni,
+const TpgGateInfo*
+TpgGateInfoMgr::complex_type(ymuint ni,
 			     const Expr& expr)
 {
-  TpgNodeInfo* node_info = new CplxTpgNodeInfo(ni, expr);
+  TpgGateInfo* node_info = new CplxGateInfo(ni, expr);
   mList.push_back(node_info);
   return node_info;
 }

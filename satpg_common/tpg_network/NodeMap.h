@@ -1,8 +1,8 @@
-#ifndef TPGNODEMAP_H
-#define TPGNODEMAP_H
+#ifndef NODEMAP_H
+#define NODEMAP_H
 
-/// @file TpgNodeMap.h
-/// @brief TpgNodeMap のヘッダファイル
+/// @file NodeMap.h
+/// @brief NodeMap のヘッダファイル
 /// @author Yusuke Matsunaga (松永 裕介)
 ///
 /// Copyright (C) 2016 Yusuke Matsunaga
@@ -16,18 +16,18 @@
 BEGIN_NAMESPACE_YM_SATPG
 
 //////////////////////////////////////////////////////////////////////
-/// @class TpgNodeMap TpgNodeMap.h "TpgNodeMap.h"
+/// @class NodeMap NodeMap.h "NodeMap.h"
 /// @brief BnNode と TpgNode の対応を記録するクラス
 //////////////////////////////////////////////////////////////////////
-class TpgNodeMap
+class NodeMap
 {
 public:
 
   /// @brief コンストラクタ
-  TpgNodeMap();
+  NodeMap();
 
   /// @brief デストラクタ
-  ~TpgNodeMap();
+  ~NodeMap();
 
 
 public:
@@ -65,4 +65,4 @@ private:
 
 END_NAMESPACE_YM_SATPG
 
-#endif // TPGNODEMAP_H
+#endif // NODEMAP_H

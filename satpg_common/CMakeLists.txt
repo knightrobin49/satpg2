@@ -14,12 +14,11 @@ set (base_SOURCES
 set (tpg_network_SOURCES
   tpg_network/FaultMgr.cc
   tpg_network/TpgFault.cc
-  tpg_network/TpgMap.cc
   tpg_network/TpgNetwork.cc
   tpg_network/TpgDff.cc
+  tpg_network/TpgGateInfo.cc
   tpg_network/TpgNode.cc
-  tpg_network/TpgNodeInfo.cc
-  tpg_network/TpgNodeMap.cc
+  tpg_network/NodeMap.cc
   tpg_network/TpgPPI.cc
   tpg_network/TpgPPO.cc
   tpg_network/TpgInput.cc

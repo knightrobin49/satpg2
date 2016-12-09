@@ -1,37 +1,35 @@
-#ifndef CPLXTPGNODEINFO_H
-#define CPLXTPGNODEINFO_H
+#ifndef SIMPLEGATEINFO_H
+#define SIMPLEGATEINFO_H
 
-/// @file CplxTpgNodeInfo.h
-/// @brief CplxTpgNodeInfo のヘッダファイル
+/// @file SimpleGateInfo.h
+/// @brief SimpleGateInfo のヘッダファイル
 /// @author Yusuke Matsunaga (松永 裕介)
 ///
 /// Copyright (C) 2016 Yusuke Matsunaga
 /// All rights reserved.
 
-#include "TpgNodeInfo.h"
-#include "ym/Expr.h"
+
+#include "TpgGateInfo.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG
 
 //////////////////////////////////////////////////////////////////////
-/// @class CplxTpgNodeInfo CplxTpgNodeInfo.h "CplxTpgNodeInfo.h"
-/// @brief 複合型の TpgNodeInfo
+/// @class SimpleGateInfo SimpleGateInfo.h "SimpleGateInfo.h"
+/// @brief 組み込み型の TpgGateInfo
 //////////////////////////////////////////////////////////////////////
-class CplxTpgNodeInfo :
-  public TpgNodeInfo
+class SimpleGateInfo :
+  public TpgGateInfo
 {
 public:
 
   /// @brief コンストラクタ
-  /// @param[in] ni 入力数
-  /// @param[in] expr 論理式
-  CplxTpgNodeInfo(ymuint ni,
-		  const Expr& expr);
+  /// @param[in] gate_type ゲートタイプ
+  SimpleGateInfo(GateType gate_type);
 
   /// @brief デストラクタ
   virtual
-  ~CplxTpgNodeInfo();
+  ~SimpleGateInfo();
 
 
 public:
@@ -74,17 +72,14 @@ private:
   // データメンバ
   //////////////////////////////////////////////////////////////////////
 
-  // 論理式
-  Expr mExpr;
+  // ゲートタイプ
+  GateType mGateType;
 
-  // 追加のノード数
-  ymuint mExtraNodeNum;
-
-  // 制御値の配列
-  vector<Val3> mCVal;
+  // 制御値
+  Val3 mCVal[2];
 
 };
 
 END_NAMESPACE_YM_SATPG
 
-#endif // CPLXTPGNODEINFO_H
+#endif // SIMPLEGATEINFO_H

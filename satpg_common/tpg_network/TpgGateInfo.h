@@ -1,11 +1,11 @@
-﻿#ifndef TPGNODEINFO_H
-#define TPGNODEINFO_H
+﻿#ifndef TPGGATEINFO_H
+#define TPGGATEINFO_H
 
-/// @file TpgNodeInfo.h
-/// @brief TpgNodeInfo のヘッダファイル
+/// @file TpgGateInfo.h
+/// @brief TpgGateInfo のヘッダファイル
 /// @author Yusuke Matsunaga (松永 裕介)
 ///
-/// Copyright (C) 2005-2014, 2016 Yusuke Matsunaga
+/// Copyright (C) 2016 Yusuke Matsunaga
 /// All rights reserved.
 
 
@@ -19,20 +19,20 @@
 BEGIN_NAMESPACE_YM_SATPG
 
 //////////////////////////////////////////////////////////////////////
-/// @class TpgNodeInfo TpgNodeInfo.h "TpgNodeInfo.h"
+/// @class TpgGateInfo TpgGateInfo.h "TpgGateInfo.h"
 /// @brief TpgNode の論理関数の情報を格納するクラス
 ///
 /// - 追加ノード数
 /// - 制御値
 /// の情報を持つ．
 //////////////////////////////////////////////////////////////////////
-class TpgNodeInfo
+class TpgGateInfo
 {
 public:
 
   /// @brief デストラクタ
   virtual
-  ~TpgNodeInfo() { }
+  ~TpgGateInfo() { }
 
 
 public:
@@ -67,18 +67,18 @@ public:
 
 
 //////////////////////////////////////////////////////////////////////
-/// @class TpgNodeInfoMgr TpgNodeInfoMgr.h "TpgNodeInfoMgr.h"
-/// @brief TpgNodeInfo を管理するクラス
+/// @class TpgGateInfoMgr TpgGateInfoMgr.h "TpgGateInfoMgr.h"
+/// @brief TpgGateInfo を管理するクラス
 //////////////////////////////////////////////////////////////////////
-class TpgNodeInfoMgr
+class TpgGateInfoMgr
 {
 public:
 
   /// @brief コンストラクタ
-  TpgNodeInfoMgr();
+  TpgGateInfoMgr();
 
   /// @brief デストラクタ
-  ~TpgNodeInfoMgr();
+  ~TpgGateInfoMgr();
 
 
 public:
@@ -88,13 +88,13 @@ public:
 
   /// @brief 組み込み型のオブジェクトを返す．
   /// @param[in] gate_type ゲートタイプ
-  const TpgNodeInfo*
+  const TpgGateInfo*
   simple_type(GateType gate_type);
 
   /// @brief 複合型のオブジェクトを返す．
   /// @param[in] ni 入力数
   /// @param[in] expr 論理式
-  const TpgNodeInfo*
+  const TpgGateInfo*
   complex_type(ymuint ni,
 	       const Expr& expr);
 
@@ -111,13 +111,13 @@ private:
   //////////////////////////////////////////////////////////////////////
 
   // 組み込み型のオブジェクトの配列
-  TpgNodeInfo* mSimpleType[10];
+  TpgGateInfo* mSimpleType[10];
 
   // 普通のオブジェクトのリスト
-  vector<TpgNodeInfo*> mList;
+  vector<TpgGateInfo*> mList;
 
 };
 
 END_NAMESPACE_YM_SATPG
 
-#endif // TPGNODEINFO_H
+#endif // TPGGATEINFO_H
