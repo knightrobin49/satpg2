@@ -8,9 +8,6 @@
 #  ソースファイルの設定
 # ===================================================================
 
-set (base_SOURCES
-  )
-
 set (tpg_network_SOURCES
   tpg_network/FaultMgr.cc
   tpg_network/TpgFault.cc
@@ -40,123 +37,124 @@ set (tpg_network_SOURCES
   tpg_network/TpgLogicNOR.cc
   tpg_network/TpgLogicXOR.cc
   tpg_network/TpgLogicXNOR.cc
+
+  tpg_network/VectLitMap.cc
+  tpg_network/VidLitMap.cc
+  tpg_network/GenVidMap.cc
   )
 
-set (sa_test_SOURCES
-  sa_test/dtpg/bt/BackTracer.cc
-  sa_test/dtpg/bt/BtImpl.cc
-  sa_test/dtpg/bt/BtJust1.cc
-  sa_test/dtpg/bt/BtJust2.cc
-  sa_test/dtpg/bt/BtJustBase.cc
-  sa_test/dtpg/bt/BtSimple.cc
+set (sa_SOURCES
+  sa/bt/BackTracer.cc
+  sa/bt/BtImpl.cc
+  sa/bt/BtJust1.cc
+  sa/bt/BtJust2.cc
+  sa/bt/BtJustBase.cc
+  sa/bt/BtSimple.cc
 
-  sa_test/dtpg/dop/DopBase.cc
-  sa_test/dtpg/dop/DopDrop.cc
-  sa_test/dtpg/dop/DopDummy.cc
-  sa_test/dtpg/dop/DopList.cc
-  sa_test/dtpg/dop/DopTvList.cc
-  sa_test/dtpg/dop/DopVerify.cc
-  sa_test/dtpg/dop/FopDrop.cc
+  sa/dop/DopBase.cc
+  sa/dop/DopDrop.cc
+  sa/dop/DopDummy.cc
+  sa/dop/DopList.cc
+  sa/dop/DopTvList.cc
+  sa/dop/DopVerify.cc
+  sa/dop/FopDrop.cc
 
-  sa_test/dtpg/main/DtpgSat.cc
-  sa_test/dtpg/main/DtpgSatS.cc
-  sa_test/dtpg/main/DtpgSatH.cc
+  sa/dtpg/DtpgSat.cc
+  sa/dtpg/DtpgSatS.cc
+  sa/dtpg/DtpgSatH.cc
 
-  sa_test/dtpg/uop/UopBase.cc
-  sa_test/dtpg/uop/UopDummy.cc
-  sa_test/dtpg/uop/UopList.cc
-  sa_test/dtpg/uop/UopSkip.cc
+  sa/uop/UopBase.cc
+  sa/uop/UopDummy.cc
+  sa/uop/UopList.cc
+  sa/uop/UopSkip.cc
 
-  sa_test/fsim/fop/FopKDet.cc
+  sa/fop/FopKDet.cc
 
-  sa_test/fsim/fsim2/EventQ.cc
-  sa_test/fsim/fsim2/Fsim2.cc
-  sa_test/fsim/fsim2/SimNode.cc
-  sa_test/fsim/fsim2/SnAnd.cc
-  sa_test/fsim/fsim2/SnGate.cc
-  sa_test/fsim/fsim2/SnInput.cc
-  sa_test/fsim/fsim2/SnOr.cc
-  sa_test/fsim/fsim2/SnXor.cc
+  sa/fsim2/EventQ.cc
+  sa/fsim2/Fsim2.cc
+  sa/fsim2/SimNode.cc
+  sa/fsim2/SnAnd.cc
+  sa/fsim2/SnGate.cc
+  sa/fsim2/SnInput.cc
+  sa/fsim2/SnOr.cc
+  sa/fsim2/SnXor.cc
 
-  sa_test/fsim/fsim3/EventQ.cc
-  sa_test/fsim/fsim3/Fsim3.cc
-  sa_test/fsim/fsim3/SimNode.cc
-  sa_test/fsim/fsim3/SnAnd.cc
-  sa_test/fsim/fsim3/SnGate.cc
-  sa_test/fsim/fsim3/SnInput.cc
-  sa_test/fsim/fsim3/SnOr.cc
-  sa_test/fsim/fsim3/SnXor.cc
+  sa/fsim3/EventQ.cc
+  sa/fsim3/Fsim3.cc
+  sa/fsim3/SimNode.cc
+  sa/fsim3/SnAnd.cc
+  sa/fsim3/SnGate.cc
+  sa/fsim3/SnInput.cc
+  sa/fsim3/SnOr.cc
+  sa/fsim3/SnXor.cc
 
-  sa_test/minpat/DetOp.cc
-  sa_test/minpat/Verifier.cc
-  sa_test/minpat/MinPatBase.cc
-  sa_test/minpat/MinPatNaive.cc
-  sa_test/minpat/MinPatSimple.cc
-  sa_test/minpat/MinPatSimple2.cc
-  sa_test/minpat/MinPatDsatur.cc
-  sa_test/minpat/MinPatDsatur2.cc
-  sa_test/minpat/FaultAnalyzer.cc
-  sa_test/minpat/EqChecker.cc
-  sa_test/minpat/DomChecker.cc
-  sa_test/minpat/ConflictChecker.cc
-  sa_test/minpat/FgMgrBase.cc
-  sa_test/minpat/Compactor.cc
-  sa_test/minpat/EqSet.cc
-  sa_test/minpat/McOp.cc
-  sa_test/minpat/McCompactor.cc
+  sa/minpat/DetOp.cc
+  sa/minpat/Verifier.cc
+  sa/minpat/MinPatBase.cc
+  sa/minpat/MinPatNaive.cc
+  sa/minpat/MinPatSimple.cc
+  sa/minpat/MinPatSimple2.cc
+  sa/minpat/MinPatDsatur.cc
+  sa/minpat/MinPatDsatur2.cc
+  sa/minpat/FaultAnalyzer.cc
+  sa/minpat/EqChecker.cc
+  sa/minpat/DomChecker.cc
+  sa/minpat/ConflictChecker.cc
+  sa/minpat/FgMgrBase.cc
+  sa/minpat/Compactor.cc
+  sa/minpat/EqSet.cc
+  sa/minpat/McOp.cc
+  sa/minpat/McCompactor.cc
 
-  sa_test/rtpg/FopRtpg.cc
-  sa_test/rtpg/RtpgImpl.cc
+  sa/rtpg/FopRtpg.cc
+  sa/rtpg/RtpgImpl.cc
 
-  sa_test/struct_sat/StructSat.cc
-  sa_test/struct_sat/ConeBase.cc
-  sa_test/struct_sat/FoCone.cc
-  sa_test/struct_sat/MffcCone.cc
-  sa_test/struct_sat/NodeValList.cc
-  sa_test/struct_sat/Extractor.cc
-  sa_test/struct_sat/LitMap.cc
-  sa_test/struct_sat/ModelValMap.cc
-  sa_test/struct_sat/VidLitMap.cc
-  sa_test/struct_sat/GenVidMap.cc
+  sa/struct_sat/StructSat.cc
+  sa/struct_sat/ConeBase.cc
+  sa/struct_sat/FoCone.cc
+  sa/struct_sat/MffcCone.cc
+  sa/struct_sat/NodeValList.cc
+  sa/struct_sat/Extractor.cc
+  sa/struct_sat/ModelValMap.cc
 
-  sa_test/tvect/TestVector.cc
-  sa_test/tvect/TvMgr.cc
+  sa/tvect/TestVector.cc
+  sa/tvect/TvMgr.cc
   )
 
-set (td_test_SOURCES
-  td_test/dtpg/bt/BackTracer.cc
-  td_test/dtpg/bt/BtImpl.cc
-  td_test/dtpg/bt/BtJust1.cc
-  td_test/dtpg/bt/BtJust2.cc
-  td_test/dtpg/bt/BtJustBase.cc
-  td_test/dtpg/bt/BtSimple.cc
+set (td_SOURCES
+  td/bt/BackTracer.cc
+  td/bt/BtImpl.cc
+  td/bt/BtJust1.cc
+  td/bt/BtJust2.cc
+  td/bt/BtJustBase.cc
+  td/bt/BtSimple.cc
 
-  td_test/dtpg/main/DtpgSat.cc
-  td_test/dtpg/main/DtpgSatS.cc
+  td/dtpg/DtpgSat.cc
+  td/dtpg/DtpgSatS.cc
 
-  td_test/fsim/fsim2/EventQ.cc
-  td_test/fsim/fsim2/Fsim2.cc
-  td_test/fsim/fsim2/SimNode.cc
-  td_test/fsim/fsim2/SnAnd.cc
-  td_test/fsim/fsim2/SnGate.cc
-  td_test/fsim/fsim2/SnInput.cc
-  td_test/fsim/fsim2/SnOr.cc
-  td_test/fsim/fsim2/SnXor.cc
+  td/fsim2/EventQ.cc
+  td/fsim2/Fsim2.cc
+  td/fsim2/SimNode.cc
+  td/fsim2/SnAnd.cc
+  td/fsim2/SnGate.cc
+  td/fsim2/SnInput.cc
+  td/fsim2/SnOr.cc
+  td/fsim2/SnXor.cc
 
-  td_test/rtpg/FopRtpg.cc
-  td_test/rtpg/RtpgP1.cc
-  td_test/rtpg/RtpgP2.cc
+  td/rtpg/FopRtpg.cc
+  td/rtpg/RtpgP1.cc
+  td/rtpg/RtpgP2.cc
 
-  td_test/struct_sat/StructSat.cc
-  td_test/struct_sat/ConeBase.cc
-  td_test/struct_sat/FoCone.cc
-  td_test/struct_sat/MffcCone.cc
-  td_test/struct_sat/NodeValList.cc
-  td_test/struct_sat/ModelValMap.cc
-  td_test/struct_sat/Extractor.cc
+  td/struct_sat/StructSat.cc
+  td/struct_sat/ConeBase.cc
+  td/struct_sat/FoCone.cc
+  td/struct_sat/MffcCone.cc
+  td/struct_sat/NodeValList.cc
+  td/struct_sat/ModelValMap.cc
+  td/struct_sat/Extractor.cc
 
-  td_test/tvect/TestVector.cc
-  td_test/tvect/TvMgr.cc
+  td/tvect/TestVector.cc
+  td/tvect/TvMgr.cc
   )
 
 
@@ -164,8 +162,8 @@ set (td_test_SOURCES
 # ターゲットの設定
 # ===================================================================
 ym_add_object_library ( satpg_common
-  ${sa_test_SOURCES}
-  ${td_test_SOURCES}
+  ${sa_SOURCES}
+  ${td_SOURCES}
   ${tpg_network_SOURCES}
   )
 

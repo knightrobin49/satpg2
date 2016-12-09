@@ -3,7 +3,7 @@
 # インクルードパスの設定
 # ===================================================================
 include_directories(
-  ${PROJECT_SOURCE_DIR}/satpg_common/sa_test/fsim/fsim2
+  ${PROJECT_SOURCE_DIR}/satpg_common/sa/fsim2
   )
 
 
