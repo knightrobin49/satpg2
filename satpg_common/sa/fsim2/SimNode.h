@@ -1,5 +1,5 @@
-﻿#ifndef FSIM2_SIMNODE_H
-#define FSIM2_SIMNODE_H
+﻿#ifndef FSIM_SIMNODE_H
+#define FSIM_SIMNODE_H
 
 /// @file SimNode.h
 /// @brief SimNode のヘッダファイル
@@ -15,7 +15,7 @@
 #include "PackedVal.h"
 
 
-BEGIN_NAMESPACE_YM_SATPG_FSIM2
+BEGIN_NAMESPACE_YM_SATPG_FSIM
 
 class SimFFR;
 
@@ -446,6 +446,6 @@ SimNode::name() const
   return mName;
 }
 
-END_NAMESPACE_YM_SATPG_FSIM2
+END_NAMESPACE_YM_SATPG_FSIM
 
-#endif // FSIM2_SIMNODE_H
+#endif // FSIM_SIMNODE_H

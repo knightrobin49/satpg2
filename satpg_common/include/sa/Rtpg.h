@@ -10,7 +10,7 @@
 /// All rights reserved.
 
 
-#include "sa/satpg_sa.h"
+#include "sa/sa_nsdef.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG_SA

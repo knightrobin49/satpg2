@@ -12,7 +12,7 @@
 #include "fsim2_nsdef.h"
 
 
-BEGIN_NAMESPACE_YM_SATPG_FSIM2
+BEGIN_NAMESPACE_YM_SATPG_FSIM
 
 class SimNode;
 class SimFault;
@@ -101,6 +101,6 @@ SimFFR::fault_list()
   return mFaultList;
 }
 
-END_NAMESPACE_YM_SATPG_FSIM2
+END_NAMESPACE_YM_SATPG_FSIM
 
 #endif // SIMFFR_H

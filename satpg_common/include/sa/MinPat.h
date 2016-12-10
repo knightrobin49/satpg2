@@ -10,7 +10,7 @@
 /// All rights reserved.
 
 
-#include "sa/satpg_sa.h"
+#include "sa/sa_nsdef.h"
 #include "ym/USTime.h"
 
 

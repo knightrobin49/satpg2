@@ -1,5 +1,5 @@
-﻿#ifndef FSIM2_H
-#define FSIM2_H
+﻿#ifndef FSIM_H
+#define FSIM_H
 
 /// @file Fsim2.h
 /// @brief Fsim2 のヘッダファイル
@@ -19,7 +19,7 @@
 #include "TpgNode.h"
 
 
-BEGIN_NAMESPACE_YM_SATPG_FSIM2
+BEGIN_NAMESPACE_YM_SATPG_FSIM
 
 class SimFFR;
 class SimNode;
@@ -213,6 +213,6 @@ private:
 
 };
 
-END_NAMESPACE_YM_SATPG_FSIM2
+END_NAMESPACE_YM_SATPG_FSIM
 
-#endif // FSIM2_H
+#endif // FSIM_H

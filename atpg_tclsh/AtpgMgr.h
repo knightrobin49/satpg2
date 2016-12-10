@@ -11,8 +11,8 @@
 
 
 #include "satpg.h"
-#include "sa/satpg_sa.h"
-#include "td/satpg_td.h"
+#include "sa/sa_nsdef.h"
+#include "td/td_nsdef.h"
 
 #include "TpgNetwork.h"
 #include "ym/ym_cell.h"

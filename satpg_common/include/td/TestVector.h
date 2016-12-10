@@ -8,7 +8,7 @@
 /// Copyright (C) 2016 Yusuke Matsunaga
 /// All rights reserved.
 
-#include "td/satpg_td.h"
+#include "td/td_nsdef.h"
 #include "Val3.h"
 #include "PackedVal.h"
 #include "ym/RandGen.h"

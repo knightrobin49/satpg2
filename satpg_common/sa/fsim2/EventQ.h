@@ -1,5 +1,5 @@
-﻿#ifndef FSIM2_EVENTQ_H
-#define FSIM2_EVENTQ_H
+﻿#ifndef FSIM_EVENTQ_H
+#define FSIM_EVENTQ_H
 
 /// @file EventQ.h
 /// @brief EventQ のヘッダファイル
@@ -13,7 +13,7 @@
 #include "SimNode.h"
 
 
-BEGIN_NAMESPACE_YM_SATPG_FSIM2
+BEGIN_NAMESPACE_YM_SATPG_FSIM
 
 //////////////////////////////////////////////////////////////////////
 /// @class EventQ EventQ.h "EventQ.h"
@@ -115,6 +115,6 @@ EventQ::get()
   return nullptr;
 }
 
-END_NAMESPACE_YM_SATPG_FSIM2
+END_NAMESPACE_YM_SATPG_FSIM
 
-#endif // FSIM2_EVENTQ_H
+#endif // FSIM_EVENTQ_H

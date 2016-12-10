@@ -8,7 +8,7 @@
 /// Copyright (C) 2016 Yusuke Matsunaga
 /// All rights reserved.
 
-#include "td/satpg_td.h"
+#include "td/td_nsdef.h"
 #include "td/TestVector.h"
 #include "ym/UnitAlloc.h"
 

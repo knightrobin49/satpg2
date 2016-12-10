@@ -11,7 +11,7 @@
 #include "fsim2_nsdef.h"
 
 
-BEGIN_NAMESPACE_YM_SATPG_FSIM2
+BEGIN_NAMESPACE_YM_SATPG_FSIM
 
 class SimNode;
 
@@ -60,6 +60,6 @@ struct SimFault
 
 };
 
-END_NAMESPACE_YM_SATPG_FSIM2
+END_NAMESPACE_YM_SATPG_FSIM
 
 #endif // SIMFAULT_H

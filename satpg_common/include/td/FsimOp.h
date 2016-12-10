@@ -9,7 +9,7 @@
 /// All rights reserved.
 
 
-#include "td/satpg_td.h"
+#include "td/td_nsdef.h"
 #include "PackedVal.h"
 
 

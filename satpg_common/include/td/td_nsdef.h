@@ -1,8 +1,8 @@
-﻿#ifndef SATPG_SA_H
-#define SATPG_SA_H
+﻿#ifndef SATPG_TD_H
+#define SATPG_TD_H
 
-/// @file satpg_sa.h
-/// @brief Stuck-At テストの SATPG 用の名前空間の定義
+/// @file td_nsdef.h
+/// @brief transition delay テストの SATPG 用の名前空間の定義
 ///
 /// @author Yusuke Matsunaga (松永 裕介)
 ///
@@ -20,16 +20,16 @@
 // namespace でネストするのがいやなので define マクロでごまかす．
 //////////////////////////////////////////////////////////////////////
 
-#define BEGIN_NAMESPACE_YM_SATPG_SA \
+#define BEGIN_NAMESPACE_YM_SATPG_TD \
 BEGIN_NAMESPACE_YM_SATPG \
-BEGIN_NAMESPACE(nsSa)
+BEGIN_NAMESPACE(nsTd)
 
-#define END_NAMESPACE_YM_SATPG_SA \
-END_NAMESPACE(nsSa) \
+#define END_NAMESPACE_YM_SATPG_TD \
+END_NAMESPACE(nsTd) \
 END_NAMESPACE_YM_SATPG
 
 
-BEGIN_NAMESPACE_YM_SATPG_SA
+BEGIN_NAMESPACE_YM_SATPG_TD
 
 //////////////////////////////////////////////////////////////////////
 // クラス名の宣言
@@ -55,15 +55,15 @@ class MinPatStats;
 class Fsim;
 class FsimOp;
 
-END_NAMESPACE_YM_SATPG_SA
+END_NAMESPACE_YM_SATPG_TD
+
 
 BEGIN_NAMESPACE_YM_SATPG
 
-typedef nsSa::TestVector SaTestVector;
-typedef nsSa::TvMgr SaTvMgr;
-typedef nsSa::Fsim SaFsim;
-typedef nsSa::FsimOp SaFsimOp;
+typedef nsTd::TestVector TdTestVector;
+typedef nsTd::TvMgr TdTvMgr;
+typedef nsTd::Fsim TdFsim;
 
 END_NAMESPACE_YM_SATPG
 
-#endif // SATPG_SA_H
+#endif // SATPG_TD_H

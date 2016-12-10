@@ -9,7 +9,7 @@
 /// All rights reserved.
 
 
-#include "sa/satpg_sa.h"
+#include "sa/sa_nsdef.h"
 #include "sa/ValMap.h"
 #include "ym/HashSet.h"
 #include "ym/HashMap.h"

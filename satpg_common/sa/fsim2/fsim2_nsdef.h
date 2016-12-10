@@ -1,5 +1,5 @@
-﻿#ifndef FSIM2_NSDEF_H
-#define FSIM2_NSDEF_H
+﻿#ifndef FSIM_NSDEF_H
+#define FSIM_NSDEF_H
 
 /// @file fsim_nsdef.h
 /// @brief Fsim 用の名前空間の定義
@@ -14,14 +14,14 @@
 
 // namespace でネストするのがいやなので define マクロでごまかす．
 
-#include "sa/satpg_sa.h"
+#include "sa/sa_nsdef.h"
 
-#define BEGIN_NAMESPACE_YM_SATPG_FSIM2 \
+#define BEGIN_NAMESPACE_YM_SATPG_FSIM \
 BEGIN_NAMESPACE_YM_SATPG_SA \
 BEGIN_NAMESPACE(nsFsim2)
 
-#define END_NAMESPACE_YM_SATPG_FSIM2 \
+#define END_NAMESPACE_YM_SATPG_FSIM \
 END_NAMESPACE(nsFsim2) \
 END_NAMESPACE_YM_SATPG_SA
 
-#endif // FSIM2_NSDEF_H
+#endif // FSIM_NSDEF_H

@@ -12,7 +12,7 @@
 #include "SimNode.h"
 
 
-BEGIN_NAMESPACE_YM_SATPG_FSIM2
+BEGIN_NAMESPACE_YM_SATPG_FSIM
 
 class SimNodeTest :
   public ::testing::Test
@@ -673,4 +673,4 @@ TEST_F(SimNodeTest, XNOR3)
   test_gate(3, kGateXNOR, vals);
 }
 
-END_NAMESPACE_YM_SATPG_FSIM2
+END_NAMESPACE_YM_SATPG_FSIM

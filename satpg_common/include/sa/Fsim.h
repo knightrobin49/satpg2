@@ -1,16 +1,16 @@
-﻿#ifndef FSIM_H
-#define FSIM_H
+﻿#ifndef SA_FSIM_H
+#define SA_FSIM_H
 
-/// @file Fsim.h
+/// @file sa/Fsim.h
 /// @brief Fsim のヘッダファイル
 ///
 /// @author Yusuke Matsunaga (松永 裕介)
 ///
-/// Copyright (C) 2005-2010, 2012-2014 Yusuke Matsunaga
+/// Copyright (C) 2016 Yusuke Matsunaga
 /// All rights reserved.
 
 
-#include "sa/satpg_sa.h"
+#include "sa/sa_nsdef.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG_SA
@@ -122,4 +122,4 @@ new_Fsim3();
 
 END_NAMESPACE_YM_SATPG_SA
 
-#endif // FSIM_H
+#endif // SA_FSIM_H

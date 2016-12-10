@@ -8,7 +8,7 @@
 /// Copyright (C) 2005-2014 Yusuke Matsunaga
 /// All rights reserved.
 
-#include "sa/satpg_sa.h"
+#include "sa/sa_nsdef.h"
 #include "Val3.h"
 #include "PackedVal.h"
 #include "ym/RandGen.h"
