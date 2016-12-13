@@ -48,6 +48,16 @@ public:
 	    PackedVal val0,
 	    PackedVal val1);
 
+  /// @brief 3値の検証を行う．
+  /// @param[in] val0 0のワード
+  /// @param[in] val1 1のワード
+  /// @param[in] exp_val 期待値
+  ///
+  /// 期待値は 0, 1, 2(X) の3種類
+  void
+  test_val3(PackedVal val0,
+	    PackedVal val1,
+	    int exp_val);
 };
 
 BEGIN_NONAMESPACE
@@ -139,28 +149,13 @@ SimNodeTest::test_gate(ymuint ni,
       switch ( y ) {
       case 0: inputs[i]->set_gval(kPvAll1, kPvAll0); break;
       case 1: inputs[i]->set_gval(kPvAll0, kPvAll1); break;
-      case 2: inputs[i]->set_gval(kPvAll1, kPvAll1); break;
+      case 2: inputs[i]->set_gval(kPvAll0, kPvAll0); break;
       }
     }
     node->_calc_gval();
     PackedVal val0 = node->gval_0();
     PackedVal val1 = node->gval_1();
-    switch ( vals[p] ) {
-    case 0:
-      EXPECT_EQ( val0, kPvAll1 );
-      EXPECT_EQ( val1, kPvAll0 );
-      break;
-
-    case 1:
-      EXPECT_EQ( val0, kPvAll0 );
-      EXPECT_EQ( val1, kPvAll1 );
-      break;
-
-    case 2:
-      EXPECT_EQ( val0, kPvAll1 );
-      EXPECT_EQ( val1, kPvAll1 );
-      break;
-    }
+    test_val3(val0, val1, vals[p]);
   }
 
   // _calc_fval() のテスト
@@ -178,31 +173,15 @@ SimNodeTest::test_gate(ymuint ni,
       switch ( y ) {
       case 0: inputs[i]->set_fval(kPvAll1, kPvAll0); break;
       case 1: inputs[i]->set_fval(kPvAll0, kPvAll1); break;
-      case 2: inputs[i]->set_fval(kPvAll1, kPvAll1); break;
+      case 2: inputs[i]->set_fval(kPvAll0, kPvAll0); break;
       }
     }
     node->_calc_fval(kPvAll1);
     PackedVal val0 = node->fval_0();
     PackedVal val1 = node->fval_1();
-    switch ( vals[p] ) {
-    case 0:
-      EXPECT_EQ( val0, kPvAll1 );
-      EXPECT_EQ( val1, kPvAll0 );
-      break;
-
-    case 1:
-      EXPECT_EQ( val0, kPvAll0 );
-      EXPECT_EQ( val1, kPvAll1 );
-      break;
-
-    case 2:
-      EXPECT_EQ( val0, kPvAll1 );
-      EXPECT_EQ( val1, kPvAll1 );
-      break;
-    }
+    test_val3(val0, val1, vals[p]);
   }
 
-#if 0
   // calc_gobs() のテスト
   for (ymuint ipos = 0; ipos < ni; ++ ipos) {
     // ここで書き込む値に対して意味はない．
@@ -220,11 +199,11 @@ SimNodeTest::test_gate(ymuint ni,
 	switch ( ivals[i] ) {
 	case 0: inputs[i]->set_gval(kPvAll1, kPvAll0); break;
 	case 1: inputs[i]->set_gval(kPvAll0, kPvAll1); break;
-	case 2: inputs[i]->set_gval(kPvAll1, kPvAll1); break;
+	case 2: inputs[i]->set_gval(kPvAll0, kPvAll0); break;
 	}
-
 	if ( i == ipos ) {
-	  q += w;
+	  p += 0 * w; // じつは効果なし．形式を合わせただけ
+	  q += 1 * w;
 	}
 	else {
 	  p += ivals[i] * w;
@@ -234,13 +213,16 @@ SimNodeTest::test_gate(ymuint ni,
       }
 
       PackedVal val = node->calc_gobs(ipos);
-      if ( vals[q] != vals[p] ) {
-	EXPECT_EQ( val, kPvAll1 );
+      if ( vals[q] != vals[p] &&
+	   vals[q] != 2 &&
+	   vals[p] != 2 ) {
+	EXPECT_EQ( kPvAll1, val );
       }
       else {
-	EXPECT_EQ( val, kPvAll0 );
+	EXPECT_EQ( kPvAll0, val );
       }
 
+      // ivals を次の値へシフトする．
       for (ymuint i = 0; i < ni; ++ i) {
 	++ ivals[i];
 	if ( ivals[i] == 3 ) {
@@ -250,9 +232,18 @@ SimNodeTest::test_gate(ymuint ni,
 	  break;
 	}
       }
+      bool end = true;
+      for (ymuint i = 0; i < ni; ++ i) {
+	if ( ivals[i] != 0 ) {
+	  end = false;
+	  break;
+	}
+      }
+      if ( end ) {
+	break;
+      }
     }
   }
-#endif
 
   for (ymuint i = 0; i < ni; ++ i) {
     delete inputs[i];
@@ -268,9 +259,10 @@ SimNodeTest::test_gval(SimNode* node,
 		       PackedVal val0,
 		       PackedVal val1)
 {
+  // 書き込んだ値が読み出せるかテストする．
   node->set_gval(val0, val1);
-  EXPECT_EQ( node->gval_0(), val0 );
-  EXPECT_EQ( node->gval_1(), val1 );
+  EXPECT_EQ( val0, node->gval_0() );
+  EXPECT_EQ( val1, node->gval_1() );
 }
 
 // @brief fval の書き込み読み出しテスト
@@ -281,9 +273,43 @@ SimNodeTest::test_fval(SimNode* node,
 		       PackedVal val0,
 		       PackedVal val1)
 {
+  // 書き込んだ値が読み出せるかテストする．
   node->set_fval(val0, val1);
-  EXPECT_EQ( node->fval_0(), val0 );
-  EXPECT_EQ( node->fval_1(), val1 );
+  EXPECT_EQ( val0, node->fval_0() );
+  EXPECT_EQ( val1, node->fval_1() );
+}
+
+// @brief 3値の検証を行う．
+// @param[in] val0 0のワード
+// @param[in] val1 1のワード
+// @param[in] exp_val 期待値
+//
+// 期待値は 0, 1, 2(X) の3種類
+void
+SimNodeTest::test_val3(PackedVal val0,
+		       PackedVal val1,
+		       int exp_val)
+{
+  switch ( exp_val ) {
+  case 0:
+    EXPECT_EQ( kPvAll1, val0 );
+    EXPECT_EQ( kPvAll0, val1 );
+    break;
+
+  case 1:
+    EXPECT_EQ( kPvAll0, val0 );
+    EXPECT_EQ( kPvAll1, val1 );
+    break;
+
+  case 2:
+    EXPECT_EQ( kPvAll0, val0 );
+    EXPECT_EQ( kPvAll0, val1 );
+    break;
+
+  default:
+    ASSERT_NOT_REACHED;
+    break;
+  }
 }
 
 TEST_F(SimNodeTest, INPUT)
@@ -391,7 +417,7 @@ TEST_F(SimNodeTest, AND5)
 	    else if ( x == 1 && y == 1 && z == 1 && w == 1 && u == 1 ) {
 	      val = 1;
 	    }
-	    vals[(((x * 3 + y) * 3 + z) * w) * 3 + u] = val;
+	    vals[(((x * 3 + y) * 3 + z) * 3 + w) * 3 + u] = val;
 	  }
 	}
       }
@@ -479,7 +505,7 @@ TEST_F(SimNodeTest, NAND5)
 	    else if ( x == 1 && y == 1 && z == 1 && w == 1 && u == 1 ) {
 	      val = 0;
 	    }
-	    vals[(((x * 3 + y) * 3 + z) * w) * 3 + u] = val;
+	    vals[(((x * 3 + y) * 3 + z) * 3 + w) * 3 + u] = val;
 	  }
 	}
       }
@@ -567,7 +593,7 @@ TEST_F(SimNodeTest, OR5)
 	    else if ( x == 1 || y == 1 || z == 1 || w == 1 || u == 1 ) {
 	      val = 1;
 	    }
-	    vals[(((x * 3 + y) * 3 + z) * w) * 3 + u] = val;
+	    vals[(((x * 3 + y) * 3 + z) * 3 + w) * 3 + u] = val;
 	  }
 	}
       }
@@ -655,7 +681,7 @@ TEST_F(SimNodeTest, NOR5)
 	    else if ( x == 1 || y == 1 || z == 1 || w == 1 || u == 1 ) {
 	      val = 0;
 	    }
-	    vals[(((x * 3 + y) * 3 + z) * w) * 3 + u] = val;
+	    vals[(((x * 3 + y) * 3 + z) * 3 + w) * 3 + u] = val;
 	  }
 	}
       }
