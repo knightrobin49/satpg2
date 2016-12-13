@@ -5,7 +5,7 @@
 /// @brief SnOr のヘッダファイル
 /// @author Yusuke Matsunaga (松永 裕介)
 ///
-/// Copyright (C) 2005-2010, 2012, 2014 Yusuke Matsunaga
+/// Copyright (C) 2016 Yusuke Matsunaga
 /// All rights reserved.
 
 
@@ -24,7 +24,7 @@ class SnOr :
 public:
 
   /// @brief コンストラクタ
-  SnOr(ymuint32 id,
+  SnOr(ymuint id,
        const vector<SimNode*>& inputs);
 
   /// @brief デストラクタ
@@ -52,7 +52,7 @@ public:
   /// @brief ゲートの入力から出力までの可観測性を計算する．
   virtual
   PackedVal
-  calc_gobs(ymuint ipos);
+  _calc_lobs(ymuint ipos);
 
   /// @brief 内容をダンプする．
   virtual
@@ -72,7 +72,7 @@ class SnOr2 :
 public:
 
   /// @brief コンストラクタ
-  SnOr2(ymuint32 id,
+  SnOr2(ymuint id,
 	const vector<SimNode*>& inputs);
 
   /// @brief デストラクタ
@@ -100,7 +100,7 @@ public:
   /// @brief ゲートの入力から出力までの可観測性を計算する．
   virtual
   PackedVal
-  calc_gobs(ymuint ipos);
+  _calc_lobs(ymuint ipos);
 
   /// @brief 内容をダンプする．
   virtual
@@ -120,7 +120,7 @@ class SnOr3 :
 public:
 
   /// @brief コンストラクタ
-  SnOr3(ymuint32 id,
+  SnOr3(ymuint id,
 	const vector<SimNode*>& inputs);
 
   /// @brief デストラクタ
@@ -148,7 +148,7 @@ public:
   /// @brief ゲートの入力から出力までの可観測性を計算する．
   virtual
   PackedVal
-  calc_gobs(ymuint ipos);
+  _calc_lobs(ymuint ipos);
 
   /// @brief 内容をダンプする．
   virtual
@@ -168,7 +168,7 @@ class SnOr4 :
 public:
 
   /// @brief コンストラクタ
-  SnOr4(ymuint32 id,
+  SnOr4(ymuint id,
 	const vector<SimNode*>& inputs);
 
   /// @brief デストラクタ
@@ -196,7 +196,7 @@ public:
   /// @brief ゲートの入力から出力までの可観測性を計算する．
   virtual
   PackedVal
-  calc_gobs(ymuint ipos);
+  _calc_lobs(ymuint ipos);
 
   /// @brief 内容をダンプする．
   virtual
@@ -216,7 +216,7 @@ class SnNor :
 public:
 
   /// @brief コンストラクタ
-  SnNor(ymuint32 id,
+  SnNor(ymuint id,
 	const vector<SimNode*>& inputs);
 
   /// @brief デストラクタ
@@ -259,7 +259,7 @@ class SnNor2 :
 public:
 
   /// @brief コンストラクタ
-  SnNor2(ymuint32 id,
+  SnNor2(ymuint id,
 	 const vector<SimNode*>& inputs);
 
   /// @brief デストラクタ
@@ -302,7 +302,7 @@ class SnNor3 :
 public:
 
   /// @brief コンストラクタ
-  SnNor3(ymuint32 id,
+  SnNor3(ymuint id,
 	 const vector<SimNode*>& inputs);
 
   /// @brief デストラクタ
@@ -345,7 +345,7 @@ class SnNor4 :
 public:
 
   /// @brief コンストラクタ
-  SnNor4(ymuint32 id,
+  SnNor4(ymuint id,
 	 const vector<SimNode*>& inputs);
 
   /// @brief デストラクタ

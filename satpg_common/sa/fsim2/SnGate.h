@@ -5,7 +5,7 @@
 /// @brief SnGate のヘッダファイル
 /// @author Yusuke Matsunaga (松永 裕介)
 ///
-/// Copyright (C) 2005-2010, 2012, 2014 Yusuke Matsunaga
+/// Copyright (C) 2016 Yusuke Matsunaga
 /// All rights reserved.
 
 
@@ -24,7 +24,7 @@ class SnGate :
 protected:
 
   /// @brief コンストラクタ
-  SnGate(ymuint32 id,
+  SnGate(ymuint id,
 	 const vector<SimNode*>& inputs);
 
   /// @brief デストラクタ
@@ -33,11 +33,14 @@ protected:
 
 
 public:
+  //////////////////////////////////////////////////////////////////////
+  // 外部インターフェイス
+  //////////////////////////////////////////////////////////////////////
 
   /// @brief ファンイン数を得る．
   virtual
   ymuint
-  nfi() const;
+  fanin_num() const;
 
   /// @brief pos 番めのファンインを得る．
   virtual
@@ -47,11 +50,25 @@ public:
 
 protected:
   //////////////////////////////////////////////////////////////////////
+  // 継承クラスから呼ばれる関数
+  //////////////////////////////////////////////////////////////////////
+
+  /// @brief ファンイン数を得る．
+  ymuint
+  _fanin_num() const;
+
+  /// @brief pos 番めのファンインを得る．
+  SimNode*
+  _fanin(ymuint pos) const;
+
+
+private:
+  //////////////////////////////////////////////////////////////////////
   // データメンバ
   //////////////////////////////////////////////////////////////////////
 
   // 入力数
-  ymuint32 mNfi;
+  ymuint mFaninNum;
 
   // ファンインの配列
   SimNode** mFanins;
@@ -69,7 +86,7 @@ class SnGate1 :
 protected:
 
   /// @brief コンストラクタ
-  SnGate1(ymuint32 id,
+  SnGate1(ymuint id,
 	  const vector<SimNode*>& inputs);
 
   /// @brief デストラクタ
@@ -82,7 +99,7 @@ public:
   /// @brief ファンイン数を得る．
   virtual
   ymuint
-  nfi() const;
+  fanin_num() const;
 
   /// @brief pos 番めのファンインを得る．
   virtual
@@ -91,6 +108,16 @@ public:
 
 
 protected:
+  //////////////////////////////////////////////////////////////////////
+  // 継承クラスから呼ばれる関数
+  //////////////////////////////////////////////////////////////////////
+
+  /// @brief ファンインを得る．
+  SimNode*
+  _fanin() const;
+
+
+private:
   //////////////////////////////////////////////////////////////////////
   // データメンバ
   //////////////////////////////////////////////////////////////////////
@@ -111,7 +138,7 @@ class SnGate2 :
 protected:
 
   /// @brief コンストラクタ
-  SnGate2(ymuint32 id,
+  SnGate2(ymuint id,
 	  const vector<SimNode*>& inputs);
 
   /// @brief デストラクタ
@@ -124,7 +151,7 @@ public:
   /// @brief ファンイン数を得る．
   virtual
   ymuint
-  nfi() const;
+  fanin_num() const;
 
   /// @brief pos 番めのファンインを得る．
   virtual
@@ -133,6 +160,16 @@ public:
 
 
 protected:
+  //////////////////////////////////////////////////////////////////////
+  // 継承クラスから呼ばれる関数
+  //////////////////////////////////////////////////////////////////////
+
+  /// @brief pos 番めのファンインを得る．
+  SimNode*
+  _fanin(ymuint pos) const;
+
+
+private:
   //////////////////////////////////////////////////////////////////////
   // データメンバ
   //////////////////////////////////////////////////////////////////////
@@ -153,7 +190,7 @@ class SnGate3 :
 protected:
 
   /// @brief コンストラクタ
-  SnGate3(ymuint32 id,
+  SnGate3(ymuint id,
 	  const vector<SimNode*>& inputs);
 
   /// @brief デストラクタ
@@ -166,7 +203,7 @@ public:
   /// @brief ファンイン数を得る．
   virtual
   ymuint
-  nfi() const;
+  fanin_num() const;
 
   /// @brief pos 番めのファンインを得る．
   virtual
@@ -175,6 +212,16 @@ public:
 
 
 protected:
+  //////////////////////////////////////////////////////////////////////
+  // 継承クラスから呼ばれる関数
+  //////////////////////////////////////////////////////////////////////
+
+  /// @brief pos 番めのファンインを得る．
+  SimNode*
+  _fanin(ymuint pos) const;
+
+
+private:
   //////////////////////////////////////////////////////////////////////
   // データメンバ
   //////////////////////////////////////////////////////////////////////
@@ -195,7 +242,7 @@ class SnGate4 :
 protected:
 
   /// @brief コンストラクタ
-  SnGate4(ymuint32 id,
+  SnGate4(ymuint id,
 	  const vector<SimNode*>& inputs);
 
   /// @brief デストラクタ
@@ -208,7 +255,7 @@ public:
   /// @brief ファンイン数を得る．
   virtual
   ymuint
-  nfi() const;
+  fanin_num() const;
 
   /// @brief pos 番めのファンインを得る．
   virtual
@@ -218,6 +265,16 @@ public:
 
 protected:
   //////////////////////////////////////////////////////////////////////
+  // 継承クラスから呼ばれる関数
+  //////////////////////////////////////////////////////////////////////
+
+  /// @brief pos 番めのファンインを得る．
+  SimNode*
+  _fanin(ymuint pos) const;
+
+
+private:
+  //////////////////////////////////////////////////////////////////////
   // データメンバ
   //////////////////////////////////////////////////////////////////////
 
@@ -225,6 +282,59 @@ protected:
   SimNode* mFanins[4];
 
 };
+
+
+//////////////////////////////////////////////////////////////////////
+// インライン関数の定義
+//////////////////////////////////////////////////////////////////////
+
+// @brief ファンイン数を得る．
+inline
+ymuint
+SnGate::_fanin_num() const
+{
+  return mFaninNum;
+}
+
+// @brief pos 番めのファンインを得る．
+inline
+SimNode*
+SnGate::_fanin(ymuint pos) const
+{
+  return mFanins[pos];
+}
+
+// @brief ファンインを得る．
+inline
+SimNode*
+SnGate1::_fanin() const
+{
+  return mFanin;
+}
+
+// @brief pos 番めのファンインを得る．
+inline
+SimNode*
+SnGate2::_fanin(ymuint pos) const
+{
+  return mFanins[pos];
+}
+
+// @brief pos 番めのファンインを得る．
+inline
+SimNode*
+SnGate3::_fanin(ymuint pos) const
+{
+  return mFanins[pos];
+}
+
+// @brief pos 番めのファンインを得る．
+inline
+SimNode*
+SnGate4::_fanin(ymuint pos) const
+{
+  return mFanins[pos];
+}
 
 END_NAMESPACE_YM_SATPG_FSIM
 

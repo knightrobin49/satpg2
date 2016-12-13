@@ -3,7 +3,7 @@
 /// @brief Fsim2 の実装ファイル
 /// @author Yusuke Matsunaga (松永 裕介)
 ///
-/// Copyright (C) 2005-2010, 2012-2014 Yusuke Matsunaga
+/// Copyright (C) 2016 Yusuke Matsunaga
 /// All rights reserved.
 
 
@@ -102,7 +102,7 @@ Fsim2::set_network(const TpgNetwork& network)
       // 外部出力に対応する SimNode の生成
       SimNode* inode = find_simnode(tpgnode->fanin(0));
       // 実際にはバッファタイプのノードに出力の印をつけるだけ．
-      node = make_node(kGateBUFF, vector<SimNode*>(1, inode));
+      node = make_gate(kGateBUFF, vector<SimNode*>(1, inode));
       node->set_output();
       mOutputArray[tpgnode->output_id()] = node;
     }
@@ -112,7 +112,7 @@ Fsim2::set_network(const TpgNetwork& network)
       // DFFの制御端子に対応する SimNode の生成
       SimNode* inode = find_simnode(tpgnode->fanin(0));
       // 実際にはバッファタイプのノードに出力の印をつけるだけ．
-      node = make_node(kGateBUFF, vector<SimNode*>(1, inode));
+      node = make_gate(kGateBUFF, vector<SimNode*>(1, inode));
       node->set_output();
     }
     else if ( tpgnode->is_logic() ) {
@@ -130,14 +130,10 @@ Fsim2::set_network(const TpgNetwork& network)
 
       // 出力の論理を表す SimNode を作る．
       GateType type = tpgnode->gate_type();
-      node = make_node(type, inputs);
+      node = make_gate(type, inputs);
     }
     // 対応表に登録しておく．
     mSimMap[tpgnode->id()] = node;
-
-    // 名前をつける．
-    const char* name = network.node_name(tpgnode->id());
-    node->set_name(name);
   }
 
   // 各ノードのファンアウトリストの設定
@@ -148,7 +144,7 @@ Fsim2::set_network(const TpgNetwork& network)
     for (vector<SimNode*>::iterator p = mNodeArray.begin();
 	 p != mNodeArray.end(); ++ p) {
       SimNode* node = *p;
-      ymuint ni = node->nfi();
+      ymuint ni = node->fanin_num();
       for (ymuint i = 0; i < ni; ++ i) {
 	SimNode* inode = node->fanin(i);
 	fanout_lists[inode->id()].push_back(node);
@@ -166,7 +162,7 @@ Fsim2::set_network(const TpgNetwork& network)
   for (ymuint i = node_num; i > 0; ) {
     -- i;
     SimNode* node = mNodeArray[i];
-    if ( node->is_output() || node->nfo() != 1 ) {
+    if ( node->is_output() || node->fanout_num() != 1 ) {
       ++ ffr_num;
     }
   }
@@ -175,7 +171,7 @@ Fsim2::set_network(const TpgNetwork& network)
   for (ymuint i = node_num; i > 0; ) {
     -- i;
     SimNode* node = mNodeArray[i];
-    if ( node->is_output() || node->nfo() != 1 ) {
+    if ( node->is_output() || node->fanout_num() != 1 ) {
       SimFFR* ffr = &mFFRArray[ffr_num];
       node->set_ffr(ffr);
       ffr->set_root(node);
@@ -377,7 +373,7 @@ Fsim2::ppsfp(const vector<TestVector*>& tv_array,
       root->set_fval(pat);
       mClearArray.clear();
       mClearArray.push_back(root);
-      ymuint no = root->nfo();
+      ymuint no = root->fanout_num();
       for (ymuint i = 0; i < no; ++ i) {
 	mEventQ.put(root->fanout(i));
       }
@@ -492,7 +488,7 @@ Fsim2::_sppfp(FsimOp& op)
     root->set_fval(pat);
 
     mClearArray.push_back(root);
-    ymuint no = root->nfo();
+    ymuint no = root->fanout_num();
     for (ymuint i = 0; i < no; ++ i) {
       mEventQ.put(root->fanout(i));
     }
@@ -534,7 +530,7 @@ Fsim2::_spsfp(const TpgFault* f)
   if ( f->is_branch_fault() ) {
     SimNode* simnode = find_simnode(f->tpg_onode());
     ymuint ipos = f->tpg_pos();
-    lobs = simnode->calc_lobs() & simnode->calc_gobs(ipos);
+    lobs = simnode->calc_lobs() & simnode->_calc_lobs(ipos);
     clear_lobs(simnode);
   }
   else {
@@ -563,7 +559,7 @@ Fsim2::_spsfp(const TpgFault* f)
   root->set_fval(~root->gval());
 
   mClearArray.push_back(root);
-  ymuint no = root->nfo();
+  ymuint no = root->fanout_num();
   for (ymuint i = 0; i < no; ++ i) {
     mEventQ.put(root->fanout(i));
   }
@@ -606,7 +602,7 @@ Fsim2::ffr_simulate(SimFFR* ffr)
     if ( f->is_branch_fault() ) {
       // 入力の故障
       ymuint ipos = ff->mIpos;
-      lobs &= simnode->calc_gobs(ipos);
+      lobs &= simnode->_calc_lobs(ipos);
     }
     if ( f->val() == 1 ) {
       valdiff = ~valdiff;
@@ -647,7 +643,7 @@ Fsim2::eventq_simulate()
 	obs |= diff;
       }
       else {
-	ymuint no = node->nfo();
+	ymuint no = node->fanout_num();
 	for (ymuint i = 0; i < no; ++ i) {
 	  mEventQ.put(node->fanout(i));
 	}
@@ -723,11 +719,11 @@ Fsim2::make_input()
 
 // @brief 単純な logic ノードを作る．
 SimNode*
-Fsim2::make_node(GateType type,
+Fsim2::make_gate(GateType type,
 		 const vector<SimNode*>& inputs)
 {
   ymuint id = mNodeArray.size();
-  SimNode* node = SimNode::new_node(id, type, inputs);
+  SimNode* node = SimNode::new_gate(id, type, inputs);
   mNodeArray.push_back(node);
   mLogicArray.push_back(node);
   return node;

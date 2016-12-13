@@ -99,7 +99,7 @@ SimNodeTest::test_gate(ymuint ni,
   for (ymuint i = 0; i < ni; ++ i) {
     inputs[i] = SimNode::new_input(i);
   }
-  SimNode* node = SimNode::new_node(ni, gate_type, inputs);
+  SimNode* node = SimNode::new_gate(ni, gate_type, inputs);
 
   // gval の書き込み読み出しテスト
   init_val(node, kPvAll0);
@@ -185,7 +185,7 @@ SimNodeTest::test_gate(ymuint ni,
 	  inputs[i]->set_gval(kPvAll0);
 	}
       }
-      PackedVal val = node->calc_gobs(ipos);
+      PackedVal val = node->_calc_lobs(ipos);
       ymuint q = p ^ (1 << ipos);
       if ( vals[p] != vals[q] ) {
 	EXPECT_EQ( val, kPvAll1 );

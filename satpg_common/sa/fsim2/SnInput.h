@@ -5,12 +5,11 @@
 /// @brief SnInput のヘッダファイル
 /// @author Yusuke Matsunaga (松永 裕介)
 ///
-/// Copyright (C) 2005-2010, 2012, 2014 Yusuke Matsunaga
+/// Copyright (C) 2016 Yusuke Matsunaga
 /// All rights reserved.
 
 
 #include "SimNode.h"
-#include "SnGate.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG_FSIM
@@ -26,7 +25,7 @@ public:
 
   /// @brief コンストラクタ
   explicit
-  SnInput(ymuint32 id);
+  SnInput(ymuint id);
 
   /// @brief デストラクタ
   virtual
@@ -45,7 +44,7 @@ public:
   /// @brief ファンイン数を得る．
   virtual
   ymuint
-  nfi() const;
+  fanin_num() const;
 
   /// @brief pos 番めのファンインを得る．
   virtual
@@ -68,98 +67,7 @@ public:
   /// @brief ゲートの入力から出力までの可観測性を計算する．
   virtual
   PackedVal
-  calc_gobs(ymuint ipos);
-
-  /// @brief 内容をダンプする．
-  virtual
-  void
-  dump(ostream& s) const;
-
-};
-
-
-//////////////////////////////////////////////////////////////////////
-/// @class SnBuff SimNode.h
-/// @brief BUFFノード
-//////////////////////////////////////////////////////////////////////
-class SnBuff :
-  public SnGate1
-{
-public:
-
-  /// @brief コンストラクタ
-  SnBuff(ymuint32 id,
-	 const vector<SimNode*>& inputs);
-
-  /// @brief デストラクタ
-  virtual
-  ~SnBuff();
-
-
-public:
-
-  /// @brief ゲートタイプを返す．
-  virtual
-  GateType
-  gate_type() const;
-
-  /// @brief 正常値の計算を行う．
-  virtual
-  PackedVal
-  _calc_gval();
-
-  /// @brief 故障値の計算を行う．
-  virtual
-  PackedVal
-  _calc_fval();
-
-  /// @brief ゲートの入力から出力までの可観測性を計算する．
-  virtual
-  PackedVal
-  calc_gobs(ymuint ipos);
-
-  /// @brief 内容をダンプする．
-  virtual
-  void
-  dump(ostream& s) const;
-
-};
-
-
-//////////////////////////////////////////////////////////////////////
-/// @class SnNot SimNode.h
-/// @brief NOTノード
-//////////////////////////////////////////////////////////////////////
-class SnNot :
-  public SnBuff
-{
-public:
-
-  /// @brief コンストラクタ
-  SnNot(ymuint32 id,
-	const vector<SimNode*>& inputs);
-
-  /// @brief デストラクタ
-  virtual
-  ~SnNot();
-
-
-public:
-
-  /// @brief ゲートタイプを返す．
-  virtual
-  GateType
-  gate_type() const;
-
-  /// @brief 正常値の計算を行う．
-  virtual
-  PackedVal
-  _calc_gval();
-
-  /// @brief 故障値の計算を行う．
-  virtual
-  PackedVal
-  _calc_fval();
+  _calc_lobs(ymuint ipos);
 
   /// @brief 内容をダンプする．
   virtual

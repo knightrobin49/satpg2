@@ -3,7 +3,7 @@
 /// @brief SnXor の実装ファイル
 /// @author Yusuke Matsunaga (松永 裕介)
 ///
-/// Copyright (C) 2005-2010, 2012, 2014 Yusuke Matsunaga
+/// Copyright (C) 2016 Yusuke Matsunaga
 /// All rights reserved.
 
 
@@ -17,7 +17,7 @@ BEGIN_NAMESPACE_YM_SATPG_FSIM
 //////////////////////////////////////////////////////////////////////
 
 // @brief コンストラクタ
-SnXor::SnXor(ymuint32 id,
+SnXor::SnXor(ymuint id,
 	     const vector<SimNode*>& inputs) :
   SnGate(id, inputs)
 {
@@ -39,10 +39,10 @@ SnXor::gate_type() const
 PackedVal
 SnXor::_calc_gval()
 {
-  ymuint n = mNfi;
-  PackedVal new_val = mFanins[0]->gval();
+  ymuint n = _fanin_num();
+  PackedVal new_val = _fanin(0)->gval();
   for (ymuint i = 1; i < n; ++ i) {
-    new_val ^= mFanins[i]->gval();
+    new_val ^= _fanin(i)->gval();
   }
   return new_val;
 }
@@ -51,17 +51,17 @@ SnXor::_calc_gval()
 PackedVal
 SnXor::_calc_fval()
 {
-  ymuint n = mNfi;
-  PackedVal new_val = mFanins[0]->fval();
+  ymuint n = _fanin_num();
+  PackedVal new_val = _fanin(0)->fval();
   for (ymuint i = 1; i < n; ++ i) {
-    new_val ^= mFanins[i]->fval();
+    new_val ^= _fanin(i)->fval();
   }
   return new_val;
 }
 
 // @brief ゲートの入力から出力までの可観測性を計算する．
 PackedVal
-SnXor::calc_gobs(ymuint ipos)
+SnXor::_calc_lobs(ymuint ipos)
 {
   return kPvAll1;
 }
@@ -70,10 +70,10 @@ SnXor::calc_gobs(ymuint ipos)
 void
 SnXor::dump(ostream& s) const
 {
-  ymuint n = mNfi;
-  s << "XOR(" << mFanins[0]->id();
+  ymuint n = _fanin_num();
+  s << "XOR(" << _fanin(0)->id();
   for (ymuint i = 1; i < n; ++ i) {
-    s << ", " << mFanins[i]->id();
+    s << ", " << _fanin(i)->id();
   }
   s << ")" << endl;
 }
@@ -84,7 +84,7 @@ SnXor::dump(ostream& s) const
 //////////////////////////////////////////////////////////////////////
 
 // @brief コンストラクタ
-SnXor2::SnXor2(ymuint32 id,
+SnXor2::SnXor2(ymuint id,
 	       const vector<SimNode*>& inputs) :
   SnGate2(id, inputs)
 {
@@ -106,8 +106,8 @@ SnXor2::gate_type() const
 PackedVal
 SnXor2::_calc_gval()
 {
-  PackedVal pat0 = mFanins[0]->gval();
-  PackedVal pat1 = mFanins[1]->gval();
+  PackedVal pat0 = _fanin(0)->gval();
+  PackedVal pat1 = _fanin(1)->gval();
   return pat0 ^ pat1;
 }
 
@@ -115,14 +115,14 @@ SnXor2::_calc_gval()
 PackedVal
 SnXor2::_calc_fval()
 {
-  PackedVal pat0 = mFanins[0]->fval();
-  PackedVal pat1 = mFanins[1]->fval();
+  PackedVal pat0 = _fanin(0)->fval();
+  PackedVal pat1 = _fanin(1)->fval();
   return pat0 ^ pat1;
 }
 
 // @brief ゲートの入力から出力までの可観測性を計算する．
 PackedVal
-SnXor2::calc_gobs(ymuint ipos)
+SnXor2::_calc_lobs(ymuint ipos)
 {
   return kPvAll1;
 }
@@ -131,8 +131,8 @@ SnXor2::calc_gobs(ymuint ipos)
 void
 SnXor2::dump(ostream& s) const
 {
-  s << "XOR2(" << mFanins[0]->id();
-  s << ", " << mFanins[1]->id();
+  s << "XOR2(" << _fanin(0)->id();
+  s << ", " << _fanin(1)->id();
   s << ")" << endl;
 }
 
@@ -142,7 +142,7 @@ SnXor2::dump(ostream& s) const
 //////////////////////////////////////////////////////////////////////
 
 // @brief コンストラクタ
-SnXnor::SnXnor(ymuint32 id,
+SnXnor::SnXnor(ymuint id,
 	       const vector<SimNode*>& inputs) :
   SnXor(id, inputs)
 {
@@ -164,10 +164,10 @@ SnXnor::gate_type() const
 PackedVal
 SnXnor::_calc_gval()
 {
-  ymuint n = mNfi;
-  PackedVal val = mFanins[0]->gval();
+  ymuint n = _fanin_num();
+  PackedVal val = _fanin(0)->gval();
   for (ymuint i = 1; i < n; ++ i) {
-    val ^= mFanins[i]->gval();
+    val ^= _fanin(i)->gval();
   }
   return ~val;
 }
@@ -176,10 +176,10 @@ SnXnor::_calc_gval()
 PackedVal
 SnXnor::_calc_fval()
 {
-  ymuint n = mNfi;
-  PackedVal new_val = mFanins[0]->fval();
+  ymuint n = _fanin_num();
+  PackedVal new_val = _fanin(0)->fval();
   for (ymuint i = 1; i < n; ++ i) {
-    new_val ^= mFanins[i]->fval();
+    new_val ^= _fanin(i)->fval();
   }
   return ~new_val;
 }
@@ -188,10 +188,10 @@ SnXnor::_calc_fval()
 void
 SnXnor::dump(ostream& s) const
 {
-  ymuint n = mNfi;
-  s << "XNOR(" << mFanins[0]->id();
+  ymuint n = _fanin_num();
+  s << "XNOR(" << _fanin(0)->id();
   for (ymuint i = 1; i < n; ++ i) {
-    s << ", " << mFanins[i]->id();
+    s << ", " << _fanin(i)->id();
   }
   s << ")" << endl;
 }
@@ -202,7 +202,7 @@ SnXnor::dump(ostream& s) const
 //////////////////////////////////////////////////////////////////////
 
 // @brief コンストラクタ
-SnXnor2::SnXnor2(ymuint32 id,
+SnXnor2::SnXnor2(ymuint id,
 		 const vector<SimNode*>& inputs) :
   SnXor2(id, inputs)
 {
@@ -224,8 +224,8 @@ SnXnor2::gate_type() const
 PackedVal
 SnXnor2::_calc_gval()
 {
-  PackedVal pat0 = mFanins[0]->gval();
-  PackedVal pat1 = mFanins[1]->gval();
+  PackedVal pat0 = _fanin(0)->gval();
+  PackedVal pat1 = _fanin(1)->gval();
   return ~(pat0 ^ pat1);
 }
 
@@ -233,8 +233,8 @@ SnXnor2::_calc_gval()
 PackedVal
 SnXnor2::_calc_fval()
 {
-  PackedVal pat0 = mFanins[0]->fval();
-  PackedVal pat1 = mFanins[1]->fval();
+  PackedVal pat0 = _fanin(0)->fval();
+  PackedVal pat1 = _fanin(1)->fval();
   return ~(pat0 ^ pat1);
 }
 
@@ -242,8 +242,8 @@ SnXnor2::_calc_fval()
 void
 SnXnor2::dump(ostream& s) const
 {
-  s << "XNOR2(" << mFanins[0]->id();
-  s << ", " << mFanins[1]->id();
+  s << "XNOR2(" << _fanin(0)->id();
+  s << ", " << _fanin(1)->id();
   s << ")" << endl;
 }
 

@@ -74,6 +74,7 @@ set (sa_SOURCES
   sa/fsim2/Fsim2.cc
   sa/fsim2/SimNode.cc
   sa/fsim2/SnAnd.cc
+  sa/fsim2/SnBuff.cc
   sa/fsim2/SnGate.cc
   sa/fsim2/SnInput.cc
   sa/fsim2/SnOr.cc

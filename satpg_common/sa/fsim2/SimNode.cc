@@ -3,13 +3,14 @@
 /// @brief SimNode の実装ファイル
 /// @author Yusuke Matsunaga (松永 裕介)
 ///
-/// Copyright (C) 2005-2010, 2012, 2014 Yusuke Matsunaga
+/// Copyright (C) 2016 Yusuke Matsunaga
 /// All rights reserved.
 
 
 #include "SimNode.h"
 #include "SimFFR.h"
 #include "SnInput.h"
+#include "SnBuff.h"
 #include "SnAnd.h"
 #include "SnOr.h"
 #include "SnXor.h"
@@ -22,11 +23,10 @@ BEGIN_NAMESPACE_YM_SATPG_FSIM
 //////////////////////////////////////////////////////////////////////
 
 // コンストラクタ
-SimNode::SimNode(ymuint32 id) :
+SimNode::SimNode(ymuint id) :
   mId(id),
-  mNfo(0),
+  mFanoutNum(0),
   mFanouts(nullptr),
-  mFanoutIpos(0),
   mFFR(nullptr),
   mLevel(0)
 {
@@ -40,14 +40,14 @@ SimNode::~SimNode()
 
 // @brief 入力ノードを生成するクラスメソッド
 SimNode*
-SimNode::new_input(ymuint32 id)
+SimNode::new_input(ymuint id)
 {
   return new SnInput(id);
 }
 
-// @brief ノードを生成するクラスメソッド
+// @brief ゲートを生成するクラスメソッド
 SimNode*
-SimNode::new_node(ymuint32 id,
+SimNode::new_gate(ymuint id,
 		  GateType type,
 		  const vector<SimNode*>& inputs)
 {
@@ -139,14 +139,13 @@ void
 SimNode::set_fanout_list(const vector<SimNode*>& fo_list,
 			 ymuint ipos)
 {
-  mNfo = fo_list.size();
-  mFanouts = new SimNode*[mNfo];
-  ymuint i = 0;
-  for (vector<SimNode*>::const_iterator p = fo_list.begin();
-       p != fo_list.end(); ++ p, ++ i) {
-    mFanouts[i] = *p;
+  ymuint nfo = fo_list.size();
+  mFanouts = new SimNode*[nfo];
+  for (ymuint i = 0; i < nfo; ++ i) {
+    mFanouts[i] = fo_list[i];
   }
-  mFanoutIpos |= (ipos << 2);
+
+  mFanoutNum |= (nfo << 16) | (ipos << 2);
 }
 
 // @brief ローカルな obs の計算を行う．
@@ -159,7 +158,7 @@ SimNode::calc_lobs()
   if ( !check_lobs() ) {
     SimNode* onode = fanout(0);
     ymuint pos = fanout_ipos();
-    mLobs = onode->calc_lobs() & onode->calc_gobs(pos);
+    mLobs = onode->calc_lobs() & onode->_calc_lobs(pos);
     set_lobs();
   }
   return mLobs;

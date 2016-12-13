@@ -5,7 +5,7 @@
 /// @brief SnXor のヘッダファイル
 /// @author Yusuke Matsunaga (松永 裕介)
 ///
-/// Copyright (C) 2005-2010, 2012, 2014 Yusuke Matsunaga
+/// Copyright (C) 2016 Yusuke Matsunaga
 /// All rights reserved.
 
 
@@ -24,7 +24,7 @@ class SnXor :
 public:
 
   /// @brief コンストラクタ
-  SnXor(ymuint32 id,
+  SnXor(ymuint id,
 	const vector<SimNode*>& inputs);
 
   /// @brief デストラクタ
@@ -52,7 +52,7 @@ public:
   /// @brief ゲートの入力から出力までの可観測性を計算する．
   virtual
   PackedVal
-  calc_gobs(ymuint ipos);
+  _calc_lobs(ymuint ipos);
 
   /// @brief 内容をダンプする．
   virtual
@@ -72,7 +72,7 @@ class SnXor2 :
 public:
 
   /// @brief コンストラクタ
-  SnXor2(ymuint32 id,
+  SnXor2(ymuint id,
 	 const vector<SimNode*>& inputs);
 
   /// @brief デストラクタ
@@ -100,7 +100,7 @@ public:
   /// @brief ゲートの入力から出力までの可観測性を計算する．
   virtual
   PackedVal
-  calc_gobs(ymuint ipos);
+  _calc_lobs(ymuint ipos);
 
   /// @brief 内容をダンプする．
   virtual
@@ -120,7 +120,7 @@ class SnXnor :
 public:
 
   /// @brief コンストラクタ
-  SnXnor(ymuint32 id,
+  SnXnor(ymuint id,
 	 const vector<SimNode*>& inputs);
 
   /// @brief デストラクタ
@@ -163,7 +163,7 @@ class SnXnor2 :
 public:
 
   /// @brief コンストラクタ
-  SnXnor2(ymuint32 id,
+  SnXnor2(ymuint id,
 	  const vector<SimNode*>& inputs);
 
   /// @brief デストラクタ

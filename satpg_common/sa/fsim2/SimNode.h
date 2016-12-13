@@ -5,7 +5,7 @@
 /// @brief SimNode のヘッダファイル
 /// @author Yusuke Matsunaga (松永 裕介)
 ///
-/// Copyright (C) 2005-2010, 2012-2014 Yusuke Matsunaga
+/// Copyright (C) 2016 Yusuke Matsunaga
 /// All rights reserved.
 
 
@@ -29,7 +29,7 @@ class SimNode :
 protected:
 
   /// @brief コンストラクタ
-  SimNode(ymuint32 id);
+  SimNode(ymuint id);
 
 
 public:
@@ -47,12 +47,12 @@ public:
   /// @brief 入力ノードを生成するクラスメソッド
   static
   SimNode*
-  new_input(ymuint32 id);
+  new_input(ymuint id);
 
   /// @brief 論理ノードを生成するクラスメソッド
   static
   SimNode*
-  new_node(ymuint32 id,
+  new_gate(ymuint id,
 	   GateType type,
 	   const vector<SimNode*>& inputs);
 
@@ -62,16 +62,8 @@ public:
   // 構造に関する情報の取得
   //////////////////////////////////////////////////////////////////////
 
-  /// @brief 名前を設定する．
-  void
-  set_name(const char* name);
-
-  /// @brief 名前を得る．
-  const char*
-  name() const;
-
   /// @brief ID番号を返す．
-  ymuint32
+  ymuint
   id() const;
 
   /// @brief ゲートタイプを返す．
@@ -82,7 +74,7 @@ public:
   /// @brief ファンイン数を得る．
   virtual
   ymuint
-  nfi() const = 0;
+  fanin_num() const = 0;
 
   /// @brief pos 番めのファンインを得る．
   virtual
@@ -91,7 +83,7 @@ public:
 
   /// @brief ファンアウト数を得る．
   ymuint
-  nfo() const;
+  fanout_num() const;
 
   /// @brief pos 番目のファンアウトを得る．
   SimNode*
@@ -211,7 +203,7 @@ public:
   /// @brief ゲートの入力から出力までの可観測性を計算する．
   virtual
   PackedVal
-  calc_gobs(ymuint ipos) = 0;
+  _calc_lobs(ymuint ipos) = 0;
 
   /// @brief 内容をダンプする．
   virtual
@@ -232,34 +224,32 @@ private:
   //////////////////////////////////////////////////////////////////////
 
   // ID 番号
-  ymuint32 mId;
+  ymuint mId;
 
   // ファンアウトリストの要素数
-  ymuint32 mNfo;
+  // その他以下の情報もパックして持つ．
+  // - 最初のファンアウトの入力位置(FFR内のノードのみ意味を持つ)
+  // - 出力のマーク
+  // - lobs の計算マーク
+  ymuint mFanoutNum;
 
   // ファンアウトリスト
   SimNode** mFanouts;
-
-  // 最初のファンアウトの入力位置(FFR内のノードのみ意味を持つ)
-  ymuint32 mFanoutIpos;
 
   // FFR
   SimFFR* mFFR;
 
   // レベル
-  ymuint32 mLevel;
+  ymuint mLevel;
 
   // 正常値
-  PackedVal mGval;
+  PackedVal mGval[2];
 
   // 故障値
-  PackedVal mFval;
+  PackedVal mFval[2];
 
   // FFR 内のローカルな obs
   PackedVal mLobs;
-
-  // 名前
-  const char* mName;
 
 };
 
@@ -270,7 +260,7 @@ private:
 
 // @brief ID番号を返す．
 inline
-ymuint32
+ymuint
 SimNode::id() const
 {
   return mId;
@@ -279,9 +269,9 @@ SimNode::id() const
 // @brief ファンアウト数を得る．
 inline
 ymuint
-SimNode::nfo() const
+SimNode::fanout_num() const
 {
-  return mNfo;
+  return mFanoutNum >> 16;
 }
 
 // @brief pos 番目のファンアウトを得る．
@@ -297,7 +287,7 @@ inline
 ymuint
 SimNode::fanout_ipos() const
 {
-  return mFanoutIpos >> 2;
+  return (mFanoutNum >> 2) & 0x3FFFU;
 }
 
 // @brief FFR を得る．
@@ -321,7 +311,7 @@ inline
 bool
 SimNode::is_output() const
 {
-  return (mFanoutIpos & 1U) == 1U;
+  return (mFanoutNum & 1U) == 1U;
 }
 
 // @brief 出力マークをつける．
@@ -329,7 +319,7 @@ inline
 void
 SimNode::set_output()
 {
-  mFanoutIpos |= 1U;
+  mFanoutNum |= 1U;
 }
 
 // @brief lobs が計算済みかチェックする．
@@ -337,7 +327,7 @@ inline
 bool
 SimNode::check_lobs() const
 {
-  return ((mFanoutIpos >> 1) & 1U) == 1U;
+  return ((mFanoutNum >> 1) & 1U) == 1U;
 }
 
 // @brief lobs が計算済みの印をつける．
@@ -345,7 +335,7 @@ inline
 void
 SimNode::set_lobs()
 {
-  mFanoutIpos |= (1U << 1);
+  mFanoutNum |= (1U << 1);
 }
 
 // @brief lobs の計算済みの印を消す．
@@ -353,7 +343,7 @@ inline
 void
 SimNode::clear_lobs()
 {
-  mFanoutIpos &= ~(1U << 1);
+  mFanoutNum &= ~(1U << 1);
 }
 
 // @brief 正常値のセットを行う．
@@ -364,8 +354,8 @@ inline
 void
 SimNode::set_gval(PackedVal val)
 {
-  mGval = val;
-  mFval = val;
+  mGval[0] = val;
+  mFval[0] = val;
 }
 
 // @brief 正常値を得る．
@@ -373,7 +363,7 @@ inline
 PackedVal
 SimNode::gval() const
 {
-  return mGval;
+  return mGval[0];
 }
 
 // @brief 故障値をセットする．
@@ -381,7 +371,7 @@ inline
 void
 SimNode::set_fval(PackedVal pat)
 {
-  mFval = pat;
+  mFval[0] = pat;
 }
 
 // @brief 故障値を得る．
@@ -389,7 +379,7 @@ inline
 PackedVal
 SimNode::fval() const
 {
-  return mFval;
+  return mFval[0];
 }
 
 // @brief 故障値をクリアする．
@@ -397,7 +387,7 @@ inline
 void
 SimNode::clear_fval()
 {
-  mFval = mGval;
+  mFval[0] = mGval[0];
 }
 
 // @brief 正常値の計算を行う．
@@ -417,8 +407,8 @@ PackedVal
 SimNode::calc_fval(PackedVal mask)
 {
   PackedVal val = _calc_fval();
-  PackedVal diff = (mGval ^ val) & mask;
-  mFval ^= diff;
+  PackedVal diff = (mGval[0] ^ val) & mask;
+  mFval[0] ^= diff;
   return diff;
 }
 
@@ -428,22 +418,6 @@ void
 SimNode::set_ffr(SimFFR* ffr)
 {
   mFFR = ffr;
-}
-
-// @brief 名前を設定する．
-inline
-void
-SimNode::set_name(const char* name)
-{
-  mName = name;
-}
-
-// @brief 名前を得る．
-inline
-const char*
-SimNode::name() const
-{
-  return mName;
 }
 
 END_NAMESPACE_YM_SATPG_FSIM

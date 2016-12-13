@@ -3,7 +3,7 @@
 /// @brief SnGate の実装ファイル
 /// @author Yusuke Matsunaga (松永 裕介)
 ///
-/// Copyright (C) 2005-2010, 2012, 2014 Yusuke Matsunaga
+/// Copyright (C) 2016 Yusuke Matsunaga
 /// All rights reserved.
 
 
@@ -18,14 +18,14 @@ BEGIN_NAMESPACE_YM_SATPG_FSIM
 //////////////////////////////////////////////////////////////////////
 
 // @brief コンストラクタ
-SnGate::SnGate(ymuint32 id,
+SnGate::SnGate(ymuint id,
 	       const vector<SimNode*>& inputs) :
   SimNode(id),
-  mNfi(inputs.size()),
-  mFanins(new SimNode*[mNfi])
+  mFaninNum(inputs.size()),
+  mFanins(new SimNode*[mFaninNum])
 {
   ymuint max_level = 0;
-  for (ymuint i = 0; i < mNfi; ++ i) {
+  for (ymuint i = 0; i < mFaninNum; ++ i) {
     SimNode* input = inputs[i];
     ASSERT_COND(input );
     mFanins[i] = input;
@@ -45,16 +45,17 @@ SnGate::~SnGate()
 
 // @brief ファンイン数を得る．
 ymuint
-SnGate::nfi() const
+SnGate::fanin_num() const
 {
-  return mNfi;
+  return _fanin_num();
 }
 
 // @brief pos 番めのファンインを得る．
 SimNode*
 SnGate::fanin(ymuint pos) const
 {
-  return mFanins[pos];
+  ASSERT_COND( pos < _fanin_num() );
+  return _fanin(pos);
 }
 
 
@@ -64,7 +65,7 @@ SnGate::fanin(ymuint pos) const
 //////////////////////////////////////////////////////////////////////
 
 // @brief コンストラクタ
-SnGate1::SnGate1(ymuint32 id,
+SnGate1::SnGate1(ymuint id,
 		 const vector<SimNode*>& inputs) :
   SimNode(id)
 {
@@ -81,7 +82,7 @@ SnGate1::~SnGate1()
 
 // @brief ファンイン数を得る．
 ymuint
-SnGate1::nfi() const
+SnGate1::fanin_num() const
 {
   return 1;
 }
@@ -100,7 +101,7 @@ SnGate1::fanin(ymuint pos) const
 //////////////////////////////////////////////////////////////////////
 
 // @brief コンストラクタ
-SnGate2::SnGate2(ymuint32 id,
+SnGate2::SnGate2(ymuint id,
 		 const vector<SimNode*>& inputs) :
   SimNode(id)
 {
@@ -123,7 +124,7 @@ SnGate2::~SnGate2()
 
 // @brief ファンイン数を得る．
 ymuint
-SnGate2::nfi() const
+SnGate2::fanin_num() const
 {
   return 2;
 }
@@ -142,7 +143,7 @@ SnGate2::fanin(ymuint pos) const
 //////////////////////////////////////////////////////////////////////
 
 // @brief コンストラクタ
-SnGate3::SnGate3(ymuint32 id,
+SnGate3::SnGate3(ymuint id,
 		 const vector<SimNode*>& inputs) :
   SimNode(id)
 {
@@ -170,7 +171,7 @@ SnGate3::~SnGate3()
 
 // @brief ファンイン数を得る．
 ymuint
-SnGate3::nfi() const
+SnGate3::fanin_num() const
 {
   return 3;
 }
@@ -189,7 +190,7 @@ SnGate3::fanin(ymuint pos) const
 //////////////////////////////////////////////////////////////////////
 
 // @brief コンストラクタ
-SnGate4::SnGate4(ymuint32 id,
+SnGate4::SnGate4(ymuint id,
 		 const vector<SimNode*>& inputs) :
   SimNode(id)
 {
@@ -222,7 +223,7 @@ SnGate4::~SnGate4()
 
 // @brief ファンイン数を得る．
 ymuint
-SnGate4::nfi() const
+SnGate4::fanin_num() const
 {
   return 4;
 }
