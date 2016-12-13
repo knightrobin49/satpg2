@@ -620,10 +620,10 @@ TpgNetwork::set(const BnNetwork& network)
   // TFI のサイズの昇順に並べた出力順を
   // mPPOArray2 に記録する．
   //////////////////////////////////////////////////////////////////////
-  ymuint npo = output_num();
+  ymuint npo = ppo_num();
   vector<pair<ymuint, ymuint> > tmp_list(npo);
   for (ymuint i = 0; i < npo; ++ i) {
-    TpgNode* onode = output(i);
+    TpgNode* onode = ppo(i);
     // onode の TFI のノード数を計算する．
     vector<bool> mark(nn, false);
     ymuint n = tfimark(onode, mark);
@@ -649,10 +649,11 @@ TpgNetwork::set(const BnNetwork& network)
 	 !node->is_dff_clear() &&
 	 !node->is_dff_preset() ) {
       ymuint nfo = node->fanout_num();
-      ASSERT_COND( nfo > 0 );
-      imm_dom = node->fanout(0);
-      for (ymuint i = 1; imm_dom != nullptr && i < nfo; ++ i) {
-	imm_dom = merge(imm_dom, node->fanout(i));
+      if ( nfo > 0 ) {
+	imm_dom = node->fanout(0);
+	for (ymuint i = 1; imm_dom != nullptr && i < nfo; ++ i) {
+	  imm_dom = merge(imm_dom, node->fanout(i));
+	}
       }
     }
     node->set_imm_dom(imm_dom);
