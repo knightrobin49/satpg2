@@ -81,6 +81,19 @@ SnXor::_calc_fval(PackedVal mask)
 PackedVal
 SnXor::calc_gobs(ymuint ipos)
 {
+  // 条件は ipos 以外が X でないこと
+  for (ymuint i = 0; i < ipos; ++ i) {
+    const SimNode* inode = mFanins[i];
+    if ( inode->gval_0() == kPvAll0 && inode->gval_1() == kPvAll0 ) {
+      return kPvAll0;
+    }
+  }
+  for (ymuint i = ipos + 1; i < mNfi; ++ i) {
+    const SimNode* inode = mFanins[i];
+    if ( inode->gval_0() == kPvAll0 && inode->gval_1() == kPvAll0 ) {
+      return kPvAll0;
+    }
+  }
   return kPvAll1;
 }
 
@@ -149,6 +162,11 @@ SnXor2::_calc_fval(PackedVal mask)
 PackedVal
 SnXor2::calc_gobs(ymuint ipos)
 {
+  ymuint alt_pos = ipos ^ 1;
+  const SimNode* inode = mFanins[alt_pos];
+  if ( inode->gval_0() == kPvAll0 && inode->gval_1() == kPvAll0 ) {
+    return kPvAll0;
+  }
   return kPvAll1;
 }
 
