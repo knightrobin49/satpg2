@@ -39,11 +39,6 @@ public:
   GateType
   gate_type() const;
 
-  /// @brief 内容をダンプする．
-  virtual
-  void
-  dump(ostream& s) const;
-
 
 public:
   //////////////////////////////////////////////////////////////////////
@@ -118,11 +113,6 @@ public:
   virtual
   GateType
   gate_type() const;
-
-  /// @brief 内容をダンプする．
-  virtual
-  void
-  dump(ostream& s) const;
 
 
 public:

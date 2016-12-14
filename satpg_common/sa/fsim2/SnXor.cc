@@ -35,18 +35,6 @@ SnXor::gate_type() const
   return kGateXOR;
 }
 
-// @brief 内容をダンプする．
-void
-SnXor::dump(ostream& s) const
-{
-  ymuint n = _fanin_num();
-  s << "XOR(" << _fanin(0)->id();
-  for (ymuint i = 1; i < n; ++ i) {
-    s << ", " << _fanin(i)->id();
-  }
-  s << ")" << endl;
-}
-
 // @brief 正常値の計算を行う．(2値版)
 PackedVal
 SnXor::_calc_gval2()
@@ -175,15 +163,6 @@ SnXor2::gate_type() const
   return kGateXOR;
 }
 
-// @brief 内容をダンプする．
-void
-SnXor2::dump(ostream& s) const
-{
-  s << "XOR2(" << _fanin(0)->id();
-  s << ", " << _fanin(1)->id();
-  s << ")" << endl;
-}
-
 // @brief 正常値の計算を行う．(2値版)
 PackedVal
 SnXor2::_calc_gval2()
@@ -285,18 +264,6 @@ SnXnor::gate_type() const
   return kGateXNOR;
 }
 
-// @brief 内容をダンプする．
-void
-SnXnor::dump(ostream& s) const
-{
-  ymuint n = _fanin_num();
-  s << "XNOR(" << _fanin(0)->id();
-  for (ymuint i = 1; i < n; ++ i) {
-    s << ", " << _fanin(i)->id();
-  }
-  s << ")" << endl;
-}
-
 // @brief 正常値の計算を行う．(2値版)
 PackedVal
 SnXnor::_calc_gval2()
@@ -394,15 +361,6 @@ GateType
 SnXnor2::gate_type() const
 {
   return kGateXNOR;
-}
-
-// @brief 内容をダンプする．
-void
-SnXnor2::dump(ostream& s) const
-{
-  s << "XNOR2(" << _fanin(0)->id();
-  s << ", " << _fanin(1)->id();
-  s << ")" << endl;
 }
 
 // @brief 正常値の計算を行う．(2値版)

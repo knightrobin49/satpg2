@@ -12,6 +12,30 @@
 
 BEGIN_NAMESPACE_YM_SATPG_FSIM
 
+BEGIN_NONAMESPACE
+
+// ゲート名を出力する．
+void
+dump_gate(ostream& s,
+	  GateType gate_type)
+{
+  switch ( gate_type ) {
+  case kGateCONST0: s << "CONST0"; break;
+  case kGateCONST1: s << "CONST1"; break;
+  case kGateBUFF:   s << "BUFF";   break;
+  case kGateNOT:    s << "NOT";    break;
+  case kGateAND:    s << "AND";    break;
+  case kGateNAND:   s << "NAND";   break;
+  case kGateOR:     s << "OR";     break;
+  case kGateNOR:    s << "NOR";    break;
+  case kGateXOR:    s << "XOR";    break;
+  case kGateXNOR:   s << "XNOR";   break;
+  default: ASSERT_NOT_REACHED;
+  }
+}
+
+END_NONAMESPACE
+
 //////////////////////////////////////////////////////////////////////
 // @class SnGate SimNode.h
 // @brief 多入力ゲートの基底クラス
@@ -58,6 +82,19 @@ SnGate::fanin(ymuint pos) const
   return _fanin(pos);
 }
 
+// @brief 内容をダンプする．
+void
+SnGate::dump(ostream& s) const
+{
+  dump_gate(s, gate_type());
+  s << "(" << _fanin(0)->id();
+  ymuint n = _fanin_num();
+  for (ymuint i = 1; i < n; ++ i) {
+    s << ", " << _fanin(i)->id();
+  }
+  s << ")" << endl;
+}
+
 
 //////////////////////////////////////////////////////////////////////
 // @class SnGate1 SimNode.h
@@ -92,6 +129,14 @@ SimNode*
 SnGate1::fanin(ymuint pos) const
 {
   return mFanin;
+}
+
+// @brief 内容をダンプする．
+void
+SnGate1::dump(ostream& s) const
+{
+  dump_gate(s, gate_type());
+  s << "(" << _fanin()->id() << ")" << endl;
 }
 
 
@@ -134,6 +179,16 @@ SimNode*
 SnGate2::fanin(ymuint pos) const
 {
   return mFanins[pos];
+}
+
+// @brief 内容をダンプする．
+void
+SnGate2::dump(ostream& s) const
+{
+  dump_gate(s, gate_type());
+  s << "2(" << _fanin(0)->id();
+  s << ", " << _fanin(1)->id();
+  s << ")" << endl;
 }
 
 
@@ -181,6 +236,17 @@ SimNode*
 SnGate3::fanin(ymuint pos) const
 {
   return mFanins[pos];
+}
+
+// @brief 内容をダンプする．
+void
+SnGate3::dump(ostream& s) const
+{
+  dump_gate(s, gate_type());
+  s << "3(" << _fanin(0)->id();
+  s << ", " << _fanin(1)->id();
+  s << ", " << _fanin(2)->id();
+  s << ")" << endl;
 }
 
 
@@ -233,6 +299,18 @@ SimNode*
 SnGate4::fanin(ymuint pos) const
 {
   return mFanins[pos];
+}
+
+// @brief 内容をダンプする．
+void
+SnGate4::dump(ostream& s) const
+{
+  dump_gate(s, gate_type());
+  s << "4(" << _fanin(0)->id();
+  s << ", " << _fanin(1)->id();
+  s << ", " << _fanin(2)->id();
+  s << ", " << _fanin(3)->id();
+  s << ")" << endl;
 }
 
 END_NAMESPACE_YM_SATPG_FSIM

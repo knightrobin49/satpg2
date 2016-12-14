@@ -47,6 +47,11 @@ public:
   SimNode*
   fanin(ymuint pos) const;
 
+  /// @brief 内容をダンプする．
+  virtual
+  void
+  dump(ostream& s) const;
+
 
 protected:
   //////////////////////////////////////////////////////////////////////
@@ -106,6 +111,11 @@ public:
   SimNode*
   fanin(ymuint pos) const;
 
+  /// @brief 内容をダンプする．
+  virtual
+  void
+  dump(ostream& s) const;
+
 
 protected:
   //////////////////////////////////////////////////////////////////////
@@ -157,6 +167,11 @@ public:
   virtual
   SimNode*
   fanin(ymuint pos) const;
+
+  /// @brief 内容をダンプする．
+  virtual
+  void
+  dump(ostream& s) const;
 
 
 protected:
@@ -210,6 +225,11 @@ public:
   SimNode*
   fanin(ymuint pos) const;
 
+  /// @brief 内容をダンプする．
+  virtual
+  void
+  dump(ostream& s) const;
+
 
 protected:
   //////////////////////////////////////////////////////////////////////
@@ -261,6 +281,11 @@ public:
   virtual
   SimNode*
   fanin(ymuint pos) const;
+
+  /// @brief 内容をダンプする．
+  virtual
+  void
+  dump(ostream& s) const;
 
 
 protected:

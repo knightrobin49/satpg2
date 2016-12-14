@@ -35,18 +35,6 @@ SnAnd::gate_type() const
   return kGateAND;
 }
 
-// @brief 内容をダンプする．
-void
-SnAnd::dump(ostream& s) const
-{
-  ymuint n = _fanin_num();
-  s << "AND(" << _fanin(0)->id();
-  for (ymuint i = 1; i < n; ++ i) {
-    s << ", " << _fanin(i)->id();
-  }
-  s << ")" << endl;
-}
-
 // @brief 正常値の計算を行う．(2値版)
 PackedVal
 SnAnd::_calc_gval2()
@@ -159,15 +147,6 @@ SnAnd2::gate_type() const
   return kGateAND;
 }
 
-// @brief 内容をダンプする．
-void
-SnAnd2::dump(ostream& s) const
-{
-  s << "AND2(" << _fanin(0)->id();
-  s << ", " << _fanin(1)->id();
-  s << ")" << endl;
-}
-
 // @brief 正常値の計算を行う．(2値版)
 PackedVal
 SnAnd2::_calc_gval2()
@@ -249,16 +228,6 @@ GateType
 SnAnd3::gate_type() const
 {
   return kGateAND;
-}
-
-// @brief 内容をダンプする．
-void
-SnAnd3::dump(ostream& s) const
-{
-  s << "AND3(" << _fanin(0)->id();
-  s << ", " << _fanin(1)->id();
-  s << ", " << _fanin(2)->id();
-  s << ")" << endl;
 }
 
 // @brief 正常値の計算を行う．(2値版)
@@ -356,17 +325,6 @@ GateType
 SnAnd4::gate_type() const
 {
   return kGateAND;
-}
-
-// @brief 内容をダンプする．
-void
-SnAnd4::dump(ostream& s) const
-{
-  s << "AND4(" << _fanin(0)->id();
-  s << ", " << _fanin(1)->id();
-  s << ", " << _fanin(2)->id();
-  s << ", " << _fanin(3)->id();
-  s << ")" << endl;
 }
 
 // @brief 正常値の計算を行う．(2値版)
@@ -472,18 +430,6 @@ SnNand::gate_type() const
   return kGateNAND;
 }
 
-// @brief 内容をダンプする．
-void
-SnNand::dump(ostream& s) const
-{
-  ymuint n = _fanin_num();
-  s << "NAND(" << _fanin(0)->id();
-  for (ymuint i = 1; i < n; ++ i) {
-    s << ", " << _fanin(i)->id();
-  }
-  s << ")" << endl;
-}
-
 // @brief 正常値の計算を行う．(2値版)
 PackedVal
 SnNand::_calc_gval2()
@@ -567,15 +513,6 @@ SnNand2::gate_type() const
   return kGateNAND;
 }
 
-// @brief 内容をダンプする．
-void
-SnNand2::dump(ostream& s) const
-{
-  s << "NAND2(" << _fanin(0)->id();
-  s << ", " << _fanin(1)->id();
-  s << ")" << endl;
-}
-
 // @brief 正常値の計算を行う．(2値版)
 PackedVal
 SnNand2::_calc_gval2()
@@ -641,16 +578,6 @@ GateType
 SnNand3::gate_type() const
 {
   return kGateNAND;
-}
-
-// @brief 内容をダンプする．
-void
-SnNand3::dump(ostream& s) const
-{
-  s << "NAND3(" << _fanin(0)->id();
-  s << ", " << _fanin(1)->id();
-  s << ", " << _fanin(2)->id();
-  s << ")" << endl;
 }
 
 // @brief 正常値の計算を行う．(2値版)
@@ -722,17 +649,6 @@ GateType
 SnNand4::gate_type() const
 {
   return kGateNAND;
-}
-
-// @brief 内容をダンプする．
-void
-SnNand4::dump(ostream& s) const
-{
-  s << "NAND4(" << _fanin(0)->id();
-  s << ", " << _fanin(1)->id();
-  s << ", " << _fanin(2)->id();
-  s << ", " << _fanin(3)->id();
-  s << ")" << endl;
 }
 
 // @brief 正常値の計算を行う．(2値版)

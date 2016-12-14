@@ -35,18 +35,6 @@ SnOr::gate_type() const
   return kGateOR;
 }
 
-// @brief 内容をダンプする．
-void
-SnOr::dump(ostream& s) const
-{
-  ymuint n = _fanin_num();
-  s << "OR(" << _fanin(0)->id();
-  for (ymuint i = 1; i < n; ++ i) {
-    s << ", " << _fanin(i)->id();
-  }
-  s << ")" << endl;
-}
-
 // @brief 正常値の計算を行う．(2値版)
 PackedVal
 SnOr::_calc_gval2()
@@ -159,15 +147,6 @@ SnOr2::gate_type() const
   return kGateOR;
 }
 
-// @brief 内容をダンプする．
-void
-SnOr2::dump(ostream& s) const
-{
-  s << "OR2(" << _fanin(0)->id();
-  s << ", " << _fanin(1)->id();
-  s << ")" << endl;
-}
-
 // @brief 正常値の計算を行う．(2値版)
 PackedVal
 SnOr2::_calc_gval2()
@@ -249,16 +228,6 @@ GateType
 SnOr3::gate_type() const
 {
   return kGateOR;
-}
-
-// @brief 内容をダンプする．
-void
-SnOr3::dump(ostream& s) const
-{
-  s << "OR3(" << _fanin(0)->id();
-  s << ", " << _fanin(1)->id();
-  s << ", " << _fanin(2)->id();
-  s << ")" << endl;
 }
 
 // @brief 正常値の計算を行う．(2値版)
@@ -355,17 +324,6 @@ GateType
 SnOr4::gate_type() const
 {
   return kGateOR;
-}
-
-// @brief 内容をダンプする．
-void
-SnOr4::dump(ostream& s) const
-{
-  s << "OR4(" << _fanin(0)->id();
-  s << ", " << _fanin(1)->id();
-  s << ", " << _fanin(2)->id();
-  s << ", " << _fanin(3)->id();
-  s << ")" << endl;
 }
 
 // @brief 正常値の計算を行う．(2値版)
@@ -470,18 +428,6 @@ SnNor::gate_type() const
   return kGateNOR;
 }
 
-// @brief 内容をダンプする．
-void
-SnNor::dump(ostream& s) const
-{
-  ymuint n = _fanin_num();
-  s << "NOR(" << _fanin(0)->id();
-  for (ymuint i = 1; i < n; ++ i) {
-    s << ", " << _fanin(i)->id();
-  }
-  s << ")" << endl;
-}
-
 // @brief 正常値の計算を行う．(2値版)
 PackedVal
 SnNor::_calc_gval2()
@@ -565,15 +511,6 @@ SnNor2::gate_type() const
   return kGateNOR;
 }
 
-// @brief 内容をダンプする．
-void
-SnNor2::dump(ostream& s) const
-{
-  s << "NOR2(" << _fanin(0)->id();
-  s << ", " << _fanin(1)->id();
-  s << ")" << endl;
-}
-
 // @brief 正常値の計算を行う．(2値版)
 PackedVal
 SnNor2::_calc_gval2()
@@ -639,16 +576,6 @@ GateType
 SnNor3::gate_type() const
 {
   return kGateNOR;
-}
-
-// @brief 内容をダンプする．
-void
-SnNor3::dump(ostream& s) const
-{
-  s << "NOR3(" << _fanin(0)->id();
-  s << ", " << _fanin(1)->id();
-  s << ", " << _fanin(2)->id();
-  s << ")" << endl;
 }
 
 // @brief 正常値の計算を行う．(2値版)
@@ -720,17 +647,6 @@ GateType
 SnNor4::gate_type() const
 {
   return kGateNOR;
-}
-
-// @brief 内容をダンプする．
-void
-SnNor4::dump(ostream& s) const
-{
-  s << "NOR4(" << _fanin(0)->id();
-  s << ", " << _fanin(1)->id();
-  s << ", " << _fanin(2)->id();
-  s << ", " << _fanin(3)->id();
-  s << ")" << endl;
 }
 
 // @brief 正常値の計算を行う．(2値版)
