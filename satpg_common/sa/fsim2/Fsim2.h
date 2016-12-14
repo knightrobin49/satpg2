@@ -131,7 +131,7 @@ private:
   ///
   /// 入力ノードに gval の設定は済んでいるものとする．
   void
-  _calc_gval();
+  _calc_gval2();
 
   /// @brief FFR 内の故障シミュレーションを行う．
   PackedVal

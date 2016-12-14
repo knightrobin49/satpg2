@@ -1,6 +1,6 @@
 
-/// @file SimNodeTest.cc
-/// @brief SimNodeTest の実装ファイル
+/// @file SimNode2Test.cc
+/// @brief SimNode2Test の実装ファイル
 /// @author Yusuke Matsunaga (松永 裕介)
 ///
 /// Copyright (C) 2016 Yusuke Matsunaga

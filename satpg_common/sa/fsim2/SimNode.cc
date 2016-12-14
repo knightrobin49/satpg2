@@ -150,7 +150,7 @@ SimNode::set_fanout_list(const vector<SimNode*>& fo_list,
 
 // @brief ローカルな obs の計算を行う．
 PackedVal
-SimNode::calc_lobs()
+SimNode::calc_lobs2()
 {
   if ( is_ffr_root() ) {
     return kPvAll1;
@@ -158,7 +158,7 @@ SimNode::calc_lobs()
   if ( !check_lobs() ) {
     SimNode* onode = fanout(0);
     ymuint pos = fanout_ipos();
-    mLobs = onode->calc_lobs() & onode->_calc_lobs2(pos);
+    mLobs = onode->calc_lobs2() & onode->_calc_lobs2(pos);
     set_lobs();
   }
   return mLobs;

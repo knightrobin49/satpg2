@@ -39,6 +39,17 @@ public:
   GateType
   gate_type() const;
 
+  /// @brief 内容をダンプする．
+  virtual
+  void
+  dump(ostream& s) const;
+
+
+public:
+  //////////////////////////////////////////////////////////////////////
+  // 2値版の故障シミュレーション用の仮想関数
+  //////////////////////////////////////////////////////////////////////
+
   /// @brief 正常値の計算を行う．(2値版)
   virtual
   PackedVal
@@ -54,10 +65,31 @@ public:
   PackedVal
   _calc_lobs2(ymuint ipos);
 
-  /// @brief 内容をダンプする．
+
+public:
+  //////////////////////////////////////////////////////////////////////
+  // 3値版の故障シミュレーション用の仮想関数
+  //////////////////////////////////////////////////////////////////////
+
+  /// @brief 正常値の計算を行う．(3値版)
+  ///
+  /// 結果は mGval[0], mGval[1] に格納される．
   virtual
   void
-  dump(ostream& s) const;
+  _calc_gval3();
+
+  /// @brief 故障値の計算を行う．(3値版)
+  /// @param[in] mask マスク
+  ///
+  /// 結果は mFval[0], mFval[1] に格納される．
+  virtual
+  void
+  _calc_fval3(PackedVal mask);
+
+  /// @brief ゲートの入力から出力までの可観測性を計算する．(3値版)
+  virtual
+  PackedVal
+  _calc_lobs3(ymuint ipos);
 
 };
 
@@ -87,6 +119,17 @@ public:
   GateType
   gate_type() const;
 
+  /// @brief 内容をダンプする．
+  virtual
+  void
+  dump(ostream& s) const;
+
+
+public:
+  //////////////////////////////////////////////////////////////////////
+  // 2値版の故障シミュレーション用の仮想関数
+  //////////////////////////////////////////////////////////////////////
+
   /// @brief 正常値の計算を行う．(2値版)
   virtual
   PackedVal
@@ -102,10 +145,31 @@ public:
   PackedVal
   _calc_lobs2(ymuint ipos);
 
-  /// @brief 内容をダンプする．
+
+public:
+  //////////////////////////////////////////////////////////////////////
+  // 3値版の故障シミュレーション用の仮想関数
+  //////////////////////////////////////////////////////////////////////
+
+  /// @brief 正常値の計算を行う．(3値版)
+  ///
+  /// 結果は mGval[0], mGval[1] に格納される．
   virtual
   void
-  dump(ostream& s) const;
+  _calc_gval3();
+
+  /// @brief 故障値の計算を行う．(3値版)
+  /// @param[in] mask マスク
+  ///
+  /// 結果は mFval[0], mFval[1] に格納される．
+  virtual
+  void
+  _calc_fval3(PackedVal mask);
+
+  /// @brief ゲートの入力から出力までの可観測性を計算する．(3値版)
+  virtual
+  PackedVal
+  _calc_lobs3(ymuint ipos);
 
 };
 
@@ -135,6 +199,17 @@ public:
   GateType
   gate_type() const;
 
+  /// @brief 内容をダンプする．
+  virtual
+  void
+  dump(ostream& s) const;
+
+
+public:
+  //////////////////////////////////////////////////////////////////////
+  // 2値版の故障シミュレーション用の仮想関数
+  //////////////////////////////////////////////////////////////////////
+
   /// @brief 正常値の計算を行う．(2値版)
   virtual
   PackedVal
@@ -145,10 +220,26 @@ public:
   PackedVal
   _calc_fval2();
 
-  /// @brief 内容をダンプする．
+
+public:
+  //////////////////////////////////////////////////////////////////////
+  // 3値版の故障シミュレーション用の仮想関数
+  //////////////////////////////////////////////////////////////////////
+
+  /// @brief 正常値の計算を行う．(3値版)
+  ///
+  /// 結果は mGval[0], mGval[1] に格納される．
   virtual
   void
-  dump(ostream& s) const;
+  _calc_gval3();
+
+  /// @brief 故障値の計算を行う．(3値版)
+  /// @param[in] mask マスク
+  ///
+  /// 結果は mFval[0], mFval[1] に格納される．
+  virtual
+  void
+  _calc_fval3(PackedVal mask);
 
 };
 
@@ -178,6 +269,17 @@ public:
   GateType
   gate_type() const;
 
+  /// @brief 内容をダンプする．
+  virtual
+  void
+  dump(ostream& s) const;
+
+
+public:
+  //////////////////////////////////////////////////////////////////////
+  // 2値版の故障シミュレーション用の仮想関数
+  //////////////////////////////////////////////////////////////////////
+
   /// @brief 正常値の計算を行う．(2値版)
   virtual
   PackedVal
@@ -188,10 +290,26 @@ public:
   PackedVal
   _calc_fval2();
 
-  /// @brief 内容をダンプする．
+
+public:
+  //////////////////////////////////////////////////////////////////////
+  // 3値版の故障シミュレーション用の仮想関数
+  //////////////////////////////////////////////////////////////////////
+
+  /// @brief 正常値の計算を行う．(3値版)
+  ///
+  /// 結果は mGval[0], mGval[1] に格納される．
   virtual
   void
-  dump(ostream& s) const;
+  _calc_gval3();
+
+  /// @brief 故障値の計算を行う．(3値版)
+  /// @param[in] mask マスク
+  ///
+  /// 結果は mFval[0], mFval[1] に格納される．
+  virtual
+  void
+  _calc_fval3(PackedVal mask);
 
 };
 

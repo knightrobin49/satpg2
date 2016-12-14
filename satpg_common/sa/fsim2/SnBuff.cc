@@ -35,6 +35,13 @@ SnBuff::gate_type() const
   return kGateBUFF;
 }
 
+// @brief 内容をダンプする．
+void
+SnBuff::dump(ostream& s) const
+{
+  s << "BUFF(" << _fanin()->id() << ")" << endl;
+}
+
 // @brief 正常値の計算を行う．(2値版)
 PackedVal
 SnBuff::_calc_gval2()
@@ -56,11 +63,34 @@ SnBuff::_calc_lobs2(ymuint ipos)
   return kPvAll1;
 }
 
-// @brief 内容をダンプする．
+// @brief 正常値の計算を行う．(3値版)
 void
-SnBuff::dump(ostream& s) const
+SnBuff::_calc_gval3()
 {
-  s << "BUFF(" << _fanin()->id() << ")" << endl;
+  SimNode* inode = _fanin();
+  PackedVal val0 = inode->gval_0();
+  PackedVal val1 = inode->gval_1();
+  set_gval(val0, val1);
+}
+
+// @brief 故障値の計算を行う．(3値版)
+// @param[in] mask マスク
+//
+// 結果は mFval0, mFval1 に格納される．
+void
+SnBuff::_calc_fval3(PackedVal mask)
+{
+  SimNode* inode = _fanin();
+  PackedVal val0 = inode->fval_0();
+  PackedVal val1 = inode->fval_1();
+  set_fval(val0, val1, mask);
+}
+
+// @brief ゲートの入力から出力までの可観測性を計算する．(3値版)
+PackedVal
+SnBuff::_calc_lobs3(ymuint ipos)
+{
+  return kPvAll1;
 }
 
 
@@ -87,6 +117,13 @@ SnNot::gate_type() const
   return kGateNOT;
 }
 
+// @brief 内容をダンプする．
+void
+SnNot::dump(ostream& s) const
+{
+  s << "NOT(" << _fanin()->id() << ")" << endl;
+}
+
 // @brief 正常値の計算を行う．(2値版)
 PackedVal
 SnNot::_calc_gval2()
@@ -101,11 +138,27 @@ SnNot::_calc_fval2()
   return ~_fanin()->fval();
 }
 
-// @brief 内容をダンプする．
+// @brief 正常値の計算を行う．(3値版)
 void
-SnNot::dump(ostream& s) const
+SnNot::_calc_gval3()
 {
-  s << "NOT(" << _fanin()->id() << ")" << endl;
+  SimNode* inode = _fanin();
+  PackedVal val0 = inode->gval_1();
+  PackedVal val1 = inode->gval_0();
+  set_gval(val0, val1);
+}
+
+// @brief 故障値の計算を行う．(3値版)
+// @param[in] mask マスク
+//
+// 結果は mFval0, mFval1 に格納される．
+void
+SnNot::_calc_fval3(PackedVal mask)
+{
+  SimNode* inode = _fanin();
+  PackedVal val0 = inode->fval_1();
+  PackedVal val1 = inode->fval_0();
+  set_fval(val0, val1, mask);
 }
 
 END_NAMESPACE_YM_SATPG_FSIM

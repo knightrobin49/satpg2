@@ -112,6 +112,25 @@ public:
 
 public:
   //////////////////////////////////////////////////////////////////////
+  // 構造に関する情報の設定用関数
+  //////////////////////////////////////////////////////////////////////
+
+  /// @brief 出力マークをつける．
+  void
+  set_output();
+
+  /// @brief ファンアウトリストを作成する．
+  void
+  set_fanout_list(const vector<SimNode*>& fo_list,
+		  ymuint ipos);
+
+  /// @brief FFR を設定する．
+  void
+  set_ffr(SimFFR* ffr);
+
+
+public:
+  //////////////////////////////////////////////////////////////////////
   // 2値の故障シミュレーションに関する情報の取得/設定
   //////////////////////////////////////////////////////////////////////
 
@@ -135,27 +154,101 @@ public:
   PackedVal
   fval() const;
 
-  /// @brief 故障値をクリアする．
-  void
-  clear_fval();
-
-  /// @brief 正常値の計算を行う．
+  /// @brief 正常値の計算を行う．(2値版)
   /// @note 結果は mGval にセットされる．
   void
-  calc_gval();
+  calc_gval2();
 
-  /// @brief 故障値の計算を行う．
+  /// @brief 故障値の計算を行う．(2値版)
   /// @param[in] mask マスク
   /// @return 故障差を返す．
   ///
   /// - mask 中で1の立っているビットのみ計算する．
   /// - 結果は mFval にセットされる．
   PackedVal
-  calc_fval(PackedVal mask);
+  calc_fval2(PackedVal mask);
 
-  /// @brief ローカルな obs の計算を行う．
+  /// @brief 故障値をクリアする．(2値版)
+  void
+  clear_fval2();
+
+  /// @brief ローカルな obs の計算を行う．(2値版)
   PackedVal
-  calc_lobs();
+  calc_lobs2();
+
+
+public:
+  //////////////////////////////////////////////////////////////////////
+  // 3値の故障シミュレーションに関する情報の取得/設定
+  //////////////////////////////////////////////////////////////////////
+
+  /// @brief 正常値のセットを行う．(3値版)
+  /// @param[in] val_0, val_1 値
+  ///
+  /// 通常は外部入力に対して行われる．
+  /// 故障値も同様にセットされる．
+  void
+  set_gval(PackedVal val_0,
+	   PackedVal val_1);
+
+  /// @brief 正常値の 0 パタンを得る．
+  PackedVal
+  gval_0() const;
+
+  /// @brief 正常値の 1 パタンを得る．
+  PackedVal
+  gval_1() const;
+
+  /// @brief 故障値をセットする．(3値版)
+  /// @param[in] val_0, val_1 値
+  /// @param[in] mask ビットマスク
+  ///
+  /// mask が0のビットはセットしない．
+  void
+  set_fval(PackedVal val_0,
+	   PackedVal val_1,
+	   PackedVal mask = kPvAll1);
+
+  /// @brief 故障値のマスクをセットする．
+  void
+  set_fmask(PackedVal mask);
+
+  /// @brief 故障値の 0 パタンを得る．
+  PackedVal
+  fval_0() const;
+
+  /// @brief 故障値の 1 パタンを得る．
+  PackedVal
+  fval_1() const;
+
+  /// @brief 正常値の計算を行う．(3値版)
+  /// @return 結果が X でなければ true を返す．
+  ///
+  /// 結果は mGval にセットされる．
+  bool
+  calc_gval3();
+
+  /// @brief 故障値の計算を行う．(3値版)
+  /// @param[in] mask マスク
+  /// @return 故障差を返す．
+  ///
+  /// 結果は mFval にセットされる．
+  PackedVal
+  calc_fval3(PackedVal mask);
+
+  /// @brief 故障値をクリアする．(3値版)
+  void
+  clear_fval3();
+
+  /// @brief ローカルな obs の計算を行う．(3値版)
+  PackedVal
+  calc_lobs3();
+
+
+public:
+  //////////////////////////////////////////////////////////////////////
+  // lobs の計算用の作業領域にアクセスする関数
+  //////////////////////////////////////////////////////////////////////
 
   /// @brief lobs が計算済みかチェックする．
   bool
@@ -172,26 +265,7 @@ public:
 
 public:
   //////////////////////////////////////////////////////////////////////
-  // 構造に関する情報の設定用関数
-  //////////////////////////////////////////////////////////////////////
-
-  /// @brief 出力マークをつける．
-  void
-  set_output();
-
-  /// @brief ファンアウトリストを作成する．
-  void
-  set_fanout_list(const vector<SimNode*>& fo_list,
-		  ymuint ipos);
-
-  /// @brief FFR を設定する．
-  void
-  set_ffr(SimFFR* ffr);
-
-
-public:
-  //////////////////////////////////////////////////////////////////////
-  // 派生クラスで実装する仮想関数
+  // 2値版の故障シミュレーション用の仮想関数
   //////////////////////////////////////////////////////////////////////
 
   /// @brief 正常値の計算を行う．(2値版)
@@ -208,6 +282,38 @@ public:
   virtual
   PackedVal
   _calc_lobs2(ymuint ipos) = 0;
+
+
+public:
+  //////////////////////////////////////////////////////////////////////
+  // 3値版の故障シミュレーション用の仮想関数
+  //////////////////////////////////////////////////////////////////////
+
+  /// @brief 正常値の計算を行う．(3値版)
+  ///
+  /// 結果は mGval[0], mGval[1] に格納される．
+  virtual
+  void
+  _calc_gval3() = 0;
+
+  /// @brief 故障値の計算を行う．(3値版)
+  /// @param[in] mask マスク
+  ///
+  /// 結果は mFval[0], mFval[1] に格納される．
+  virtual
+  void
+  _calc_fval3(PackedVal mask) = 0;
+
+  /// @brief ゲートの入力から出力までの可観測性を計算する．(3値版)
+  virtual
+  PackedVal
+  _calc_lobs3(ymuint ipos) = 0;
+
+
+public:
+  //////////////////////////////////////////////////////////////////////
+  // 派生クラスで実装する仮想関数
+  //////////////////////////////////////////////////////////////////////
 
   /// @brief 内容をダンプする．
   virtual
@@ -326,6 +432,14 @@ SimNode::set_output()
   mFanoutNum |= 1U;
 }
 
+// @brief FFR を設定する．
+inline
+void
+SimNode::set_ffr(SimFFR* ffr)
+{
+  mFFR = ffr;
+}
+
 // @brief lobs が計算済みかチェックする．
 inline
 bool
@@ -386,19 +500,85 @@ SimNode::fval() const
   return mFval[0];
 }
 
-// @brief 故障値をクリアする．
+// @brief 正常値のセットを行う．(3値版)
+// @param[in] val_0, val_1 値
+//
+// 通常は外部入力に対して行われる．
+// 故障値も同様にセットされる．
 inline
 void
-SimNode::clear_fval()
+SimNode::set_gval(PackedVal val_0,
+		  PackedVal val_1)
 {
-  mFval[0] = mGval[0];
+  mGval[0] = mFval[0] = val_0;
+  mGval[1] = mFval[1] = val_1;
+  //mFmask = kPvAll1;
+}
+
+// @brief 正常値の 0 パタンを得る．
+inline
+PackedVal
+SimNode::gval_0() const
+{
+  return mGval[0];
+}
+
+// @brief 正常値の 1 パタンを得る．
+inline
+PackedVal
+SimNode::gval_1() const
+{
+  return mGval[1];
+}
+
+// @brief 故障値をセットする．(3値版)
+// @param[in] val_0, val_1 値
+// @param[in] mask ビットマスク
+//
+// mask が0のビットはセットしない．
+inline
+void
+SimNode::set_fval(PackedVal val_0,
+		  PackedVal val_1,
+		  PackedVal mask)
+{
+  mFval[0] &= ~mask;
+  mFval[0] |= val_0 & mask;
+  mFval[1] &= ~mask;
+  mFval[1] |= val_1 & mask;
+}
+
+#if 0
+// @brief 故障値のマスクをセットする．
+inline
+void
+SimNode::set_fmask(PackedVal mask)
+{
+  mFmask = mask;
+}
+#endif
+
+// @brief 故障値の 0 パタンを得る．
+inline
+PackedVal
+SimNode::fval_0() const
+{
+  return mFval[0];
+}
+
+// @brief 故障値の 1 パタンを得る．
+inline
+PackedVal
+SimNode::fval_1() const
+{
+  return mFval[1];
 }
 
 // @brief 正常値の計算を行う．
 // @note 結果は mGval にセットされる．
 inline
 void
-SimNode::calc_gval()
+SimNode::calc_gval2()
 {
   set_gval(_calc_gval2());
 }
@@ -408,7 +588,7 @@ SimNode::calc_gval()
 // @note 結果は mFval にセットされる．
 inline
 PackedVal
-SimNode::calc_fval(PackedVal mask)
+SimNode::calc_fval2(PackedVal mask)
 {
   PackedVal val = _calc_fval2();
   PackedVal diff = (mGval[0] ^ val) & mask;
@@ -416,12 +596,52 @@ SimNode::calc_fval(PackedVal mask)
   return diff;
 }
 
-// @brief FFR を設定する．
+// @brief 故障値をクリアする．
 inline
 void
-SimNode::set_ffr(SimFFR* ffr)
+SimNode::clear_fval2()
 {
-  mFFR = ffr;
+  mFval[0] = mGval[0];
+}
+
+// @brief 正常値の計算を行う．
+// @return 結果が X でなければ true を返す．
+//
+// 結果は mGval にセットされる．
+inline
+bool
+SimNode::calc_gval3()
+{
+  _calc_gval3();
+  mFval[0] = mGval[0];
+  mFval[1] = mGval[1];
+  return (mGval[0] | mGval[1]) != kPvAll0;
+}
+
+// @brief 故障値の計算を行う．
+// @return 故障差を返す．
+//
+// 結果は mFval にセットされる．
+inline
+PackedVal
+SimNode::calc_fval3(PackedVal mask)
+{
+#if 0
+  _calc_fval3(mFmask & mask);
+#else
+  _calc_fval3(mask);
+#endif
+  return (mGval[0] ^ mFval[0]) | (mGval[1] ^ mFval[1]);
+}
+
+// @brief 故障値をクリアする．
+inline
+void
+SimNode::clear_fval3()
+{
+  mFval[0] = mGval[0];
+  mFval[1] = mGval[1];
+  //mFmask = kPvAll1;
 }
 
 END_NAMESPACE_YM_SATPG_FSIM

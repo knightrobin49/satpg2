@@ -52,32 +52,56 @@ SnInput::fanin(ymuint pos) const
   return nullptr;
 }
 
-// @brief 正常値の計算を行う．
+// @brief 内容をダンプする．
+void
+SnInput::dump(ostream& s) const
+{
+  s << "INPUT" << endl;
+}
+
+// @brief 正常値の計算を行う．(2値版)
 PackedVal
 SnInput::_calc_gval2()
 {
   return kPvAll0;
 }
 
-// @brief 故障値の計算を行う．
+// @brief 故障値の計算を行う．(2値版)
 PackedVal
 SnInput::_calc_fval2()
 {
   return kPvAll0;
 }
 
-// @brief ゲートの入力から出力までの可観測性を計算する．
+// @brief ゲートの入力から出力までの可観測性を計算する．(2値版)
 PackedVal
 SnInput::_calc_lobs2(ymuint ipos)
 {
   return kPvAll0;
 }
 
-// @brief 内容をダンプする．
+// @brief 正常値の計算を行う．(3値版)
 void
-SnInput::dump(ostream& s) const
+SnInput::_calc_gval3()
 {
-  s << "INPUT" << endl;
+  ASSERT_NOT_REACHED;
+}
+
+// @brief 故障値の計算を行う．(3値版)
+// @param[in] mask マスク
+//
+// 結果は mFval0, mFval1 に格納される．
+void
+SnInput::_calc_fval3(PackedVal mask)
+{
+  ASSERT_NOT_REACHED;
+}
+
+// @brief ゲートの入力から出力までの可観測性を計算する．(3値版)
+PackedVal
+SnInput::_calc_lobs3(ymuint ipos)
+{
+  return kPvAll0;
 }
 
 END_NAMESPACE_YM_SATPG_FSIM

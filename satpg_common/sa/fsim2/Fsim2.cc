@@ -343,7 +343,7 @@ Fsim2::ppsfp(const vector<TestVector*>& tv_array,
   }
 
   // 正常値の計算を行う．
-  _calc_gval();
+  _calc_gval2();
 
   // FFR ごとに処理を行う．
   for (vector<SimFFR>::iterator p = mFFRArray.begin();
@@ -454,7 +454,7 @@ void
 Fsim2::_sppfp(FsimOp& op)
 {
   // 正常値の計算を行う．
-  _calc_gval();
+  _calc_gval2();
 
   ymuint bitpos = 0;
   SimFFR* ffr_buff[kPvBitLen];
@@ -523,19 +523,19 @@ bool
 Fsim2::_spsfp(const TpgFault* f)
 {
   // 正常値の計算を行う．
-  _calc_gval();
+  _calc_gval2();
 
   // FFR 内の故障伝搬を行う．
   PackedVal lobs;
   if ( f->is_branch_fault() ) {
     SimNode* simnode = find_simnode(f->tpg_onode());
     ymuint ipos = f->tpg_pos();
-    lobs = simnode->calc_lobs() & simnode->_calc_lobs2(ipos);
+    lobs = simnode->calc_lobs2() & simnode->_calc_lobs2(ipos);
     clear_lobs(simnode);
   }
   else {
     SimNode* simnode = find_simnode(f->tpg_inode());
-    lobs = simnode->calc_lobs();
+    lobs = simnode->calc_lobs2();
     clear_lobs(simnode);
   }
 
@@ -572,12 +572,12 @@ Fsim2::_spsfp(const TpgFault* f)
 //
 // 入力ノードに gval の設定は済んでいるものとする．
 void
-Fsim2::_calc_gval()
+Fsim2::_calc_gval2()
 {
   for (vector<SimNode*>::iterator q = mLogicArray.begin();
        q != mLogicArray.end(); ++ q) {
     SimNode* node = *q;
-    node->calc_gval();
+    node->calc_gval2();
   }
 }
 
@@ -596,7 +596,7 @@ Fsim2::ffr_simulate(SimFFR* ffr)
 
     // ff の故障伝搬を行う．
     SimNode* simnode = ff->mNode;
-    PackedVal lobs = simnode->calc_lobs();
+    PackedVal lobs = simnode->calc_lobs2();
     PackedVal valdiff = ff->mInode->gval();
     const TpgFault* f = ff->mOrigF;
     if ( f->is_branch_fault() ) {
@@ -636,7 +636,7 @@ Fsim2::eventq_simulate()
     if ( node == nullptr ) break;
     // すでに検出済みのビットはマスクしておく
     // これは無駄なイベントの発生を抑える．
-    PackedVal diff = node->calc_fval(~obs);
+    PackedVal diff = node->calc_fval2(~obs);
     if ( diff != kPvAll0 ) {
       mClearArray.push_back(node);
       if ( node->is_output() ) {
@@ -653,7 +653,7 @@ Fsim2::eventq_simulate()
   // 今の故障シミュレーションで値の変わったノードを元にもどしておく
   for (vector<SimNode*>::iterator p = mClearArray.begin();
        p != mClearArray.end(); ++ p) {
-    (*p)->clear_fval();
+    (*p)->clear_fval2();
   }
   mClearArray.clear();
   return obs;
