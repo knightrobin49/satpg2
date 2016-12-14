@@ -112,13 +112,14 @@ public:
 
 public:
   //////////////////////////////////////////////////////////////////////
-  // 故障シミュレーションに関する情報の取得/設定
+  // 2値の故障シミュレーションに関する情報の取得/設定
   //////////////////////////////////////////////////////////////////////
 
   /// @brief 正常値のセットを行う．
   /// @param[in] pat 値
-  /// @note 通常は外部入力に対して行われる．
-  /// @note 故障値も同様にセットされる．
+  ///
+  /// - 通常は外部入力に対して行われる．
+  /// - 故障値も同様にセットされる．
   void
   set_gval(PackedVal pat);
 
@@ -144,8 +145,11 @@ public:
   calc_gval();
 
   /// @brief 故障値の計算を行う．
+  /// @param[in] mask マスク
   /// @return 故障差を返す．
-  /// @note 結果は mFval にセットされる．
+  ///
+  /// - mask 中で1の立っているビットのみ計算する．
+  /// - 結果は mFval にセットされる．
   PackedVal
   calc_fval(PackedVal mask);
 
@@ -190,20 +194,20 @@ public:
   // 派生クラスで実装する仮想関数
   //////////////////////////////////////////////////////////////////////
 
-  /// @brief 正常値の計算を行う．
+  /// @brief 正常値の計算を行う．(2値版)
   virtual
   PackedVal
-  _calc_gval() = 0;
+  _calc_gval2() = 0;
 
-  /// @brief 故障値の計算を行う．
+  /// @brief 故障値の計算を行う．(2値版)
   virtual
   PackedVal
-  _calc_fval() = 0;
+  _calc_fval2() = 0;
 
-  /// @brief ゲートの入力から出力までの可観測性を計算する．
+  /// @brief ゲートの入力から出力までの可観測性を計算する．(2値版)
   virtual
   PackedVal
-  _calc_lobs(ymuint ipos) = 0;
+  _calc_lobs2(ymuint ipos) = 0;
 
   /// @brief 内容をダンプする．
   virtual
@@ -396,7 +400,7 @@ inline
 void
 SimNode::calc_gval()
 {
-  set_gval(_calc_gval());
+  set_gval(_calc_gval2());
 }
 
 // @brief 故障値の計算を行う．
@@ -406,7 +410,7 @@ inline
 PackedVal
 SimNode::calc_fval(PackedVal mask)
 {
-  PackedVal val = _calc_fval();
+  PackedVal val = _calc_fval2();
   PackedVal diff = (mGval[0] ^ val) & mask;
   mFval[0] ^= diff;
   return diff;

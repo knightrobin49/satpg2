@@ -35,9 +35,9 @@ SnXor::gate_type() const
   return kGateXOR;
 }
 
-// @brief 正常値の計算を行う．
+// @brief 正常値の計算を行う．(2値版)
 PackedVal
-SnXor::_calc_gval()
+SnXor::_calc_gval2()
 {
   ymuint n = _fanin_num();
   PackedVal new_val = _fanin(0)->gval();
@@ -47,9 +47,9 @@ SnXor::_calc_gval()
   return new_val;
 }
 
-// @brief 故障値の計算を行う．
+// @brief 故障値の計算を行う．(2値版)
 PackedVal
-SnXor::_calc_fval()
+SnXor::_calc_fval2()
 {
   ymuint n = _fanin_num();
   PackedVal new_val = _fanin(0)->fval();
@@ -59,9 +59,9 @@ SnXor::_calc_fval()
   return new_val;
 }
 
-// @brief ゲートの入力から出力までの可観測性を計算する．
+// @brief ゲートの入力から出力までの可観測性を計算する．(2値版)
 PackedVal
-SnXor::_calc_lobs(ymuint ipos)
+SnXor::_calc_lobs2(ymuint ipos)
 {
   return kPvAll1;
 }
@@ -102,27 +102,27 @@ SnXor2::gate_type() const
   return kGateXOR;
 }
 
-// @brief 正常値の計算を行う．
+// @brief 正常値の計算を行う．(2値版)
 PackedVal
-SnXor2::_calc_gval()
+SnXor2::_calc_gval2()
 {
   PackedVal pat0 = _fanin(0)->gval();
   PackedVal pat1 = _fanin(1)->gval();
   return pat0 ^ pat1;
 }
 
-// @brief 故障値の計算を行う．
+// @brief 故障値の計算を行う．(2値版)
 PackedVal
-SnXor2::_calc_fval()
+SnXor2::_calc_fval2()
 {
   PackedVal pat0 = _fanin(0)->fval();
   PackedVal pat1 = _fanin(1)->fval();
   return pat0 ^ pat1;
 }
 
-// @brief ゲートの入力から出力までの可観測性を計算する．
+// @brief ゲートの入力から出力までの可観測性を計算する．(2値版)
 PackedVal
-SnXor2::_calc_lobs(ymuint ipos)
+SnXor2::_calc_lobs2(ymuint ipos)
 {
   return kPvAll1;
 }
@@ -160,9 +160,9 @@ SnXnor::gate_type() const
   return kGateXNOR;
 }
 
-// @brief 正常値の計算を行う．
+// @brief 正常値の計算を行う．(2値版)
 PackedVal
-SnXnor::_calc_gval()
+SnXnor::_calc_gval2()
 {
   ymuint n = _fanin_num();
   PackedVal val = _fanin(0)->gval();
@@ -172,9 +172,9 @@ SnXnor::_calc_gval()
   return ~val;
 }
 
-// @brief 故障値の計算を行う．
+// @brief 故障値の計算を行う．(2値版)
 PackedVal
-SnXnor::_calc_fval()
+SnXnor::_calc_fval2()
 {
   ymuint n = _fanin_num();
   PackedVal new_val = _fanin(0)->fval();
@@ -220,18 +220,18 @@ SnXnor2::gate_type() const
   return kGateXNOR;
 }
 
-// @brief 正常値の計算を行う．
+// @brief 正常値の計算を行う．(2値版)
 PackedVal
-SnXnor2::_calc_gval()
+SnXnor2::_calc_gval2()
 {
   PackedVal pat0 = _fanin(0)->gval();
   PackedVal pat1 = _fanin(1)->gval();
   return ~(pat0 ^ pat1);
 }
 
-// @brief 故障値の計算を行う．
+// @brief 故障値の計算を行う．(2値版)
 PackedVal
-SnXnor2::_calc_fval()
+SnXnor2::_calc_fval2()
 {
   PackedVal pat0 = _fanin(0)->fval();
   PackedVal pat1 = _fanin(1)->fval();

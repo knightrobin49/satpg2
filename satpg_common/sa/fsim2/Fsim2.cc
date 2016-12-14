@@ -530,7 +530,7 @@ Fsim2::_spsfp(const TpgFault* f)
   if ( f->is_branch_fault() ) {
     SimNode* simnode = find_simnode(f->tpg_onode());
     ymuint ipos = f->tpg_pos();
-    lobs = simnode->calc_lobs() & simnode->_calc_lobs(ipos);
+    lobs = simnode->calc_lobs() & simnode->_calc_lobs2(ipos);
     clear_lobs(simnode);
   }
   else {
@@ -602,7 +602,7 @@ Fsim2::ffr_simulate(SimFFR* ffr)
     if ( f->is_branch_fault() ) {
       // 入力の故障
       ymuint ipos = ff->mIpos;
-      lobs &= simnode->_calc_lobs(ipos);
+      lobs &= simnode->_calc_lobs2(ipos);
     }
     if ( f->val() == 1 ) {
       valdiff = ~valdiff;

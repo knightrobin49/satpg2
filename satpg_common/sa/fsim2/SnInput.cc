@@ -54,21 +54,21 @@ SnInput::fanin(ymuint pos) const
 
 // @brief 正常値の計算を行う．
 PackedVal
-SnInput::_calc_gval()
+SnInput::_calc_gval2()
 {
   return kPvAll0;
 }
 
 // @brief 故障値の計算を行う．
 PackedVal
-SnInput::_calc_fval()
+SnInput::_calc_fval2()
 {
   return kPvAll0;
 }
 
 // @brief ゲートの入力から出力までの可観測性を計算する．
 PackedVal
-SnInput::_calc_lobs(ymuint ipos)
+SnInput::_calc_lobs2(ymuint ipos)
 {
   return kPvAll0;
 }

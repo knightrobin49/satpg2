@@ -51,23 +51,24 @@ public:
   SimNode*
   fanin(ymuint pos) const;
 
-  /// @brief 正常値の計算を行う．
+  /// @brief 正常値の計算を行う．(2値版)
   virtual
   PackedVal
-  _calc_gval();
+  _calc_gval2();
 
-  /// @brief 故障値の計算を行う．
+  /// @brief 故障値の計算を行う．(2値版)
   /// @retval true 新しい値に更新された．
   /// @retval false 値は変わらなかった．
-  /// @note 結果は mFval にセットされる．
+  ///
+  /// 結果は mFval にセットされる．
   virtual
   PackedVal
-  _calc_fval();
+  _calc_fval2();
 
-  /// @brief ゲートの入力から出力までの可観測性を計算する．
+  /// @brief ゲートの入力から出力までの可観測性を計算する．(2値版)
   virtual
   PackedVal
-  _calc_lobs(ymuint ipos);
+  _calc_lobs2(ymuint ipos);
 
   /// @brief 内容をダンプする．
   virtual

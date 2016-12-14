@@ -35,23 +35,23 @@ SnBuff::gate_type() const
   return kGateBUFF;
 }
 
-// @brief 正常値の計算を行う．
+// @brief 正常値の計算を行う．(2値版)
 PackedVal
-SnBuff::_calc_gval()
+SnBuff::_calc_gval2()
 {
   return _fanin()->gval();
 }
 
-// @brief 故障値の計算を行う．
+// @brief 故障値の計算を行う．(2値版)
 PackedVal
-SnBuff::_calc_fval()
+SnBuff::_calc_fval2()
 {
   return _fanin()->fval();
 }
 
-// @brief ゲートの入力から出力までの可観測性を計算する．
+// @brief ゲートの入力から出力までの可観測性を計算する．(2値版)
 PackedVal
-SnBuff::_calc_lobs(ymuint ipos)
+SnBuff::_calc_lobs2(ymuint ipos)
 {
   return kPvAll1;
 }
@@ -87,16 +87,16 @@ SnNot::gate_type() const
   return kGateNOT;
 }
 
-// @brief 正常値の計算を行う．
+// @brief 正常値の計算を行う．(2値版)
 PackedVal
-SnNot::_calc_gval()
+SnNot::_calc_gval2()
 {
   return ~_fanin()->gval();
 }
 
-// @brief 故障値の計算を行う．
+// @brief 故障値の計算を行う．(2値版)
 PackedVal
-SnNot::_calc_fval()
+SnNot::_calc_fval2()
 {
   return ~_fanin()->fval();
 }
