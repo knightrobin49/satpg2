@@ -58,6 +58,15 @@ public:
   test_val3(PackedVal val0,
 	    PackedVal val1,
 	    int exp_val);
+
+  /// @brief 3値の検証を行う．
+  /// @param[in] val テストする値
+  /// @param[in] exp_val 期待値
+  ///
+  /// 期待値は 0, 1, 2(X) の3種類
+  void
+  test_val3(PackedVal3 val,
+	    int exp_val);
 };
 
 BEGIN_NONAMESPACE
@@ -152,10 +161,8 @@ SimNodeTest::test_gate(ymuint ni,
       case 2: inputs[i]->set_gval(kPvAll0, kPvAll0); break;
       }
     }
-    node->_calc_gval3();
-    PackedVal val0 = node->gval_0();
-    PackedVal val1 = node->gval_1();
-    test_val3(val0, val1, vals[p]);
+    PackedVal3 val = node->_calc_gval3();
+    test_val3(val, vals[p]);
   }
 
   // _calc_fval3() のテスト
@@ -176,10 +183,8 @@ SimNodeTest::test_gate(ymuint ni,
       case 2: inputs[i]->set_fval(kPvAll0, kPvAll0, kPvAll1); break;
       }
     }
-    node->_calc_fval3(kPvAll1);
-    PackedVal val0 = node->fval_0();
-    PackedVal val1 = node->fval_1();
-    test_val3(val0, val1, vals[p]);
+    PackedVal3 val = node->_calc_fval3();
+    test_val3(val, vals[p]);
   }
 
   // _calc_gobs3() のテスト
@@ -261,8 +266,8 @@ SimNodeTest::test_gval(SimNode* node,
 {
   // 書き込んだ値が読み出せるかテストする．
   node->set_gval(val0, val1);
-  EXPECT_EQ( val0, node->gval_0() );
-  EXPECT_EQ( val1, node->gval_1() );
+  EXPECT_EQ( val0, node->gval3().val0() );
+  EXPECT_EQ( val1, node->gval3().val1() );
 }
 
 // @brief fval の書き込み読み出しテスト
@@ -275,8 +280,8 @@ SimNodeTest::test_fval(SimNode* node,
 {
   // 書き込んだ値が読み出せるかテストする．
   node->set_fval(val0, val1, kPvAll1);
-  EXPECT_EQ( val0, node->fval_0() );
-  EXPECT_EQ( val1, node->fval_1() );
+  EXPECT_EQ( val0, node->fval3().val0() );
+  EXPECT_EQ( val1, node->fval3().val1() );
 }
 
 // @brief 3値の検証を行う．
@@ -310,6 +315,18 @@ SimNodeTest::test_val3(PackedVal val0,
     ASSERT_NOT_REACHED;
     break;
   }
+}
+
+// @brief 3値の検証を行う．
+// @param[in] val テストする値
+// @param[in] exp_val 期待値
+//
+// 期待値は 0, 1, 2(X) の3種類
+void
+SimNodeTest::test_val3(PackedVal3 val,
+		       int exp_val)
+{
+  test_val3(val.val0(), val.val1(), exp_val);
 }
 
 TEST_F(SimNodeTest, INPUT)

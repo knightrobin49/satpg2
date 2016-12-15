@@ -1,0 +1,327 @@
+﻿#ifndef PACKEDVAL3_H
+#define PACKEDVAL3_H
+
+/// @file PackedVal3.h
+/// @brief 2ワードにパックした3値のビットベクタ型の定義ファイル
+/// @author Yusuke Matsunaga (松永 裕介)
+///
+/// Copyright (C) 2016 Yusuke Matsunaga
+/// All rights reserved.
+
+#include "satpg.h"
+#include "PackedVal.h"
+
+
+BEGIN_NAMESPACE_YM_SATPG
+
+//////////////////////////////////////////////////////////////////////
+/// @class PackedVal3 PackedVal3.h "PackedVal3.h"
+/// @brief PackedVal2つで3値のビットベクタを表すクラス
+//////////////////////////////////////////////////////////////////////
+class PackedVal3
+{
+public:
+
+  /// @brief コンストラクタ
+  /// @param[in] val0, val1 値
+  PackedVal3(PackedVal val0 = kPvAll0,
+	     PackedVal val1 = kPvAll0);
+
+  /// @brief デストラクタ
+  ~PackedVal3();
+
+
+public:
+  //////////////////////////////////////////////////////////////////////
+  // 外部インターフェイス
+  //////////////////////////////////////////////////////////////////////
+
+  /// @grief 0 のワードを取り出す．
+  PackedVal
+  val0() const;
+
+  /// @brief 1 のワードを取り出す．
+  PackedVal
+  val1() const;
+
+  /// @brief 値をセットする．
+  /// @param[in] val0, val1 値
+  void
+  set(PackedVal val0,
+      PackedVal val1);
+
+  /// @brief マスク付きで値をセットする．
+  /// @param[in] val0, val1 値
+  /// @param[in] mask
+  void
+  set_with_mask(PackedVal val0,
+		PackedVal val1,
+		PackedVal mask);
+
+  /// @brief 自身を否定する演算
+  /// @return 演算後の自身の参照を返す．
+  const PackedVal3&
+  negate();
+
+  /// @brief AND付き代入
+  /// @param[in] right オペランド
+  /// @return 演算後の自身の参照を返す．
+  const PackedVal3&
+  operator&=(PackedVal3 right);
+
+  /// @brief OR付き代入
+  /// @param[in] right オペランド
+  /// @return 演算後の自身の参照を返す．
+  const PackedVal3&
+  operator|=(PackedVal3 right);
+
+  /// @brief XOR付き代入
+  /// @param[in] right オペランド
+  /// @return 演算後の自身の参照を返す．
+  const PackedVal3&
+  operator^=(PackedVal3 right);
+
+
+private:
+  //////////////////////////////////////////////////////////////////////
+  // 内部で用いられる関数
+  //////////////////////////////////////////////////////////////////////
+
+
+private:
+  //////////////////////////////////////////////////////////////////////
+  // データメンバ
+  //////////////////////////////////////////////////////////////////////
+
+  // 0のワード
+  PackedVal mVal0;
+
+  // 1のワード
+  PackedVal mVal1;
+
+};
+
+
+//////////////////////////////////////////////////////////////////////
+// PackedVal3 の演算
+//////////////////////////////////////////////////////////////////////
+
+/// @brief 否定演算
+/// @param[in] right オペランド
+PackedVal3
+operator~(PackedVal3 right);
+
+/// @brief AND演算
+/// @param[in] left, right オペランド
+PackedVal3
+operator&(PackedVal3 left,
+	  PackedVal3 right);
+
+/// @brief OR演算
+/// @param[in] left, right オペランド
+PackedVal3
+operator|(PackedVal3 left,
+	  PackedVal3 right);
+
+/// @brief XOR演算
+/// @param[in] left, right オペランド
+PackedVal3
+operator^(PackedVal3 left,
+	  PackedVal3 right);
+
+/// @brief DIFF演算
+/// @param[in] left, right オペランド
+///
+/// 異なっているビットに1を立てた2値のビットベクタを返す．
+PackedVal
+diff(PackedVal3 left,
+     PackedVal3 right);
+
+
+//////////////////////////////////////////////////////////////////////
+// インライン関数の定義
+//////////////////////////////////////////////////////////////////////
+
+// @brief コンストラクタ
+// @param[in] val0, val1 値
+inline
+PackedVal3::PackedVal3(PackedVal val0,
+		       PackedVal val1) :
+  mVal0(val0),
+  mVal1(val1)
+{
+}
+
+// @brief デストラクタ
+inline
+PackedVal3::~PackedVal3()
+{
+}
+
+// @grief 0 のワードを取り出す．
+inline
+PackedVal
+PackedVal3::val0() const
+{
+  return mVal0;
+}
+
+// @brief 1 のワードを取り出す．
+inline
+PackedVal
+PackedVal3::val1() const
+{
+  return mVal1;
+}
+
+// @brief 値をセットする．
+// @param[in] val0, val1 値
+inline
+void
+PackedVal3::set(PackedVal val0,
+		PackedVal val1)
+{
+  mVal0 = val0;
+  mVal1 = val1;
+}
+
+// @brief マスク付きで値をセットする．
+// @param[in] val0, val1 値
+// @param[in] mask
+inline
+void
+PackedVal3::set_with_mask(PackedVal val0,
+			  PackedVal val1,
+			  PackedVal mask)
+{
+  mVal0 &= ~mask;
+  mVal0 |= (val0 &  mask);
+  mVal1 &= ~mask;
+  mVal1 |= (val1 & mask);
+}
+
+// @brief 自身を否定する演算
+// @return 演算後の自身の参照を返す．
+inline
+const PackedVal3&
+PackedVal3::negate()
+{
+  PackedVal tmp = mVal0;
+  mVal0 = mVal1;
+  mVal1 = tmp;
+
+  return *this;
+}
+
+// @brief 否定演算
+// @param[in] right オペランド
+inline
+PackedVal3
+operator~(PackedVal3 right)
+{
+  return PackedVal3(right.val1(), right.val0());
+}
+
+// @brief AND付き代入
+// @param[in] right オペランド
+// @return 演算後の自身の参照を返す．
+inline
+const PackedVal3&
+PackedVal3::operator&=(PackedVal3 right)
+{
+  mVal0 |= right.mVal0;
+  mVal1 &= right.mVal1;
+
+  return *this;
+}
+
+// @brief AND演算
+// @param[in] left, right オペランド
+inline
+PackedVal3
+operator&(PackedVal3 left,
+	  PackedVal3 right)
+{
+  PackedVal val0 = left.val0() | right.val0();
+  PackedVal val1 = left.val1() & right.val1();
+  return PackedVal3(val0, val1);
+}
+
+// @brief OR付き代入
+// @param[in] right オペランド
+// @return 演算後の自身の参照を返す．
+inline
+const PackedVal3&
+PackedVal3::operator|=(PackedVal3 right)
+{
+  mVal0 &= right.mVal0;
+  mVal1 |= right.mVal1;
+
+  return *this;
+}
+
+// @brief OR演算
+// @param[in] left, right オペランド
+inline
+PackedVal3
+operator|(PackedVal3 left,
+	  PackedVal3 right)
+{
+  PackedVal val0 = left.val0() & right.val0();
+  PackedVal val1 = left.val1() | right.val1();
+  return PackedVal3(val0, val1);
+}
+
+// @brief XOR付き代入
+// @param[in] right オペランド
+// @return 演算後の自身の参照を返す．
+inline
+const PackedVal3&
+PackedVal3::operator^=(PackedVal3 right)
+{
+  PackedVal tmp0_0 = mVal0 | right.mVal1;
+  PackedVal tmp0_1 = mVal1 & right.mVal0;
+
+  PackedVal tmp1_0 = mVal1 | right.mVal0;
+  PackedVal tmp1_1 = mVal0 & right.mVal1;
+
+  mVal0 = tmp0_0 & tmp1_0;
+  mVal1 = tmp0_1 | tmp1_1;
+
+  return *this;
+}
+
+// @brief XOR演算
+// @param[in] left, right オペランド
+inline
+PackedVal3
+operator^(PackedVal3 left,
+	  PackedVal3 right)
+{
+  PackedVal tmp0_0 = left.val0() | right.val1();
+  PackedVal tmp0_1 = left.val1() & right.val0();
+
+  PackedVal tmp1_0 = left.val1() | right.val0();
+  PackedVal tmp1_1 = left.val0() & right.val1();
+
+  PackedVal val0 = tmp0_0 & tmp1_0;
+  PackedVal val1 = tmp0_1 | tmp1_1;
+
+  return PackedVal3(val0, val1);
+}
+
+// @brief DIFF演算
+// @param[in] left, right オペランド
+//
+// 異なっているビットに1を立てた2値のビットベクタを返す．
+inline
+PackedVal
+diff(PackedVal3 left,
+     PackedVal3 right)
+{
+  return (left.val0() ^ right.val0()) | (left.val1() ^ right.val1());
+}
+
+END_NAMESPACE_YM_SATPG
+
+#endif // PACKEDVAL_H

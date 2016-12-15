@@ -13,6 +13,7 @@
 #include "TpgNode.h"
 #include "EqElem.h"
 #include "PackedVal.h"
+#include "PackedVal3.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG_FSIM
@@ -173,21 +174,13 @@ public:
   // 3値の故障シミュレーションに関する情報の取得/設定
   //////////////////////////////////////////////////////////////////////
 
-  /// @brief 正常値の 0 パタンを得る．
-  PackedVal
-  gval_0() const;
+  /// @brief 正常値を得る．(3値版)
+  PackedVal3
+  gval3() const;
 
-  /// @brief 正常値の 1 パタンを得る．
-  PackedVal
-  gval_1() const;
-
-  /// @brief 故障値の 0 パタンを得る．
-  PackedVal
-  fval_0() const;
-
-  /// @brief 故障値の 1 パタンを得る．
-  PackedVal
-  fval_1() const;
+  /// @brief 故障値を得る．(3値版)
+  PackedVal3
+  fval3() const;
 
   /// @brief 正常値と故障値の差を返す．(3値版)
   PackedVal
@@ -245,11 +238,13 @@ public:
   //////////////////////////////////////////////////////////////////////
 
   /// @brief 正常値の計算を行う．(2値版)
+  /// @return 計算結果を返す．
   virtual
   PackedVal
   _calc_gval2() = 0;
 
   /// @brief 故障値の計算を行う．(2値版)
+  /// @return 計算結果を返す．
   virtual
   PackedVal
   _calc_fval2() = 0;
@@ -266,19 +261,16 @@ public:
   //////////////////////////////////////////////////////////////////////
 
   /// @brief 正常値の計算を行う．(3値版)
-  ///
-  /// 結果は mGval[0], mGval[1] に格納される．
+  /// @return 計算結果を返す．
   virtual
-  void
+  PackedVal3
   _calc_gval3() = 0;
 
   /// @brief 故障値の計算を行う．(3値版)
-  /// @param[in] mask マスク
-  ///
-  /// 結果は mFval[0], mFval[1] に格納される．
+  /// @return 計算結果を返す．
   virtual
-  void
-  _calc_fval3(PackedVal mask) = 0;
+  PackedVal3
+  _calc_fval3() = 0;
 
   /// @brief ゲートの入力から出力までの可観測性を計算する．(3値版)
   virtual
@@ -318,10 +310,10 @@ private:
   ymuint mLevel;
 
   // 正常値
-  PackedVal mGval[2];
+  PackedVal3 mGval;
 
   // 故障値
-  PackedVal mFval[2];
+  PackedVal3 mFval;
 
   // FFR 内のローカルな obs
   PackedVal mLobs;
@@ -434,7 +426,7 @@ inline
 PackedVal
 SimNode::gval() const
 {
-  return mGval[0];
+  return mGval.val1();
 }
 
 // @brief 故障値を得る．
@@ -442,7 +434,7 @@ inline
 PackedVal
 SimNode::fval() const
 {
-  return mFval[0];
+  return mFval.val1();
 }
 
 // @brief 正常値と故障値の差を返す．(2値版)
@@ -461,8 +453,8 @@ inline
 void
 SimNode::set_gval(PackedVal val)
 {
-  mGval[0] = val;
-  mFval[0] = val;
+  mGval.set(~val, val);
+  mFval = mGval;
 }
 
 // @brief 故障値をセットする．
@@ -472,40 +464,23 @@ void
 SimNode::set_fval(PackedVal pat,
 		  PackedVal mask)
 {
-  mFval[0] &= (pat | ~mask);
-  mFval[0] |= (pat &  mask);
+  mFval.set_with_mask(~pat, pat, mask);
 }
 
-// @brief 正常値の 0 パタンを得る．
+// @brief 正常値を得る．(3値版)
 inline
-PackedVal
-SimNode::gval_0() const
+PackedVal3
+SimNode::gval3() const
 {
-  return mGval[0];
+  return mGval;
 }
 
-// @brief 正常値の 1 パタンを得る．
+// @brief 故障値を得る．(3値版)
 inline
-PackedVal
-SimNode::gval_1() const
+PackedVal3
+SimNode::fval3() const
 {
-  return mGval[1];
-}
-
-// @brief 故障値の 0 パタンを得る．
-inline
-PackedVal
-SimNode::fval_0() const
-{
-  return mFval[0];
-}
-
-// @brief 故障値の 1 パタンを得る．
-inline
-PackedVal
-SimNode::fval_1() const
-{
-  return mFval[1];
+  return mFval;
 }
 
 // @brief 正常値と故障値の差を返す．(3値版)
@@ -513,7 +488,7 @@ inline
 PackedVal
 SimNode::diff3() const
 {
-  return (gval_0() ^ fval_0()) | (gval_1() ^ fval_1());
+  return diff(gval3(), fval3());
 }
 
 // @brief 正常値のセットを行う．(3値版)
@@ -526,8 +501,8 @@ void
 SimNode::set_gval(PackedVal val_0,
 		  PackedVal val_1)
 {
-  mGval[0] = mFval[0] = val_0;
-  mGval[1] = mFval[1] = val_1;
+  mGval.set(val_0, val_1);
+  mFval = mGval;
 }
 
 // @brief 故障値をセットする．(3値版)
@@ -541,10 +516,7 @@ SimNode::set_fval(PackedVal val_0,
 		  PackedVal val_1,
 		  PackedVal mask)
 {
-  mFval[0] &= ~mask;
-  mFval[0] |= val_0 & mask;
-  mFval[1] &= ~mask;
-  mFval[1] |= val_1 & mask;
+  mFval.set_with_mask(val_0, val_1, mask);
 }
 
 // @brief 故障値をクリアする．
@@ -552,7 +524,7 @@ inline
 void
 SimNode::clear_fval2()
 {
-  mFval[0] = mGval[0];
+  mFval = mGval;
 }
 
 // @brief 故障値をクリアする．
@@ -560,8 +532,7 @@ inline
 void
 SimNode::clear_fval3()
 {
-  mFval[0] = mGval[0];
-  mFval[1] = mGval[1];
+  mFval = mGval;
 }
 
 END_NAMESPACE_YM_SATPG_FSIM

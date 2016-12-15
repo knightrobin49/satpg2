@@ -83,20 +83,19 @@ SnInput::_calc_gobs2(ymuint ipos)
 }
 
 // @brief 正常値の計算を行う．(3値版)
-void
+PackedVal3
 SnInput::_calc_gval3()
 {
   ASSERT_NOT_REACHED;
+  return PackedVal3();
 }
 
 // @brief 故障値の計算を行う．(3値版)
-// @param[in] mask マスク
-//
-// 結果は mFval0, mFval1 に格納される．
-void
-SnInput::_calc_fval3(PackedVal mask)
+PackedVal3
+SnInput::_calc_fval3()
 {
   ASSERT_NOT_REACHED;
+  return PackedVal3();
 }
 
 // @brief ゲートの入力から出力までの可観測性を計算する．(3値版)

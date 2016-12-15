@@ -59,26 +59,19 @@ SnBuff::_calc_gobs2(ymuint ipos)
 }
 
 // @brief 正常値の計算を行う．(3値版)
-void
+PackedVal3
 SnBuff::_calc_gval3()
 {
   SimNode* inode = _fanin();
-  PackedVal val0 = inode->gval_0();
-  PackedVal val1 = inode->gval_1();
-  set_gval(val0, val1);
+  return inode->gval3();
 }
 
 // @brief 故障値の計算を行う．(3値版)
-// @param[in] mask マスク
-//
-// 結果は mFval0, mFval1 に格納される．
-void
-SnBuff::_calc_fval3(PackedVal mask)
+PackedVal3
+SnBuff::_calc_fval3()
 {
   SimNode* inode = _fanin();
-  PackedVal val0 = inode->fval_0();
-  PackedVal val1 = inode->fval_1();
-  set_fval(val0, val1, mask);
+  return inode->fval3();
 }
 
 // @brief ゲートの入力から出力までの可観測性を計算する．(3値版)
@@ -129,26 +122,19 @@ SnNot::_calc_fval2()
 }
 
 // @brief 正常値の計算を行う．(3値版)
-void
+PackedVal3
 SnNot::_calc_gval3()
 {
   SimNode* inode = _fanin();
-  PackedVal val0 = inode->gval_1();
-  PackedVal val1 = inode->gval_0();
-  set_gval(val0, val1);
+  return ~inode->gval3();
 }
 
 // @brief 故障値の計算を行う．(3値版)
-// @param[in] mask マスク
-//
-// 結果は mFval0, mFval1 に格納される．
-void
-SnNot::_calc_fval3(PackedVal mask)
+PackedVal3
+SnNot::_calc_fval3()
 {
   SimNode* inode = _fanin();
-  PackedVal val0 = inode->fval_1();
-  PackedVal val1 = inode->fval_0();
-  set_fval(val0, val1, mask);
+  return ~inode->fval3();
 }
 
 END_NAMESPACE_YM_SATPG_FSIM

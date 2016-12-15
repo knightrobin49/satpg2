@@ -70,16 +70,13 @@ public:
   ///
   /// 結果は mGval[0], mGval[1] に格納される．
   virtual
-  void
+  PackedVal3
   _calc_gval3();
 
   /// @brief 故障値の計算を行う．(3値版)
-  /// @param[in] mask マスク
-  ///
-  /// 結果は mFval[0], mFval[1] に格納される．
   virtual
-  void
-  _calc_fval3(PackedVal mask);
+  PackedVal3
+  _calc_fval3();
 
   /// @brief ゲートの入力から出力までの可観測性を計算する．(3値版)
   virtual
@@ -145,16 +142,13 @@ public:
   ///
   /// 結果は mGval[0], mGval[1] に格納される．
   virtual
-  void
+  PackedVal3
   _calc_gval3();
 
   /// @brief 故障値の計算を行う．(3値版)
-  /// @param[in] mask マスク
-  ///
-  /// 結果は mFval[0], mFval[1] に格納される．
   virtual
-  void
-  _calc_fval3(PackedVal mask);
+  PackedVal3
+  _calc_fval3();
 
   /// @brief ゲートの入力から出力までの可観測性を計算する．(3値版)
   virtual
@@ -215,16 +209,13 @@ public:
   ///
   /// 結果は mGval[0], mGval[1] に格納される．
   virtual
-  void
+  PackedVal3
   _calc_gval3();
 
   /// @brief 故障値の計算を行う．(3値版)
-  /// @param[in] mask マスク
-  ///
-  /// 結果は mFval[0], mFval[1] に格納される．
   virtual
-  void
-  _calc_fval3(PackedVal mask);
+  PackedVal3
+  _calc_fval3();
 
 };
 
@@ -280,16 +271,13 @@ public:
   ///
   /// 結果は mGval[0], mGval[1] に格納される．
   virtual
-  void
+  PackedVal3
   _calc_gval3();
 
   /// @brief 故障値の計算を行う．(3値版)
-  /// @param[in] mask マスク
-  ///
-  /// 結果は mFval[0], mFval[1] に格納される．
   virtual
-  void
-  _calc_fval3(PackedVal mask);
+  PackedVal3
+  _calc_fval3();
 
 };
 
