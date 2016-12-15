@@ -214,10 +214,6 @@ public:
 	   PackedVal val_1,
 	   PackedVal mask = kPvAll1);
 
-  /// @brief 故障値のマスクをセットする．
-  void
-  set_fmask(PackedVal mask);
-
   /// @brief 故障値の 0 パタンを得る．
   PackedVal
   fval_0() const;
@@ -509,7 +505,6 @@ SimNode::set_gval(PackedVal val_0,
 {
   mGval[0] = mFval[0] = val_0;
   mGval[1] = mFval[1] = val_1;
-  //mFmask = kPvAll1;
 }
 
 // @brief 正常値の 0 パタンを得る．
@@ -544,16 +539,6 @@ SimNode::set_fval(PackedVal val_0,
   mFval[1] &= ~mask;
   mFval[1] |= val_1 & mask;
 }
-
-#if 0
-// @brief 故障値のマスクをセットする．
-inline
-void
-SimNode::set_fmask(PackedVal mask)
-{
-  mFmask = mask;
-}
-#endif
 
 // @brief 故障値の 0 パタンを得る．
 inline
@@ -623,11 +608,7 @@ inline
 PackedVal
 SimNode::calc_fval3(PackedVal mask)
 {
-#if 0
-  _calc_fval3(mFmask & mask);
-#else
   _calc_fval3(mask);
-#endif
   return (mGval[0] ^ mFval[0]) | (mGval[1] ^ mFval[1]);
 }
 
@@ -638,7 +619,6 @@ SimNode::clear_fval3()
 {
   mFval[0] = mGval[0];
   mFval[1] = mGval[1];
-  //mFmask = kPvAll1;
 }
 
 END_NAMESPACE_YM_SATPG_FSIM
