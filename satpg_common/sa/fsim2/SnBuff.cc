@@ -39,14 +39,16 @@ SnBuff::gate_type() const
 PackedVal
 SnBuff::_calc_gval2()
 {
-  return _fanin()->gval();
+  PackedVal val = _fanin()->gval();
+  return val;
 }
 
 // @brief 故障値の計算を行う．(2値版)
 PackedVal
 SnBuff::_calc_fval2()
 {
-  return _fanin()->fval();
+  PackedVal val = _fanin()->fval();
+  return val;
 }
 
 // @brief ゲートの入力から出力までの可観測性を計算する．(2値版)
@@ -114,14 +116,16 @@ SnNot::gate_type() const
 PackedVal
 SnNot::_calc_gval2()
 {
-  return ~_fanin()->gval();
+  PackedVal val = _fanin()->gval();
+  return ~val;
 }
 
 // @brief 故障値の計算を行う．(2値版)
 PackedVal
 SnNot::_calc_fval2()
 {
-  return ~_fanin()->fval();
+  PackedVal val = _fanin()->fval();
+  return ~val;
 }
 
 // @brief 正常値の計算を行う．(3値版)

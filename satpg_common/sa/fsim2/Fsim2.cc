@@ -550,7 +550,8 @@ Fsim2::_calc_gval2()
   for (vector<SimNode*>::iterator q = mLogicArray.begin();
        q != mLogicArray.end(); ++ q) {
     SimNode* node = *q;
-    node->calc_gval2();
+    PackedVal val = node->_calc_gval2();
+    node->set_gval(val);
   }
 }
 
@@ -605,7 +606,7 @@ void
 Fsim2::eventq_put2(SimNode* node,
 		   PackedVal val)
 {
-  node->set_fval(val);
+  node->set_fval(val, kPvAll1);
   mClearArray.push_back(node);
   ymuint no = node->fanout_num();
   for (ymuint i = 0; i < no; ++ i) {
@@ -624,7 +625,9 @@ Fsim2::eventq_simulate2()
     if ( node == nullptr ) break;
     // すでに検出済みのビットはマスクしておく
     // これは無駄なイベントの発生を抑える．
-    PackedVal diff = node->calc_fval2(~obs);
+    PackedVal fval = node->_calc_fval2();
+    node->set_fval(fval, ~obs);
+    PackedVal diff = node->diff2();
     if ( diff != kPvAll0 ) {
       mClearArray.push_back(node);
       if ( node->is_output() ) {

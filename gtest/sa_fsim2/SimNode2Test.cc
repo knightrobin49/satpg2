@@ -56,7 +56,7 @@ init_val(SimNode* node,
 	 PackedVal val)
 {
   node->set_gval(val);
-  node->set_fval(val);
+  node->set_fval(val, kPvAll1);
 }
 
 END_NONAMESPACE
@@ -136,10 +136,10 @@ SimNodeTest::test_gate(ymuint ni,
     }
     PackedVal val = node->_calc_gval2();
     if ( vals[p] ) {
-      EXPECT_EQ( val, kPvAll1 );
+      EXPECT_EQ( kPvAll1, val );
     }
     else {
-      EXPECT_EQ( val, kPvAll0 );
+      EXPECT_EQ( kPvAll0, val );
     }
   }
 
@@ -153,18 +153,18 @@ SimNodeTest::test_gate(ymuint ni,
   for (ymuint p = 0; p < np; ++ p) {
     for (ymuint i = 0; i < ni; ++ i) {
       if ( p & (1 << i) ) {
-	inputs[i]->set_fval(kPvAll1);
+	inputs[i]->set_fval(kPvAll1, kPvAll1);
       }
       else {
-	inputs[i]->set_fval(kPvAll0);
+	inputs[i]->set_fval(kPvAll0, kPvAll1);
       }
     }
     PackedVal val = node->_calc_fval2();
     if ( vals[p] ) {
-      EXPECT_EQ( val, kPvAll1 );
+      EXPECT_EQ( kPvAll1, val );
     }
     else {
-      EXPECT_EQ( val, kPvAll0 );
+      EXPECT_EQ( kPvAll0, val );
     }
   }
 
@@ -188,10 +188,10 @@ SimNodeTest::test_gate(ymuint ni,
       PackedVal val = node->_calc_gobs2(ipos);
       ymuint q = p ^ (1 << ipos);
       if ( vals[p] != vals[q] ) {
-	EXPECT_EQ( val, kPvAll1 );
+	EXPECT_EQ( kPvAll1, val );
       }
       else {
-	EXPECT_EQ( val, kPvAll0 );
+	EXPECT_EQ( kPvAll0, val );
       }
     }
   }
@@ -210,7 +210,7 @@ SimNodeTest::test_gval(SimNode* node,
 		       PackedVal val)
 {
   node->set_gval(val);
-  EXPECT_EQ( node->gval(), val );
+  EXPECT_EQ( val, node->gval() );
 }
 
 // @brief fval の書き込み読み出しテスト
@@ -220,8 +220,8 @@ void
 SimNodeTest::test_fval(SimNode* node,
 		       PackedVal val)
 {
-  node->set_fval(val);
-  EXPECT_EQ( node->fval(), val );
+  node->set_fval(val, kPvAll1);
+  EXPECT_EQ( val, node->fval() );
 }
 
 TEST_F(SimNodeTest, INPUT)

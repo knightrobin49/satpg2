@@ -69,7 +69,7 @@ init_val(SimNode* node,
 	 PackedVal val1)
 {
   node->set_gval(val0, val1);
-  node->set_fval(val0, val1);
+  node->set_fval(val0, val1, kPvAll1);
 }
 
 END_NONAMESPACE
@@ -171,9 +171,9 @@ SimNodeTest::test_gate(ymuint ni,
       ymuint y = x % 3;
       x /= 3;
       switch ( y ) {
-      case 0: inputs[i]->set_fval(kPvAll1, kPvAll0); break;
-      case 1: inputs[i]->set_fval(kPvAll0, kPvAll1); break;
-      case 2: inputs[i]->set_fval(kPvAll0, kPvAll0); break;
+      case 0: inputs[i]->set_fval(kPvAll1, kPvAll0, kPvAll1); break;
+      case 1: inputs[i]->set_fval(kPvAll0, kPvAll1, kPvAll1); break;
+      case 2: inputs[i]->set_fval(kPvAll0, kPvAll0, kPvAll1); break;
       }
     }
     node->_calc_fval3(kPvAll1);
@@ -274,7 +274,7 @@ SimNodeTest::test_fval(SimNode* node,
 		       PackedVal val1)
 {
   // 書き込んだ値が読み出せるかテストする．
-  node->set_fval(val0, val1);
+  node->set_fval(val0, val1, kPvAll1);
   EXPECT_EQ( val0, node->fval_0() );
   EXPECT_EQ( val1, node->fval_1() );
 }

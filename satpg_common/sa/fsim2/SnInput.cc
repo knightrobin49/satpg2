@@ -63,6 +63,7 @@ SnInput::dump(ostream& s) const
 PackedVal
 SnInput::_calc_gval2()
 {
+  ASSERT_NOT_REACHED;
   return kPvAll0;
 }
 
@@ -70,6 +71,7 @@ SnInput::_calc_gval2()
 PackedVal
 SnInput::_calc_fval2()
 {
+  ASSERT_NOT_REACHED;
   return kPvAll0;
 }
 
