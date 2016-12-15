@@ -22,10 +22,20 @@ class PackedVal3
 {
 public:
 
+  /// @brief 空のコンストラクタ
+  ///
+  /// 不定値になる．
+  PackedVal3();
+
+  /// @brief 2値のコンストラクタ
+  /// @param[in] val 値
+  explicit
+  PackedVal3(PackedVal val);
+
   /// @brief コンストラクタ
   /// @param[in] val0, val1 値
-  PackedVal3(PackedVal val0 = kPvAll0,
-	     PackedVal val1 = kPvAll0);
+  PackedVal3(PackedVal val0,
+	     PackedVal val1);
 
   /// @brief デストラクタ
   ~PackedVal3();
@@ -44,11 +54,36 @@ public:
   PackedVal
   val1() const;
 
+  /// @brief 0|1 か X かを区別するワードを取り出す．
+  ///
+  /// 1のビットはもとの値が0か1
+  PackedVal
+  val01() const;
+
+  /// @brief 2値の代入演算子
+  /// @param[in] val 値
+  /// @return 代入後の自身への参照を返す．
+  const PackedVal3&
+  operator=(PackedVal val);
+
+  /// @brief 普通の代入演算子
+  /// @param[in] val 値
+  /// @return 代入後の自身への参照を返す．
+  const PackedVal3&
+  operator=(PackedVal3 val);
+
   /// @brief 値をセットする．
   /// @param[in] val0, val1 値
   void
   set(PackedVal val0,
       PackedVal val1);
+
+  /// @brief マスク付きで値をセットする．
+  /// @param[in] val 値
+  /// @param[in] mask
+  void
+  set_with_mask(PackedVal3 val,
+		PackedVal mask);
 
   /// @brief マスク付きで値をセットする．
   /// @param[in] val0, val1 値
@@ -142,6 +177,25 @@ diff(PackedVal3 left,
 // インライン関数の定義
 //////////////////////////////////////////////////////////////////////
 
+// @brief 空のコンストラクタ
+//
+// 不定値になる．
+inline
+PackedVal3::PackedVal3() :
+  mVal0(kPvAll0),
+  mVal1(kPvAll0)
+{
+}
+
+// @brief 2値のコンストラクタ
+// @param[in] val 値
+inline
+PackedVal3::PackedVal3(PackedVal val) :
+  mVal0(~val),
+  mVal1( val)
+{
+}
+
 // @brief コンストラクタ
 // @param[in] val0, val1 値
 inline
@@ -174,6 +228,40 @@ PackedVal3::val1() const
   return mVal1;
 }
 
+// @brief 0|1 か X かを区別するワードを取り出す．
+//
+// 1のビットはもとの値が0か1
+inline
+PackedVal
+PackedVal3::val01() const
+{
+  return mVal0 | mVal1;
+}
+
+// @brief 2値の代入演算子
+// @param[in] val 値
+// @return 代入後の自身への参照を返す．
+inline
+const PackedVal3&
+PackedVal3::operator=(PackedVal val)
+{
+  mVal0 = ~val;
+  mVal1 =  val;
+  return *this;
+}
+
+// @brief 普通の代入演算子
+// @param[in] val 値
+// @return 代入後の自身への参照を返す．
+inline
+const PackedVal3&
+PackedVal3::operator=(PackedVal3 val)
+{
+  mVal0 = val.mVal0;
+  mVal1 = val.mVal1;
+  return *this;
+}
+
 // @brief 値をセットする．
 // @param[in] val0, val1 値
 inline
@@ -186,6 +274,17 @@ PackedVal3::set(PackedVal val0,
 }
 
 // @brief マスク付きで値をセットする．
+// @param[in] val 値
+// @param[in] mask
+inline
+void
+PackedVal3::set_with_mask(PackedVal3 val,
+			  PackedVal mask)
+{
+  set_with_mask(val.mVal0, val.mVal1, mask);
+}
+
+// @brief マスク付きで値をセットする．
 // @param[in] val0, val1 値
 // @param[in] mask
 inline
@@ -195,7 +294,7 @@ PackedVal3::set_with_mask(PackedVal val0,
 			  PackedVal mask)
 {
   mVal0 &= ~mask;
-  mVal0 |= (val0 &  mask);
+  mVal0 |= (val0 & mask);
   mVal1 &= ~mask;
   mVal1 |= (val1 & mask);
 }

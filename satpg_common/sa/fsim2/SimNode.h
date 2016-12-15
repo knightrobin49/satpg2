@@ -453,8 +453,7 @@ inline
 void
 SimNode::set_gval(PackedVal val)
 {
-  mGval.set(~val, val);
-  mFval = mGval;
+  mGval = mFval = val;
 }
 
 // @brief 故障値をセットする．
