@@ -61,7 +61,7 @@ SnOr::_calc_fval2()
 
 // @brief ゲートの入力から出力までの可観測性を計算する．(2値版)
 PackedVal
-SnOr::_calc_lobs2(ymuint ipos)
+SnOr::_calc_gobs2(ymuint ipos)
 {
   PackedVal obs = kPvAll0;
   for (ymuint i = 0; i < ipos; ++ i) {
@@ -110,7 +110,7 @@ SnOr::_calc_fval3(PackedVal mask)
 
 // @brief ゲートの入力から出力までの可観測性を計算する．(3値版)
 PackedVal
-SnOr::_calc_lobs3(ymuint ipos)
+SnOr::_calc_gobs3(ymuint ipos)
 {
   PackedVal obs = kPvAll1;
   for (ymuint i = 0; i < ipos; ++ i) {
@@ -167,7 +167,7 @@ SnOr2::_calc_fval2()
 
 // @brief ゲートの入力から出力までの可観測性を計算する．(2値版)
 PackedVal
-SnOr2::_calc_lobs2(ymuint ipos)
+SnOr2::_calc_gobs2(ymuint ipos)
 {
   ymuint alt_pos = ipos ^ 1;
   return ~_fanin(alt_pos)->gval();
@@ -200,7 +200,7 @@ SnOr2::_calc_fval3(PackedVal mask)
 
 // @brief ゲートの入力から出力までの可観測性を計算する．(3値版)
 PackedVal
-SnOr2::_calc_lobs3(ymuint ipos)
+SnOr2::_calc_gobs3(ymuint ipos)
 {
   ymuint alt_pos = ipos ^ 1;
   return _fanin(alt_pos)->gval_0();
@@ -252,7 +252,7 @@ SnOr3::_calc_fval2()
 
 // @brief ゲートの入力から出力までの可観測性を計算する．(2値版)
 PackedVal
-SnOr3::_calc_lobs2(ymuint ipos)
+SnOr3::_calc_gobs2(ymuint ipos)
 {
   switch ( ipos ) {
   case 0: return ~(_fanin(1)->gval() | _fanin(2)->gval());
@@ -291,7 +291,7 @@ SnOr3::_calc_fval3(PackedVal mask)
 
 // @brief ゲートの入力から出力までの可観測性を計算する．(3値版)
 PackedVal
-SnOr3::_calc_lobs3(ymuint ipos)
+SnOr3::_calc_gobs3(ymuint ipos)
 {
   switch ( ipos ) {
   case 0: return _fanin(1)->gval_0() & _fanin(2)->gval_0();
@@ -350,7 +350,7 @@ SnOr4::_calc_fval2()
 
 // @brief ゲートの入力から出力までの可観測性を計算する．(2値版)
 PackedVal
-SnOr4::_calc_lobs2(ymuint ipos)
+SnOr4::_calc_gobs2(ymuint ipos)
 {
   switch ( ipos ) {
   case 0: return ~(_fanin(1)->gval() | _fanin(2)->gval() | _fanin(3)->gval());
@@ -392,7 +392,7 @@ SnOr4::_calc_fval3(PackedVal mask)
 
 // @brief ゲートの入力から出力までの可観測性を計算する．(3値版)
 PackedVal
-SnOr4::_calc_lobs3(ymuint ipos)
+SnOr4::_calc_gobs3(ymuint ipos)
 {
   switch ( ipos ) {
   case 0: return _fanin(1)->gval_0() & _fanin(2)->gval_0() & _fanin(3)->gval_0();

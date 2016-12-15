@@ -58,7 +58,7 @@ public:
   /// @brief ゲートの入力から出力までの可観測性を計算する．(2値版)
   virtual
   PackedVal
-  _calc_lobs2(ymuint ipos);
+  _calc_gobs2(ymuint ipos);
 
 
 public:
@@ -84,7 +84,7 @@ public:
   /// @brief ゲートの入力から出力までの可観測性を計算する．(3値版)
   virtual
   PackedVal
-  _calc_lobs3(ymuint ipos);
+  _calc_gobs3(ymuint ipos);
 
 };
 
@@ -133,7 +133,7 @@ public:
   /// @brief ゲートの入力から出力までの可観測性を計算する．(2値版)
   virtual
   PackedVal
-  _calc_lobs2(ymuint ipos);
+  _calc_gobs2(ymuint ipos);
 
 
 public:
@@ -159,7 +159,7 @@ public:
   /// @brief ゲートの入力から出力までの可観測性を計算する．(3値版)
   virtual
   PackedVal
-  _calc_lobs3(ymuint ipos);
+  _calc_gobs3(ymuint ipos);
 
 };
 
@@ -208,7 +208,7 @@ public:
   /// @brief ゲートの入力から出力までの可観測性を計算する．(2値版)
   virtual
   PackedVal
-  _calc_lobs2(ymuint ipos);
+  _calc_gobs2(ymuint ipos);
 
 
 public:
@@ -234,7 +234,7 @@ public:
   /// @brief ゲートの入力から出力までの可観測性を計算する．(3値版)
   virtual
   PackedVal
-  _calc_lobs3(ymuint ipos);
+  _calc_gobs3(ymuint ipos);
 
 };
 
@@ -283,7 +283,7 @@ public:
   /// @brief ゲートの入力から出力までの可観測性を計算する．(2値版)
   virtual
   PackedVal
-  _calc_lobs2(ymuint ipos);
+  _calc_gobs2(ymuint ipos);
 
 
 public:
@@ -309,7 +309,7 @@ public:
   /// @brief ゲートの入力から出力までの可観測性を計算する．(3値版)
   virtual
   PackedVal
-  _calc_lobs3(ymuint ipos);
+  _calc_gobs3(ymuint ipos);
 
 };
 

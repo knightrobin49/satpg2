@@ -61,7 +61,7 @@ SnXor::_calc_fval2()
 
 // @brief ゲートの入力から出力までの可観測性を計算する．(2値版)
 PackedVal
-SnXor::_calc_lobs2(ymuint ipos)
+SnXor::_calc_gobs2(ymuint ipos)
 {
   return kPvAll1;
 }
@@ -119,7 +119,7 @@ SnXor::_calc_fval3(PackedVal mask)
 
 // @brief ゲートの入力から出力までの可観測性を計算する．
 PackedVal
-SnXor::_calc_lobs3(ymuint ipos)
+SnXor::_calc_gobs3(ymuint ipos)
 {
   // 条件は ipos 以外が X でないこと
   PackedVal obs = kPvAll1;
@@ -183,7 +183,7 @@ SnXor2::_calc_fval2()
 
 // @brief ゲートの入力から出力までの可観測性を計算する．(2値版)
 PackedVal
-SnXor2::_calc_lobs2(ymuint ipos)
+SnXor2::_calc_gobs2(ymuint ipos)
 {
   return kPvAll1;
 }
@@ -229,7 +229,7 @@ SnXor2::_calc_fval3(PackedVal mask)
 
 // @brief ゲートの入力から出力までの可観測性を計算する．(3値版)
 PackedVal
-SnXor2::_calc_lobs3(ymuint ipos)
+SnXor2::_calc_gobs3(ymuint ipos)
 {
   ymuint alt_pos = ipos ^ 1;
   SimNode* inode = _fanin(alt_pos);

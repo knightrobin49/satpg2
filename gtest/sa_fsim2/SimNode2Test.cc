@@ -185,7 +185,7 @@ SimNodeTest::test_gate(ymuint ni,
 	  inputs[i]->set_gval(kPvAll0);
 	}
       }
-      PackedVal val = node->_calc_lobs2(ipos);
+      PackedVal val = node->_calc_gobs2(ipos);
       ymuint q = p ^ (1 << ipos);
       if ( vals[p] != vals[q] ) {
 	EXPECT_EQ( val, kPvAll1 );

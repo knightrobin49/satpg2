@@ -182,7 +182,7 @@ SimNodeTest::test_gate(ymuint ni,
     test_val3(val0, val1, vals[p]);
   }
 
-  // _calc_lobs3() のテスト
+  // _calc_gobs3() のテスト
   for (ymuint ipos = 0; ipos < ni; ++ ipos) {
     // ここで書き込む値に対して意味はない．
     init_val(node, kPvAll0, kPvAll1);
@@ -212,7 +212,7 @@ SimNodeTest::test_gate(ymuint ni,
 	w *= 3;
       }
 
-      PackedVal val = node->_calc_lobs3(ipos);
+      PackedVal val = node->_calc_gobs3(ipos);
       if ( vals[q] != vals[p] &&
 	   vals[q] != 2 &&
 	   vals[p] != 2 ) {

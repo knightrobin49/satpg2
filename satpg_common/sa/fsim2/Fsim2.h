@@ -65,6 +65,12 @@ public:
   void
   set_faults(const vector<const TpgFault*>& fault_list);
 
+
+public:
+  //////////////////////////////////////////////////////////////////////
+  // 2値の故障シミュレーションを行う関数
+  //////////////////////////////////////////////////////////////////////
+
   /// @brief SPSFP故障シミュレーションを行う．
   /// @param[in] tv テストベクタ
   /// @param[in] f 対象の故障
@@ -112,7 +118,7 @@ public:
 
 private:
   //////////////////////////////////////////////////////////////////////
-  // 内部で用いられる下請け関数
+  // 内部で用いられる2値用の下請け関数
   //////////////////////////////////////////////////////////////////////
 
   /// @brief SPSFP故障シミュレーションの本体
@@ -120,12 +126,12 @@ private:
   /// @retval true 故障の検出が行えた．
   /// @retval false 故障の検出が行えなかった．
   bool
-  _spsfp(const TpgFault* f);
+  _spsfp2(const TpgFault* f);
 
   /// @brief SPPFP故障シミュレーションの本体
   /// @param[in] op 検出した時に起動されるファンクタオブジェクト
   void
-  _sppfp(FsimOp& op);
+  _sppfp2(FsimOp& op);
 
   /// @brief 正常値の計算を行う．
   ///
@@ -135,23 +141,30 @@ private:
 
   /// @brief FFR 内の故障シミュレーションを行う．
   PackedVal
-  ffr_simulate(SimFFR* ffr);
+  ffr_prop2(SimFFR* ffr);
 
   /// @brief イベントキューにイベントを追加する．
   /// @param[in] node イベントの起こったノード
   /// @param[in] val イベントの値
   void
-  eventq_put(SimNode* node,
-	     PackedVal val);
+  eventq_put2(SimNode* node,
+	      PackedVal val);
 
   /// @brief イベントキューを用いてシミュレーションを行う．
   PackedVal
-  eventq_simulate();
+  eventq_simulate2();
 
   /// @brief ffr 内の故障が検出可能か調べる．
+  /// @param[in] ffr 対象のfanout free region
+  /// @param[in] op 故障検出時に起動されるファンクタ
+  /// @param[in] mask マスク
+  ///
+  /// 個々の故障と mask のビットアンドをとって1のものに対して
+  /// op を起動する．
   void
   fault_sweep(SimFFR* ffr,
-	      FsimOp& op);
+	      FsimOp& op,
+	      PackedVal mask);
 
 
 private:

@@ -75,7 +75,7 @@ SnInput::_calc_fval2()
 
 // @brief ゲートの入力から出力までの可観測性を計算する．(2値版)
 PackedVal
-SnInput::_calc_lobs2(ymuint ipos)
+SnInput::_calc_gobs2(ymuint ipos)
 {
   return kPvAll0;
 }
@@ -99,7 +99,7 @@ SnInput::_calc_fval3(PackedVal mask)
 
 // @brief ゲートの入力から出力までの可観測性を計算する．(3値版)
 PackedVal
-SnInput::_calc_lobs3(ymuint ipos)
+SnInput::_calc_gobs3(ymuint ipos)
 {
   return kPvAll0;
 }

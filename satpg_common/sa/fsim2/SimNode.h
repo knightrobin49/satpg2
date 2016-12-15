@@ -177,7 +177,7 @@ public:
   void
   clear_fval2();
 
-  /// @brief ローカルな obs の計算を行う．(2値版)
+  /// @brief FFRの根までの obs の計算を行う．(2値版)
   PackedVal
   calc_lobs2();
 
@@ -282,7 +282,7 @@ public:
   /// @brief ゲートの入力から出力までの可観測性を計算する．(2値版)
   virtual
   PackedVal
-  _calc_lobs2(ymuint ipos) = 0;
+  _calc_gobs2(ymuint ipos) = 0;
 
 
 public:
@@ -308,7 +308,7 @@ public:
   /// @brief ゲートの入力から出力までの可観測性を計算する．(3値版)
   virtual
   PackedVal
-  _calc_lobs3(ymuint ipos) = 0;
+  _calc_gobs3(ymuint ipos) = 0;
 
 
 protected:
