@@ -370,13 +370,7 @@ Fsim2::ppsfp(const vector<TestVector*>& tv_array,
     }
     else {
       PackedVal pat = root->gval() ^ ffr_req;
-      root->set_fval(pat);
-      mClearArray.clear();
-      mClearArray.push_back(root);
-      ymuint no = root->fanout_num();
-      for (ymuint i = 0; i < no; ++ i) {
-	mEventQ.put(root->fanout(i));
-      }
+      eventq_put(root, pat);
       obs = eventq_simulate();
     }
 
@@ -390,7 +384,7 @@ Fsim2::ppsfp(const vector<TestVector*>& tv_array,
 	continue;
       }
       PackedVal dpat = obs & ff->mObsMask;
-      if ( dpat ) {
+      if ( dpat != kPvAll0 ) {
 	const TpgFault* f = ff->mOrigF;
 	op(f, dpat);
       }
@@ -485,13 +479,7 @@ Fsim2::_sppfp(FsimOp& op)
     // キューに積んでおく
     PackedVal bitmask = 1UL << bitpos;
     PackedVal pat = root->gval() ^ bitmask;
-    root->set_fval(pat);
-
-    mClearArray.push_back(root);
-    ymuint no = root->fanout_num();
-    for (ymuint i = 0; i < no; ++ i) {
-      mEventQ.put(root->fanout(i));
-    }
+    eventq_put(root, pat);
     ffr_buff[bitpos] = ffr;
 
     ++ bitpos;
@@ -556,14 +544,7 @@ Fsim2::_spsfp(const TpgFault* f)
     return (lobs != kPvAll0);
   }
 
-  root->set_fval(~root->gval());
-
-  mClearArray.push_back(root);
-  ymuint no = root->fanout_num();
-  for (ymuint i = 0; i < no; ++ i) {
-    mEventQ.put(root->fanout(i));
-  }
-
+  eventq_put(root, ~root->gval());
   PackedVal obs = eventq_simulate() & lobs;
   return (obs != kPvAll0);
 }
@@ -623,6 +604,21 @@ Fsim2::ffr_simulate(SimFFR* ffr)
   }
 
   return ffr_req;
+}
+
+// @brief イベントキューにイベントを追加する．
+// @param[in] node イベントの起こったノード
+// @param[in] val イベントの値
+void
+Fsim2::eventq_put(SimNode* node,
+		  PackedVal val)
+{
+  node->set_fval(val);
+  mClearArray.push_back(node);
+  ymuint no = node->fanout_num();
+  for (ymuint i = 0; i < no; ++ i) {
+    mEventQ.put(node->fanout(i));
+  }
 }
 
 // @brief イベントキューを用いてシミュレーションを行う．

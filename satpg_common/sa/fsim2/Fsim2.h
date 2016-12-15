@@ -137,6 +137,13 @@ private:
   PackedVal
   ffr_simulate(SimFFR* ffr);
 
+  /// @brief イベントキューにイベントを追加する．
+  /// @param[in] node イベントの起こったノード
+  /// @param[in] val イベントの値
+  void
+  eventq_put(SimNode* node,
+	     PackedVal val);
+
   /// @brief イベントキューを用いてシミュレーションを行う．
   PackedVal
   eventq_simulate();
