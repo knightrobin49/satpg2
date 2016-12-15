@@ -219,6 +219,9 @@ private:
   // FFR を納めた配列
   vector<SimFFR> mFFRArray;
 
+  // SimNode->id() をキーにして所属する FFR を納めた配列
+  vector<SimFFR*> mFFRMap;
+
   // イベントキュー
   EventQ mEventQ;
 

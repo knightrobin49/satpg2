@@ -158,6 +158,7 @@ Fsim2::set_network(const TpgNetwork& network)
   }
 
   // FFR の設定
+  mFFRMap.resize(mNodeArray.size());
   ymuint ffr_num = 0;
   for (ymuint i = node_num; i > 0; ) {
     -- i;
@@ -173,13 +174,14 @@ Fsim2::set_network(const TpgNetwork& network)
     SimNode* node = mNodeArray[i];
     if ( node->is_output() || node->fanout_num() != 1 ) {
       SimFFR* ffr = &mFFRArray[ffr_num];
-      node->set_ffr(ffr);
+      node->set_ffr_root();
+      mFFRMap[node->id()] = ffr;
       ffr->set_root(node);
       ++ ffr_num;
     }
     else {
-      SimFFR* ffr = node->fanout(0)->ffr();
-      node->set_ffr(ffr);
+      SimFFR* ffr = mFFRMap[node->fanout(0)->id()];
+      mFFRMap[node->id()] = ffr;
     }
   }
 
@@ -258,7 +260,7 @@ Fsim2::set_faults(const vector<const TpgFault*>& fault_list)
     if ( fault_set.check(ff->mOrigF->id()) ) {
       ff->mSkip = false;
       SimNode* simnode = ff->mNode;
-      SimFFR* ffr = simnode->ffr();
+      SimFFR* ffr = mFFRMap[simnode->id()];
       ffr->fault_list().push_back(ff);
     }
     else {
@@ -525,7 +527,11 @@ Fsim2::_spsfp2(const TpgFault* f)
     return false;
   }
 
-  SimNode* root = isimnode->ffr()->root();
+  // FFR の根のノードを求める．
+  SimNode* root;
+  for (root = isimnode; !root->is_ffr_root(); ) {
+    root = root->fanout(0);
+  }
   if ( root->is_output() ) {
     return (lobs != kPvAll0);
   }
@@ -685,6 +691,7 @@ Fsim2::clear()
   mLogicArray.clear();
 
   mFFRArray.clear();
+  mFFRMap.clear();
 
   mClearArray.clear();
 

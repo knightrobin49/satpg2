@@ -27,7 +27,9 @@ SimNode::SimNode(ymuint id) :
   mId(id),
   mFanoutNum(0),
   mFanouts(nullptr),
+#if 0
   mFFR(nullptr),
+#endif
   mLevel(0)
 {
 }
@@ -120,12 +122,14 @@ SimNode::new_gate(ymuint id,
   return node;
 }
 
+#if 0
 // @brief FFR の根のノードの時 true を返す．
 bool
 SimNode::is_ffr_root() const
 {
   return mFFR->root() == this;
 }
+#endif
 
 // @brief レベルを設定する．
 void
@@ -145,7 +149,7 @@ SimNode::set_fanout_list(const vector<SimNode*>& fo_list,
     mFanouts[i] = fo_list[i];
   }
 
-  mFanoutNum |= (nfo << 16) | (ipos << 2);
+  mFanoutNum |= (nfo << 16) | (ipos << 3);
 }
 
 // @brief FFRの根までの obs の計算を行う．

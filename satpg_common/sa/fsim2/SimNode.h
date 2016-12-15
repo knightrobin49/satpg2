@@ -17,8 +17,6 @@
 
 BEGIN_NAMESPACE_YM_SATPG_FSIM
 
-class SimFFR;
-
 //////////////////////////////////////////////////////////////////////
 /// @class SimNode SimNode.h "SimNode.h"
 /// @brief 故障シミュレーション用のノード
@@ -93,10 +91,6 @@ public:
   ymuint
   fanout_ipos() const;
 
-  /// @brief FFR を得る．
-  SimFFR*
-  ffr() const;
-
   /// @brief FFR の根のノードの時 true を返す．
   bool
   is_ffr_root() const;
@@ -129,9 +123,9 @@ public:
   set_fanout_list(const vector<SimNode*>& fo_list,
 		  ymuint ipos);
 
-  /// @brief FFR を設定する．
+  /// @brief FFR の根の印をつける．
   void
-  set_ffr(SimFFR* ffr);
+  set_ffr_root();
 
 
 public:
@@ -339,9 +333,6 @@ private:
   // ファンアウトリスト
   SimNode** mFanouts;
 
-  // FFR
-  SimFFR* mFFR;
-
   // レベル
   ymuint mLevel;
 
@@ -390,15 +381,15 @@ inline
 ymuint
 SimNode::fanout_ipos() const
 {
-  return (mFanoutNum >> 2) & 0x3FFFU;
+  return (mFanoutNum >> 3) & 0x1FFFU;
 }
 
-// @brief FFR を得る．
+// @brief FFR の根のノードの時 true を返す．
 inline
-SimFFR*
-SimNode::ffr() const
+bool
+SimNode::is_ffr_root() const
 {
-  return mFFR;
+  return static_cast<bool>((mFanoutNum >> 1) & 1U);
 }
 
 // @brief レベルを得る．
@@ -425,12 +416,12 @@ SimNode::set_output()
   mFanoutNum |= 1U;
 }
 
-// @brief FFR を設定する．
+// @brief FFR の根の印をつける．
 inline
 void
-SimNode::set_ffr(SimFFR* ffr)
+SimNode::set_ffr_root()
 {
-  mFFR = ffr;
+  mFanoutNum |= 2U;
 }
 
 // @brief lobs が計算済みかチェックする．
@@ -438,7 +429,7 @@ inline
 bool
 SimNode::check_lobs() const
 {
-  return ((mFanoutNum >> 1) & 1U) == 1U;
+  return ((mFanoutNum >> 2) & 1U) == 1U;
 }
 
 // @brief lobs が計算済みの印をつける．
@@ -446,7 +437,7 @@ inline
 void
 SimNode::set_lobs()
 {
-  mFanoutNum |= (1U << 1);
+  mFanoutNum |= (1U << 2);
 }
 
 // @brief lobs の計算済みの印を消す．
