@@ -86,11 +86,10 @@ public:
 		PackedVal mask);
 
   /// @brief マスク付きで値をセットする．
-  /// @param[in] val0, val1 値
+  /// @param[in] val 値
   /// @param[in] mask
   void
-  set_with_mask(PackedVal val0,
-		PackedVal val1,
+  set_with_mask(PackedVal val,
 		PackedVal mask);
 
   /// @brief 自身を否定する演算
@@ -281,22 +280,24 @@ void
 PackedVal3::set_with_mask(PackedVal3 val,
 			  PackedVal mask)
 {
-  set_with_mask(val.mVal0, val.mVal1, mask);
+  mVal0 &= ~mask;
+  mVal0 |= val.mVal0 & mask;
+  mVal1 &= ~mask;
+  mVal1 |= val.mVal1 & mask;
 }
 
 // @brief マスク付きで値をセットする．
-// @param[in] val0, val1 値
+// @param[in] val 値
 // @param[in] mask
 inline
 void
-PackedVal3::set_with_mask(PackedVal val0,
-			  PackedVal val1,
+PackedVal3::set_with_mask(PackedVal val,
 			  PackedVal mask)
 {
   mVal0 &= ~mask;
-  mVal0 |= (val0 & mask);
+  mVal0 |= (~val & mask);
   mVal1 &= ~mask;
-  mVal1 |= (val1 & mask);
+  mVal1 |= ( val & mask);
 }
 
 // @brief 自身を否定する演算
