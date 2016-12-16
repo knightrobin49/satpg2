@@ -77,7 +77,6 @@ init_val(SimNode* node,
 	 PackedVal3 val)
 {
   node->set_gval(val);
-  node->set_fval(val);
 }
 
 // 0, 1, 2 の整数から PackedVal3 に変換する．
@@ -282,7 +281,7 @@ SimNodeTest::test_fval(SimNode* node,
 		       PackedVal val1)
 {
   // 書き込んだ値が読み出せるかテストする．
-  node->set_fval(PackedVal3(val0, val1));
+  node->set_gval(PackedVal3(val0, val1));
   EXPECT_EQ( val0, node->fval3().val0() );
   EXPECT_EQ( val1, node->fval3().val1() );
 }
