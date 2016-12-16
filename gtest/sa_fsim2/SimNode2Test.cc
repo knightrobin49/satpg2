@@ -55,8 +55,8 @@ void
 init_val(SimNode* node,
 	 PackedVal val)
 {
-  node->set_gval(val);
-  node->set_fval(val, kPvAll1);
+  node->set_gval(PackedVal3(val));
+  node->set_fval(PackedVal3(val));
 }
 
 END_NONAMESPACE
@@ -128,10 +128,10 @@ SimNodeTest::test_gate(ymuint ni,
   for (ymuint p = 0; p < np; ++ p) {
     for (ymuint i = 0; i < ni; ++ i) {
       if ( p & (1 << i) ) {
-	inputs[i]->set_gval(kPvAll1);
+	inputs[i]->set_gval(PackedVal3(kPvAll1));
       }
       else {
-	inputs[i]->set_gval(kPvAll0);
+	inputs[i]->set_gval(PackedVal3(kPvAll0));
       }
     }
     PackedVal val = node->_calc_gval2();
@@ -153,10 +153,10 @@ SimNodeTest::test_gate(ymuint ni,
   for (ymuint p = 0; p < np; ++ p) {
     for (ymuint i = 0; i < ni; ++ i) {
       if ( p & (1 << i) ) {
-	inputs[i]->set_fval(kPvAll1, kPvAll1);
+	inputs[i]->set_fval(PackedVal3(kPvAll1));
       }
       else {
-	inputs[i]->set_fval(kPvAll0, kPvAll1);
+	inputs[i]->set_fval(PackedVal3(kPvAll0));
       }
     }
     PackedVal val = node->_calc_fval2();
@@ -179,10 +179,10 @@ SimNodeTest::test_gate(ymuint ni,
     for (ymuint p = 0; p < np; ++ p) {
       for (ymuint i = 0; i < ni; ++ i) {
 	if ( p & (1 << i) ) {
-	  inputs[i]->set_gval(kPvAll1);
+	  inputs[i]->set_gval(PackedVal3(kPvAll1));
 	}
 	else {
-	  inputs[i]->set_gval(kPvAll0);
+	  inputs[i]->set_gval(PackedVal3(kPvAll0));
 	}
       }
       PackedVal val = node->_calc_gobs2(ipos);
@@ -209,7 +209,7 @@ void
 SimNodeTest::test_gval(SimNode* node,
 		       PackedVal val)
 {
-  node->set_gval(val);
+  node->set_gval(PackedVal3(val));
   EXPECT_EQ( val, node->gval() );
 }
 
@@ -220,7 +220,7 @@ void
 SimNodeTest::test_fval(SimNode* node,
 		       PackedVal val)
 {
-  node->set_fval(val, kPvAll1);
+  node->set_fval(PackedVal3(val));
   EXPECT_EQ( val, node->fval() );
 }
 

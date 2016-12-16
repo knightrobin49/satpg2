@@ -282,7 +282,7 @@ Fsim2::sppfp(TestVector* tv,
   for (ymuint i = 0; i < npi; ++ i) {
     SimNode* simnode = mInputArray[i];
     PackedVal val = (tv->val3(i) == kVal1) ? kPvAll1 : kPvAll0;
-    simnode->set_gval(val);
+    simnode->set_gval(PackedVal3(val));
   }
 
   _sppfp2(op);
@@ -300,7 +300,7 @@ Fsim2::sppfp(const NodeValList& assign_list,
   // デフォルトで 0 にする．
   for (ymuint i = 0; i < npi; ++ i) {
     SimNode* simnode = mInputArray[i];
-    simnode->set_gval(kPvAll0);
+    simnode->set_gval(PackedVal3(kPvAll0));
   }
 
   ymuint n = assign_list.size();
@@ -308,7 +308,7 @@ Fsim2::sppfp(const NodeValList& assign_list,
     NodeVal nv = assign_list[i];
     if ( nv.val() ) {
       SimNode* simnode = mInputArray[nv.node()->input_id()];
-      simnode->set_gval(kPvAll1);
+      simnode->set_gval(PackedVal3(kPvAll1));
     }
   }
 
@@ -341,7 +341,7 @@ Fsim2::ppsfp(const vector<TestVector*>& tv_array,
       }
     }
     SimNode* simnode = mInputArray[i];
-    simnode->set_gval(val);
+    simnode->set_gval(PackedVal3(val));
   }
 
   // 正常値の計算を行う．
@@ -395,7 +395,7 @@ Fsim2::spsfp(TestVector* tv,
   for (ymuint i = 0; i < npi; ++ i) {
     SimNode* simnode = mInputArray[i];
     PackedVal val = (tv->val3(i) == kVal1) ? kPvAll1 : kPvAll0;
-    simnode->set_gval(val);
+    simnode->set_gval(PackedVal3(val));
   }
 
   return _spsfp2(f);
@@ -415,7 +415,7 @@ Fsim2::spsfp(const NodeValList& assign_list,
   // assign_list にないノードの値は 0 にしておく．
   for (ymuint i = 0; i < npi; ++ i) {
     SimNode* simnode = mInputArray[i];
-    simnode->set_gval(kPvAll0);
+    simnode->set_gval(PackedVal3(kPvAll0));
   }
 
   ymuint n = assign_list.size();
@@ -423,7 +423,7 @@ Fsim2::spsfp(const NodeValList& assign_list,
     NodeVal nv = assign_list[i];
     if ( nv.val() ) {
       SimNode* simnode = mInputArray[nv.node()->input_id()];
-      simnode->set_gval(kPvAll1);
+      simnode->set_gval(PackedVal3(kPvAll1));
     }
   }
 
@@ -551,7 +551,7 @@ Fsim2::_calc_gval2()
        q != mLogicArray.end(); ++ q) {
     SimNode* node = *q;
     PackedVal val = node->_calc_gval2();
-    node->set_gval(val);
+    node->set_gval(PackedVal3(val));
   }
 }
 
@@ -606,7 +606,7 @@ void
 Fsim2::eventq_put2(SimNode* node,
 		   PackedVal val)
 {
-  node->set_fval(val, kPvAll1);
+  node->set_fval(PackedVal3(val));
   mClearArray.push_back(node);
   ymuint no = node->fanout_num();
   for (ymuint i = 0; i < no; ++ i) {
@@ -626,7 +626,7 @@ Fsim2::eventq_simulate2()
     // すでに検出済みのビットはマスクしておく
     // これは無駄なイベントの発生を抑える．
     PackedVal fval = node->_calc_fval2();
-    node->set_fval(fval, ~obs);
+    node->set_fval(PackedVal3(fval), ~obs);
     PackedVal diff = node->diff2();
     if ( diff != kPvAll0 ) {
       mClearArray.push_back(node);

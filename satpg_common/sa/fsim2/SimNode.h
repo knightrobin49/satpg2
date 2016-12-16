@@ -146,6 +146,7 @@ public:
   PackedVal
   diff2() const;
 
+#if 0
   /// @brief 正常値のセットを行う．
   /// @param[in] pat 値
   ///
@@ -159,6 +160,7 @@ public:
   void
   set_fval(PackedVal pat,
 	   PackedVal mask);
+#endif
 
   /// @brief 故障値をクリアする．(2値版)
   void
@@ -186,6 +188,7 @@ public:
   PackedVal
   diff3() const;
 
+#if 0
   /// @brief 正常値のセットを行う．(3値版)
   /// @param[in] val_0, val_1 値
   ///
@@ -194,7 +197,17 @@ public:
   void
   set_gval(PackedVal val_0,
 	   PackedVal val_1);
+#endif
 
+  /// @brief 正常値のセットを行う．(3値版)
+  /// @param[in] val 値
+  ///
+  /// 通常は外部入力に対して行われる．
+  /// 故障値も同様にセットされる．
+  void
+  set_gval(PackedVal3 val);
+
+#if 0
   /// @brief 故障値をセットする．(3値版)
   /// @param[in] val_0, val_1 値
   /// @param[in] mask ビットマスク
@@ -203,6 +216,21 @@ public:
   void
   set_fval(PackedVal val_0,
 	   PackedVal val_1,
+	   PackedVal mask);
+#endif
+
+  /// @brief 故障値をセットする．(3値版)
+  /// @param[in] val 値
+  void
+  set_fval(PackedVal3 val);
+
+  /// @brief 故障値をセットする．(3値版)
+  /// @param[in] val 値
+  /// @param[in] mask ビットマスク
+  ///
+  /// mask が0のビットはセットしない．
+  void
+  set_fval(PackedVal3 val,
 	   PackedVal mask);
 
   /// @brief 故障値をクリアする．(3値版)
@@ -445,6 +473,7 @@ SimNode::diff2() const
   return gval() ^ fval();
 }
 
+#if 0
 // @brief 正常値のセットを行う．
 // @param[in] val 値
 // @note 通常は外部入力に対して行われる．
@@ -465,6 +494,7 @@ SimNode::set_fval(PackedVal pat,
 {
   mFval.set_with_mask(~pat, pat, mask);
 }
+#endif
 
 // @brief 正常値を得る．(3値版)
 inline
@@ -490,6 +520,7 @@ SimNode::diff3() const
   return diff(gval3(), fval3());
 }
 
+#if 0
 // @brief 正常値のセットを行う．(3値版)
 // @param[in] val_0, val_1 値
 //
@@ -500,10 +531,23 @@ void
 SimNode::set_gval(PackedVal val_0,
 		  PackedVal val_1)
 {
-  mGval.set(val_0, val_1);
-  mFval = mGval;
+  set_gval(PackedVal3(val_0, val_1));
+}
+#endif
+
+// @brief 正常値のセットを行う．(3値版)
+// @param[in] val 値
+//
+// 通常は外部入力に対して行われる．
+// 故障値も同様にセットされる．
+inline
+void
+SimNode::set_gval(PackedVal3 val)
+{
+  mGval = mFval = val;
 }
 
+#if 0
 // @brief 故障値をセットする．(3値版)
 // @param[in] val_0, val_1 値
 // @param[in] mask ビットマスク
@@ -515,7 +559,30 @@ SimNode::set_fval(PackedVal val_0,
 		  PackedVal val_1,
 		  PackedVal mask)
 {
-  mFval.set_with_mask(val_0, val_1, mask);
+  set_fval(PackedVal3(val_0, val_1), mask);
+}
+#endif
+
+// @brief 故障値をセットする．(3値版)
+// @param[in] val 値
+inline
+void
+SimNode::set_fval(PackedVal3 val)
+{
+  mFval = val;
+}
+
+// @brief 故障値をセットする．(3値版)
+// @param[in] val 値
+// @param[in] mask ビットマスク
+//
+// mask が0のビットはセットしない．
+inline
+void
+SimNode::set_fval(PackedVal3 val,
+		  PackedVal mask)
+{
+  mFval.set_with_mask(val, mask);
 }
 
 // @brief 故障値をクリアする．
