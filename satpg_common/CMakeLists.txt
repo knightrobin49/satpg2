@@ -80,6 +80,16 @@ set (sa_SOURCES
   sa/fsim2/SnOr.cc
   sa/fsim2/SnXor.cc
 
+  sa/fsim_new/EventQ.cc
+  sa/fsim_new/Fsim2.cc
+  sa/fsim_new/SimNode.cc
+  sa/fsim_new/SnAnd.cc
+  sa/fsim_new/SnBuff.cc
+  sa/fsim_new/SnGate.cc
+  sa/fsim_new/SnInput.cc
+  sa/fsim_new/SnOr.cc
+  sa/fsim_new/SnXor.cc
+
   sa/fsim3/EventQ.cc
   sa/fsim3/Fsim3.cc
   sa/fsim3/SimNode.cc

@@ -115,6 +115,11 @@ extern
 Fsim*
 new_Fsim2();
 
+/// @brief 2値版の故障シミュレータ
+extern
+Fsim*
+new_Fsim2New();
+
 /// @brief 3値版の故障シミュレータ
 extern
 Fsim*

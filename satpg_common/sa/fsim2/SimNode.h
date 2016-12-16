@@ -8,6 +8,7 @@
 /// Copyright (C) 2016 Yusuke Matsunaga
 /// All rights reserved.
 
+#define USE_VAL3 0
 
 #include "fsim2_nsdef.h"
 #include "TpgNode.h"
@@ -142,31 +143,33 @@ public:
   PackedVal
   fval() const;
 
-  /// @brief 正常値と故障値の差を返す．(2値版)
-  PackedVal
-  diff2() const;
-
   /// @brief 正常値のセットを行う．
-  /// @param[in] pat 値
-  ///
-  /// - 通常は外部入力に対して行われる．
-  /// - 故障値も同様にセットされる．
+  /// @param[in] val 値
   void
-  set_gval(PackedVal pat);
+  set_gval2(PackedVal val);
 
-  /// @brief 故障値をセットする．
-  /// @param[in] mask マスク
+  /// @brief 正常値を計算する．
   void
-  set_fval(PackedVal pat,
-	   PackedVal mask = kPvAll1);
+  calc_gval2();
+
+  /// @brief 故障値のセットを行う．
+  /// @param[in] val 値
+  void
+  set_fval2(PackedVal val);
+
+  /// @brief 故障値のイベントをセットする．
+  /// @param[in] mask 反転マスク
+  void
+  flip_fval2(PackedVal mask);
+
+  /// @brief 故障値を計算する．
+  /// @param[in] mask マスク
+  PackedVal
+  calc_fval2(PackedVal mask);
 
   /// @brief 故障値をクリアする．(2値版)
   void
   clear_fval2();
-
-  /// @brief FFRの根までの obs の計算を行う．(2値版)
-  PackedVal
-  calc_lobs2();
 
 
 public:
@@ -182,57 +185,33 @@ public:
   PackedVal3
   fval3() const;
 
-  /// @brief 正常値と故障値の差を返す．(3値版)
-  PackedVal
-  diff3() const;
-
   /// @brief 正常値のセットを行う．(3値版)
   /// @param[in] val 値
-  ///
-  /// 通常は外部入力に対して行われる．
-  /// 故障値も同様にセットされる．
   void
-  set_gval(PackedVal3 val);
+  set_gval3(PackedVal3 val);
+
+  /// @brief 正常値を計算する．
+  void
+  calc_gval3();
 
   /// @brief 故障値をセットする．(3値版)
   /// @param[in] val 値
   void
-  set_fval(PackedVal3 val);
+  set_fval3(PackedVal3 val);
 
   /// @brief 故障値をセットする．(3値版)
-  /// @param[in] val 値
-  /// @param[in] mask ビットマスク
-  ///
-  /// mask が0のビットはセットしない．
+  /// @param[in] mask 反転マスク
   void
-  set_fval(PackedVal3 val,
-	   PackedVal mask);
+  flip_fval3(PackedVal mask);
+
+  /// @brief 故障値を計算する．
+  /// @param[in] mask マスク
+  PackedVal
+  calc_fval3(PackedVal mask);
 
   /// @brief 故障値をクリアする．(3値版)
   void
   clear_fval3();
-
-  /// @brief ローカルな obs の計算を行う．(3値版)
-  PackedVal
-  calc_lobs3();
-
-
-public:
-  //////////////////////////////////////////////////////////////////////
-  // lobs の計算用の作業領域にアクセスする関数
-  //////////////////////////////////////////////////////////////////////
-
-  /// @brief lobs が計算済みかチェックする．
-  bool
-  check_lobs() const;
-
-  /// @brief lobs が計算済みの印をつける．
-  void
-  set_lobs();
-
-  /// @brief lobs の計算済みの印を消す．
-  void
-  clear_lobs();
 
 
 public:
@@ -312,14 +291,16 @@ private:
   // レベル
   ymuint mLevel;
 
+#if USE_VAL3
   // 正常値
   PackedVal3 mGval;
 
   // 故障値
   PackedVal3 mFval;
-
-  // FFR 内のローカルな obs
-  PackedVal mLobs;
+#else
+  PackedVal mGval;
+  PackedVal mFval;
+#endif
 
 };
 
@@ -400,36 +381,16 @@ SimNode::set_ffr_root()
   mFanoutNum |= 2U;
 }
 
-// @brief lobs が計算済みかチェックする．
-inline
-bool
-SimNode::check_lobs() const
-{
-  return ((mFanoutNum >> 2) & 1U) == 1U;
-}
-
-// @brief lobs が計算済みの印をつける．
-inline
-void
-SimNode::set_lobs()
-{
-  mFanoutNum |= (1U << 2);
-}
-
-// @brief lobs の計算済みの印を消す．
-inline
-void
-SimNode::clear_lobs()
-{
-  mFanoutNum &= ~(1U << 1);
-}
-
 // @brief 正常値を得る．
 inline
 PackedVal
 SimNode::gval() const
 {
+#if USE_VAL3
   return mGval.val1();
+#else
+  return mGval;
+#endif
 }
 
 // @brief 故障値を得る．
@@ -437,36 +398,62 @@ inline
 PackedVal
 SimNode::fval() const
 {
+#if USE_VAL3
   return mFval.val1();
-}
-
-// @brief 正常値と故障値の差を返す．(2値版)
-inline
-PackedVal
-SimNode::diff2() const
-{
-  return gval() ^ fval();
+#else
+  return mFval;
+#endif
 }
 
 // @brief 正常値のセットを行う．
 // @param[in] val 値
-// @note 通常は外部入力に対して行われる．
-// @note 故障値も同様にセットされる．
 inline
 void
-SimNode::set_gval(PackedVal val)
+SimNode::set_gval2(PackedVal val)
 {
   mGval = mFval = val;
 }
 
-// @brief 故障値をセットする．
-// @param[in] mask マスク
+// @brief 正常値を計算する．
 inline
 void
-SimNode::set_fval(PackedVal pat,
-		  PackedVal mask)
+SimNode::calc_gval2()
 {
-  mFval.set_with_mask(~pat, pat, mask);
+  PackedVal val = _calc_gval2();
+  mGval = mFval = val;
+}
+
+// @brief 故障値のセットを行う．
+// @param[in] val 値
+inline
+void
+SimNode::set_fval2(PackedVal val)
+{
+  mFval = val;
+}
+
+// @brief 故障値のイベントをセットする．
+// @param[in] mask 反転マスク
+inline
+void
+SimNode::flip_fval2(PackedVal mask)
+{
+  mFval = (gval() ^ mask);
+}
+
+// @brief 故障値を計算する．
+inline
+PackedVal
+SimNode::calc_fval2(PackedVal mask)
+{
+  PackedVal val = _calc_fval2();
+#if USE_VAL3
+  mFval.set_with_mask(val, mask);
+#else
+  mFval &= ~mask;
+  mFval |= (val & mask);
+#endif
+  return gval() ^ fval();
 }
 
 // @brief 正常値を得る．(3値版)
@@ -474,7 +461,11 @@ inline
 PackedVal3
 SimNode::gval3() const
 {
+#if USE_VAL3
   return mGval;
+#else
+  return PackedVal3(mGval);
+#endif
 }
 
 // @brief 故障値を得る．(3値版)
@@ -482,15 +473,11 @@ inline
 PackedVal3
 SimNode::fval3() const
 {
+#if USE_VAL3
   return mFval;
-}
-
-// @brief 正常値と故障値の差を返す．(3値版)
-inline
-PackedVal
-SimNode::diff3() const
-{
-  return diff(gval3(), fval3());
+#else
+  return PackedVal3(mFval);
+#endif
 }
 
 // @brief 正常値のセットを行う．(3値版)
@@ -500,31 +487,59 @@ SimNode::diff3() const
 // 故障値も同様にセットされる．
 inline
 void
-SimNode::set_gval(PackedVal3 val)
+SimNode::set_gval3(PackedVal3 val)
 {
+#if USE_VAL3
   mGval = mFval = val;
+#endif
+}
+
+// @brief 正常値を計算する．
+inline
+void
+SimNode::calc_gval3()
+{
+#if USE_VAL3
+  PackedVal3 val = _calc_gval3();
+  mGval = mFval = val;
+#endif
 }
 
 // @brief 故障値をセットする．(3値版)
 // @param[in] val 値
 inline
 void
-SimNode::set_fval(PackedVal3 val)
+SimNode::set_fval3(PackedVal3 val)
 {
+#if USE_VAL3
   mFval = val;
+#endif
 }
 
 // @brief 故障値をセットする．(3値版)
-// @param[in] val 値
-// @param[in] mask ビットマスク
-//
-// mask が0のビットはセットしない．
+// @param[in] mask 反転マスク
 inline
 void
-SimNode::set_fval(PackedVal3 val,
-		  PackedVal mask)
+SimNode::flip_fval3(PackedVal mask)
 {
+#if USE_VAL3
+  mFval.set_with_mask(~mGval, mask);
+#endif
+}
+
+// @brief 故障値を計算する．
+// @param[in] mask マスク
+inline
+PackedVal
+SimNode::calc_fval3(PackedVal mask)
+{
+#if USE_VAL3
+  PackedVal3 val = _calc_fval3();
   mFval.set_with_mask(val, mask);
+  return diff(mGval, mFval);
+#else
+  return kPvAll0;
+#endif
 }
 
 // @brief 故障値をクリアする．

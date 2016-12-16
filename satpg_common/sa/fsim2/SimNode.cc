@@ -8,7 +8,6 @@
 
 
 #include "SimNode.h"
-#include "SimFFR.h"
 #include "SnInput.h"
 #include "SnBuff.h"
 #include "SnAnd.h"
@@ -138,22 +137,6 @@ SimNode::set_fanout_list(const vector<SimNode*>& fo_list,
   }
 
   mFanoutNum |= (nfo << 16) | (ipos << 3);
-}
-
-// @brief FFRの根までの obs の計算を行う．
-PackedVal
-SimNode::calc_lobs2()
-{
-  if ( is_ffr_root() ) {
-    return kPvAll1;
-  }
-  if ( !check_lobs() ) {
-    SimNode* onode = fanout(0);
-    ymuint pos = fanout_ipos();
-    mLobs = onode->calc_lobs2() & onode->_calc_gobs2(pos);
-    set_lobs();
-  }
-  return mLobs;
 }
 
 END_NAMESPACE_YM_SATPG_FSIM

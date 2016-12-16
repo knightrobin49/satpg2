@@ -38,20 +38,6 @@ END_NAMESPACE_YM_SATPG_SA
 
 BEGIN_NAMESPACE_YM_SATPG_FSIM
 
-BEGIN_NONAMESPACE
-
-void
-clear_lobs(SimNode* node)
-{
-  while ( node->check_lobs() ) {
-    node->clear_lobs();
-    node = node->fanout(0);
-  }
-}
-
-END_NONAMESPACE
-
-
 //////////////////////////////////////////////////////////////////////
 // Fsim2
 //////////////////////////////////////////////////////////////////////
@@ -276,15 +262,7 @@ void
 Fsim2::sppfp(TestVector* tv,
 	     FsimOp& op)
 {
-  ymuint npi = mNetwork->ppi_num();
-
-  // tv を全ビットにセットしていく．
-  for (ymuint i = 0; i < npi; ++ i) {
-    SimNode* simnode = mInputArray[i];
-    PackedVal val = (tv->val3(i) == kVal1) ? kPvAll1 : kPvAll0;
-    simnode->set_gval(val);
-  }
-
+  _set_sp2(tv);
   _sppfp2(op);
 }
 
@@ -295,23 +273,7 @@ void
 Fsim2::sppfp(const NodeValList& assign_list,
 	     FsimOp& op)
 {
-  ymuint npi = mNetwork->ppi_num();
-
-  // デフォルトで 0 にする．
-  for (ymuint i = 0; i < npi; ++ i) {
-    SimNode* simnode = mInputArray[i];
-    simnode->set_gval(kPvAll0);
-  }
-
-  ymuint n = assign_list.size();
-  for (ymuint i = 0; i < n; ++ i) {
-    NodeVal nv = assign_list[i];
-    if ( nv.val() ) {
-      SimNode* simnode = mInputArray[nv.node()->input_id()];
-      simnode->set_gval(kPvAll1);
-    }
-  }
-
+  _set_sp2(assign_list);
   _sppfp2(op);
 }
 
@@ -322,27 +284,7 @@ void
 Fsim2::ppsfp(const vector<TestVector*>& tv_array,
 	     FsimOp& op)
 {
-  ymuint npi = mNetwork->ppi_num();
-  ymuint nb = tv_array.size();
-
-  // tv_array を入力ごとに固めてセットしていく．
-  for (ymuint i = 0; i < npi; ++ i) {
-    PackedVal val = kPvAll0;
-    PackedVal bit = 1UL;
-    for (ymuint j = 0; j < nb; ++ j, bit <<= 1) {
-      if ( tv_array[j]->val3(i) == kVal1 ) {
-	val |= bit;
-      }
-    }
-    // 残ったビットには 0 番めのパタンを詰めておく．
-    if ( tv_array[0]->val3(i) == kVal1 ) {
-      for (ymuint j = nb; j < kPvBitLen; ++ j, bit <<= 1) {
-	val |= bit;
-      }
-    }
-    SimNode* simnode = mInputArray[i];
-    simnode->set_gval(val);
-  }
+  _set_pp2(tv_array);
 
   // 正常値の計算を行う．
   _calc_gval2();
@@ -371,8 +313,7 @@ Fsim2::ppsfp(const vector<TestVector*>& tv_array,
       obs = kPvAll1;
     }
     else {
-      PackedVal pat = root->gval() ^ ffr_req;
-      eventq_put2(root, pat);
+      eventq_put2(root, ffr_req);
       obs = eventq_simulate2();
     }
 
@@ -389,15 +330,7 @@ bool
 Fsim2::spsfp(TestVector* tv,
 	     const TpgFault* f)
 {
-  ymuint npi = mNetwork->ppi_num();
-
-  // tv を全ビットにセットしていく．
-  for (ymuint i = 0; i < npi; ++ i) {
-    SimNode* simnode = mInputArray[i];
-    PackedVal val = (tv->val3(i) == kVal1) ? kPvAll1 : kPvAll0;
-    simnode->set_gval(val);
-  }
-
+  _set_sp2(tv);
   return _spsfp2(f);
 }
 
@@ -410,12 +343,34 @@ bool
 Fsim2::spsfp(const NodeValList& assign_list,
 	     const TpgFault* f)
 {
-  ymuint npi = mNetwork->ppi_num();
+  _set_sp2(assign_list);
+  return _spsfp2(f);
+}
 
-  // assign_list にないノードの値は 0 にしておく．
+// @brief 一つのパタンを全ビットに展開して設定する．
+// @param[in] tv 設定するテストベクタ
+void
+Fsim2::_set_sp2(TestVector* tv)
+{
+  ymuint npi = mNetwork->ppi_num();
   for (ymuint i = 0; i < npi; ++ i) {
     SimNode* simnode = mInputArray[i];
-    simnode->set_gval(kPvAll0);
+    PackedVal val = (tv->val3(i) == kVal1) ? kPvAll1 : kPvAll0;
+    simnode->set_gval2(val);
+  }
+}
+
+// @brief 一つのパタンを全ビットに展開して設定する．
+// @param[in] assign_list 設定する値の割り当てリスト
+void
+Fsim2::_set_sp2(const NodeValList& assign_list)
+{
+  ymuint npi = mNetwork->ppi_num();
+
+  // デフォルトで 0 にする．
+  for (ymuint i = 0; i < npi; ++ i) {
+    SimNode* simnode = mInputArray[i];
+    simnode->set_gval2(kPvAll0);
   }
 
   ymuint n = assign_list.size();
@@ -423,11 +378,37 @@ Fsim2::spsfp(const NodeValList& assign_list,
     NodeVal nv = assign_list[i];
     if ( nv.val() ) {
       SimNode* simnode = mInputArray[nv.node()->input_id()];
-      simnode->set_gval(kPvAll1);
+      simnode->set_gval2(kPvAll1);
     }
   }
+}
 
-  return _spsfp2(f);
+// @brief 複数のパタンを設定する．
+// @param[in] tv_array テストベクタの配列
+void
+Fsim2::_set_pp2(const vector<TestVector*>& tv_array)
+{
+  ymuint npi = mNetwork->ppi_num();
+  ymuint nb = tv_array.size();
+
+  // tv_array を入力ごとに固めてセットしていく．
+  for (ymuint i = 0; i < npi; ++ i) {
+    PackedVal val = kPvAll0;
+    PackedVal bit = 1UL;
+    for (ymuint j = 0; j < nb; ++ j, bit <<= 1) {
+      if ( tv_array[j]->val3(i) == kVal1 ) {
+	val |= bit;
+      }
+    }
+    // 残ったビットには 0 番めのパタンを詰めておく．
+    if ( tv_array[0]->val3(i) == kVal1 ) {
+      for (ymuint j = nb; j < kPvBitLen; ++ j, bit <<= 1) {
+	val |= bit;
+      }
+    }
+    SimNode* simnode = mInputArray[i];
+    simnode->set_gval2(val);
+  }
 }
 
 // @brief SPPFP故障シミュレーションの本体
@@ -466,8 +447,7 @@ Fsim2::_sppfp2(FsimOp& op)
 
     // キューに積んでおく
     PackedVal bitmask = 1UL << bitpos;
-    PackedVal pat = root->gval() ^ bitmask;
-    eventq_put2(root, pat);
+    eventq_put2(root, bitmask);
     ffr_buff[bitpos] = ffr;
 
     ++ bitpos;
@@ -491,6 +471,39 @@ Fsim2::_sppfp2(FsimOp& op)
   }
 }
 
+BEGIN_NONAMESPACE
+
+// FFR の根のノードまでの故障伝搬条件を求める．
+PackedVal
+calc_lobs2(SimFault* ff)
+{
+  SimNode* simnode = ff->mNode;
+
+  PackedVal lobs = kPvAll1;
+  for (SimNode* node = simnode; !node->is_ffr_root(); ) {
+    SimNode* onode = node->fanout(0);
+    ymuint pos = node->fanout_ipos();
+    lobs &= onode->_calc_gobs2(pos);
+    node = onode;
+  }
+
+  PackedVal valdiff = ff->mInode->gval();
+  const TpgFault* f = ff->mOrigF;
+  if ( f->is_branch_fault() ) {
+    // 入力の故障
+    ymuint ipos = ff->mIpos;
+    lobs &= simnode->_calc_gobs2(ipos);
+  }
+  if ( f->val() == 1 ) {
+    valdiff = ~valdiff;
+  }
+  lobs &= valdiff;
+
+  return lobs;
+}
+
+END_NONAMESPACE
+
 // @brief SPSFP故障シミュレーションの本体
 // @param[in] f 対象の故障
 // @retval true 故障の検出が行えた．
@@ -502,25 +515,9 @@ Fsim2::_spsfp2(const TpgFault* f)
   _calc_gval2();
 
   // FFR 内の故障伝搬を行う．
-  PackedVal lobs;
-  if ( f->is_branch_fault() ) {
-    SimNode* simnode = find_simnode(f->tpg_onode());
-    ymuint ipos = f->tpg_pos();
-    lobs = simnode->calc_lobs2() & simnode->_calc_gobs2(ipos);
-    clear_lobs(simnode);
-  }
-  else {
-    SimNode* simnode = find_simnode(f->tpg_inode());
-    lobs = simnode->calc_lobs2();
-    clear_lobs(simnode);
-  }
+  SimFault* ff = mFaultArray[f->id()];
 
-  SimNode* isimnode = find_simnode(f->tpg_inode());
-  PackedVal valdiff = isimnode->gval();
-  if ( f->val() == 1 ) {
-    valdiff = ~valdiff;
-  }
-  lobs &= valdiff;
+  PackedVal lobs = calc_lobs2(ff);
 
   // lobs が 0 ならその後のシミュレーションを行う必要はない．
   if ( lobs == kPvAll0 ) {
@@ -528,16 +525,17 @@ Fsim2::_spsfp2(const TpgFault* f)
   }
 
   // FFR の根のノードを求める．
-  SimNode* root;
-  for (root = isimnode; !root->is_ffr_root(); ) {
+  SimNode* root = ff->mNode;
+  while ( !root->is_ffr_root() ) {
     root = root->fanout(0);
   }
+
   if ( root->is_output() ) {
-    return (lobs != kPvAll0);
+    return true;
   }
 
-  eventq_put2(root, ~root->gval());
-  PackedVal obs = eventq_simulate2() & lobs;
+  eventq_put2(root, kPvAll1);
+  PackedVal obs = eventq_simulate2();
   return (obs != kPvAll0);
 }
 
@@ -550,8 +548,7 @@ Fsim2::_calc_gval2()
   for (vector<SimNode*>::iterator q = mLogicArray.begin();
        q != mLogicArray.end(); ++ q) {
     SimNode* node = *q;
-    PackedVal val = node->_calc_gval2();
-    node->set_gval(val);
+    node->calc_gval2();
   }
 }
 
@@ -569,31 +566,10 @@ Fsim2::ffr_prop2(SimFFR* ffr)
     }
 
     // ff の故障伝搬を行う．
-    SimNode* simnode = ff->mNode;
-    PackedVal lobs = simnode->calc_lobs2();
-    PackedVal valdiff = ff->mInode->gval();
-    const TpgFault* f = ff->mOrigF;
-    if ( f->is_branch_fault() ) {
-      // 入力の故障
-      ymuint ipos = ff->mIpos;
-      lobs &= simnode->_calc_gobs2(ipos);
-    }
-    if ( f->val() == 1 ) {
-      valdiff = ~valdiff;
-    }
-    lobs &= valdiff;
+    PackedVal lobs = calc_lobs2(ff);
 
     ff->mObsMask = lobs;
     ffr_req |= lobs;
-  }
-
-  for (vector<SimFault*>::const_iterator p = flist.begin();
-       p != flist.end(); ++ p) {
-    SimFault* ff = *p;
-    if ( !ff->mSkip ) {
-      SimNode* node = ff->mNode;
-      clear_lobs(node);
-    }
   }
 
   return ffr_req;
@@ -601,12 +577,12 @@ Fsim2::ffr_prop2(SimFFR* ffr)
 
 // @brief イベントキューにイベントを追加する．
 // @param[in] node イベントの起こったノード
-// @param[in] val イベントの値
+// @param[in] mask 反転マスク
 void
 Fsim2::eventq_put2(SimNode* node,
-		   PackedVal val)
+		   PackedVal mask)
 {
-  node->set_fval(val);
+  node->flip_fval2(mask);
   mClearArray.push_back(node);
   ymuint no = node->fanout_num();
   for (ymuint i = 0; i < no; ++ i) {
@@ -625,9 +601,7 @@ Fsim2::eventq_simulate2()
     if ( node == nullptr ) break;
     // すでに検出済みのビットはマスクしておく
     // これは無駄なイベントの発生を抑える．
-    PackedVal fval = node->_calc_fval2();
-    node->set_fval(fval, ~obs);
-    PackedVal diff = node->diff2();
+    PackedVal diff = node->calc_fval2(~obs);
     if ( diff != kPvAll0 ) {
       mClearArray.push_back(node);
       if ( node->is_output() ) {

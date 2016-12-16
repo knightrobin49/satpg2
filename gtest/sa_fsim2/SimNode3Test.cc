@@ -76,7 +76,7 @@ void
 init_val(SimNode* node,
 	 PackedVal3 val)
 {
-  node->set_gval(val);
+  node->set_gval3(val);
 }
 
 // 0, 1, 2 の整数から PackedVal3 に変換する．
@@ -167,7 +167,7 @@ SimNodeTest::test_gate(ymuint ni,
       ymuint y = x % 3;
       x /= 3;
       PackedVal3 val = int2val3(y);
-      inputs[i]->set_gval(val);
+      inputs[i]->set_gval3(val);
     }
     PackedVal3 val = node->_calc_gval3();
     test_val3(val, vals[p]);
@@ -186,7 +186,7 @@ SimNodeTest::test_gate(ymuint ni,
       ymuint y = x % 3;
       x /= 3;
       PackedVal3 val = int2val3(y);
-      inputs[i]->set_fval(val);
+      inputs[i]->set_fval3(val);
     }
     PackedVal3 val = node->_calc_fval3();
     test_val3(val, vals[p]);
@@ -207,7 +207,7 @@ SimNodeTest::test_gate(ymuint ni,
       ymuint w = 1;
       for (ymuint i = 0; i < ni; ++ i) {
 	PackedVal3 val = int2val3(ivals[i]);
-	inputs[i]->set_gval(val);
+	inputs[i]->set_gval3(val);
 	if ( i == ipos ) {
 	  p += 0 * w; // じつは効果なし．形式を合わせただけ
 	  q += 1 * w;
@@ -267,7 +267,7 @@ SimNodeTest::test_gval(SimNode* node,
 		       PackedVal val1)
 {
   // 書き込んだ値が読み出せるかテストする．
-  node->set_gval(PackedVal3(val0, val1));
+  node->set_gval3(PackedVal3(val0, val1));
   EXPECT_EQ( val0, node->gval3().val0() );
   EXPECT_EQ( val1, node->gval3().val1() );
 }
@@ -281,7 +281,7 @@ SimNodeTest::test_fval(SimNode* node,
 		       PackedVal val1)
 {
   // 書き込んだ値が読み出せるかテストする．
-  node->set_gval(PackedVal3(val0, val1));
+  node->set_fval3(PackedVal3(val0, val1));
   EXPECT_EQ( val0, node->fval3().val0() );
   EXPECT_EQ( val1, node->fval3().val1() );
 }

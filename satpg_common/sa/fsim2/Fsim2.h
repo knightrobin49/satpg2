@@ -121,6 +121,21 @@ private:
   // 内部で用いられる2値用の下請け関数
   //////////////////////////////////////////////////////////////////////
 
+  /// @brief 一つのパタンを全ビットに展開して設定する．
+  /// @param[in] tv 設定するテストベクタ
+  void
+  _set_sp2(TestVector* tv);
+
+  /// @brief 一つのパタンを全ビットに展開して設定する．
+  /// @param[in] assign_list 設定する値の割り当てリスト
+  void
+  _set_sp2(const NodeValList& assign_list);
+
+  /// @brief 複数のパタンを設定する．
+  /// @param[in] tv_array テストベクタの配列
+  void
+  _set_pp2(const vector<TestVector*>& tv_array);
+
   /// @brief SPSFP故障シミュレーションの本体
   /// @param[in] f 対象の故障
   /// @retval true 故障の検出が行えた．
@@ -145,10 +160,10 @@ private:
 
   /// @brief イベントキューにイベントを追加する．
   /// @param[in] node イベントの起こったノード
-  /// @param[in] val イベントの値
+  /// @param[in] mask 反転マスク
   void
   eventq_put2(SimNode* node,
-	      PackedVal val);
+	      PackedVal mask);
 
   /// @brief イベントキューを用いてシミュレーションを行う．
   PackedVal
