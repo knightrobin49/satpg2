@@ -12,7 +12,6 @@
 
 #include "fsim2_nsdef.h"
 #include "TpgNode.h"
-#include "EqElem.h"
 #include "PackedVal.h"
 #include "PackedVal3.h"
 
@@ -23,9 +22,9 @@ BEGIN_NAMESPACE_YM_SATPG_FSIM
 /// @class SimNode SimNode.h "SimNode.h"
 /// @brief 故障シミュレーション用のノード
 //////////////////////////////////////////////////////////////////////
-class SimNode :
-  public EqElem
+class SimNode
 {
+  friend class EventQ;
 protected:
 
   /// @brief コンストラクタ
@@ -272,6 +271,24 @@ protected:
 
 private:
   //////////////////////////////////////////////////////////////////////
+  // EventQ 用の関数
+  //////////////////////////////////////////////////////////////////////
+
+  /// @brief キューに積まれていたら true を返す．
+  bool
+  in_queue() const;
+
+  /// @brief キューフラグをセットする．
+  void
+  set_queue();
+
+  /// @brief キューフラグをクリアする．
+  void
+  clear_queue();
+
+
+private:
+  //////////////////////////////////////////////////////////////////////
   // データメンバ
   //////////////////////////////////////////////////////////////////////
 
@@ -280,6 +297,7 @@ private:
 
   // ファンアウトリストの要素数
   // その他以下の情報もパックして持つ．
+  // - EventQ に入っているかどうかを示すマーク
   // - 最初のファンアウトの入力位置(FFR内のノードのみ意味を持つ)
   // - 出力のマーク
   // - lobs の計算マーク
@@ -290,6 +308,9 @@ private:
 
   // レベル
   ymuint mLevel;
+
+  // イベントキューの次の要素
+  SimNode* mLink;
 
 #if USE_VAL3
   // 正常値
@@ -338,7 +359,7 @@ inline
 ymuint
 SimNode::fanout_ipos() const
 {
-  return (mFanoutNum >> 3) & 0x1FFFU;
+  return (mFanoutNum >> 4) & 0x0FFFU;
 }
 
 // @brief FFR の根のノードの時 true を返す．
@@ -556,6 +577,30 @@ void
 SimNode::clear_fval3()
 {
   mFval = mGval;
+}
+
+// @brief キューに積まれていたら true を返す．
+inline
+bool
+SimNode::in_queue() const
+{
+  return static_cast<bool>((mFanoutNum >> 3) & 1U);
+}
+
+// @brief キューフラグをセットする．
+inline
+void
+SimNode::set_queue()
+{
+  mFanoutNum |= 1U << 3;
+}
+
+// @brief キューフラグをクリアする．
+inline
+void
+SimNode::clear_queue()
+{
+  mFanoutNum &= ~(1U << 3);
 }
 
 END_NAMESPACE_YM_SATPG_FSIM

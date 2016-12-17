@@ -136,7 +136,7 @@ SimNode::set_fanout_list(const vector<SimNode*>& fo_list,
     mFanouts[i] = fo_list[i];
   }
 
-  mFanoutNum |= (nfo << 16) | (ipos << 3);
+  mFanoutNum |= (nfo << 16) | (ipos << 4);
 }
 
 END_NAMESPACE_YM_SATPG_FSIM

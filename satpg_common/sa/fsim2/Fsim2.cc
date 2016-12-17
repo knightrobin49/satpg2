@@ -471,39 +471,6 @@ Fsim2::_sppfp2(FsimOp& op)
   }
 }
 
-BEGIN_NONAMESPACE
-
-// FFR の根のノードまでの故障伝搬条件を求める．
-PackedVal
-calc_lobs2(SimFault* ff)
-{
-  SimNode* simnode = ff->mNode;
-
-  PackedVal lobs = kPvAll1;
-  for (SimNode* node = simnode; !node->is_ffr_root(); ) {
-    SimNode* onode = node->fanout(0);
-    ymuint pos = node->fanout_ipos();
-    lobs &= onode->_calc_gobs2(pos);
-    node = onode;
-  }
-
-  PackedVal valdiff = ff->mInode->gval();
-  const TpgFault* f = ff->mOrigF;
-  if ( f->is_branch_fault() ) {
-    // 入力の故障
-    ymuint ipos = ff->mIpos;
-    lobs &= simnode->_calc_gobs2(ipos);
-  }
-  if ( f->val() == 1 ) {
-    valdiff = ~valdiff;
-  }
-  lobs &= valdiff;
-
-  return lobs;
-}
-
-END_NONAMESPACE
-
 // @brief SPSFP故障シミュレーションの本体
 // @param[in] f 対象の故障
 // @retval true 故障の検出が行えた．
@@ -573,6 +540,35 @@ Fsim2::ffr_prop2(SimFFR* ffr)
   }
 
   return ffr_req;
+}
+
+// @brief FFR の根までの伝搬条件を計算する．
+PackedVal
+Fsim2::calc_lobs2(SimFault* ff)
+{
+  SimNode* simnode = ff->mNode;
+
+  PackedVal lobs = kPvAll1;
+  for (SimNode* node = simnode; !node->is_ffr_root(); ) {
+    SimNode* onode = node->fanout(0);
+    ymuint pos = node->fanout_ipos();
+    lobs &= onode->_calc_gobs2(pos);
+    node = onode;
+  }
+
+  PackedVal valdiff = ff->mInode->gval();
+  const TpgFault* f = ff->mOrigF;
+  if ( f->is_branch_fault() ) {
+    // 入力の故障
+    ymuint ipos = ff->mIpos;
+    lobs &= simnode->_calc_gobs2(ipos);
+  }
+  if ( f->val() == 1 ) {
+    valdiff = ~valdiff;
+  }
+  lobs &= valdiff;
+
+  return lobs;
 }
 
 // @brief イベントキューにイベントを追加する．

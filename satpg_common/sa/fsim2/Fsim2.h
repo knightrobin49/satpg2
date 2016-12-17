@@ -158,6 +158,10 @@ private:
   PackedVal
   ffr_prop2(SimFFR* ffr);
 
+  /// @brief FFR の根までの伝搬条件を計算する．
+  PackedVal
+  calc_lobs2(SimFault* ff);
+
   /// @brief イベントキューにイベントを追加する．
   /// @param[in] node イベントの起こったノード
   /// @param[in] mask 反転マスク
