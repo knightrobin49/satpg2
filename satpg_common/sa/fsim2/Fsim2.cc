@@ -230,10 +230,10 @@ Fsim2::set_skip(const TpgFault* f)
 void
 Fsim2::set_faults(const vector<const TpgFault*>& fault_list)
 {
-  // 同時に各 SimFFR 内の fault_list() も再構築する．
+  // 同時に各 SimFFR 内の故障リストも再構築する．
   for (vector<SimFFR>::iterator p = mFFRArray.begin();
        p != mFFRArray.end(); ++ p) {
-    p->fault_list().clear();
+    p->clear_fault_list();
   }
   for (ymuint i = 0; i < fault_list.size(); ++ i) {
     const TpgFault* f = fault_list[i];
@@ -241,7 +241,7 @@ Fsim2::set_faults(const vector<const TpgFault*>& fault_list)
     ff->mSkip = false;
     SimNode* simnode = ff->mNode;
     SimFFR* ffr = mFFRMap[simnode->id()];
-    ffr->fault_list().push_back(ff);
+    ffr->add_fault(ff);
   }
 }
 
@@ -283,13 +283,10 @@ Fsim2::ppsfp(const vector<TestVector*>& tv_array,
   for (vector<SimFFR>::iterator p = mFFRArray.begin();
        p != mFFRArray.end(); ++ p) {
     SimFFR* ffr = &(*p);
-    if ( ffr->fault_list().empty() ) continue;
-
     // FFR 内の故障伝搬を行う．
-    // 結果は SimFault.mObsMask に保存される．
+    // 結果は SimFault::mObsMask に保存される．
     // FFR 内の全ての obs マスクを ffr_req に入れる．
-    // 検出済みの故障は ffr->fault_list() から取り除かれる．
-    PackedVal ffr_req = ffr_prop2(ffr);
+    PackedVal ffr_req = ffr->fault_prop2();
 
     // ffr_req が 0 ならその後のシミュレーションを行う必要はない．
     if ( ffr_req == kPvAll0 ) {
@@ -307,7 +304,7 @@ Fsim2::ppsfp(const vector<TestVector*>& tv_array,
       obs = eventq_simulate2();
     }
 
-    fault_sweep(ffr, op, obs);
+    ffr->fault_sweep(op, obs);
   }
 }
 
@@ -415,13 +412,10 @@ Fsim2::_sppfp2(FsimOp& op)
   for (vector<SimFFR>::iterator p = mFFRArray.begin();
        p != mFFRArray.end(); ++ p) {
     SimFFR* ffr = &(*p);
-    if ( ffr->fault_list().empty() ) continue;
-
     // FFR 内の故障伝搬を行う．
     // 結果は SimFault.mObsMask に保存される．
     // FFR 内の全ての obs マスクを ffr_req に入れる．
-    // 検出済みの故障は ffr->fault_list() から取り除かれる．
-    PackedVal ffr_req = ffr_prop2(ffr);
+    PackedVal ffr_req = ffr->fault_prop2();
 
     // ffr_req が 0 ならその後のシミュレーションを行う必要はない．
     if ( ffr_req == kPvAll0 ) {
@@ -431,7 +425,7 @@ Fsim2::_sppfp2(FsimOp& op)
     SimNode* root = ffr->root();
     if ( root->is_output() ) {
       // 常に観測可能
-      fault_sweep(ffr, op, kPvAll1);
+      ffr->fault_sweep(op, kPvAll1);
       continue;
     }
 
@@ -445,7 +439,7 @@ Fsim2::_sppfp2(FsimOp& op)
       PackedVal obs = eventq_simulate2();
       for (ymuint i = 0; i < kPvBitLen; ++ i, obs >>= 1) {
 	if ( obs & 1UL ) {
-	  fault_sweep(ffr_buff[i], op, kPvAll1);
+	  ffr_buff[i]->fault_sweep(op, kPvAll1);
 	}
       }
       bitpos = 0;
@@ -455,7 +449,7 @@ Fsim2::_sppfp2(FsimOp& op)
     PackedVal obs = eventq_simulate2();
     for (ymuint i = 0; i < bitpos; ++ i, obs >>= 1) {
       if ( obs & 1UL ) {
-	fault_sweep(ffr_buff[i], op, kPvAll1);
+	ffr_buff[i]->fault_sweep(op, kPvAll1);
       }
     }
   }
@@ -474,7 +468,26 @@ Fsim2::_spsfp2(const TpgFault* f)
   // FFR 内の故障伝搬を行う．
   SimFault* ff = mFaultArray[f->id()];
 
-  PackedVal lobs = calc_lobs2(ff);
+  SimNode* simnode = ff->mNode;
+
+  PackedVal lobs = kPvAll1;
+  for (SimNode* node = simnode; !node->is_ffr_root(); ) {
+    SimNode* onode = node->fanout(0);
+    ymuint pos = node->fanout_ipos();
+    lobs &= onode->_calc_gobs2(pos);
+    node = onode;
+  }
+
+  PackedVal valdiff = ff->mInode->gval();
+  if ( f->is_branch_fault() ) {
+    // 入力の故障
+    ymuint ipos = ff->mIpos;
+    lobs &= simnode->_calc_gobs2(ipos);
+  }
+  if ( f->val() == 1 ) {
+    valdiff = ~valdiff;
+  }
+  lobs &= valdiff;
 
   // lobs が 0 ならその後のシミュレーションを行う必要はない．
   if ( lobs == kPvAll0 ) {
@@ -507,58 +520,6 @@ Fsim2::_calc_gval2()
     SimNode* node = *q;
     node->calc_gval2();
   }
-}
-
-// @brief FFR 内の故障シミュレーションを行う．
-PackedVal
-Fsim2::ffr_prop2(SimFFR* ffr)
-{
-  PackedVal ffr_req = kPvAll0;
-  const vector<SimFault*>& flist = ffr->fault_list();
-  for (vector<SimFault*>::const_iterator p = flist.begin();
-       p != flist.end(); ++ p) {
-    SimFault* ff = *p;
-    if ( ff->mSkip ) {
-      continue;
-    }
-
-    // ff の故障伝搬を行う．
-    PackedVal lobs = calc_lobs2(ff);
-
-    ff->mObsMask = lobs;
-    ffr_req |= lobs;
-  }
-
-  return ffr_req;
-}
-
-// @brief FFR の根までの伝搬条件を計算する．
-PackedVal
-Fsim2::calc_lobs2(SimFault* ff)
-{
-  SimNode* simnode = ff->mNode;
-
-  PackedVal lobs = kPvAll1;
-  for (SimNode* node = simnode; !node->is_ffr_root(); ) {
-    SimNode* onode = node->fanout(0);
-    ymuint pos = node->fanout_ipos();
-    lobs &= onode->_calc_gobs2(pos);
-    node = onode;
-  }
-
-  PackedVal valdiff = ff->mInode->gval();
-  const TpgFault* f = ff->mOrigF;
-  if ( f->is_branch_fault() ) {
-    // 入力の故障
-    ymuint ipos = ff->mIpos;
-    lobs &= simnode->_calc_gobs2(ipos);
-  }
-  if ( f->val() == 1 ) {
-    valdiff = ~valdiff;
-  }
-  lobs &= valdiff;
-
-  return lobs;
 }
 
 // @brief イベントキューにイベントを追加する．
@@ -610,33 +571,6 @@ Fsim2::eventq_simulate2()
   return obs;
 }
 
-// @brief ffr 内の故障が検出可能か調べる．
-// @param[in] ffr 対象のfanout free region
-// @param[in] op 故障検出時に起動されるファンクタ
-// @param[in] mask マスク
-//
-// 個々の故障と mask のビットアンドをとって1のものに対して
-// op を起動する．
-void
-Fsim2::fault_sweep(SimFFR* ffr,
-		   FsimOp& op,
-		   PackedVal mask)
-{
-  vector<SimFault*>& flist = ffr->fault_list();
-  for (vector<SimFault*>::const_iterator p = flist.begin();
-       p != flist.end(); ++ p) {
-    SimFault* ff = *p;
-    if ( ff->mSkip ) {
-      continue;
-    }
-    PackedVal pat = ff->mObsMask & mask;
-    if ( pat != kPvAll0 ) {
-      const TpgFault* f = ff->mOrigF;
-      op(f, pat);
-    }
-  }
-}
-
 // @brief 現在保持している SimNode のネットワークを破棄する．
 void
 Fsim2::clear()
@@ -652,11 +586,6 @@ Fsim2::clear()
   mInputArray.clear();
   mOutputArray.clear();
   mLogicArray.clear();
-
-  for (vector<SimFFR>::iterator p = mFFRArray.begin();
-       p != mFFRArray.end(); ++ p) {
-    (*p).fault_list().clear();
-  }
 
   mFFRArray.clear();
   mFFRMap.clear();

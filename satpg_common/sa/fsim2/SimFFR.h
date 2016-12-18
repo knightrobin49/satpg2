@@ -42,9 +42,24 @@ public:
   SimNode*
   root() const;
 
-  /// @brief この FFR に属する故障のリストを返す．
-  vector<SimFault*>&
-  fault_list();
+  /// @brief このFFRの故障リストをクリアする．
+  void
+  clear_fault_list();
+
+  /// @brief このFFRの故障リストに故障を追加する．
+  void
+  add_fault(SimFault* f);
+
+  /// @brief FFR内の故障シミュレーションを行う．
+  PackedVal
+  fault_prop2();
+
+  /// @brief 検出可能な故障を見つける．
+  /// @param[in] op 故障検出時に起動されるファンクタ
+  /// @param[in] mask マスク
+  void
+  fault_sweep(FsimOp& op,
+	      PackedVal mask);
 
 
 private:
@@ -93,12 +108,84 @@ SimFFR::root() const
   return mRoot;
 }
 
-// @brief この FFR に属する故障のリストを返す．
+// @brief このFFRの故障リストをクリアする．
 inline
-vector<SimFault*>&
-SimFFR::fault_list()
+void
+SimFFR::clear_fault_list()
 {
-  return mFaultList;
+  mFaultList.clear();
+}
+
+// @brief このFFRの故障リストに故障を追加する．
+inline
+void
+SimFFR::add_fault(SimFault* f)
+{
+  mFaultList.push_back(f);
+}
+
+// @brief FFR内の故障シミュレーションを行う．
+inline
+PackedVal
+SimFFR::fault_prop2()
+{
+  PackedVal ffr_req = kPvAll0;
+  for (vector<SimFault*>::const_iterator p = mFaultList.begin();
+       p != mFaultList.end(); ++ p) {
+    SimFault* ff = *p;
+    if ( ff->mSkip ) {
+      continue;
+    }
+
+    // ff の故障伝搬を行う．
+    PackedVal lobs = kPvAll1;
+    SimNode* simnode = ff->mNode;
+    for (SimNode* node = simnode; !node->is_ffr_root(); ) {
+      SimNode* onode = node->fanout(0);
+      ymuint pos = node->fanout_ipos();
+      lobs &= onode->_calc_gobs2(pos);
+      node = onode;
+    }
+
+    PackedVal valdiff = ff->mInode->gval();
+    const TpgFault* f = ff->mOrigF;
+    if ( f->is_branch_fault() ) {
+      // 入力の故障
+      ymuint ipos = ff->mIpos;
+      lobs &= simnode->_calc_gobs2(ipos);
+    }
+    if ( f->val() == 1 ) {
+      valdiff = ~valdiff;
+    }
+    lobs &= valdiff;
+
+    ff->mObsMask = lobs;
+    ffr_req |= lobs;
+  }
+
+  return ffr_req;
+}
+
+// @brief 検出可能な故障を見つける．
+// @param[in] op 故障検出時に起動されるファンクタ
+// @param[in] mask マスク
+inline
+void
+SimFFR::fault_sweep(FsimOp& op,
+		    PackedVal mask)
+{
+  for (vector<SimFault*>::const_iterator p = mFaultList.begin();
+       p != mFaultList.end(); ++ p) {
+    SimFault* ff = *p;
+    if ( ff->mSkip ) {
+      continue;
+    }
+    PackedVal pat = ff->mObsMask & mask;
+    if ( pat != kPvAll0 ) {
+      const TpgFault* f = ff->mOrigF;
+      op(f, pat);
+    }
+  }
 }
 
 END_NAMESPACE_YM_SATPG_FSIM

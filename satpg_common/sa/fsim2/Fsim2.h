@@ -154,14 +154,6 @@ private:
   void
   _calc_gval2();
 
-  /// @brief FFR 内の故障シミュレーションを行う．
-  PackedVal
-  ffr_prop2(SimFFR* ffr);
-
-  /// @brief FFR の根までの伝搬条件を計算する．
-  PackedVal
-  calc_lobs2(SimFault* ff);
-
   /// @brief イベントキューにイベントを追加する．
   /// @param[in] node イベントの起こったノード
   /// @param[in] mask 反転マスク
@@ -172,18 +164,6 @@ private:
   /// @brief イベントキューを用いてシミュレーションを行う．
   PackedVal
   eventq_simulate2();
-
-  /// @brief ffr 内の故障が検出可能か調べる．
-  /// @param[in] ffr 対象のfanout free region
-  /// @param[in] op 故障検出時に起動されるファンクタ
-  /// @param[in] mask マスク
-  ///
-  /// 個々の故障と mask のビットアンドをとって1のものに対して
-  /// op を起動する．
-  void
-  fault_sweep(SimFFR* ffr,
-	      FsimOp& op,
-	      PackedVal mask);
 
 
 private:
