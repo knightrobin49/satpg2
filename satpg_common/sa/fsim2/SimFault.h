@@ -37,7 +37,7 @@ struct SimFault
     mNode = node;
     mIpos = ipos;
     mInode = inode;
-    mSkip = false;
+    mSkip = true;
   }
 
   // 元の故障

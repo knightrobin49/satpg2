@@ -230,28 +230,18 @@ Fsim2::set_skip(const TpgFault* f)
 void
 Fsim2::set_faults(const vector<const TpgFault*>& fault_list)
 {
-  HashSet<ymuint> fault_set;
-  for (ymuint i = 0; i < fault_list.size(); ++ i) {
-    fault_set.add(fault_list[i]->id());
-  }
-
   // 同時に各 SimFFR 内の fault_list() も再構築する．
   for (vector<SimFFR>::iterator p = mFFRArray.begin();
        p != mFFRArray.end(); ++ p) {
     p->fault_list().clear();
   }
-  ymuint nf = mSimFaults.size();
-  for (ymuint i = 0; i < nf; ++ i) {
-    SimFault* ff = &mSimFaults[i];
-    if ( fault_set.check(ff->mOrigF->id()) ) {
-      ff->mSkip = false;
-      SimNode* simnode = ff->mNode;
-      SimFFR* ffr = mFFRMap[simnode->id()];
-      ffr->fault_list().push_back(ff);
-    }
-    else {
-      ff->mSkip = true;
-    }
+  for (ymuint i = 0; i < fault_list.size(); ++ i) {
+    const TpgFault* f = fault_list[i];
+    SimFault* ff = mFaultArray[f->id()];
+    ff->mSkip = false;
+    SimNode* simnode = ff->mNode;
+    SimFFR* ffr = mFFRMap[simnode->id()];
+    ffr->fault_list().push_back(ff);
   }
 }
 
@@ -663,15 +653,15 @@ Fsim2::clear()
   mOutputArray.clear();
   mLogicArray.clear();
 
-  mFFRArray.clear();
-  mFFRMap.clear();
-
-  mClearArray.clear();
-
   for (vector<SimFFR>::iterator p = mFFRArray.begin();
        p != mFFRArray.end(); ++ p) {
     (*p).fault_list().clear();
   }
+
+  mFFRArray.clear();
+  mFFRMap.clear();
+
+  mClearArray.clear();
 
   mSimFaults.clear();
   mFaultArray.clear();
