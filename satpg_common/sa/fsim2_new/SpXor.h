@@ -1,34 +1,34 @@
-﻿#ifndef SNXOR_H
-#define SNXOR_H
+﻿#ifndef SPXOR_H
+#define SPXOR_H
 
-/// @file SnXor.h
-/// @brief SnXor のヘッダファイル
+/// @file SpXor.h
+/// @brief SpXor のヘッダファイル
 /// @author Yusuke Matsunaga (松永 裕介)
 ///
 /// Copyright (C) 2016 Yusuke Matsunaga
 /// All rights reserved.
 
 
-#include "SnGate.h"
+#include "SpGate.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG_FSIM
 
 //////////////////////////////////////////////////////////////////////
-/// @class SnXor SimNode.h
+/// @class SpXor SpXor.h
 /// @brief XORノード
 //////////////////////////////////////////////////////////////////////
-class SnXor :
-  public SnGate
+class SpXor :
+  public SpGate
 {
 public:
 
   /// @brief コンストラクタ
-  SnXor(const vector<PackedVal*>& inputs);
+  SpXor(const vector<SimPrim*>& fanins);
 
   /// @brief デストラクタ
   virtual
-  ~SnXor();
+  ~SpXor();
 
 
 public:
@@ -50,20 +50,20 @@ public:
 
 
 //////////////////////////////////////////////////////////////////////
-/// @class SnNor2 SimNode.h
+/// @class SnNor2 SpXor.h
 /// @brief 2入力XORノード
 //////////////////////////////////////////////////////////////////////
-class SnXor2 :
-  public SnGate2
+class SpXor2 :
+  public SpGate2
 {
 public:
 
   /// @brief コンストラクタ
-  SnXor2(const vector<PackedVal*>& inputs);
+  SpXor2(const vector<SimPrim*>& fanins);
 
   /// @brief デストラクタ
   virtual
-  ~SnXor2();
+  ~SpXor2();
 
 
 public:
@@ -85,20 +85,20 @@ public:
 
 
 //////////////////////////////////////////////////////////////////////
-/// @class SnXnor SimNode.h
+/// @class SpXnor SpXor.h
 /// @brief XNORノード
 //////////////////////////////////////////////////////////////////////
-class SnXnor :
-  public SnXor
+class SpXnor :
+  public SpXor
 {
 public:
 
   /// @brief コンストラクタ
-  SnXnor(const vector<PackedVal*>& inputs);
+  SpXnor(const vector<SimPrim*>& fanins);
 
   /// @brief デストラクタ
   virtual
-  ~SnXnor();
+  ~SpXnor();
 
 
 public:
@@ -115,20 +115,20 @@ public:
 
 
 //////////////////////////////////////////////////////////////////////
-/// @class SnNor2 SimNode.h
+/// @class SnNor2 SpXor.h
 /// @brief 2入力XNORノード
 //////////////////////////////////////////////////////////////////////
-class SnXnor2 :
-  public SnXor2
+class SpXnor2 :
+  public SpXor2
 {
 public:
 
   /// @brief コンストラクタ
-  SnXnor2(const vector<PackedVal*>& inputs);
+  SpXnor2(const vector<SimPrim*>& fanins);
 
   /// @brief デストラクタ
   virtual
-  ~SnXnor2();
+  ~SpXnor2();
 
 
 public:
@@ -145,4 +145,4 @@ public:
 
 END_NAMESPACE_YM_SATPG_FSIM
 
-#endif // SNXOR_H
+#endif // SPXOR_H

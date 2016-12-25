@@ -8,7 +8,7 @@
 
 
 #include "EventQ.h"
-#include "SimNode.h"
+#include "SimPrim.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG_FSIM

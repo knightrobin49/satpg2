@@ -1,34 +1,34 @@
-﻿#ifndef SNAND_H
-#define SNAND_H
+﻿#ifndef SPAND_H
+#define SPAND_H
 
-/// @file SnAnd.h
-/// @brief SnAnd のヘッダファイル
+/// @file SpAnd.h
+/// @brief SpAnd のヘッダファイル
 /// @author Yusuke Matsunaga (松永 裕介)
 ///
 /// Copyright (C) 2016 Yusuke Matsunaga
 /// All rights reserved.
 
 
-#include "SnGate.h"
+#include "SpGate.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG_FSIM
 
 //////////////////////////////////////////////////////////////////////
-/// @class SnAnd SimNode.h
+/// @class SpAnd SpAnd.h
 /// @brief ANDノード
 //////////////////////////////////////////////////////////////////////
-class SnAnd :
-  public SnGate
+class SpAnd :
+  public SpGate
 {
 public:
 
   /// @brief コンストラクタ
-  SnAnd(const vector<PackedVal*>& inputs);
+  SpAnd(const vector<SimPrim*>& fanins);
 
   /// @brief デストラクタ
   virtual
-  ~SnAnd();
+  ~SpAnd();
 
 
 public:
@@ -50,20 +50,20 @@ public:
 
 
 //////////////////////////////////////////////////////////////////////
-/// @class SnAnd2 SimNode.h
+/// @class SpAnd2 SpAnd.h
 /// @brief 2入力ANDノード
 //////////////////////////////////////////////////////////////////////
-class SnAnd2 :
-  public SnGate2
+class SpAnd2 :
+  public SpGate2
 {
 public:
 
   /// @brief コンストラクタ
-  SnAnd2(const vector<PackedVal*>& inputs);
+  SpAnd2(const vector<SimPrim*>& fanins);
 
   /// @brief デストラクタ
   virtual
-  ~SnAnd2();
+  ~SpAnd2();
 
 
 public:
@@ -85,20 +85,20 @@ public:
 
 
 //////////////////////////////////////////////////////////////////////
-/// @class SnAnd3 SimNode.h
+/// @class SpAnd3 SpAnd.h
 /// @brief 3入力ANDノード
 //////////////////////////////////////////////////////////////////////
-class SnAnd3 :
-  public SnGate3
+class SpAnd3 :
+  public SpGate3
 {
 public:
 
   /// @brief コンストラクタ
-  SnAnd3(const vector<PackedVal*>& inputs);
+  SpAnd3(const vector<SimPrim*>& fanins);
 
   /// @brief デストラクタ
   virtual
-  ~SnAnd3();
+  ~SpAnd3();
 
 
 public:
@@ -120,20 +120,20 @@ public:
 
 
 //////////////////////////////////////////////////////////////////////
-/// @class SnAnd4 SimNode.h
+/// @class SpAnd4 SpAnd.h
 /// @brief 4入力ANDノード
 //////////////////////////////////////////////////////////////////////
-class SnAnd4 :
-  public SnGate4
+class SpAnd4 :
+  public SpGate4
 {
 public:
 
   /// @brief コンストラクタ
-  SnAnd4(const vector<PackedVal*>& inputs);
+  SpAnd4(const vector<SimPrim*>& fanins);
 
   /// @brief デストラクタ
   virtual
-  ~SnAnd4();
+  ~SpAnd4();
 
 
 public:
@@ -155,20 +155,20 @@ public:
 
 
 //////////////////////////////////////////////////////////////////////
-/// @class SnNand SimNode.h
+/// @class SpNand SpAnd.h
 /// @brief NANDノード
 //////////////////////////////////////////////////////////////////////
-class SnNand :
-  public SnAnd
+class SpNand :
+  public SpAnd
 {
 public:
 
   /// @brief コンストラクタ
-  SnNand(const vector<PackedVal*>& inputs);
+  SpNand(const vector<SimPrim*>& fanins);
 
   /// @brief デストラクタ
   virtual
-  ~SnNand();
+  ~SpNand();
 
 
 public:
@@ -185,20 +185,20 @@ public:
 
 
 //////////////////////////////////////////////////////////////////////
-/// @class SnNand2 SimNode.h
+/// @class SpNand2 SpAnd.h
 /// @brief 2入力NANDノード
 //////////////////////////////////////////////////////////////////////
-class SnNand2 :
-  public SnAnd2
+class SpNand2 :
+  public SpAnd2
 {
 public:
 
   /// @brief コンストラクタ
-  SnNand2(const vector<PackedVal*>& inputs);
+  SpNand2(const vector<SimPrim*>& fanins);
 
   /// @brief デストラクタ
   virtual
-  ~SnNand2();
+  ~SpNand2();
 
 
 public:
@@ -215,20 +215,20 @@ public:
 
 
 //////////////////////////////////////////////////////////////////////
-/// @class SnNand3 SimNode.h
+/// @class SpNand3 SpAnd.h
 /// @brief 3入力NANDノード
 //////////////////////////////////////////////////////////////////////
-class SnNand3 :
-  public SnAnd3
+class SpNand3 :
+  public SpAnd3
 {
 public:
 
   /// @brief コンストラクタ
-  SnNand3(const vector<PackedVal*>& inputs);
+  SpNand3(const vector<SimPrim*>& fanins);
 
   /// @brief デストラクタ
   virtual
-  ~SnNand3();
+  ~SpNand3();
 
 
 public:
@@ -245,20 +245,20 @@ public:
 
 
 //////////////////////////////////////////////////////////////////////
-/// @class SnNand4 SimNode.h
+/// @class SpNand4 SpAnd.h
 /// @brief 4入力NANDノード
 //////////////////////////////////////////////////////////////////////
-class SnNand4 :
-  public SnAnd4
+class SpNand4 :
+  public SpAnd4
 {
 public:
 
   /// @brief コンストラクタ
-  SnNand4(const vector<PackedVal*>& inputs);
+  SpNand4(const vector<SimPrim*>& fanins);
 
   /// @brief デストラクタ
   virtual
-  ~SnNand4();
+  ~SpNand4();
 
 
 public:
@@ -275,4 +275,4 @@ public:
 
 END_NAMESPACE_YM_SATPG_FSIM
 
-#endif // SNAND_H
+#endif // SPAND_H

@@ -1,14 +1,13 @@
 ﻿
-/// @file SimNode.cc
-/// @brief SimNode の実装ファイル
+/// @file FvalNode.cc
+/// @brief FvalNode の実装ファイル
 /// @author Yusuke Matsunaga (松永 裕介)
 ///
 /// Copyright (C) 2016 Yusuke Matsunaga
 /// All rights reserved.
 
 
-#include "SimNode.h"
-#include "SimPrim.h"
+#include "FvalNode.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG_FSIM
@@ -18,31 +17,33 @@ BEGIN_NAMESPACE_YM_SATPG_FSIM
 //////////////////////////////////////////////////////////////////////
 
 // コンストラクタ
-SimNode::SimNode(ymuint id,
-		 SimPrim* gval,
-		 SimPrim* fval) :
-  mId(id),
+FvalNode::FvalNode() :
   mFanoutNum(0),
   mFanouts(nullptr),
-  mLevel(0),
-  mGvalPrim(gval),
-  mFvalPrim(fval)
+  mLevel(0)
 {
 }
 
 // デストラクタ
-SimNode::~SimNode()
+FvalNode::~FvalNode()
 {
   delete [] mFanouts;
 }
 
+// @brief レベルを設定する．
+void
+FvalNode::set_level(ymuint level)
+{
+  mLevel = level;
+}
+
 // @brief ファンアウトリストを作成する．
 void
-SimNode::set_fanout_list(const vector<SimNode*>& fo_list,
-			 ymuint ipos)
+FvalNode::set_fanout_list(const vector<FvalNode*>& fo_list,
+			  ymuint ipos)
 {
   ymuint nfo = fo_list.size();
-  mFanouts = new SimNode*[nfo];
+  mFanouts = new FvalNode*[nfo];
   for (ymuint i = 0; i < nfo; ++ i) {
     mFanouts[i] = fo_list[i];
   }

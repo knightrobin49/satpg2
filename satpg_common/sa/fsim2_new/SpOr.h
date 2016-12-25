@@ -1,34 +1,34 @@
-﻿#ifndef SNOR_H
-#define SNOR_H
+﻿#ifndef SPOR_H
+#define SPOR_H
 
-/// @file SnOr.h
-/// @brief SnOr のヘッダファイル
+/// @file SpOr.h
+/// @brief SpOr のヘッダファイル
 /// @author Yusuke Matsunaga (松永 裕介)
 ///
 /// Copyright (C) 2016 Yusuke Matsunaga
 /// All rights reserved.
 
 
-#include "SnGate.h"
+#include "SpGate.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG_FSIM
 
 //////////////////////////////////////////////////////////////////////
-/// @class SnOr SimNode.h
+/// @class SpOr SpOr.h
 /// @brief ORノード
 //////////////////////////////////////////////////////////////////////
-class SnOr :
-  public SnGate
+class SpOr :
+  public SpGate
 {
 public:
 
   /// @brief コンストラクタ
-  SnOr(const vector<PackedVal*>& inputs);
+  SpOr(const vector<SimPrim*>& fanins);
 
   /// @brief デストラクタ
   virtual
-  ~SnOr();
+  ~SpOr();
 
 
 public:
@@ -50,21 +50,20 @@ public:
 
 
 //////////////////////////////////////////////////////////////////////
-/// @class SnOr2 SimNode.h
+/// @class SpOr2 SpOr.h
 /// @brief 2入力ORノード
 //////////////////////////////////////////////////////////////////////
-class SnOr2 :
-  public SnGate2
+class SpOr2 :
+  public SpGate2
 {
 public:
 
   /// @brief コンストラクタ
-  SnOr2(ymuint id,
-	const vector<PackedVal*>& inputs);
+  SpOr2(const vector<SimPrim*>& fanins);
 
   /// @brief デストラクタ
   virtual
-  ~SnOr2();
+  ~SpOr2();
 
 
 public:
@@ -86,20 +85,20 @@ public:
 
 
 //////////////////////////////////////////////////////////////////////
-/// @class SnOr3 SimNode.h
+/// @class SpOr3 SpOr.h
 /// @brief 3入力ORノード
 //////////////////////////////////////////////////////////////////////
-class SnOr3 :
-  public SnGate3
+class SpOr3 :
+  public SpGate3
 {
 public:
 
   /// @brief コンストラクタ
-  SnOr3(const vector<PackedVal*>& inputs);
+  SpOr3(const vector<SimPrim*>& fanins);
 
   /// @brief デストラクタ
   virtual
-  ~SnOr3();
+  ~SpOr3();
 
 
 public:
@@ -121,20 +120,20 @@ public:
 
 
 //////////////////////////////////////////////////////////////////////
-/// @class SnOr4 SimNode.h
+/// @class SpOr4 SpOr.h
 /// @brief 4入力ORノード
 //////////////////////////////////////////////////////////////////////
-class SnOr4 :
-  public SnGate4
+class SpOr4 :
+  public SpGate4
 {
 public:
 
   /// @brief コンストラクタ
-  SnOr4(const vector<PackedVal*>& inputs);
+  SpOr4(const vector<SimPrim*>& fanins);
 
   /// @brief デストラクタ
   virtual
-  ~SnOr4();
+  ~SpOr4();
 
 
 public:
@@ -156,20 +155,20 @@ public:
 
 
 //////////////////////////////////////////////////////////////////////
-/// @class SnNor SimNode.h
+/// @class SpNor SpOr.h
 /// @brief NORノード
 //////////////////////////////////////////////////////////////////////
-class SnNor :
-  public SnOr
+class SpNor :
+  public SpOr
 {
 public:
 
   /// @brief コンストラクタ
-  SnNor(const vector<PackedVal*>& inputs);
+  SpNor(const vector<SimPrim*>& fanins);
 
   /// @brief デストラクタ
   virtual
-  ~SnNor();
+  ~SpNor();
 
 
 public:
@@ -186,20 +185,20 @@ public:
 
 
 //////////////////////////////////////////////////////////////////////
-/// @class SnNor2 SimNode.h
+/// @class SpNor2 SpOr.h
 /// @brief 2入力NORノード
 //////////////////////////////////////////////////////////////////////
-class SnNor2 :
-  public SnOr2
+class SpNor2 :
+  public SpOr2
 {
 public:
 
   /// @brief コンストラクタ
-  SnNor2(const vector<PackedVal*>& inputs);
+  SpNor2(const vector<SimPrim*>& fanins);
 
   /// @brief デストラクタ
   virtual
-  ~SnNor2();
+  ~SpNor2();
 
 
 public:
@@ -216,20 +215,20 @@ public:
 
 
 //////////////////////////////////////////////////////////////////////
-/// @class SnNor3 SimNode.h
+/// @class SpNor3 SpOr.h
 /// @brief 3入力NORノード
 //////////////////////////////////////////////////////////////////////
-class SnNor3 :
-  public SnOr3
+class SpNor3 :
+  public SpOr3
 {
 public:
 
   /// @brief コンストラクタ
-  SnNor3(const vector<PackedVal*>& inputs);
+  SpNor3(const vector<SimPrim*>& fanins);
 
   /// @brief デストラクタ
   virtual
-  ~SnNor3();
+  ~SpNor3();
 
 
 public:
@@ -246,20 +245,20 @@ public:
 
 
 //////////////////////////////////////////////////////////////////////
-/// @class SnNor2 SimNode.h
+/// @class SpNor2 SpOr.h
 /// @brief 2入力NORノード
 //////////////////////////////////////////////////////////////////////
-class SnNor4 :
-  public SnOr4
+class SpNor4 :
+  public SpOr4
 {
 public:
 
   /// @brief コンストラクタ
-  SnNor4(const vector<PackedVal*>& inputs);
+  SpNor4(const vector<SimPrim*>& fanins);
 
   /// @brief デストラクタ
   virtual
-  ~SnNor4();
+  ~SpNor4();
 
 
 public:
@@ -276,4 +275,4 @@ public:
 
 END_NAMESPACE_YM_SATPG_FSIM
 
-#endif // SNOR_H
+#endif // SPOR_H

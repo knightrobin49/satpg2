@@ -143,16 +143,16 @@ SimFFR::fault_prop2()
     for (SimNode* node = simnode; !node->is_ffr_root(); ) {
       SimNode* onode = node->fanout(0);
       ymuint pos = node->fanout_ipos();
-      lobs &= onode->_calc_gobs2(pos);
+      lobs &= onode->gval()->_calc_gobs(pos);
       node = onode;
     }
 
-    PackedVal valdiff = ff->mInode->gval();
+    PackedVal valdiff = ff->mInode->gval()->val();
     const TpgFault* f = ff->mOrigF;
     if ( f->is_branch_fault() ) {
       // 入力の故障
       ymuint ipos = ff->mIpos;
-      lobs &= simnode->_calc_gobs2(ipos);
+      lobs &= simnode->gval()->_calc_gobs(ipos);
     }
     if ( f->val() == 1 ) {
       valdiff = ~valdiff;

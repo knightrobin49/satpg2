@@ -1,12 +1,12 @@
-﻿#ifndef FSIM_H
-#define FSIM_H
+﻿#ifndef FSIM2_H
+#define FSIM2_H
 
 /// @file Fsim2.h
 /// @brief Fsim2 のヘッダファイル
 ///
 /// @author Yusuke Matsunaga (松永 裕介)
 ///
-/// Copyright (C) 2005-2010, 2012-2013 Yusuke Matsunaga
+/// Copyright (C) 2016 Yusuke Matsunaga
 /// All rights reserved.
 
 
@@ -208,12 +208,8 @@ private:
   // サイズは mNetwork->pseudo_input_num()
   vector<SimNode*> mInputArray;
 
-  // 外部出力に対応する SimNode を納めた配列
-  // サイズは mNetwork->pseudo_output_num()
-  vector<SimNode*> mOutputArray;
-
-  // 入力からのトポロジカル順に並べた logic ノードの配列
-  vector<SimNode*> mLogicArray;
+  // 正常値計算用の配列
+  vector<SimPrim*> mGvalArray;
 
   // FFR を納めた配列
   vector<SimFFR> mFFRArray;
@@ -237,4 +233,4 @@ private:
 
 END_NAMESPACE_YM_SATPG_FSIM
 
-#endif // FSIM_H
+#endif // FSIM2_H

@@ -1,38 +1,34 @@
-﻿#ifndef FSIM_SIMNODE_H
-#define FSIM_SIMNODE_H
+﻿#ifndef FSIM_FVALNODE_H
+#define FSIM_FVALNODE_H
 
-/// @file SimNode.h
-/// @brief SimNode のヘッダファイル
+/// @file FvalNode.h
+/// @brief FvalNode のヘッダファイル
 /// @author Yusuke Matsunaga (松永 裕介)
 ///
 /// Copyright (C) 2016 Yusuke Matsunaga
 /// All rights reserved.
 
+
 #include "fsim2_nsdef.h"
-#include "TpgNode.h"
 #include "SimPrim.h"
-#include "PackedVal.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG_FSIM
 
 //////////////////////////////////////////////////////////////////////
-/// @class SimNode SimNode.h "SimNode.h"
+/// @class FvalNode FvalNode.h "FvalNode.h"
 /// @brief 故障シミュレーション用のノード
 //////////////////////////////////////////////////////////////////////
-class SimNode
+class FvalNode
 {
   friend class EventQ;
 public:
 
   /// @brief コンストラクタ
-  SimNode(ymuint id,
-	  SimPrim* gval,
-	  SimPrim* fval);
+  FvalNode();
 
   /// @brief デストラクタ
-  virtual
-  ~SimNode();
+  ~FvalNode();
 
 
 public:
@@ -40,16 +36,12 @@ public:
   // 構造に関する情報の取得
   //////////////////////////////////////////////////////////////////////
 
-  /// @brief ID番号を返す．
-  ymuint
-  id() const;
-
   /// @brief ファンアウト数を得る．
   ymuint
   fanout_num() const;
 
   /// @brief pos 番目のファンアウトを得る．
-  SimNode*
+  FvalNode*
   fanout(ymuint pos) const;
 
   /// @brief 最初のファンアウト先の入力位置を得る．
@@ -68,14 +60,6 @@ public:
   bool
   is_output() const;
 
-  /// @brief 正常値計算用のプリミティブを得る．
-  SimPrim*
-  gval() const;
-
-  /// @brief 故障値計算用のプリミティブを得る．
-  SimPrim*
-  fval() const;
-
 
 public:
   //////////////////////////////////////////////////////////////////////
@@ -86,6 +70,11 @@ public:
   void
   set_output();
 
+  /// @brief ファンアウトリストを作成する．
+  void
+  set_fanout_list(const vector<FvalNode*>& fo_list,
+		  ymuint ipos);
+
   /// @brief FFR の根の印をつける．
   void
   set_ffr_root();
@@ -94,17 +83,25 @@ public:
   void
   set_level(ymuint level);
 
-  /// @brief ファンアウトリストを作成する．
-  void
-  set_fanout_list(const vector<SimNode*>& fo_list,
-		  ymuint ipos);
-
 
 public:
   //////////////////////////////////////////////////////////////////////
   // 2値の故障シミュレーションに関する情報の取得/設定
   //////////////////////////////////////////////////////////////////////
-#if 0
+
+  /// @brief 正常値を得る．
+  PackedVal
+  gval() const;
+
+  /// @brief 故障値を得る．
+  PackedVal
+  fval() const;
+
+  /// @brief 故障値のセットを行う．
+  /// @param[in] val 値
+  void
+  set_fval(PackedVal val);
+
   /// @brief 故障値のイベントをセットする．
   /// @param[in] mask 反転マスク
   void
@@ -114,7 +111,6 @@ public:
   /// @param[in] mask マスク
   PackedVal
   calc_fval(PackedVal mask);
-#endif
 
   /// @brief 故障値をクリアする．(2値版)
   void
@@ -144,8 +140,11 @@ private:
   // データメンバ
   //////////////////////////////////////////////////////////////////////
 
-  // ID 番号
-  ymuint mId;
+  // 正常値計算用のノード
+  SimPrim* mGval;
+
+  // 故障値計算用のノード
+  SimPrim* mFval;
 
   // ファンアウトリストの要素数
   // その他以下の情報もパックして持つ．
@@ -156,47 +155,87 @@ private:
   ymuint mFanoutNum;
 
   // ファンアウトリスト
-  SimNode** mFanouts;
+  FvalNode** mFanouts;
 
   // レベル
   ymuint mLevel;
 
   // イベントキューの次の要素
-  SimNode* mLink;
-
-  // 正常値
-  SimPrim* mGvalPrim;
-
-  // 故障値
-  SimPrim* mFvalPrim;
+  FvalNode* mLink;
 
 };
 
 
 //////////////////////////////////////////////////////////////////////
-// SimNode のインライン関数
+// FvalNode のインライン関数
 //////////////////////////////////////////////////////////////////////
 
-// @brief ID番号を返す．
+// @brief 正常値を得る．
 inline
-ymuint
-SimNode::id() const
+PackedVal
+FvalNode::gval() const
 {
-  return mId;
+  return mGval->val();
+}
+
+// @brief 故障値を得る．
+inline
+PackedVal
+FvalNode::fval() const
+{
+  return mFval->val();
+}
+
+// @brief 故障値のセットを行う．
+// @param[in] val 値
+inline
+void
+FvalNode::set_fval(PackedVal val)
+{
+  mFval->set_val(val);
+}
+
+// @brief 故障値のイベントをセットする．
+// @param[in] mask 反転マスク
+inline
+void
+FvalNode::flip_fval(PackedVal mask)
+{
+  set_fval(gval() ^ mask);
+}
+
+// @brief 故障値を計算する．
+// @param[in] mask マスク
+inline
+PackedVal
+FvalNode::calc_fval(PackedVal mask)
+{
+  PackedVal val = mFval->_calc_val();
+  PackedVal dval = (val ^ mFval->val()) & mask;
+  set_fval(fval() ^ dval);
+  return dval;
+}
+
+// @brief 故障値をクリアする．(2値版)
+inline
+void
+FvalNode::clear_fval()
+{
+  set_fval(gval());
 }
 
 // @brief ファンアウト数を得る．
 inline
 ymuint
-SimNode::fanout_num() const
+FvalNode::fanout_num() const
 {
   return mFanoutNum >> 16;
 }
 
 // @brief pos 番目のファンアウトを得る．
 inline
-SimNode*
-SimNode::fanout(ymuint pos) const
+FvalNode*
+FvalNode::fanout(ymuint pos) const
 {
   return mFanouts[pos];
 }
@@ -204,7 +243,7 @@ SimNode::fanout(ymuint pos) const
 // @brief 最初のファンアウト先の入力位置を得る．
 inline
 ymuint
-SimNode::fanout_ipos() const
+FvalNode::fanout_ipos() const
 {
   return (mFanoutNum >> 4) & 0x0FFFU;
 }
@@ -212,7 +251,7 @@ SimNode::fanout_ipos() const
 // @brief FFR の根のノードの時 true を返す．
 inline
 bool
-SimNode::is_ffr_root() const
+FvalNode::is_ffr_root() const
 {
   return static_cast<bool>((mFanoutNum >> 1) & 1U);
 }
@@ -220,7 +259,7 @@ SimNode::is_ffr_root() const
 // @brief レベルを得る．
 inline
 ymuint
-SimNode::level() const
+FvalNode::level() const
 {
   return mLevel;
 }
@@ -228,7 +267,7 @@ SimNode::level() const
 // @brief 出力ノードの時 true を返す．
 inline
 bool
-SimNode::is_output() const
+FvalNode::is_output() const
 {
   return (mFanoutNum & 1U) == 1U;
 }
@@ -236,7 +275,7 @@ SimNode::is_output() const
 // @brief 出力マークをつける．
 inline
 void
-SimNode::set_output()
+FvalNode::set_output()
 {
   mFanoutNum |= 1U;
 }
@@ -244,31 +283,15 @@ SimNode::set_output()
 // @brief FFR の根の印をつける．
 inline
 void
-SimNode::set_ffr_root()
+FvalNode::set_ffr_root()
 {
   mFanoutNum |= 2U;
-}
-
-// @brief レベルを設定する．
-inline
-void
-SimNode::set_level(ymuint level)
-{
-  mLevel = level;
-}
-
-// @brief 故障値をクリアする．
-inline
-void
-SimNode::clear_fval()
-{
-  mFvalPrim->set_val(mGvalPrim->val());
 }
 
 // @brief キューに積まれていたら true を返す．
 inline
 bool
-SimNode::in_queue() const
+FvalNode::in_queue() const
 {
   return static_cast<bool>((mFanoutNum >> 3) & 1U);
 }
@@ -276,7 +299,7 @@ SimNode::in_queue() const
 // @brief キューフラグをセットする．
 inline
 void
-SimNode::set_queue()
+FvalNode::set_queue()
 {
   mFanoutNum |= 1U << 3;
 }
@@ -284,27 +307,11 @@ SimNode::set_queue()
 // @brief キューフラグをクリアする．
 inline
 void
-SimNode::clear_queue()
+FvalNode::clear_queue()
 {
   mFanoutNum &= ~(1U << 3);
 }
 
-// @brief 正常値計算用のプリミティブを得る．
-inline
-SimPrim*
-SimNode::gval() const
-{
-  return mGvalPrim;
-}
-
-// @brief 故障値計算用のプリミティブを得る．
-inline
-SimPrim*
-SimNode::fval() const
-{
-  return mFvalPrim;
-}
-
 END_NAMESPACE_YM_SATPG_FSIM
 
-#endif // FSIM_SIMNODE_H
+#endif // FSIM_FVALNODE_H

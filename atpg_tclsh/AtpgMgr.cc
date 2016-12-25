@@ -32,7 +32,11 @@ AtpgMgr::AtpgMgr() :
   mFaultMgr = new FaultMgr();
 
   mSaTvMgr = new nsSa::TvMgr();
+#if 1
   mSaFsim = nsSa::new_Fsim2();
+#else
+  mSaFsim = nsSa::new_Fsim2New();
+#endif
   mSaFsim3 = nsSa::new_Fsim3();
 
   mTdTvMgr = new nsTd::TvMgr();

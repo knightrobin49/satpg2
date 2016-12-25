@@ -28,9 +28,9 @@
 BEGIN_NAMESPACE_YM_SATPG_SA
 
 Fsim*
-new_Fsim2()
+new_Fsim2New()
 {
-  return new nsFsim2::Fsim2();
+  return new nsFsim2New::Fsim2();
 }
 
 END_NAMESPACE_YM_SATPG_SA
@@ -70,7 +70,10 @@ Fsim2::set_network(const TpgNetwork& network)
   // 対応付けを行うマップの初期化
   mSimMap.resize(nn);
   mInputArray.resize(ni);
-  mOutputArray.resize(no);
+  vector<SimNode*> output_array(no);
+
+  vector<vector<SimNode*> > fanout_lists(nn);
+  vector<ymuint> ipos(nn);
 
   ymuint nf = 0;
   for (ymuint i = 0; i < nn; ++ i) {
@@ -90,7 +93,10 @@ Fsim2::set_network(const TpgNetwork& network)
       // 実際にはバッファタイプのノードに出力の印をつけるだけ．
       node = make_gate(kGateBUFF, vector<SimNode*>(1, inode));
       node->set_output();
-      mOutputArray[tpgnode->output_id()] = node;
+      output_array[tpgnode->output_id()] = node;
+
+      fanout_lists[inode->id()].push_back(node);
+      ipos[inode->id()] = 0;
     }
     else if ( tpgnode->is_dff_clock() ||
 	      tpgnode->is_dff_clear() ||
@@ -100,6 +106,9 @@ Fsim2::set_network(const TpgNetwork& network)
       // 実際にはバッファタイプのノードに出力の印をつけるだけ．
       node = make_gate(kGateBUFF, vector<SimNode*>(1, inode));
       node->set_output();
+
+      fanout_lists[inode->id()].push_back(node);
+      ipos[inode->id()] = 0;
     }
     else if ( tpgnode->is_logic() ) {
       // 論理ノードに対する SimNode の作成
@@ -117,36 +126,31 @@ Fsim2::set_network(const TpgNetwork& network)
       // 出力の論理を表す SimNode を作る．
       GateType type = tpgnode->gate_type();
       node = make_gate(type, inputs);
-    }
-    // 対応表に登録しておく．
-    mSimMap[tpgnode->id()] = node;
-  }
 
-  // 各ノードのファンアウトリストの設定
-  ymuint node_num = mNodeArray.size();
-  {
-    vector<vector<SimNode*> > fanout_lists(node_num);
-    vector<ymuint> ipos(node_num);
-    for (vector<SimNode*>::iterator p = mNodeArray.begin();
-	 p != mNodeArray.end(); ++ p) {
-      SimNode* node = *p;
-      ymuint ni = node->fanin_num();
+      // ファンアウトリストを作る．
       for (ymuint i = 0; i < ni; ++ i) {
-	SimNode* inode = node->fanin(i);
+	const TpgNode* itpgnode = tpgnode->fanin(i);
+	SimNode* inode = find_simnode(itpgnode);
+	ASSERT_COND(inode );
 	fanout_lists[inode->id()].push_back(node);
 	ipos[inode->id()] = i;
       }
     }
-    for (ymuint i = 0; i < node_num; ++ i) {
-      SimNode* node = mNodeArray[i];
-      node->set_fanout_list(fanout_lists[i], ipos[i]);
-    }
+    // 対応表に登録しておく．
+    mSimMap[tpgnode->id()] = node;
+  }
+  ASSERT_COND( mNodeArray.size() == nn );
+
+  // 各ノードのファンアウトリストの設定
+  for (ymuint i = 0; i < nn; ++ i) {
+    SimNode* node = mNodeArray[i];
+    node->set_fanout_list(fanout_lists[i], ipos[i]);
   }
 
   // FFR の設定
   mFFRMap.resize(mNodeArray.size());
   ymuint ffr_num = 0;
-  for (ymuint i = node_num; i > 0; ) {
+  for (ymuint i = nn; i > 0; ) {
     -- i;
     SimNode* node = mNodeArray[i];
     if ( node->is_output() || node->fanout_num() != 1 ) {
@@ -155,7 +159,7 @@ Fsim2::set_network(const TpgNetwork& network)
   }
   mFFRArray.resize(ffr_num);
   ffr_num = 0;
-  for (ymuint i = node_num; i > 0; ) {
+  for (ymuint i = nn; i > 0; ) {
     -- i;
     SimNode* node = mNodeArray[i];
     if ( node->is_output() || node->fanout_num() != 1 ) {
@@ -177,9 +181,9 @@ Fsim2::set_network(const TpgNetwork& network)
   // 最大レベルを求め，イベントキューを初期化する．
   ymuint max_level = 0;
   for (ymuint i = 0; i < no; ++ i) {
-    SimNode* inode = mOutputArray[i];
-    if ( max_level < inode->level() ) {
-      max_level = inode->level();
+    SimNode* node = output_array[i];
+    if ( max_level < node->level() ) {
+      max_level = node->level();
     }
   }
   mEventQ.init(max_level);
@@ -343,7 +347,7 @@ Fsim2::_set_sp2(TestVector* tv)
   for (ymuint i = 0; i < npi; ++ i) {
     SimNode* simnode = mInputArray[i];
     PackedVal val = (tv->val3(i) == kVal1) ? kPvAll1 : kPvAll0;
-    simnode->set_gval2(val);
+    simnode->gval()->set_val(val);
   }
 }
 
@@ -357,7 +361,7 @@ Fsim2::_set_sp2(const NodeValList& assign_list)
   // デフォルトで 0 にする．
   for (ymuint i = 0; i < npi; ++ i) {
     SimNode* simnode = mInputArray[i];
-    simnode->set_gval2(kPvAll0);
+    simnode->gval()->set_val(kPvAll0);
   }
 
   ymuint n = assign_list.size();
@@ -365,7 +369,7 @@ Fsim2::_set_sp2(const NodeValList& assign_list)
     NodeVal nv = assign_list[i];
     if ( nv.val() ) {
       SimNode* simnode = mInputArray[nv.node()->input_id()];
-      simnode->set_gval2(kPvAll1);
+      simnode->gval()->set_val(kPvAll1);
     }
   }
 }
@@ -394,7 +398,7 @@ Fsim2::_set_pp2(const vector<TestVector*>& tv_array)
       }
     }
     SimNode* simnode = mInputArray[i];
-    simnode->set_gval2(val);
+    simnode->gval()->set_val(val);
   }
 }
 
@@ -474,15 +478,15 @@ Fsim2::_spsfp2(const TpgFault* f)
   for (SimNode* node = simnode; !node->is_ffr_root(); ) {
     SimNode* onode = node->fanout(0);
     ymuint pos = node->fanout_ipos();
-    lobs &= onode->_calc_gobs2(pos);
+    lobs &= onode->gval()->_calc_gobs(pos);
     node = onode;
   }
 
-  PackedVal valdiff = ff->mInode->gval();
+  PackedVal valdiff = ff->mInode->gval()->val();
   if ( f->is_branch_fault() ) {
     // 入力の故障
     ymuint ipos = ff->mIpos;
-    lobs &= simnode->_calc_gobs2(ipos);
+    lobs &= simnode->gval()->_calc_gobs(ipos);
   }
   if ( f->val() == 1 ) {
     valdiff = ~valdiff;
@@ -515,10 +519,15 @@ Fsim2::_spsfp2(const TpgFault* f)
 void
 Fsim2::_calc_gval2()
 {
-  for (vector<SimNode*>::iterator q = mLogicArray.begin();
-       q != mLogicArray.end(); ++ q) {
-    SimNode* node = *q;
-    node->calc_gval2();
+  for (vector<SimPrim*>::iterator q = mGvalArray.begin();
+       q != mGvalArray.end(); ++ q) {
+    SimPrim* prim = *q;
+    prim->calc_val();
+  }
+  for (vector<SimNode*>::iterator p = mNodeArray.begin();
+       p != mNodeArray.end(); ++ p) {
+    SimNode* node = *p;
+    node->clear_fval();
   }
 }
 
@@ -529,7 +538,7 @@ void
 Fsim2::eventq_put2(SimNode* node,
 		   PackedVal mask)
 {
-  node->flip_fval2(mask);
+  node->fval()->flip_val(mask);
   mClearArray.push_back(node);
   ymuint no = node->fanout_num();
   for (ymuint i = 0; i < no; ++ i) {
@@ -548,7 +557,7 @@ Fsim2::eventq_simulate2()
     if ( node == nullptr ) break;
     // すでに検出済みのビットはマスクしておく
     // これは無駄なイベントの発生を抑える．
-    PackedVal diff = node->calc_fval2(~obs);
+    PackedVal diff = node->fval()->calc_val(~obs);
     if ( diff != kPvAll0 ) {
       mClearArray.push_back(node);
       if ( node->is_output() ) {
@@ -565,7 +574,7 @@ Fsim2::eventq_simulate2()
   // 今の故障シミュレーションで値の変わったノードを元にもどしておく
   for (vector<SimNode*>::iterator p = mClearArray.begin();
        p != mClearArray.end(); ++ p) {
-    (*p)->clear_fval2();
+    (*p)->clear_fval();
   }
   mClearArray.clear();
   return obs;
@@ -584,8 +593,7 @@ Fsim2::clear()
   }
   mNodeArray.clear();
   mInputArray.clear();
-  mOutputArray.clear();
-  mLogicArray.clear();
+  mGvalArray.clear();
 
   mFFRArray.clear();
   mFFRMap.clear();
@@ -604,7 +612,9 @@ SimNode*
 Fsim2::make_input()
 {
   ymuint id = mNodeArray.size();
-  SimNode* node = SimNode::new_input(id);
+  SimPrim* gval = SimPrim::new_input();
+  SimPrim* fval = SimPrim::new_input();
+  SimNode* node = new SimNode(id, gval, fval);
   mNodeArray.push_back(node);
   return node;
 }
@@ -614,10 +624,20 @@ SimNode*
 Fsim2::make_gate(GateType type,
 		 const vector<SimNode*>& inputs)
 {
+  ymuint ni = inputs.size();
+  vector<SimPrim*> igvals(ni);
+  vector<SimPrim*> ifvals(ni);
+  for (ymuint i = 0; i < ni; ++ i) {
+    SimNode* inode = inputs[i];
+    igvals[i] = inode->gval();
+    ifvals[i] = inode->fval();
+  }
+  SimPrim* gval = SimPrim::new_gate(type, igvals);
+  SimPrim* fval = SimPrim::new_gate(type, ifvals);
   ymuint id = mNodeArray.size();
-  SimNode* node = SimNode::new_gate(id, type, inputs);
+  SimNode* node = new SimNode(id, gval, fval);
   mNodeArray.push_back(node);
-  mLogicArray.push_back(node);
+  mGvalArray.push_back(gval);
   return node;
 }
 

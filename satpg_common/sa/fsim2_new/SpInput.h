@@ -1,34 +1,34 @@
-﻿#ifndef SNINPUT_H
-#define SNINPUT_H
+﻿#ifndef SPINPUT_H
+#define SPINPUT_H
 
-/// @file SnInput.h
-/// @brief SnInput のヘッダファイル
+/// @file SpInput.h
+/// @brief SpInput のヘッダファイル
 /// @author Yusuke Matsunaga (松永 裕介)
 ///
 /// Copyright (C) 2016 Yusuke Matsunaga
 /// All rights reserved.
 
 
-#include "SimNode.h"
+#include "SimPrim.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG_FSIM
 
 //////////////////////////////////////////////////////////////////////
-/// @class SnInput SimNode.h
+/// @class SpInput SimPrim.h
 /// @brief 入力ノード
 //////////////////////////////////////////////////////////////////////
-class SnInput :
-  public SimNode
+class SpInput :
+  public SimPrim
 {
 public:
 
   /// @brief コンストラクタ
-  SnInput();
+  SpInput();
 
   /// @brief デストラクタ
   virtual
-  ~SnInput();
+  ~SpInput();
 
 
 public:
@@ -50,4 +50,4 @@ public:
 
 END_NAMESPACE_YM_SATPG_FSIM
 
-#endif // SNINPUT_H
+#endif // SPINPUT_H

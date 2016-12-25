@@ -1,34 +1,34 @@
-﻿#ifndef SNBUFF_H
-#define SNBUFF_H
+﻿#ifndef SPBUFF_H
+#define SPBUFF_H
 
-/// @file SnBuff.h
-/// @brief SnBuff のヘッダファイル
+/// @file SpBuff.h
+/// @brief SpBuff のヘッダファイル
 /// @author Yusuke Matsunaga (松永 裕介)
 ///
 /// Copyright (C) 2016 Yusuke Matsunaga
 /// All rights reserved.
 
 
-#include "SnGate.h"
+#include "SpGate.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG_FSIM
 
 //////////////////////////////////////////////////////////////////////
-/// @class SnBuff SimBuff.h
+/// @class SpBuff SimBuff.h
 /// @brief BUFFノード
 //////////////////////////////////////////////////////////////////////
-class SnBuff :
-  public SnGate1
+class SpBuff :
+  public SpGate1
 {
 public:
 
   /// @brief コンストラクタ
-  SnBuff(const vector<PackedVal*>& inputs);
+  SpBuff(const vector<SimPrim*>& fanins);
 
   /// @brief デストラクタ
   virtual
-  ~SnBuff();
+  ~SpBuff();
 
 
 public:
@@ -50,20 +50,20 @@ public:
 
 
 //////////////////////////////////////////////////////////////////////
-/// @class SnNot SimNode.h
+/// @class SpNot SimPrim.h
 /// @brief NOTノード
 //////////////////////////////////////////////////////////////////////
-class SnNot :
-  public SnBuff
+class SpNot :
+  public SpBuff
 {
 public:
 
   /// @brief コンストラクタ
-  SnNot(const vector<PackedVal*>& inputs);
+  SpNot(const vector<SimPrim*>& fanins);
 
   /// @brief デストラクタ
   virtual
-  ~SnNot();
+  ~SpNot();
 
 
 public:
@@ -80,4 +80,4 @@ public:
 
 END_NAMESPACE_YM_SATPG_FSIM
 
-#endif // SNBUFF_H
+#endif // SPBUFF_H

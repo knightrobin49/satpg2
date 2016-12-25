@@ -1,35 +1,35 @@
 ﻿
-/// @file SnBuff.cc
-/// @brief SnBuff の実装ファイル
+/// @file SpBuff.cc
+/// @brief SpBuff の実装ファイル
 /// @author Yusuke Matsunaga (松永 裕介)
 ///
 /// Copyright (C) 2016 Yusuke Matsunaga
 /// All rights reserved.
 
 
-#include "SnBuff.h"
+#include "SpBuff.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG_FSIM
 
 //////////////////////////////////////////////////////////////////////
-// SnBuff
+// SpBuff
 //////////////////////////////////////////////////////////////////////
 
 // @brief コンストラクタ
-SnBuff::SnBuff(const vector<PackedVal*>& inputs) :
-  SnGate1(inputs)
+SpBuff::SpBuff(const vector<SimPrim*>& fanins) :
+  SpGate1(fanins)
 {
 }
 
 // @brief デストラクタ
-SnBuff::~SnBuff()
+SpBuff::~SpBuff()
 {
 }
 
 // @brief 出力値の計算を行う．(2値版)
 PackedVal
-SnBuff::_calc_val()
+SpBuff::_calc_val()
 {
   PackedVal val = _fanin_val();
   return val;
@@ -37,30 +37,30 @@ SnBuff::_calc_val()
 
 // @brief ゲートの入力から出力までの可観測性を計算する．(2値版)
 PackedVal
-SnBuff::_calc_obs(ymuint ipos)
+SpBuff::_calc_gobs(ymuint ipos)
 {
   return kPvAll1;
 }
 
 
 //////////////////////////////////////////////////////////////////////
-// SnNot
+// SpNot
 //////////////////////////////////////////////////////////////////////
 
 // @brief コンストラクタ
-SnNot::SnNot(const vector<PackedVal*>& inputs) :
-  SnBuff(inputs)
+SpNot::SpNot(const vector<SimPrim*>& fanins) :
+  SpBuff(fanins)
 {
 }
 
 // @brief デストラクタ
-SnNot::~SnNot()
+SpNot::~SpNot()
 {
 }
 
 // @brief 出力値の計算を行う．(2値版)
 PackedVal
-SnNot::_calc_val()
+SpNot::_calc_val()
 {
   PackedVal val = _fanin_val();
   return ~val;

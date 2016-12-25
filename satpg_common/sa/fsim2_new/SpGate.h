@@ -1,34 +1,34 @@
-﻿#ifndef SNGATE_H
-#define SNGATE_H
+﻿#ifndef SPGATE_H
+#define SPGATE_H
 
-/// @file SnGate.h
-/// @brief SnGate のヘッダファイル
+/// @file SpGate.h
+/// @brief SpGate のヘッダファイル
 /// @author Yusuke Matsunaga (松永 裕介)
 ///
 /// Copyright (C) 2016 Yusuke Matsunaga
 /// All rights reserved.
 
 
-#include "SimNode.h"
+#include "SimPrim.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG_FSIM
 
 //////////////////////////////////////////////////////////////////////
-/// @class SnGate SimNode.h
+/// @class SpGate SpGate.h
 /// @brief 多入力ゲートの基底クラス
 //////////////////////////////////////////////////////////////////////
-class SnGate :
-  public SimNode
+class SpGate :
+  public SimPrim
 {
 protected:
 
   /// @brief コンストラクタ
-  SnGate(const vector<PackedVal*>& inputs);
+  SpGate(const vector<SimPrim*>& fanins);
 
   /// @brief デストラクタ
   virtual
-  ~SnGate();
+  ~SpGate();
 
 
 protected:
@@ -40,7 +40,7 @@ protected:
   ymuint
   _fanin_num() const;
 
-  /// @brief pos 番めのファンインの値を得る．
+  /// @brief pos 番めのファンインを得る．
   PackedVal
   _fanin_val(ymuint pos) const;
 
@@ -53,27 +53,27 @@ private:
   // 入力数
   ymuint mFaninNum;
 
-  // ファンインの値のポインタの配列
-  PackedVal** mFaninVals;
+  // ファンインのポインタの配列
+  SimPrim** mFanins;
 
 };
 
 
 //////////////////////////////////////////////////////////////////////
-/// @class SnGate1 SimNode.h
+/// @class SpGate1 SpGate.h
 /// @brief 1入力ゲートの基底クラス
 //////////////////////////////////////////////////////////////////////
-class SnGate1 :
-  public SimNode
+class SpGate1 :
+  public SimPrim
 {
 protected:
 
   /// @brief コンストラクタ
-  SnGate1(const vector<PackedVal*>& inputs);
+  SpGate1(const vector<SimPrim*>& fanins);
 
   /// @brief デストラクタ
   virtual
-  ~SnGate1();
+  ~SpGate1();
 
 
 protected:
@@ -91,27 +91,27 @@ private:
   // データメンバ
   //////////////////////////////////////////////////////////////////////
 
-  // ファンインの値のポインタ
-  PackedVal* mFaninVal;
+  // ファンインのポインタ
+  SimPrim* mFanin;
 
 };
 
 
 //////////////////////////////////////////////////////////////////////
-/// @class SnGate2 SimNode.h
+/// @class SpGate2 SpGate.h
 /// @brief 2入力ゲートの基底クラス
 //////////////////////////////////////////////////////////////////////
-class SnGate2 :
-  public SimNode
+class SpGate2 :
+  public SimPrim
 {
 protected:
 
   /// @brief コンストラクタ
-  SnGate2(const vector<PackedVal*>& inputs);
+  SpGate2(const vector<SimPrim*>& fanins);
 
   /// @brief デストラクタ
   virtual
-  ~SnGate2();
+  ~SpGate2();
 
 
 protected:
@@ -129,65 +129,27 @@ private:
   // データメンバ
   //////////////////////////////////////////////////////////////////////
 
-  // ファンインの値のポインタの配列
-  PackedVal* mFaninVals[2];
+  // ファンインのポインタの配列
+  SimPrim* mFanins[2];
 
 };
 
 
 //////////////////////////////////////////////////////////////////////
-/// @class SnGate3 SimNode.h
+/// @class SpGate3 SpGate.h
 /// @brief 3入力ゲートの基底クラス
 //////////////////////////////////////////////////////////////////////
-class SnGate3 :
-  public SimNode
+class SpGate3 :
+  public SimPrim
 {
 protected:
 
   /// @brief コンストラクタ
-  SnGate3(const vector<PackedVal*>& inputs);
+  SpGate3(const vector<SimPrim*>& fanins);
 
   /// @brief デストラクタ
   virtual
-  ~SnGate3();
-
-
-protected:
-  //////////////////////////////////////////////////////////////////////
-  // 継承クラスから呼ばれる関数
-  //////////////////////////////////////////////////////////////////////
-
-  /// @brief pos 番めのファンインの値を得る．
-  PackedVal*
-  _fanin_val(ymuint pos) const;
-
-
-private:
-  //////////////////////////////////////////////////////////////////////
-  // データメンバ
-  //////////////////////////////////////////////////////////////////////
-
-  // ファンインの値のポインタの配列
-  PackedVal* mFaninVals[3];
-
-};
-
-
-//////////////////////////////////////////////////////////////////////
-/// @class SnGate4 SimNode.h
-/// @brief 4入力ゲートの基底クラス
-//////////////////////////////////////////////////////////////////////
-class SnGate4 :
-  public SimNode
-{
-protected:
-
-  /// @brief コンストラクタ
-  SnGate4(const vector<SimNode*>& inputs);
-
-  /// @brief デストラクタ
-  virtual
-  ~SnGate4();
+  ~SpGate3();
 
 
 protected:
@@ -206,7 +168,45 @@ private:
   //////////////////////////////////////////////////////////////////////
 
   // ファンインの値のポインタの配列
-  PackedVal* mFaninVals[4];
+  SimPrim* mFanins[3];
+
+};
+
+
+//////////////////////////////////////////////////////////////////////
+/// @class SpGate4 SpGate.h
+/// @brief 4入力ゲートの基底クラス
+//////////////////////////////////////////////////////////////////////
+class SpGate4 :
+  public SimPrim
+{
+protected:
+
+  /// @brief コンストラクタ
+  SpGate4(const vector<SimPrim*>& inputs);
+
+  /// @brief デストラクタ
+  virtual
+  ~SpGate4();
+
+
+protected:
+  //////////////////////////////////////////////////////////////////////
+  // 継承クラスから呼ばれる関数
+  //////////////////////////////////////////////////////////////////////
+
+  /// @brief pos 番めのファンインの値を得る．
+  PackedVal
+  _fanin_val(ymuint pos) const;
+
+
+private:
+  //////////////////////////////////////////////////////////////////////
+  // データメンバ
+  //////////////////////////////////////////////////////////////////////
+
+  // ファンインのポインタの配列
+  SimPrim* mFanins[4];
 
 };
 
@@ -218,7 +218,7 @@ private:
 // @brief ファンイン数を得る．
 inline
 ymuint
-SnGate::_fanin_num() const
+SpGate::_fanin_num() const
 {
   return mFaninNum;
 }
@@ -226,43 +226,43 @@ SnGate::_fanin_num() const
 // @brief pos 番めのファンインの値を得る．
 inline
 PackedVal
-SnGate::_fanin_val(ymuint pos) const
+SpGate::_fanin_val(ymuint pos) const
 {
-  return *mFaninVals[pos];
+  return mFanins[pos]->val();
 }
 
 // @brief ファンインの値を得る．
 inline
 PackedVal
-SnGate1::_fanin_val() const
+SpGate1::_fanin_val() const
 {
-  return *mFaninVal;
+  return mFanin->val();
 }
 
 // @brief pos 番めのファンインの値を得る．
 inline
 PackedVal
-SnGate2::_fanin_val(ymuint pos) const
+SpGate2::_fanin_val(ymuint pos) const
 {
-  return *mFaninVals[pos];
+  return mFanins[pos]->val();
 }
 
 // @brief pos 番めのファンインの値を得る．
 inline
-SimNode*
-SnGate3::_fanin_val(ymuint pos) const
+PackedVal
+SpGate3::_fanin_val(ymuint pos) const
 {
-  return mFaninVals[pos];
+  return mFanins[pos]->val();
 }
 
 // @brief pos 番めのファンインの値を得る．
 inline
-SimNode*
-SnGate4::_fanin_val(ymuint pos) const
+PackedVal
+SpGate4::_fanin_val(ymuint pos) const
 {
-  return mFaninVals[pos];
+  return mFanins[pos]->val();
 }
 
 END_NAMESPACE_YM_SATPG_FSIM
 
-#endif // SNGATE_H
+#endif // SPGATE_H
