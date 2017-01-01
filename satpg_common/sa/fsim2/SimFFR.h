@@ -10,11 +10,11 @@
 
 
 #include "fsim2_nsdef.h"
+#include "SimNode.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG_FSIM
 
-class SimNode;
 class SimFault;
 
 //////////////////////////////////////////////////////////////////////
@@ -141,7 +141,7 @@ SimFFR::fault_prop2()
     PackedVal lobs = kPvAll1;
     SimNode* simnode = ff->mNode;
     for (SimNode* node = simnode; !node->is_ffr_root(); ) {
-      SimNode* onode = node->fanout(0);
+      SimNode* onode = node->fanout_top();
       ymuint pos = node->fanout_ipos();
       lobs &= onode->_calc_gobs2(pos);
       node = onode;

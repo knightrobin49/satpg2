@@ -166,7 +166,8 @@ Fsim2::set_network(const TpgNetwork& network)
       ++ ffr_num;
     }
     else {
-      SimFFR* ffr = mFFRMap[node->fanout(0)->id()];
+      SimNode* fo_node = node->fanout_top();
+      SimFFR* ffr = mFFRMap[fo_node->id()];
       mFFRMap[node->id()] = ffr;
     }
   }
@@ -472,7 +473,7 @@ Fsim2::_spsfp2(const TpgFault* f)
 
   PackedVal lobs = kPvAll1;
   for (SimNode* node = simnode; !node->is_ffr_root(); ) {
-    SimNode* onode = node->fanout(0);
+    SimNode* onode = node->fanout_top();
     ymuint pos = node->fanout_ipos();
     lobs &= onode->_calc_gobs2(pos);
     node = onode;
@@ -497,7 +498,7 @@ Fsim2::_spsfp2(const TpgFault* f)
   // FFR の根のノードを求める．
   SimNode* root = ff->mNode;
   while ( !root->is_ffr_root() ) {
-    root = root->fanout(0);
+    root = root->fanout_top();
   }
 
   if ( root->is_output() ) {
@@ -532,8 +533,12 @@ Fsim2::eventq_put2(SimNode* node,
   node->flip_fval2(mask);
   mClearArray.push_back(node);
   ymuint no = node->fanout_num();
-  for (ymuint i = 0; i < no; ++ i) {
-    mEventQ.put(node->fanout(i));
+  if ( no > 0 ) {
+    mEventQ.put(node->fanout_top());
+    -- no;
+    for (ymuint i = 0; i < no; ++ i) {
+      mEventQ.put(node->fanout(i));
+    }
   }
 }
 
@@ -556,8 +561,12 @@ Fsim2::eventq_simulate2()
       }
       else {
 	ymuint no = node->fanout_num();
-	for (ymuint i = 0; i < no; ++ i) {
-	  mEventQ.put(node->fanout(i));
+	if ( no > 0 ) {
+	  mEventQ.put(node->fanout_top());
+	  -- no;
+	  for (ymuint i = 0; i < no; ++ i) {
+	    mEventQ.put(node->fanout(i));
+	  }
 	}
       }
     }

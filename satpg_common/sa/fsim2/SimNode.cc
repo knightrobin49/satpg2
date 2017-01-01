@@ -25,6 +25,7 @@ BEGIN_NAMESPACE_YM_SATPG_FSIM
 SimNode::SimNode(ymuint id) :
   mId(id),
   mFanoutNum(0),
+  mFanoutTop(nullptr),
   mFanouts(nullptr),
   mLevel(0)
 {
@@ -131,9 +132,14 @@ SimNode::set_fanout_list(const vector<SimNode*>& fo_list,
 			 ymuint ipos)
 {
   ymuint nfo = fo_list.size();
-  mFanouts = new SimNode*[nfo];
-  for (ymuint i = 0; i < nfo; ++ i) {
-    mFanouts[i] = fo_list[i];
+  if ( nfo > 0 ) {
+    mFanoutTop = fo_list[0];
+    if ( nfo > 1 ) {
+      mFanouts = new SimNode*[nfo - 1];
+      for (ymuint i = 1; i < nfo; ++ i) {
+	mFanouts[i - 1] = fo_list[i];
+      }
+    }
   }
 
   mFanoutNum |= (nfo << 16) | (ipos << 4);

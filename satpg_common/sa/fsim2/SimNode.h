@@ -21,6 +21,12 @@ BEGIN_NAMESPACE_YM_SATPG_FSIM
 //////////////////////////////////////////////////////////////////////
 /// @class SimNode SimNode.h "SimNode.h"
 /// @brief 故障シミュレーション用のノード
+///
+/// 出力値の計算はゲートの種類によって異なるので仮想関数にしている．<br>
+/// 注意が必要なのがファンアウトの情報．最初のファンアウトだけ個別のポインタで
+/// 持ち，２番目以降のファンアウトは配列で保持する．これは多くのノードが
+/// 一つしかファンアウトを持たず，その場合に配列を使うとメモリ参照が余分に発生する
+/// ため．
 //////////////////////////////////////////////////////////////////////
 class SimNode
 {
@@ -84,7 +90,14 @@ public:
   ymuint
   fanout_num() const;
 
+  /// @brief ファンアウトの先頭のノードを得る．
+  SimNode*
+  fanout_top() const;
+
   /// @brief pos 番目のファンアウトを得る．
+  /// @param[in] pos 位置番号 ( 0 <= pos < fanout_num() - 1 )
+  ///
+  /// ただし fanout_top() のノードは含まれない．
   SimNode*
   fanout(ymuint pos) const;
 
@@ -297,11 +310,15 @@ private:
 
   // ファンアウトリストの要素数
   // その他以下の情報もパックして持つ．
-  // - EventQ に入っているかどうかを示すマーク
-  // - 最初のファンアウトの入力位置(FFR内のノードのみ意味を持つ)
-  // - 出力のマーク
-  // - lobs の計算マーク
+  // - 0      : 出力のマーク
+  // - 1      : FFRの根のマーク
+  // - 2      : EventQ に入っているかどうかを示すマーク
+  // - 4 - 15 : 最初のファンアウトの入力位置(FFR内のノードのみ意味を持つ)
+  // - 16 -   : ファンアウト数
   ymuint mFanoutNum;
+
+  // ファンアウトの先頭のノード
+  SimNode* mFanoutTop;
 
   // ファンアウトリスト
   SimNode** mFanouts;
@@ -346,6 +363,14 @@ SimNode::fanout_num() const
   return mFanoutNum >> 16;
 }
 
+// @brief ファンアウトの先頭のノードを得る．
+inline
+SimNode*
+SimNode::fanout_top() const
+{
+  return mFanoutTop;
+}
+
 // @brief pos 番目のファンアウトを得る．
 inline
 SimNode*
@@ -383,7 +408,7 @@ inline
 bool
 SimNode::is_output() const
 {
-  return (mFanoutNum & 1U) == 1U;
+  return static_cast<bool>((mFanoutNum >> 0) & 1U);
 }
 
 // @brief 出力マークをつける．
