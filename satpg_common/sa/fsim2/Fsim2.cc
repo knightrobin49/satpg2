@@ -172,9 +172,6 @@ Fsim2::set_network(const TpgNetwork& network)
     }
   }
 
-  // 消去用の配列の大きさはノード数を越えない．
-  mClearArray.reserve(mNodeArray.size());
-
   // 最大レベルを求め，イベントキューを初期化する．
   ymuint max_level = 0;
   for (ymuint i = 0; i < no; ++ i) {
@@ -183,7 +180,7 @@ Fsim2::set_network(const TpgNetwork& network)
       max_level = inode->level();
     }
   }
-  mEventQ.init(max_level);
+  mEventQ.init(max_level, mNodeArray.size());
 
 
   //////////////////////////////////////////////////////////////////////
@@ -301,8 +298,8 @@ Fsim2::ppsfp(const vector<TestVector*>& tv_array,
       obs = kPvAll1;
     }
     else {
-      eventq_put2(root, ffr_req);
-      obs = eventq_simulate2();
+      mEventQ.put_trigger(root, ffr_req);
+      obs = mEventQ.simulate();
     }
 
     ffr->fault_sweep(op, obs);
@@ -432,12 +429,12 @@ Fsim2::_sppfp2(FsimOp& op)
 
     // キューに積んでおく
     PackedVal bitmask = 1UL << bitpos;
-    eventq_put2(root, bitmask);
+    mEventQ.put_trigger(root, bitmask);
     ffr_buff[bitpos] = ffr;
 
     ++ bitpos;
     if ( bitpos == kPvBitLen ) {
-      PackedVal obs = eventq_simulate2();
+      PackedVal obs = mEventQ.simulate();
       for (ymuint i = 0; i < kPvBitLen; ++ i, obs >>= 1) {
 	if ( obs & 1UL ) {
 	  ffr_buff[i]->fault_sweep(op, kPvAll1);
@@ -447,7 +444,7 @@ Fsim2::_sppfp2(FsimOp& op)
     }
   }
   if ( bitpos > 0 ) {
-    PackedVal obs = eventq_simulate2();
+    PackedVal obs = mEventQ.simulate();
     for (ymuint i = 0; i < bitpos; ++ i, obs >>= 1) {
       if ( obs & 1UL ) {
 	ffr_buff[i]->fault_sweep(op, kPvAll1);
@@ -505,8 +502,8 @@ Fsim2::_spsfp2(const TpgFault* f)
     return true;
   }
 
-  eventq_put2(root, kPvAll1);
-  PackedVal obs = eventq_simulate2();
+  mEventQ.put_trigger(root, kPvAll1);
+  PackedVal obs = mEventQ.simulate();
   return (obs != kPvAll0);
 }
 
@@ -521,49 +518,6 @@ Fsim2::_calc_gval2()
     SimNode* node = *q;
     node->calc_gval2();
   }
-}
-
-// @brief イベントキューにイベントを追加する．
-// @param[in] node イベントの起こったノード
-// @param[in] mask 反転マスク
-void
-Fsim2::eventq_put2(SimNode* node,
-		   PackedVal mask)
-{
-  node->flip_fval2(mask);
-  mClearArray.push_back(node);
-  mEventQ.put_fanouts(node);
-}
-
-// @brief イベントキューを用いてシミュレーションを行う．
-PackedVal
-Fsim2::eventq_simulate2()
-{
-  // どこかの外部出力で検出されたことを表すビット
-  PackedVal obs = kPvAll0;
-  for ( ; ; ) {
-    SimNode* node = mEventQ.get();
-    if ( node == nullptr ) break;
-    // すでに検出済みのビットはマスクしておく
-    // これは無駄なイベントの発生を抑える．
-    PackedVal diff = node->calc_fval2(~obs);
-    if ( diff != kPvAll0 ) {
-      mClearArray.push_back(node);
-      if ( node->is_output() ) {
-	obs |= diff;
-      }
-      else {
-	mEventQ.put_fanouts(node);
-      }
-    }
-  }
-  // 今の故障シミュレーションで値の変わったノードを元にもどしておく
-  for (vector<SimNode*>::iterator p = mClearArray.begin();
-       p != mClearArray.end(); ++ p) {
-    (*p)->clear_fval2();
-  }
-  mClearArray.clear();
-  return obs;
 }
 
 // @brief 現在保持している SimNode のネットワークを破棄する．
@@ -584,8 +538,6 @@ Fsim2::clear()
 
   mFFRArray.clear();
   mFFRMap.clear();
-
-  mClearArray.clear();
 
   mSimFaults.clear();
   mFaultArray.clear();

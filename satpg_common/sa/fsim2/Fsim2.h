@@ -154,17 +154,6 @@ private:
   void
   _calc_gval2();
 
-  /// @brief イベントキューにイベントを追加する．
-  /// @param[in] node イベントの起こったノード
-  /// @param[in] mask 反転マスク
-  void
-  eventq_put2(SimNode* node,
-	      PackedVal mask);
-
-  /// @brief イベントキューを用いてシミュレーションを行う．
-  PackedVal
-  eventq_simulate2();
-
 
 private:
   //////////////////////////////////////////////////////////////////////
@@ -223,9 +212,6 @@ private:
 
   // イベントキュー
   EventQ mEventQ;
-
-  // 値を消去する必要のあるノードを入れておく配列
-  vector<SimNode*> mClearArray;
 
   // 故障シミュレーション用の故障の配列
   vector<SimFault> mSimFaults;
