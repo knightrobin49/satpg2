@@ -41,6 +41,11 @@ public:
   void
   init(ymuint max_level);
 
+  /// @brief ファンアウトのノードをキューに積む．
+  /// @param[in] node 対象のノード
+  void
+  put_fanouts(SimNode* node);
+
   /// @brief キューに積む
   void
   put(SimNode* node);

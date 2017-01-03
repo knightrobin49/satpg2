@@ -50,4 +50,19 @@ EventQ::init(ymuint max_level)
   mNum = 0;
 }
 
+// @brief ファンアウトのノードをキューに積む．
+// @param[in] node 対象のノード
+void
+EventQ::put_fanouts(SimNode* node)
+{
+  ymuint no = node->fanout_num();
+  if ( no > 0 ) {
+    put(node->fanout_top());
+    -- no;
+    for (ymuint i = 0; i < no; ++ i) {
+      put(node->fanout(i));
+    }
+  }
+}
+
 END_NAMESPACE_YM_SATPG_FSIM

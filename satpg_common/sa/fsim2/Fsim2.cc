@@ -532,14 +532,7 @@ Fsim2::eventq_put2(SimNode* node,
 {
   node->flip_fval2(mask);
   mClearArray.push_back(node);
-  ymuint no = node->fanout_num();
-  if ( no > 0 ) {
-    mEventQ.put(node->fanout_top());
-    -- no;
-    for (ymuint i = 0; i < no; ++ i) {
-      mEventQ.put(node->fanout(i));
-    }
-  }
+  mEventQ.put_fanouts(node);
 }
 
 // @brief イベントキューを用いてシミュレーションを行う．
@@ -560,14 +553,7 @@ Fsim2::eventq_simulate2()
 	obs |= diff;
       }
       else {
-	ymuint no = node->fanout_num();
-	if ( no > 0 ) {
-	  mEventQ.put(node->fanout_top());
-	  -- no;
-	  for (ymuint i = 0; i < no; ++ i) {
-	    mEventQ.put(node->fanout(i));
-	  }
-	}
+	mEventQ.put_fanouts(node);
       }
     }
   }
