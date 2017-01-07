@@ -60,21 +60,18 @@ Fsim2::set_network(const TpgNetwork& network)
 {
   clear();
 
-  mNetwork = &network;
+  ymuint nn = network.node_num();
+  ymuint ni = network.ppi_num();
+  ymuint no = network.ppo_num();
 
-  ymuint nn = mNetwork->node_num();
-  ymuint ni = mNetwork->ppi_num();
-  ymuint no = mNetwork->ppo_num();
-
-  // SimNode の生成
   // 対応付けを行うマップの初期化
-  mSimMap.resize(nn);
+  vector<SimNode*> simmap(nn);
   mInputArray.resize(ni);
   mOutputArray.resize(no);
 
   ymuint nf = 0;
   for (ymuint i = 0; i < nn; ++ i) {
-    const TpgNode* tpgnode = mNetwork->node(i);
+    const TpgNode* tpgnode = network.node(i);
     nf += network.node_fault_num(tpgnode->id());
 
     SimNode* node = nullptr;
@@ -86,7 +83,7 @@ Fsim2::set_network(const TpgNetwork& network)
     }
     else if ( tpgnode->is_ppo() ) {
       // 外部出力に対応する SimNode の生成
-      SimNode* inode = find_simnode(tpgnode->fanin(0));
+      SimNode* inode = simmap[tpgnode->fanin(0)->id()];
       // 実際にはバッファタイプのノードに出力の印をつけるだけ．
       node = make_gate(kGateBUFF, vector<SimNode*>(1, inode));
       node->set_output();
@@ -96,7 +93,7 @@ Fsim2::set_network(const TpgNetwork& network)
 	      tpgnode->is_dff_clear() ||
 	      tpgnode->is_dff_preset() ) {
       // DFFの制御端子に対応する SimNode の生成
-      SimNode* inode = find_simnode(tpgnode->fanin(0));
+      SimNode* inode = simmap[tpgnode->fanin(0)->id()];
       // 実際にはバッファタイプのノードに出力の印をつけるだけ．
       node = make_gate(kGateBUFF, vector<SimNode*>(1, inode));
       node->set_output();
@@ -109,7 +106,7 @@ Fsim2::set_network(const TpgNetwork& network)
       vector<SimNode*> inputs(ni);
       for (ymuint i = 0; i < ni; ++ i) {
 	const TpgNode* itpgnode = tpgnode->fanin(i);
-	SimNode* inode = find_simnode(itpgnode);
+	SimNode* inode = simmap[itpgnode->id()];
 	ASSERT_COND(inode );
 	inputs[i] = inode;
       }
@@ -119,7 +116,7 @@ Fsim2::set_network(const TpgNetwork& network)
       node = make_gate(type, inputs);
     }
     // 対応表に登録しておく．
-    mSimMap[tpgnode->id()] = node;
+    simmap[tpgnode->id()] = node;
   }
 
   // 各ノードのファンアウトリストの設定
@@ -195,13 +192,13 @@ Fsim2::set_network(const TpgNetwork& network)
     for (ymuint j = 0; j < nf1; ++ j) {
       const TpgFault* fault = network.node_fault(tpgnode->id(), j);
       const TpgNode* tpgnode = fault->tpg_onode();
-      SimNode* simnode = find_simnode(tpgnode);
+      SimNode* simnode = simmap[tpgnode->id()];
       SimNode* isimnode = nullptr;
       ymuint ipos = 0;
       if ( fault->is_branch_fault() ) {
 	ipos = fault->tpg_pos();
 	const TpgNode* inode = tpgnode->fanin(ipos);
-	isimnode = find_simnode(inode);
+	isimnode = simmap[inode->id()];
       }
       else {
 	isimnode = simnode;
@@ -337,7 +334,7 @@ Fsim2::spsfp(const NodeValList& assign_list,
 void
 Fsim2::_set_sp2(TestVector* tv)
 {
-  ymuint npi = mNetwork->ppi_num();
+  ymuint npi = mInputArray.size();
   for (ymuint i = 0; i < npi; ++ i) {
     SimNode* simnode = mInputArray[i];
     PackedVal val = (tv->val3(i) == kVal1) ? kPvAll1 : kPvAll0;
@@ -350,9 +347,8 @@ Fsim2::_set_sp2(TestVector* tv)
 void
 Fsim2::_set_sp2(const NodeValList& assign_list)
 {
-  ymuint npi = mNetwork->ppi_num();
-
   // デフォルトで 0 にする．
+  ymuint npi = mInputArray.size();
   for (ymuint i = 0; i < npi; ++ i) {
     SimNode* simnode = mInputArray[i];
     simnode->set_gval2(kPvAll0);
@@ -373,10 +369,10 @@ Fsim2::_set_sp2(const NodeValList& assign_list)
 void
 Fsim2::_set_pp2(const vector<TestVector*>& tv_array)
 {
-  ymuint npi = mNetwork->ppi_num();
   ymuint nb = tv_array.size();
 
   // tv_array を入力ごとに固めてセットしていく．
+  ymuint npi = mInputArray.size();
   for (ymuint i = 0; i < npi; ++ i) {
     PackedVal val = kPvAll0;
     PackedVal bit = 1UL;
@@ -524,8 +520,6 @@ Fsim2::_calc_gval2()
 void
 Fsim2::clear()
 {
-  mSimMap.clear();
-
   // mNodeArray が全てのノードを持っている
   for (vector<SimNode*>::iterator p = mNodeArray.begin();
        p != mNodeArray.end(); ++ p) {
@@ -541,9 +535,6 @@ Fsim2::clear()
 
   mSimFaults.clear();
   mFaultArray.clear();
-
-  // 念のため
-  mNetwork = nullptr;
 }
 
 // @brief 外部入力ノードを作る．
@@ -566,13 +557,6 @@ Fsim2::make_gate(GateType type,
   mNodeArray.push_back(node);
   mLogicArray.push_back(node);
   return node;
-}
-
-// @brief node に対応する SimNode* を得る．
-SimNode*
-Fsim2::find_simnode(const TpgNode* node) const
-{
-  return mSimMap[node->id()];
 }
 
 END_NAMESPACE_YM_SATPG_FSIM
