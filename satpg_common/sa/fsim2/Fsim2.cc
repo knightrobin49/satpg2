@@ -33,6 +33,41 @@ new_Fsim2()
   return new nsFsim2::Fsim2();
 }
 
+
+//////////////////////////////////////////////////////////////////////
+// Fsim の実装コード
+// 他に適当な場所がなかったもので．
+//////////////////////////////////////////////////////////////////////
+
+// @brief 複数の故障にスキップマークをつける．
+// @param[in] fault_list 故障のリスト
+//
+// fault_list に含まれない故障のスキップマークは消される．
+void
+Fsim::set_skip(const vector<const TpgFault*>& fault_list)
+{
+  clear_skip_all();
+  for (ymuint i = 0; i < fault_list.size(); ++ i) {
+    const TpgFault* f = fault_list[i];
+    set_skip(f);
+  }
+}
+
+// @brief 複数の故障のスキップマークを消す．
+// @param[in] fault_list 故障のリスト
+//
+// fault_list に含まれない故障のスキップマークは付けられる．
+void
+Fsim::clear_skip(const vector<const TpgFault*>& fault_list)
+{
+  set_skip_all();
+  for (ymuint i = 0; i < fault_list.size(); ++ i) {
+    const TpgFault* f = fault_list[i];
+    clear_skip(f);
+  }
+}
+
+
 END_NAMESPACE_YM_SATPG_SA
 
 
@@ -183,16 +218,23 @@ Fsim2::set_network(const TpgNetwork& network)
   //////////////////////////////////////////////////////////////////////
   // 故障リストの設定
   //////////////////////////////////////////////////////////////////////
+
+  // 同時に各 SimFFR 内の故障リストも再構築する．
+  for (vector<SimFFR>::iterator p = mFFRArray.begin();
+       p != mFFRArray.end(); ++ p) {
+    p->clear_fault_list();
+  }
+
   mSimFaults.resize(nf);
   mFaultArray.resize(network.max_fault_id());
   ymuint fid = 0;
   for (ymuint i = 0; i < nn; ++ i) {
     const TpgNode* tpgnode = network.node(i);
+    SimNode* simnode = simmap[tpgnode->id()];
+    SimFFR* ffr = mFFRMap[simnode->id()];
     ymuint nf1 = network.node_fault_num(tpgnode->id());
     for (ymuint j = 0; j < nf1; ++ j) {
       const TpgFault* fault = network.node_fault(tpgnode->id(), j);
-      const TpgNode* tpgnode = fault->tpg_onode();
-      SimNode* simnode = simmap[tpgnode->id()];
       SimNode* isimnode = nullptr;
       ymuint ipos = 0;
       if ( fault->is_branch_fault() ) {
@@ -206,38 +248,45 @@ Fsim2::set_network(const TpgNetwork& network)
       mSimFaults[fid].set(fault, simnode, ipos, isimnode);
       SimFault* ff = &mSimFaults[fid];
       mFaultArray[fault->id()] = ff;
+      ff->mSkip = false;
+      ffr->add_fault(ff);
       ++ fid;
     }
   }
 }
 
+// @brief 全ての故障にスキップマークをつける．
+void
+Fsim2::set_skip_all()
+{
+  for (ymuint i = 0; i < mSimFaults.size(); ++ i) {
+    mSimFaults[i].mSkip = true;
+  }
+}
+
 // @brief 故障にスキップマークをつける．
+// @param[in] f 対象の故障
 void
 Fsim2::set_skip(const TpgFault* f)
 {
   mFaultArray[f->id()]->mSkip = true;
 }
 
-// @brief 故障リストを設定する．
-// @param[in] fault_list 対象の故障リスト
-//
-// スキップマークは消される．
+// @brief 全ての故障のスキップマークを消す．
 void
-Fsim2::set_faults(const vector<const TpgFault*>& fault_list)
+Fsim2::clear_skip_all()
 {
-  // 同時に各 SimFFR 内の故障リストも再構築する．
-  for (vector<SimFFR>::iterator p = mFFRArray.begin();
-       p != mFFRArray.end(); ++ p) {
-    p->clear_fault_list();
+  for (ymuint i = 0; i < mSimFaults.size(); ++ i) {
+    mSimFaults[i].mSkip = false;
   }
-  for (ymuint i = 0; i < fault_list.size(); ++ i) {
-    const TpgFault* f = fault_list[i];
-    SimFault* ff = mFaultArray[f->id()];
-    ff->mSkip = false;
-    SimNode* simnode = ff->mNode;
-    SimFFR* ffr = mFFRMap[simnode->id()];
-    ffr->add_fault(ff);
-  }
+}
+
+// @brief 故障のスキップマークを消す．
+// @param[in] f 対象の故障
+void
+Fsim2::clear_skip(const TpgFault* f)
+{
+  mFaultArray[f->id()]->mSkip = false;
 }
 
 // @brief ひとつのパタンで故障シミュレーションを行う．

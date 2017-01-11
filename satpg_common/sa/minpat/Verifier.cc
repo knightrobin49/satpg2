@@ -140,7 +140,8 @@ Verifier::check(Fsim& fsim,
   FopVer op(fsim);
   op.clear_det_flag();
 
-  fsim.set_faults(fault_list);
+  fsim.clear_skip(fault_list);
+
   vector<TestVector*> cur_array;
   cur_array.reserve(kPvBitLen);
   for (vector<TestVector*>::const_iterator p = pat_list.begin();

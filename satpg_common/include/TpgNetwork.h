@@ -113,10 +113,6 @@ public:
   TpgNode*
   ppo(ymuint pos) const;
 
-  /// @brief 故障IDの最大値+1を返す．
-  ymuint
-  max_fault_id() const;
-
   /// @brief MFFC 数を返す．
   ymuint
   mffc_num() const;
@@ -124,6 +120,19 @@ public:
   /// @brief FFR 数を返す．
   ymuint
   ffr_num() const;
+
+  /// @brief 故障IDの最大値+1を返す．
+  ymuint
+  max_fault_id() const;
+
+  /// @brief 全代表故障数を返す．
+  ymuint
+  rep_fault_num() const;
+
+  /// @brief 代表故障を返す．
+  /// @param[in] pos 位置番号 ( 0 <= pos < rep_fault_num() )
+  const TpgFault*
+  rep_fault(ymuint pos) const;
 
 
 public:
@@ -443,14 +452,20 @@ private:
   // TFI サイズの降順に整列したPPOノードの配列
   TpgNode** mPPOArray2;
 
-  // 全故障数
-  ymuint mFaultNum;
-
   // MFFC 数
   ymuint mMffcNum;
 
   // FFR 数
   ymuint mFfrNum;
+
+  // 全故障数
+  ymuint mFaultNum;
+
+  // 全代表故障数
+  ymuint mRepFaultNum;
+
+  // 代表故障の配列
+  const TpgFault** mRepFaultArray;
 
 };
 
@@ -608,6 +623,24 @@ ymuint
 TpgNetwork::ffr_num() const
 {
   return mFfrNum;
+}
+
+// @brief 全代表故障数を返す．
+inline
+ymuint
+TpgNetwork::rep_fault_num() const
+{
+  return mRepFaultNum;
+}
+
+// @brief 代表故障を返す．
+// @param[in] pos 位置番号 ( 0 <= pos < rep_fault_num() )
+inline
+const TpgFault*
+TpgNetwork::rep_fault(ymuint pos) const
+{
+  ASSERT_COND( pos < rep_fault_num() );
+  return mRepFaultArray[pos];
 }
 
 END_NAMESPACE_YM_SATPG

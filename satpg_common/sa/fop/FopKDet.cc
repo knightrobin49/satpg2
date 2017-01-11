@@ -29,7 +29,7 @@ FopKDet::FopKDet(Fsim& fsim,
   mLimit(1),
   mPatListArray(max_fault_id)
 {
-  mFsim.set_faults(f_list);
+  mFsim.clear_skip(f_list);
 }
 
 // @brief デストラクタ

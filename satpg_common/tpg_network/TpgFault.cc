@@ -26,10 +26,10 @@ BEGIN_NAMESPACE_YM_SATPG
 TpgFault::TpgFault(ymuint id,
 		   int val,
 		   const TpgFault* rep_fault) :
-  mId(id),
-  mVal(val),
   mRepFault(rep_fault)
 {
+  // val は 0 か 1 のはずだが念の為マスクしておく
+  mIdVal = (id << 1) | static_cast<ymuint>(val & 1);
 }
 
 // @brief デストラクタ

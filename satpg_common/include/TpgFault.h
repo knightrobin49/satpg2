@@ -105,12 +105,6 @@ public:
   const TpgFault*
   rep_fault() const;
 
-#if 0
-  /// @brief 支配故障のリストを返す．
-  const vector<const TpgFault*>&
-  dom_list() const;
-#endif
-
 
 public:
   //////////////////////////////////////////////////////////////////////
@@ -122,30 +116,17 @@ public:
   void
   set_rep(const TpgFault* rep);
 
-  /// @brief 故障の支配関係を設定する．
-  /// @param[in] dom_f 支配する故障
-  void
-  set_dominance(const TpgFault* dom_f);
-
 
 private:
   //////////////////////////////////////////////////////////////////////
   // データメンバ
   //////////////////////////////////////////////////////////////////////
 
-  // ID番号
-  ymuint mId;
-
-  // 故障値
-  ymuint8 mVal;
+  // ID番号 + 故障値(最下位ビット)
+  ymuint mIdVal;
 
   // 代表故障
   const TpgFault* mRepFault;
-
-#if 0
-  // 支配故障のリスト
-  vector<const TpgFault*> mDomList;
-#endif
 
 };
 
@@ -167,7 +148,7 @@ inline
 ymuint
 TpgFault::id() const
 {
-  return mId;
+  return (mIdVal >> 1);
 }
 
 // @brief ブランチの故障の時 true を返す．
@@ -184,7 +165,7 @@ inline
 int
 TpgFault::val() const
 {
-  return mVal;
+  return static_cast<int>(mIdVal & 1UL);
 }
 
 // @brief 故障値を3値型で返す．
@@ -224,27 +205,6 @@ void
 TpgFault::set_rep(const TpgFault* rep)
 {
   mRepFault = rep;
-}
-
-#if 0
-// @brief 支配故障のリストを返す．
-inline
-const vector<const TpgFault*>&
-TpgFault::dom_list() const
-{
-  return mDomList;
-}
-#endif
-
-// @brief 故障の支配関係を設定する．
-// @param[in] dom_f 支配する故障
-inline
-void
-TpgFault::set_dominance(const TpgFault* dom_f)
-{
-#if 0
-  mDomList.push_back(dom_f);
-#endif
 }
 
 END_NAMESPACE_YM_SATPG

@@ -209,22 +209,27 @@ Fsim3::set_network(const TpgNetwork& network)
   //////////////////////////////////////////////////////////////////////
   // 故障リストの設定
   //////////////////////////////////////////////////////////////////////
+  // 同時に各 SimFFR 内の故障リストも再構築する．
+  for (vector<SimFFR>::iterator p = mFFRArray.begin();
+       p != mFFRArray.end(); ++ p) {
+    p->fault_list().clear();
+  }
   mSimFaults.resize(nf);
   mFaultArray.resize(network.max_fault_id());
   ymuint fid = 0;
   for (ymuint i = 0; i < nn; ++ i) {
     const TpgNode* tpgnode = network.node(i);
+    SimNode* simnode = find_simnode(tpgnode);
+    ASSERT_COND( simnode != nullptr );
+    SimFFR* ffr = simnode->ffr();
     ymuint nf1 = network.node_fault_num(tpgnode->id());
     for (ymuint j = 0; j < nf1; ++ j) {
       const TpgFault* fault = network.node_fault(tpgnode->id(), j);
-      const TpgNode* node = fault->tpg_onode();
-      SimNode* simnode = find_simnode(node);
-      ASSERT_COND( simnode != nullptr );
       ymuint ipos = 0;
       SimNode* isimnode = nullptr;
       if ( fault->is_branch_fault() ) {
 	ipos = fault->tpg_pos();
-	const TpgNode* inode = node->fanin(ipos);
+	const TpgNode* inode = tpgnode->fanin(ipos);
 	isimnode = find_simnode(inode);
       }
       else {
@@ -233,49 +238,46 @@ Fsim3::set_network(const TpgNetwork& network)
       mSimFaults[fid].set(fault, simnode, ipos, isimnode);
       SimFault* ff = &mSimFaults[fid];
       mFaultArray[fault->id()] = ff;
+      ff->mSkip = false;
+      ffr->fault_list().push_back(ff);
       ++ fid;
     }
   }
   ASSERT_COND( fid == nf );
 }
 
+// @brief 全ての故障にスキップマークをつける．
+void
+Fsim3::set_skip_all()
+{
+  for (ymuint i = 0; i < mSimFaults.size(); ++ i) {
+    mSimFaults[i].mSkip = true;
+  }
+}
+
 // @brief 故障にスキップマークをつける．
+// @param[in] f 対象の故障
 void
 Fsim3::set_skip(const TpgFault* f)
 {
   mFaultArray[f->id()]->mSkip = true;
 }
 
-// @brief 故障リストを設定する．
-// @param[in] fault_list 対象の故障リスト
-//
-// スキップマークは消される．
+// @brief 全ての故障のスキップマークを消す．
 void
-Fsim3::set_faults(const vector<const TpgFault*>& fault_list)
+Fsim3::clear_skip_all()
 {
-  HashSet<ymuint> fault_set;
-  for (ymuint i = 0; i < fault_list.size(); ++ i) {
-    fault_set.add(fault_list[i]->id());
+  for (ymuint i = 0; i < mSimFaults.size(); ++ i) {
+    mSimFaults[i].mSkip = false;
   }
+}
 
-  // 同時に各 SimFFR 内の fault_list() も再構築する．
-  for (vector<SimFFR>::iterator p = mFFRArray.begin();
-       p != mFFRArray.end(); ++ p) {
-    p->fault_list().clear();
-  }
-  ymuint nf = mSimFaults.size();
-  for (ymuint i = 0; i < nf; ++ i) {
-    SimFault* ff = &mSimFaults[i];
-    if ( fault_set.check(ff->mOrigF->id()) ) {
-      ff->mSkip = false;
-      SimNode* simnode = ff->mNode;
-      SimFFR* ffr = simnode->ffr();
-      ffr->fault_list().push_back(ff);
-    }
-    else {
-      ff->mSkip = true;
-    }
-  }
+// @brief 故障のスキップマークを消す．
+// @param[in] f 対象の故障
+void
+Fsim3::clear_skip(const TpgFault* f)
+{
+  mFaultArray[f->id()]->mSkip = false;
 }
 
 // @brief SPSFP故障シミュレーションを行う．

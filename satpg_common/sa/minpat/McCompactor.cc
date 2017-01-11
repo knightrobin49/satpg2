@@ -69,7 +69,7 @@ McCompactor::run(const vector<const TpgFault*>& fault_list,
     row_map[fid] = i;
   }
 
-  mFsim.set_faults(fault_list);
+  mFsim.clear_skip(fault_list);
 
   ymuint np = orig_tv_list.size();
   MinCov mincov;

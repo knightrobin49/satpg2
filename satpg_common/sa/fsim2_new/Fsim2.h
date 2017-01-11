@@ -48,22 +48,32 @@ public:
 
   /// @brief ネットワークをセットする．
   /// @param[in] network ネットワーク
+  ///
+  /// 全ての故障のスキップマークはクリアされる．
   virtual
   void
   set_network(const TpgNetwork& network);
+
+  /// @brief 全ての故障にスキップマークをつける．
+  virtual
+  void
+  set_skip_all();
 
   /// @brief 故障にスキップマークをつける．
   virtual
   void
   set_skip(const TpgFault* f);
 
-  /// @brief 故障リストを設定する．
-  /// @param[in] fault_list 対象の故障リスト
-  ///
-  /// スキップマークは消される．
+  /// @brief 全ての故障のスキップマークを消す．
   virtual
   void
-  set_faults(const vector<const TpgFault*>& fault_list);
+  clear_skip_all();
+
+  /// @brief 故障のスキップマークを消す．
+  /// @param[in] f 対象の故障
+  virtual
+  void
+  clear_skip(const TpgFault* f);
 
 
 public:

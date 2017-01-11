@@ -88,7 +88,7 @@ RtpgImpl::run(const vector<const TpgFault*>& fault_list,
 
   FopRtpg op(fsim);
 
-  fsim.set_faults(fault_list);
+  fsim.clear_skip(fault_list);
   op.init();
 
   ymuint pat_num = 0;

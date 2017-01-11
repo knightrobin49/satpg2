@@ -102,7 +102,7 @@ DtpgSatH::run(TpgNetwork& network,
   timer.start();
 
   // 故障シミュレータに故障リストをセットする．
-  fsim.set_faults(fault_list);
+  fsim.clear_skip(fault_list);
 
   ymuint max_fault_id = network.max_fault_id();
 

@@ -25,7 +25,7 @@ BEGIN_NAMESPACE_YM_SATPG_SA
 /// スキップするかどうかは外からコントロールされるべきなので，
 /// このシミュレーションのみ有効な'スキップフラグ'というフラグを
 /// 各故障に持たせる．スキップフラグは set_skip(f) で付加され，
-/// clear_skip() で解除される．
+/// clear_skip(f) で解除される．
 //////////////////////////////////////////////////////////////////////
 class Fsim
 {
@@ -42,22 +42,48 @@ public:
 
   /// @brief ネットワークをセットする．
   /// @param[in] network ネットワーク
+  ///
+  /// 全ての故障のスキップマークはクリアされる．
   virtual
   void
   set_network(const TpgNetwork& network) = 0;
 
+  /// @brief 全ての故障にスキップマークをつける．
+  virtual
+  void
+  set_skip_all() = 0;
+
   /// @brief 故障にスキップマークをつける．
+  /// @param[in] f 対象の故障
   virtual
   void
   set_skip(const TpgFault* f) = 0;
 
-  /// @brief 故障リストを設定する．
-  /// @param[in] fault_list 対象の故障リスト
+  /// @brief 複数の故障にスキップマークをつける．
+  /// @param[in] fault_list 故障のリスト
   ///
-  /// スキップマークは消される．
+  /// fault_list に含まれない故障のスキップマークは消される．
+  void
+  set_skip(const vector<const TpgFault*>& fault_list);
+
+  /// @brief 全ての故障のスキップマークを消す．
   virtual
   void
-  set_faults(const vector<const TpgFault*>& fault_list) = 0;
+  clear_skip_all() = 0;
+
+  /// @brief 故障のスキップマークを消す．
+  /// @param[in] f 対象の故障
+  virtual
+  void
+  clear_skip(const TpgFault* f) = 0;
+
+  /// @brief 複数の故障のスキップマークを消す．
+  /// @param[in] fault_list 故障のリスト
+  ///
+  /// fault_list に含まれない故障のスキップマークは付けられる．
+  virtual
+  void
+  clear_skip(const vector<const TpgFault*>& fault_list);
 
   /// @brief SPSFP故障シミュレーションを行う．
   /// @param[in] tv テストベクタ

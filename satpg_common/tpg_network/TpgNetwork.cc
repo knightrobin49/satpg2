@@ -606,12 +606,25 @@ TpgNetwork::set(const BnNetwork& network)
   //////////////////////////////////////////////////////////////////////
   // 代表故障を求める．
   //////////////////////////////////////////////////////////////////////
+  mRepFaultNum = 0;
   for (ymuint i = 0; i < mNodeNum; ++ i) {
     // ノードごとに代表故障を設定する．
     // この処理は出力側から行う必要がある．
     TpgNode* node = mNodeArray[mNodeNum - i - 1];
     if ( marks[node->id()] ) {
       set_rep_faults(node);
+      ymuint nf = node_fault_num(node->id());
+      mRepFaultNum += nf;
+    }
+  }
+  mRepFaultArray = new const TpgFault*[mRepFaultNum];
+  ymuint wpos = 0;
+  for (ymuint i = 0; i < mNodeNum; ++ i) {
+    TpgNode* node = mNodeArray[i];
+    ymuint nf = node_fault_num(node->id());
+    for (ymuint j = 0; j < nf; ++ j, ++ wpos) {
+      const TpgFault* fault = node_fault(node->id(), j);
+      mRepFaultArray[wpos] = fault;
     }
   }
 

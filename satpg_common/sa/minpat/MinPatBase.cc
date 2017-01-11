@@ -100,8 +100,8 @@ MinPatBase::run(TpgNetwork& network,
   }
 
   // 故障シミュレータに故障リストをセットする．
-  fsim2.set_faults(fault_list);
-  fsim3.set_faults(fault_list);
+  fsim2.clear_skip(fault_list);
+  fsim3.clear_skip(fault_list);
 
   init(fid_list, tvmgr, fsim2);
 

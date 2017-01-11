@@ -123,7 +123,7 @@ DtpgSatS::run(TpgNetwork& network,
   clear_stats();
 
   // 故障シミュレータに故障リストをセットする．
-  fsim.set_faults(fault_list);
+  fsim.clear_skip(fault_list);
 
   mMaxNodeId = network.node_num();
 

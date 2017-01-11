@@ -8,7 +8,6 @@
 
 
 #include "TpgNetwork.h"
-#include "FaultMgr.h"
 #include "sa/TvMgr.h"
 #include "sa/FsimOp.h"
 #include "Fsim2.h"
@@ -301,14 +300,8 @@ fsim2test(int argc,
     ASSERT_NOT_REACHED;
   }
 
-  FaultMgr fmgr;
-  fmgr.set_faults(network);
-
-
   Fsim2 fsim;
   fsim.set_network(network);
-  const vector<const TpgFault*>& fault_list = fmgr.rep_list();
-  fsim.set_faults(fault_list);
 
   TvMgr tvmgr;
   tvmgr.init(network.ppi_num());
@@ -335,9 +328,9 @@ fsim2test(int argc,
        << "# of FFRs               = " << network.ffr_num() << endl
        << "# of simulated patterns = " << npat << endl
        << "# of effective patterns = " << nepat << endl
-       << "# of total faults       = " << fault_list.size() << endl
+       << "# of total faults       = " << network.rep_fault_num() << endl
        << "# of detected faults    = " << op.det_num() << endl
-       << "# of undetected faults  = " << fault_list.size() - op.det_num() << endl
+       << "# of undetected faults  = " << network.rep_fault_num() - op.det_num() << endl
        << "Total CPU time          = " << time << endl;
 
   return 0;
