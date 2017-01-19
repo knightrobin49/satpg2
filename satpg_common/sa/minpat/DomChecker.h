@@ -132,7 +132,7 @@ private:
 
   /// @brief do_fsim() の下請け処理
   ymuint
-  record_dom_cand(const vector<pair<ymuint, PackedVal> >& det_list);
+  record_dom_cand(const vector<pair<const TpgFault*, PackedVal> >& det_list);
 
   /// @brief 支配故障を求める基本処理
   /// @param[in] src_fid_list 対象の故障のリスト

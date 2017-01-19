@@ -6,7 +6,7 @@
 ///
 /// @author Yusuke Matsunaga (松永 裕介)
 ///
-/// Copyright (C) 2005-2010, 2012-2014 Yusuke Matsunaga
+/// Copyright (C) 2005-2010, 2012-2014, 2016, 2017 Yusuke Matsunaga
 /// All rights reserved.
 
 
@@ -82,7 +82,7 @@ public:
   /// @retval false 故障の検出が行えなかった．
   virtual
   bool
-  spsfp(TestVector* tv,
+  spsfp(const TestVector* tv,
 	const TpgFault* f);
 
   /// @brief SPSFP故障シミュレーションを行う．
@@ -97,27 +97,31 @@ public:
 
   /// @brief ひとつのパタンで故障シミュレーションを行う．
   /// @param[in] tv テストベクタ
-  /// @param[in] op 検出した時に起動されるファンクタオブジェクト
+  /// @param[out] fault_list 検出された故障のリスト
   virtual
   void
-  sppfp(TestVector* tv,
-	FsimOp& op);
+  sppfp(const TestVector* tv,
+	vector<const TpgFault*>& fault_list);
 
   /// @brief ひとつのパタンで故障シミュレーションを行う．
   /// @param[in] assign_list 値の割当リスト
-  /// @param[in] op 検出した時に起動されるファンクタオブジェクト
+  /// @param[out] fault_list 検出された故障のリスト
   virtual
   void
   sppfp(const NodeValList& assign_list,
-	FsimOp& op);
+	vector<const TpgFault*>& fault_list);
 
   /// @brief 複数のパタンで故障シミュレーションを行う．
+  /// @param[in] num テストベクタの数
   /// @param[in] tv_array テストベクタの配列
-  /// @param[in] op 検出した時に起動されるファンクタオブジェクト(Type2)
+  /// @param[out] fault_list 検出された故障とその時のビットパタンのリスト
+  ///
+  /// num は高々 kBvBitLen 以下<br>
   virtual
   void
-  ppsfp(const vector<TestVector*>& tv_array,
-	FsimOp& op);
+  ppsfp(ymuint num,
+	const TestVector* tv_array[],
+	vector<pair<const TpgFault*, PackedVal> >& fault_list);
 
 
 private:
@@ -133,9 +137,9 @@ private:
   _spsfp(const TpgFault* f);
 
   /// @brief SPPFP故障シミュレーションの本体
-  /// @param[in] op 検出した時に起動されるファンクタオブジェクト
+  /// @param[out] fault_list 検出された故障のリスト
   void
-  _sppfp(FsimOp& op);
+  _sppfp(vector<const TpgFault*>& fault_list);
 
   /// @brief FFR 内の故障シミュレーションを行う．
   /// @param[in] ffr 対象のFFR
@@ -177,12 +181,12 @@ private:
 
   /// @brief ffr 内の故障が検出可能か調べる．
   /// @param[in] ffr 対象の FFR
-  /// @param[in] op 検出した時に起動されるファンクタオブジェクト
+  /// @param[out] fault_list 検出された故障のリスト
   ///
   /// ここでは各FFR の fault_list() は変化しない．
   void
   fault_sweep(SimFFR* ffr,
-	      FsimOp& op);
+	      vector<const TpgFault*>& fault_list);
 
 
 private:

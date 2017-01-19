@@ -14,7 +14,6 @@
 #include "TpgNode.h"
 #include "TpgFault.h"
 
-#include "sa/FsimOp.h"
 #include "sa/TestVector.h"
 #include "sa/NodeValList.h"
 #include "sa/DetectOp.h"
@@ -262,34 +261,40 @@ Fsim2::clear_skip(const TpgFault* f)
 
 // @brief ひとつのパタンで故障シミュレーションを行う．
 // @param[in] tv テストベクタ
-// @param[in] op 検出した時に起動されるファンクタオブジェクト
+// @param[out] fault_list 検出された故障のリスト
 void
-Fsim2::sppfp(TestVector* tv,
-	     FsimOp& op)
+Fsim2::sppfp(const TestVector* tv,
+	     vector<const TpgFault*>& fault_list)
 {
   _set_sp2(tv);
-  _sppfp2(op);
+  _sppfp2(fault_list);
 }
 
 // @brief ひとつのパタンで故障シミュレーションを行う．
 // @param[in] assign_list 値の割当リスト
-// @param[in] op 検出した時に起動されるファンクタオブジェクト
+// @param[out] fault_list 検出された故障のリスト
 void
 Fsim2::sppfp(const NodeValList& assign_list,
-	     FsimOp& op)
+	     vector<const TpgFault*>& fault_list)
 {
   _set_sp2(assign_list);
-  _sppfp2(op);
+  _sppfp2(fault_list);
 }
 
 // @brief 複数のパタンで故障シミュレーションを行う．
+// @param[in] num テストベクタの数
 // @param[in] tv_array テストベクタの配列
-// @param[in] op 検出した時に起動されるファンクタオブジェクト
+// @param[out] fault_list 検出された故障とその時のビットパタンのリスト
+//
+// num は高々 kBvBitLen 以下<br>
 void
-Fsim2::ppsfp(const vector<TestVector*>& tv_array,
-	     FsimOp& op)
+Fsim2::ppsfp(ymuint num,
+	     const TestVector* tv_array[],
+	     vector<pair<const TpgFault*, PackedVal> >& fault_list)
 {
-  _set_pp2(tv_array);
+  fault_list.clear();
+
+  _set_pp2(num, tv_array);
 
   // 正常値の計算を行う．
   _calc_gval2();
@@ -319,7 +324,7 @@ Fsim2::ppsfp(const vector<TestVector*>& tv_array,
       obs = eventq_simulate2();
     }
 
-    ffr->fault_sweep(op, obs);
+    ffr->fault_sweep(num, obs, fault_list);
   }
 }
 
@@ -329,7 +334,7 @@ Fsim2::ppsfp(const vector<TestVector*>& tv_array,
 // @retval true 故障の検出が行えた．
 // @retval false 故障の検出が行えなかった．
 bool
-Fsim2::spsfp(TestVector* tv,
+Fsim2::spsfp(const TestVector* tv,
 	     const TpgFault* f)
 {
   _set_sp2(tv);
@@ -352,7 +357,7 @@ Fsim2::spsfp(const NodeValList& assign_list,
 // @brief 一つのパタンを全ビットに展開して設定する．
 // @param[in] tv 設定するテストベクタ
 void
-Fsim2::_set_sp2(TestVector* tv)
+Fsim2::_set_sp2(const TestVector* tv)
 {
   ymuint npi = mNetwork->ppi_num();
   for (ymuint i = 0; i < npi; ++ i) {
@@ -386,25 +391,26 @@ Fsim2::_set_sp2(const NodeValList& assign_list)
 }
 
 // @brief 複数のパタンを設定する．
+// @param[in] num テストベクタの数
 // @param[in] tv_array テストベクタの配列
 void
-Fsim2::_set_pp2(const vector<TestVector*>& tv_array)
+Fsim2::_set_pp2(ymuint num,
+		const TestVector* tv_array[])
 {
   ymuint npi = mNetwork->ppi_num();
-  ymuint nb = tv_array.size();
 
   // tv_array を入力ごとに固めてセットしていく．
   for (ymuint i = 0; i < npi; ++ i) {
     PackedVal val = kPvAll0;
     PackedVal bit = 1UL;
-    for (ymuint j = 0; j < nb; ++ j, bit <<= 1) {
+    for (ymuint j = 0; j < num; ++ j, bit <<= 1) {
       if ( tv_array[j]->val3(i) == kVal1 ) {
 	val |= bit;
       }
     }
     // 残ったビットには 0 番めのパタンを詰めておく．
     if ( tv_array[0]->val3(i) == kVal1 ) {
-      for (ymuint j = nb; j < kPvBitLen; ++ j, bit <<= 1) {
+      for (ymuint j = num; j < kPvBitLen; ++ j, bit <<= 1) {
 	val |= bit;
       }
     }
@@ -414,9 +420,9 @@ Fsim2::_set_pp2(const vector<TestVector*>& tv_array)
 }
 
 // @brief SPPFP故障シミュレーションの本体
-// @param[in] op 検出した時に起動されるファンクタオブジェクト
+// @param[out] fault_list 検出された故障のリスト
 void
-Fsim2::_sppfp2(FsimOp& op)
+Fsim2::_sppfp2(vector<const TpgFault*>& fault_list)
 {
   // 正常値の計算を行う．
   _calc_gval2();
@@ -440,7 +446,7 @@ Fsim2::_sppfp2(FsimOp& op)
     SimNode* root = ffr->root();
     if ( root->is_output() ) {
       // 常に観測可能
-      ffr->fault_sweep(op, kPvAll1);
+      ffr->fault_sweep(fault_list);
       continue;
     }
 
@@ -454,7 +460,7 @@ Fsim2::_sppfp2(FsimOp& op)
       PackedVal obs = eventq_simulate2();
       for (ymuint i = 0; i < kPvBitLen; ++ i, obs >>= 1) {
 	if ( obs & 1UL ) {
-	  ffr_buff[i]->fault_sweep(op, kPvAll1);
+	  ffr_buff[i]->fault_sweep(fault_list);
 	}
       }
       bitpos = 0;
@@ -464,7 +470,7 @@ Fsim2::_sppfp2(FsimOp& op)
     PackedVal obs = eventq_simulate2();
     for (ymuint i = 0; i < bitpos; ++ i, obs >>= 1) {
       if ( obs & 1UL ) {
-	ffr_buff[i]->fault_sweep(op, kPvAll1);
+	ffr_buff[i]->fault_sweep(fault_list);
       }
     }
   }

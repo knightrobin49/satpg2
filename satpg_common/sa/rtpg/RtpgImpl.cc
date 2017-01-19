@@ -65,7 +65,7 @@ RtpgImpl::run(FaultMgr& fmgr,
 	      ymuint min_f,
 	      ymuint max_i,
 	      ymuint max_pat,
-	      vector<TestVector*>& tvlist,
+	      vector<const TestVector*>& tvlist,
 	      RtpgStats& stats)
 {
   StopWatch local_timer;
@@ -91,44 +91,61 @@ RtpgImpl::run(FaultMgr& fmgr,
     tv_array[i] = tvmgr.new_vector();
   }
 
-  vector<TestVector*> cur_array;
-  cur_array.reserve(kPvBitLen);
+  const TestVector* cur_array[kPvBitLen];
 
   FopRtpg op(fsim, fmgr);
 
   op.init();
 
+  ymuint cpos = 0;
   ymuint pat_num = 0;
   for ( ; ; ) {
     if ( pat_num < max_pat ) {
-      TestVector* tv = tv_array[cur_array.size()];
+      TestVector* tv = tv_array[cpos];
       tv->set_from_random(mRandGen);
-      cur_array.push_back(tv);
+      cur_array[cpos] = tv;
+      ++ cpos;
       ++ pat_num;
-      if ( cur_array.size() < kPvBitLen ) {
+      if ( cpos < kPvBitLen ) {
 	continue;
       }
     }
-    else if ( cur_array.empty() ) {
+    else if ( cpos == 0 ) {
       break;
     }
 
-    op.clear_count();
+    vector<pair<const TpgFault*, PackedVal> > det_list;
+    fsim.ppsfp(cpos, cur_array, det_list);
 
-    fsim.ppsfp(cur_array, op);
-
-    ymuint det_count = 0;
-    for (ymuint i = 0; i < cur_array.size(); ++ i) {
-      ymuint det_count1 = op.count(i);
-      if ( det_count1 > 0 ) {
-	det_count += det_count1;
-	TestVector* tv = cur_array[i];
+    ymuint det_count = det_list.size();
+    bool det_flags[kPvBitLen];
+    for (ymuint i = 0; i < kPvBitLen; ++ i) {
+      det_flags[i] = false;
+    }
+    for (ymuint i = 0; i < det_count; ++ i) {
+      const TpgFault* f = det_list[i].first;
+      fmgr.set_status(f, kFsDetected);
+      fsim.set_skip(f);
+      PackedVal dpat = det_list[i].second;
+      // dpat の最初の1のビットを調べる．
+      ymuint first = 0;
+      for ( ; first < cpos; ++ first) {
+	if ( dpat & (1ULL << first) ) {
+	  break;
+	}
+      }
+      ASSERT_COND( first < cpos );
+      det_flags[first] = true;
+    }
+    for (ymuint i = 0; i < cpos; ++ i) {
+      if ( det_flags[i] ) {
+	const TestVector* tv = cur_array[i];
 	tvlist.push_back(tv);
 	tv_array[i] = tvmgr.new_vector();
 	++ epat_num;
       }
     }
-    cur_array.clear();
+    cpos = 0;
 
     total_det_count += det_count;
 

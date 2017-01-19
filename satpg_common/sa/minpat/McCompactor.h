@@ -42,8 +42,8 @@ public:
   /// @param[out] tv_list 圧縮されたテストセット
   void
   run(const vector<const TpgFault*>& fault_list,
-      const vector<TestVector*>& orig_tv_list,
-      vector<TestVector*>& tv_list);
+      const vector<const TestVector*>& orig_tv_list,
+      vector<const TestVector*>& tv_list);
 
   /// @brief verbose フラグを設定する．
   /// @param[in] verbose 指定する値

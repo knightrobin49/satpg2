@@ -8,6 +8,7 @@
 
 
 #include "EqSet.h"
+#include "TpgFault.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG_SA
@@ -145,13 +146,13 @@ EqSet::refinement(const vector<ymuint>& elem_list)
 // @param[in] elem_bv_list 要素とビットベクタ対のリスト
 // @return 変化があったら true を返す．
 bool
-EqSet::multi_refinement(const vector<pair<ymuint, PackedVal> >& elem_bv_list)
+EqSet::multi_refinement(const vector<pair<const TpgFault*, PackedVal> >& elem_bv_list)
 {
-  // elem_bv_list の内容を mMarkArray に転写する．
+  // elem_bv_list から mMarkArray を作る．
   for (ymuint i = 0; i < elem_bv_list.size(); ++ i) {
-    ymuint id = elem_bv_list[i].first;
+    const TpgFault* f = elem_bv_list[i].first;
     PackedVal bv = elem_bv_list[i].second;
-    mMarkArray[id] = bv;
+    mMarkArray[f->id()] = bv;
   }
 
   bool chg = false;
@@ -199,8 +200,8 @@ EqSet::multi_refinement(const vector<pair<ymuint, PackedVal> >& elem_bv_list)
 
   // mMarkArray の印を消す．
   for (ymuint i = 0; i < elem_bv_list.size(); ++ i) {
-    ymuint id = elem_bv_list[i].first;
-    mMarkArray[id] = 0UL;
+    const TpgFault* f = elem_bv_list[i].first;
+    mMarkArray[f->id()] = 0UL;
   }
 
   return chg;

@@ -118,7 +118,7 @@ RtpgP2::run(FaultMgr& fmgr,
 	    ymuint max_i,
 	    ymuint max_pat,
 	    ymuint wsa_limit,
-	    vector<TestVector*>& tvlist,
+	    vector<const TestVector*>& tvlist,
 	    RtpgStats& stats)
 {
   StopWatch local_timer;

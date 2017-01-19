@@ -40,7 +40,7 @@ public:
   bool
   check(Fsim& fsim,
 	const vector<const TpgFault*>& fault_list,
-	const vector<TestVector*>& pat_list);
+	const vector<const TestVector*>& pat_list);
 
 
 private:

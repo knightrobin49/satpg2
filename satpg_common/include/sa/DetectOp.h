@@ -59,7 +59,7 @@ new_DopDrop(FaultMgr& fmgr,
 /// @param[in] tvlist テストベクタのリスト
 DetectOp*
 new_DopTvList(TvMgr& tvmgr,
-	      vector<TestVector*>& tvlist);
+	      vector<const TestVector*>& tvlist);
 
 /// @brief 'verify' タイプを生成する．
 /// @param[in] fsim 故障シミュレータ

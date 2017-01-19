@@ -444,55 +444,53 @@ ConflictChecker::do_fsim(const vector<ymuint>& fid_list)
   StopWatch local_timer;
   local_timer.start();
 
-  vector<TestVector*> cur_array;
-  cur_array.reserve(kPvBitLen);
+  const TestVector* cur_array[kPvBitLen];
 
   DetOp op;
 
   ymuint npat = fid_list.size();
+  ymuint cpos = 0;
   ymuint base = 0;
   for (ymuint i = 0; i < fid_list.size(); ++ i) {
     ymuint fid = fid_list[i];
     const FaultInfo& fi = mAnalyzer.fault_info(fid);
     TestVector* tv = fi.testvector();
-    cur_array.push_back(tv);
-    if ( cur_array.size() == kPvBitLen ) {
+    cur_array[cpos] = tv;
+    ++ cpos;
+    if ( cpos == kPvBitLen ) {
       if ( mVerbose > 1 ) {
 	cout << "\rFSIM: " << base;
 	cout.flush();
       }
-      mFsim.ppsfp(cur_array, op);
-      const vector<pair<ymuint, PackedVal> >& det_list = op.det_list();
+      vector<pair<const TpgFault*, PackedVal> > det_list;
+      mFsim.ppsfp(kPvBitLen, cur_array, det_list);
       record_pat(det_list, fid_list);
-      cur_array.clear();
-      op.clear_det_list();
+      cpos = 0;
       base += kPvBitLen;
     }
   }
-  if ( !cur_array.empty() ) {
-    mFsim.ppsfp(cur_array, op);
-    const vector<pair<ymuint, PackedVal> >& det_list = op.det_list();
+  if ( cpos > 0 ) {
+    vector<pair<const TpgFault*, PackedVal> > det_list;
+    mFsim.ppsfp(cpos, cur_array, det_list);
     record_pat(det_list, fid_list);
-    op.clear_det_list();
-    base += cur_array.size();
-    cur_array.clear();
+    base += cpos;
   }
 
+  TestVector* cur_array2[kPvBitLen];
   for (ymuint i = 0; i < kPvBitLen; ++ i) {
-    TestVector* tv = mTvMgr.new_vector();
-    cur_array.push_back(tv);
+    cur_array2[i] = mTvMgr.new_vector();
   }
+
   ymuint nochg_count = 0;
   for (ymuint c = 0; c < 1000; ++ c) {
     for (ymuint i = 0; i < kPvBitLen; ++ i) {
-      cur_array[i]->set_from_random(mRandGen);
+      cur_array2[i]->set_from_random(mRandGen);
+      cur_array[i] = cur_array2[i];
     }
-    mFsim.ppsfp(cur_array, op);
+    vector<pair<const TpgFault*, PackedVal> > det_list;
+    mFsim.ppsfp(kPvBitLen, cur_array, det_list);
     ymuint nchg = 0;
-    const vector<pair<ymuint, PackedVal> >& det_list = op.det_list();
     nchg += record_pat(det_list, fid_list);
-    cur_array.clear();
-    op.clear_det_list();
     base += kPvBitLen;
     if ( nchg == 0 ) {
       ++ nochg_count;
@@ -514,7 +512,7 @@ ConflictChecker::do_fsim(const vector<ymuint>& fid_list)
 
   // 乱数パタンは削除しておく．
   for (ymuint i = 0; i < kPvBitLen; ++ i) {
-    mTvMgr.delete_vector(cur_array[i]);
+    mTvMgr.delete_vector(cur_array2[i]);
   }
 
   // mCandList の後始末．
@@ -536,21 +534,22 @@ ConflictChecker::do_fsim(const vector<ymuint>& fid_list)
 }
 
 ymuint
-ConflictChecker::record_pat(const vector<pair<ymuint, PackedVal> >& det_list,
+ConflictChecker::record_pat(const vector<pair<const TpgFault*, PackedVal> >& det_list,
 			    const vector<ymuint>& fid_list)
 {
   ymuint n = det_list.size();
   ymuint nchg = 0;
   vector<PackedVal> det_flag(mMaxFaultId, false);
   for (ymuint i = 0; i < n; ++ i) {
-    ymuint f_id = det_list[i].first;
+    const TpgFault* f = det_list[i].first;
     PackedVal pv = det_list[i].second;
-    det_flag[f_id] = pv;
+    det_flag[f->id()] = pv;
   }
 
   // 検出結果を用いて支配される故障の候補リストを作る．
   for (ymuint i = 0; i < n; ++ i) {
-    ymuint f1_id = det_list[i].first;
+    const TpgFault* f1 = det_list[i].first;
+    ymuint f1_id = f1->id();
     PackedVal bv1 = det_list[i].second;
     FaultData& fd1 = mFaultDataArray[f1_id];
 

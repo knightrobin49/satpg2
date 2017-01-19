@@ -132,33 +132,41 @@ NopFop::det_num()
 }
 
 // SPPFP のテスト
-ymuint
+pair<ymuint, ymuint>
 sppfp_test(Fsim2& fsim,
-	   NopFop& op,
 	   const vector<TestVector*>& tv_list)
 {
+  ymuint det_num = 0;
   ymuint nepat = 0;
   ymuint nv = tv_list.size();
   for (ymuint i = 0; i < nv; ++ i) {
     TestVector* tv = tv_list[i];
-    op.clear_pat();
-    fsim.sppfp(tv, op);
-    if ( op.det_pat() != kPvAll0 ) {
+    vector<const TpgFault*> fault_list;
+    fsim.sppfp(tv, fault_list);
+    ymuint n = fault_list.size();
+    if ( n > 0 ) {
+      det_num += n;
       ++ nepat;
+      for (ymuint j = 0; j < n; ++ j) {
+	const TpgFault* f = fault_list[j];
+	fsim.set_skip(f);
+      }
     }
   }
 
-  return nepat;
+  return make_pair(det_num, nepat);
 }
 
 // PPSFP のテスト
-ymuint
+pair<ymuint, ymuint>
 ppsfp_test(Fsim2& fsim,
-	   NopFop& op,
 	   const vector<TestVector*>& tv_list)
 {
-  vector<TestVector*> tv_buff(kPvBitLen);
+  const TestVector* tv_buff[kPvBitLen];
+
   ymuint nv = tv_list.size();
+
+  ymuint det_num = 0;
   ymuint nepat = 0;
   ymuint wpos = 0;
   for (ymuint i = 0; i < nv; ++ i) {
@@ -166,36 +174,62 @@ ppsfp_test(Fsim2& fsim,
     tv_buff[wpos] = tv;
     ++ wpos;
     if ( wpos == kPvBitLen ) {
-      op.clear_pat();
-      fsim.ppsfp(tv_buff, op);
+      vector<pair<const TpgFault*, PackedVal> > det_list;
+      fsim.ppsfp(kPvBitLen, tv_buff, det_list);
       wpos = 0;
-      PackedVal pat = op.det_pat();
+      PackedVal dpat_all = 0ULL;
+      ymuint n = det_list.size();
+      det_num += n;
+      for (ymuint j = 0; j < n; ++ j) {
+	const TpgFault* f = det_list[j].first;
+	PackedVal dpat = det_list[j].second;
+	fsim.set_skip(f);
+	// dpat の最初の1のビットを求める．
+	ymuint first = 0;
+	for ( ; first < kPvBitLen; ++ first) {
+	  if ( dpat & (1ULL << first) ) {
+	    break;
+	  }
+	}
+	ASSERT_COND( first < kPvBitLen );
+	dpat_all |= (1ULL << first);
+      }
       for (ymuint i = 0; i < kPvBitLen; ++ i) {
-	if ( pat & (1ULL << i) ) {
+	if ( dpat_all & (1ULL << i) ) {
 	  ++ nepat;
-	  break;
 	}
       }
     }
   }
   if ( wpos > 0 ) {
-    // 残りを tv_buff[0] と同じにする．
-    TestVector* tv0 = tv_buff[0];
-    for (ymuint j = wpos; j < kPvBitLen; ++ j) {
-      tv_buff[j] = tv0;
+    vector<pair<const TpgFault*, PackedVal> > det_list;
+    fsim.ppsfp(wpos, tv_buff, det_list);
+
+    PackedVal dpat_all = 0ULL;
+    ymuint n = det_list.size();
+    det_num += n;
+    for (ymuint j = 0; j < n; ++ j) {
+      const TpgFault* f = det_list[j].first;
+      PackedVal dpat = det_list[j].second;
+      fsim.set_skip(f);
+      // dpat の最初の1のビットを求める．
+      ymuint first = 0;
+      for ( ; first < wpos; ++ first) {
+	if ( dpat & (1ULL << first) ) {
+	  break;
+	}
+      }
+      ASSERT_COND( first < wpos );
+      dpat_all |= (1ULL << first);
     }
-    op.clear_pat();
-    fsim.ppsfp(tv_buff, op);
-    PackedVal pat = op.det_pat();
-    for (ymuint i = 0; i < wpos; ++ i) {
-      if ( pat & (1ULL << i) ) {
+    for (ymuint i = 0; i < kPvBitLen; ++ i) {
+      if ( dpat_all & (1ULL << i) ) {
 	++ nepat;
-	break;
       }
     }
   }
 
-  return nepat;
+  return make_pair(det_num, nepat);
 }
 
 // ランダムにテストパタンを生成する．
@@ -313,12 +347,12 @@ fsim2test(int argc,
 
   randgen(rg, tvmgr, npat, tv_list);
 
-  NopFop op(fsim);
-
   StopWatch timer;
   timer.start();
 
-  ymuint nepat = ppsfp_test(fsim, op, tv_list);
+  pair<ymuint, ymuint> dpnum = ppsfp_test(fsim, tv_list);
+  ymuint det_num = dpnum.first;
+  ymuint nepat = dpnum.second;
 
   timer.stop();
   USTime time = timer.time();
@@ -331,8 +365,8 @@ fsim2test(int argc,
        << "# of simulated patterns = " << npat << endl
        << "# of effective patterns = " << nepat << endl
        << "# of total faults       = " << network.rep_fault_num() << endl
-       << "# of detected faults    = " << op.det_num() << endl
-       << "# of undetected faults  = " << network.rep_fault_num() - op.det_num() << endl
+       << "# of detected faults    = " << det_num << endl
+       << "# of undetected faults  = " << network.rep_fault_num() - det_num << endl
        << "Total CPU time          = " << time << endl;
 
   return 0;

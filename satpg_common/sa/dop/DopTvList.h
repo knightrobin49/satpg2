@@ -27,7 +27,7 @@ public:
   /// @param[in] tvmgr テストベクタのマネージャ
   /// @param[in] tvlist テストベクタのリスト
   DopTvList(TvMgr& tvmgr,
-	    vector<TestVector*>& tvlist);
+	    vector<const TestVector*>& tvlist);
 
   /// @brief デストラクタ
   virtual
@@ -57,7 +57,7 @@ private:
   TvMgr& mTvMgr;
 
   // テストベクタのリスト
-  vector<TestVector*>& mTvList;
+  vector<const TestVector*>& mTvList;
 
 };
 

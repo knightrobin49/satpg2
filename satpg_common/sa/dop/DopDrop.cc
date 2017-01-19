@@ -52,7 +52,13 @@ void
 DopDrop::operator()(const TpgFault* f,
 		    const NodeValList& assign_list)
 {
-  mFsim.sppfp(assign_list, mOp);
+  vector<const TpgFault*> fault_list;
+  mFsim.sppfp(assign_list, fault_list);
+  for (ymuint i = 0; i < fault_list.size(); ++ i) {
+    const TpgFault* f = fault_list[i];
+    mMgr.set_status(f, kFsDetected);
+    mFsim.set_skip(f);
+  }
 }
 
 END_NAMESPACE_YM_SATPG_SA

@@ -47,8 +47,8 @@ McCompactor::set_verbose(ymuint verbose)
 // @param[out] tv_list テストセット
 void
 McCompactor::run(const vector<const TpgFault*>& fault_list,
-		 const vector<TestVector*>& orig_tv_list,
-		 vector<TestVector*>& tv_list)
+		 const vector<const TestVector*>& orig_tv_list,
+		 vector<const TestVector*>& tv_list)
 {
   // 故障番号の最大値を求める．
   ymuint max_fault_id = 0;
@@ -75,9 +75,17 @@ McCompactor::run(const vector<const TpgFault*>& fault_list,
   MinCov mincov;
   mincov.set_size(nf, np);
   for (ymuint i = 0; i < np; ++ i) {
-    TestVector* tv = orig_tv_list[i];
-    McOp op(mincov, row_map, i);
-    mFsim.sppfp(tv, op);
+    const TestVector* tv = orig_tv_list[i];
+    vector<const TpgFault*> fault_list;
+    mFsim.sppfp(tv, fault_list);
+    for (ymuint j = 0; j < fault_list.size(); ++ j) {
+      const TpgFault* f = fault_list[j];
+      ymuint row_pos = row_map[f->id()];
+      if ( row_pos > 0 ) {
+	-- row_pos;
+	mincov.insert_elem(row_pos, i);
+      }
+    }
   }
 
   // 最終被覆問題を解く

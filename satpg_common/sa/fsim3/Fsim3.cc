@@ -13,7 +13,6 @@
 #include "TpgNode.h"
 #include "TpgFault.h"
 
-#include "sa/FsimOp.h"
 #include "sa/TestVector.h"
 #include "sa/NodeValList.h"
 
@@ -286,7 +285,7 @@ Fsim3::clear_skip(const TpgFault* f)
 // @retval true 故障の検出が行えた．
 // @retval false 故障の検出が行えなかった．
 bool
-Fsim3::spsfp(TestVector* tv,
+Fsim3::spsfp(const TestVector* tv,
 	     const TpgFault* f)
 {
   // tv を全ビットにセットしていく．
@@ -397,10 +396,10 @@ Fsim3::_spsfp(const TpgFault* f)
 
 // @brief ひとつのパタンで故障シミュレーションを行う．
 // @param[in] tv テストベクタ
-// @param[in] op 検出した時に起動されるファンクタオブジェクト
+// @param[out] fault_list 検出された故障のリスト
 void
-Fsim3::sppfp(TestVector* tv,
-	     FsimOp& op)
+Fsim3::sppfp(const TestVector* tv,
+	     vector<const TpgFault*>& fault_list)
 {
   ymuint npi = mNetwork->ppi_num();
 
@@ -416,15 +415,15 @@ Fsim3::sppfp(TestVector* tv,
     update_gval(simnode);
   }
 
-  _sppfp(op);
+  _sppfp(fault_list);
 }
 
 // @brief ひとつのパタンで故障シミュレーションを行う．
 // @param[in] assign_list 値の割当リスト
-// @param[in] op 検出した時に起動されるファンクタオブジェクト
+// @param[out] fault_list 検出された故障のリスト
 void
 Fsim3::sppfp(const NodeValList& assign_list,
-	     FsimOp& op)
+	     vector<const TpgFault*>& fault_list)
 {
   // assign_list を全ビットにセットしていく．
   mGvalClearArray.clear();
@@ -442,13 +441,13 @@ Fsim3::sppfp(const NodeValList& assign_list,
     update_gval(simnode);
   }
 
-  _sppfp(op);
+  _sppfp(fault_list);
 }
 
 // @brief SPPFP故障シミュレーションの本体
-// @param[in] op 検出した時に起動されるファンクタオブジェクト
+// @param[out] fault_list 検出された故障のリスト
 void
-Fsim3::_sppfp(FsimOp& op)
+Fsim3::_sppfp(vector<const TpgFault*>& fault_list)
 {
   // 正常値の計算を行う．
   calc_gval();
@@ -478,7 +477,7 @@ Fsim3::_sppfp(FsimOp& op)
 
     if ( root->is_output() ) {
       // 常に観測可能
-      fault_sweep(ffr, op);
+      fault_sweep(ffr, fault_list);
       continue;
     }
 
@@ -499,7 +498,7 @@ Fsim3::_sppfp(FsimOp& op)
       PackedVal obs = calc_fval();
       for (ymuint i = 0; i < bitpos; ++ i, obs >>= 1) {
 	if ( obs & 1UL ) {
-	  fault_sweep(ffr_buff[i], op);
+	  fault_sweep(ffr_buff[i], fault_list);
 	}
       }
       bitpos = 0;
@@ -510,7 +509,7 @@ Fsim3::_sppfp(FsimOp& op)
     PackedVal obs = calc_fval();
     for (ymuint i = 0; i < bitpos; ++ i, obs >>= 1) {
       if ( obs & 1UL ) {
-	fault_sweep(ffr_buff[i], op);
+	fault_sweep(ffr_buff[i], fault_list);
       }
     }
   }
@@ -520,14 +519,19 @@ Fsim3::_sppfp(FsimOp& op)
 }
 
 // @brief 複数のパタンで故障シミュレーションを行う．
+// @param[in] num テストベクタの数
 // @param[in] tv_array テストベクタの配列
-// @param[in] op 検出した時に起動されるファンクタオブジェクト(Type2)
+// @param[out] fault_list 検出された故障とその時のビットパタンのリスト
+//
+// num は高々 kBvBitLen 以下<br>
 void
-Fsim3::ppsfp(const vector<TestVector*>& tv_array,
-	     FsimOp& op)
+Fsim3::ppsfp(ymuint num,
+	     const TestVector* tv_array[],
+	     vector<pair<const TpgFault*, PackedVal> >& fault_list)
 {
+  fault_list.clear();
+
   ymuint npi = mNetwork->ppi_num();
-  ymuint nb = tv_array.size();
 
   // tv_array を入力ごとに固めてセットしていく．
   mGvalClearArray.clear();
@@ -535,7 +539,7 @@ Fsim3::ppsfp(const vector<TestVector*>& tv_array,
     PackedVal val_0 = kPvAll0;
     PackedVal val_1 = kPvAll0;
     PackedVal bit = 1UL;
-    for (ymuint j = 0; j < nb; ++ j, bit <<= 1) {
+    for (ymuint j = 0; j < num; ++ j, bit <<= 1) {
       switch ( tv_array[j]->val3(i) ) {
       case kVal0:
 	val_0 |= bit;
@@ -554,13 +558,13 @@ Fsim3::ppsfp(const vector<TestVector*>& tv_array,
     // これは無駄なイベントを発生させないため．
     switch ( tv_array[0]->val3(i) ) {
     case kVal0:
-      for (ymuint j = nb; j < kPvBitLen; ++ j, bit <<= 1) {
+      for (ymuint j = num; j < kPvBitLen; ++ j, bit <<= 1) {
 	val_0 |= bit;
       }
       break;
 
     case kVal1:
-      for (ymuint j = nb; j < kPvBitLen; ++ j, bit <<= 1) {
+      for (ymuint j = num; j < kPvBitLen; ++ j, bit <<= 1) {
 	val_1 |= bit;
       }
       break;
@@ -626,7 +630,7 @@ Fsim3::ppsfp(const vector<TestVector*>& tv_array,
       PackedVal dbits = obs & ff->mObsMask;
       if ( dbits ) {
 	const TpgFault* f = ff->mOrigF;
-	op(f, dbits);
+	fault_list.push_back(make_pair(f, dbits));
       }
     }
   }
@@ -802,12 +806,12 @@ Fsim3::calc_fval()
 
 // @brief ffr 内の故障が検出可能か調べる．
 // @param[in] ffr 対象の FFR
-// @param[in] op 検出した時に起動されるファンクタオブジェクト
+// @param[out] fault_list 検出された故障のリスト
 //
 // ここでは各FFR の fault_list() は変化しない．
 void
 Fsim3::fault_sweep(SimFFR* ffr,
-		   FsimOp& op)
+		   vector<const TpgFault*>& fault_list)
 {
   const vector<SimFault*>& flist = ffr->fault_list();
   ymuint fnum = flist.size();
@@ -815,7 +819,7 @@ Fsim3::fault_sweep(SimFFR* ffr,
     SimFault* ff = flist[rpos];
     if ( ff->mObsMask ) {
       const TpgFault* f = ff->mOrigF;
-      op(f, kPvAll1);
+      fault_list.push_back(f);
     }
   }
 }

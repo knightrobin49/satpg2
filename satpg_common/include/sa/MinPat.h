@@ -59,7 +59,7 @@ public:
       bool mc_compaction,
       bool has_thval,
       ymuint thval,
-      vector<TestVector*>& tv_list,
+      vector<const TestVector*>& tv_list,
       USTime& time) = 0;
 
   /// @brief verbose フラグをセットする．

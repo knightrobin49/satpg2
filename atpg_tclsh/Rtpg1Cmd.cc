@@ -142,7 +142,7 @@ Rtpg1Cmd::cmd_proc(TclObjVector& objv)
   TdFsim& fsim = _td_fsim();
   TdTvMgr& tvmgr = _td_tv_mgr();
 
-  vector<TdTestVector*>& tv_list = _td_tv_list();
+  vector<const TdTestVector*>& tv_list = _td_tv_list();
   nsTd::RtpgStats stats;
 
   rtpg->run(fmgr, tvmgr, fsim, min_f, max_i, max_pat, wsa_limit, tv_list, stats);

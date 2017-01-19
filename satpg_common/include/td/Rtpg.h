@@ -58,7 +58,7 @@ public:
       ymuint max_i,
       ymuint max_pat,
       ymuint wsa_limit,
-      vector<TestVector*>& tvlist,
+      vector<const TestVector*>& tvlist,
       RtpgStats& stats) = 0;
 
 };

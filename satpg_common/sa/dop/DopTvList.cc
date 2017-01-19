@@ -20,7 +20,7 @@ BEGIN_NAMESPACE_YM_SATPG_SA
 // @param[in] tvlist テストベクタのリスト
 DetectOp*
 new_DopTvList(TvMgr& tvmgr,
-	      vector<TestVector*>& tvlist)
+	      vector<const TestVector*>& tvlist)
 {
   return new DopTvList(tvmgr, tvlist);
 }
@@ -34,7 +34,7 @@ new_DopTvList(TvMgr& tvmgr,
 // @param[in] tvmgr テストベクタのマネージャ
 // @param[in] tvlist テストベクタのリスト
 DopTvList::DopTvList(TvMgr& tvmgr,
-		     vector<TestVector*>& tvlist) :
+		     vector<const TestVector*>& tvlist) :
   mTvMgr(tvmgr),
   mTvList(tvlist)
 {

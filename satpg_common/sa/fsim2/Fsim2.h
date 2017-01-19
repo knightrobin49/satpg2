@@ -6,7 +6,7 @@
 ///
 /// @author Yusuke Matsunaga (松永 裕介)
 ///
-/// Copyright (C) 2005-2010, 2012-2013 Yusuke Matsunaga
+/// Copyright (C) 2005-2010, 2012-2013, 2016, 2017 Yusuke Matsunaga
 /// All rights reserved.
 
 
@@ -89,7 +89,7 @@ public:
   /// @retval false 故障の検出が行えなかった．
   virtual
   bool
-  spsfp(TestVector* tv,
+  spsfp(const TestVector* tv,
 	const TpgFault* f);
 
   /// @brief SPSFP故障シミュレーションを行う．
@@ -104,27 +104,31 @@ public:
 
   /// @brief ひとつのパタンで故障シミュレーションを行う．
   /// @param[in] tv テストベクタ
-  /// @param[in] op 検出した時に起動されるファンクタオブジェクト
+  /// @param[out] fault_list 検出された故障のリスト
   virtual
   void
-  sppfp(TestVector* tv,
-	FsimOp& op);
+  sppfp(const TestVector* tv,
+	vector<const TpgFault*>& fault_list);
 
   /// @brief ひとつのパタンで故障シミュレーションを行う．
   /// @param[in] assign_list 値の割当リスト
-  /// @param[in] op 検出した時に起動されるファンクタオブジェクト
+  /// @param[out] fault_list 検出された故障のリスト
   virtual
   void
   sppfp(const NodeValList& assign_list,
-	FsimOp& op);
+	vector<const TpgFault*>& fault_list);
 
   /// @brief 複数のパタンで故障シミュレーションを行う．
+  /// @param[in] num テストベクタの数
   /// @param[in] tv_array テストベクタの配列
-  /// @param[in] op 検出した時に起動されるファンクタオブジェクト(Type2)
+  /// @param[out] fault_list 検出された故障とその時のビットパタンのリスト
+  ///
+  /// num は高々 kBvBitLen 以下<br>
   virtual
   void
-  ppsfp(const vector<TestVector*>& tv_array,
-	FsimOp& op);
+  ppsfp(ymuint num,
+	const TestVector* tv_array[],
+	vector<pair<const TpgFault*, PackedVal> >& fault_list);
 
 
 private:
@@ -135,7 +139,7 @@ private:
   /// @brief 一つのパタンを全ビットに展開して設定する．
   /// @param[in] tv 設定するテストベクタ
   void
-  _set_sp2(TestVector* tv);
+  _set_sp2(const TestVector* tv);
 
   /// @brief 一つのパタンを全ビットに展開して設定する．
   /// @param[in] assign_list 設定する値の割り当てリスト
@@ -143,9 +147,11 @@ private:
   _set_sp2(const NodeValList& assign_list);
 
   /// @brief 複数のパタンを設定する．
+  /// @param[in] num テストベクタの数
   /// @param[in] tv_array テストベクタの配列
   void
-  _set_pp2(const vector<TestVector*>& tv_array);
+  _set_pp2(ymuint num,
+	   const TestVector* tv_array[]);
 
   /// @brief SPSFP故障シミュレーションの本体
   /// @param[in] f 対象の故障
@@ -155,9 +161,9 @@ private:
   _spsfp2(const TpgFault* f);
 
   /// @brief SPPFP故障シミュレーションの本体
-  /// @param[in] op 検出した時に起動されるファンクタオブジェクト
+  /// @param[out] fault_list 検出された故障のリスト
   void
-  _sppfp2(FsimOp& op);
+  _sppfp2(vector<const TpgFault*>& fault_list);
 
   /// @brief 正常値の計算を行う．
   ///

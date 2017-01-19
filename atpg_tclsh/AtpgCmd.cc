@@ -255,7 +255,7 @@ AtpgCmd::_sa_tv_mgr()
 }
 
 // @brief テストベクタのリストを取り出す．
-vector<nsSa::TestVector*>&
+vector<const nsSa::TestVector*>&
 AtpgCmd::_sa_tv_list()
 {
   return mMgr->_sa_tv_list();
@@ -283,7 +283,7 @@ AtpgCmd::_td_tv_mgr()
 }
 
 // @brief テストベクタのリストを取り出す．
-vector<nsTd::TestVector*>&
+vector<const nsTd::TestVector*>&
 AtpgCmd::_td_tv_list()
 {
   return mMgr->_td_tv_list();

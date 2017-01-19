@@ -60,7 +60,7 @@ public:
       ymuint min_f,
       ymuint max_i,
       ymuint max_pat,
-      vector<TestVector*>& tvlist,
+      vector<const TestVector*>& tvlist,
       RtpgStats& stats);
 
 

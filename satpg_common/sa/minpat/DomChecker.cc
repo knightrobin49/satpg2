@@ -254,41 +254,39 @@ DomChecker::get_dom_faults(const vector<ymuint>& src_fid_list,
 void
 DomChecker::do_fsim(const vector<ymuint>& fid_list)
 {
-  vector<TestVector*> cur_array;
-  cur_array.reserve(kPvBitLen);
+  const TestVector* cur_array[kPvBitLen];
 
   DetOp op;
 
   ymuint nf = fid_list.size();
+  ymuint cpos = 0;
   ymuint npat = 0;
   for (ymuint i = 0; i < nf; ++ i) {
     ymuint fid = fid_list[i];
     const FaultInfo& fi = mAnalyzer.fault_info(fid);
     TestVector* tv = fi.testvector();
-    cur_array.push_back(tv);
-    if ( cur_array.size() == kPvBitLen ) {
+    cur_array[cpos] = tv;
+    ++ cpos;
+    if ( cpos == kPvBitLen ) {
       if ( mVerbose > 1 ) {
 	cout << "\rFSIM: " << setw(6) << npat;
 	cout.flush();
       }
-      mFsim.ppsfp(cur_array, op);
-      const vector<pair<ymuint, PackedVal> >& det_list = op.det_list();
+      vector<pair<const TpgFault*, PackedVal> > det_list;
+      mFsim.ppsfp(kPvBitLen, cur_array, det_list);
       record_dom_cand(det_list);
-      cur_array.clear();
-      op.clear_det_list();
+      cpos = 0;
       npat += kPvBitLen;
     }
   }
-  if ( !cur_array.empty() ) {
-    mFsim.ppsfp(cur_array, op);
-    const vector<pair<ymuint, PackedVal> >& det_list = op.det_list();
+  if ( cpos > 0 ) {
+    vector<pair<const TpgFault*, PackedVal> > det_list;
+    mFsim.ppsfp(cpos, cur_array, det_list);
     record_dom_cand(det_list);
-    op.clear_det_list();
-    npat += cur_array.size();
-    cur_array.clear();
+    npat += cpos;
   }
 
-  vector<TestVector*> cur_array2(kPvBitLen);
+  TestVector* cur_array2[kPvBitLen];
   for (ymuint i = 0; i < kPvBitLen; ++ i) {
     TestVector* tv = mTvMgr.new_vector();
     cur_array2[i] = tv;
@@ -298,12 +296,12 @@ DomChecker::do_fsim(const vector<ymuint>& fid_list)
   for ( ; ; ) {
     for (ymuint i = 0; i < kPvBitLen; ++ i) {
       cur_array2[i]->set_from_random(mRandGen);
+      cur_array[i] = cur_array2[i];
     }
-    mFsim.ppsfp(cur_array2, op);
+    vector<pair<const TpgFault*, PackedVal> > det_list;
+    mFsim.ppsfp(kPvBitLen, cur_array, det_list);
     ymuint nchg = 0;
-    const vector<pair<ymuint, PackedVal> >& det_list = op.det_list();
     nchg += record_dom_cand(det_list);
-    op.clear_det_list();
     npat += kPvBitLen;
     if ( nchg == 0 ) {
       ++ nochg;
@@ -398,16 +396,16 @@ DomChecker::do_fsim(const vector<ymuint>& fid_list)
 // 最初に候補となる故障は det_list に含まれない(ビットベクタが0)の故障
 // を含むので効率のよいやり方が思いつかなかった．
 ymuint
-DomChecker::record_dom_cand(const vector<pair<ymuint, PackedVal> >& det_list)
+DomChecker::record_dom_cand(const vector<pair<const TpgFault*, PackedVal> >& det_list)
 {
   ymuint n = det_list.size();
   ymuint nchg = 0;
 
   // det_list の内容を mDetFlag に転写する．
   for (ymuint i = 0; i < n; ++ i) {
-    ymuint f_id = det_list[i].first;
+    const TpgFault* f = det_list[i].first;
     PackedVal bv = det_list[i].second;
-    mDetFlag[f_id] = bv;
+    mDetFlag[f->id()] = bv;
   }
 
   // 新しくリストを作る時の作業用
@@ -418,7 +416,8 @@ DomChecker::record_dom_cand(const vector<pair<ymuint, PackedVal> >& det_list)
 
   // 検出結果を用いて支配される故障の候補リストを作る．
   for (ymuint i1 = 0; i1 < n; ++ i1) {
-    ymuint f1_id = det_list[i1].first;
+    const TpgFault* f1 = det_list[i1].first;
+    ymuint f1_id = f1->id();
     PackedVal bv1 = det_list[i1].second;
     FaultData& fd1 = mFaultDataArray[f1_id];
     if ( fd1.mDetCount == 0 ) {
@@ -428,7 +427,8 @@ DomChecker::record_dom_cand(const vector<pair<ymuint, PackedVal> >& det_list)
 	if ( i2 == i1 ) {
 	  continue;
 	}
-	ymuint f2_id = det_list[i2].first;
+	const TpgFault* f2 = det_list[i2].first;
+	ymuint f2_id = f2->id();
 	PackedVal bv2 = det_list[i2].second;
 	if ( (bv1 & bv2) == bv1 ) {
 	  // bv1 が 1 の部分は bv2 も 1
@@ -467,8 +467,8 @@ DomChecker::record_dom_cand(const vector<pair<ymuint, PackedVal> >& det_list)
 
   // mDetFlag をクリアしておく．
   for (ymuint i1 = 0; i1 < n; ++ i1) {
-    ymuint f1_id = det_list[i1].first;
-    mDetFlag[f1_id] = 0UL;
+    const TpgFault* f1 = det_list[i1].first;
+    mDetFlag[f1->id()] = 0UL;
   }
 
   return nchg;

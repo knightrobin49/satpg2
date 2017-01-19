@@ -55,11 +55,18 @@ public:
   fault_prop2();
 
   /// @brief 検出可能な故障を見つける．
-  /// @param[in] op 故障検出時に起動されるファンクタ
-  /// @param[in] mask マスク
+  /// @param[out] fault_list 検出された故障を格納するリスト
   void
-  fault_sweep(FsimOp& op,
-	      PackedVal mask);
+  fault_sweep(vector<const TpgFault*>& fault_list);
+
+  /// @brief 検出可能な故障を見つける．
+  /// @param[in] num テストベクタの数
+  /// @param[in] mask マスク
+  /// @param[out] fault_list 検出された故障とその時のビットパタンのリスト
+  void
+  fault_sweep(ymuint num,
+	      PackedVal mask,
+	      vector<pair<const TpgFault*, PackedVal> >& fault_list);
 
 
 private:
@@ -167,12 +174,30 @@ SimFFR::fault_prop2()
 }
 
 // @brief 検出可能な故障を見つける．
-// @param[in] op 故障検出時に起動されるファンクタ
-// @param[in] mask マスク
+// @param[out] fault_list 検出された故障を格納するリスト
 inline
 void
-SimFFR::fault_sweep(FsimOp& op,
-		    PackedVal mask)
+SimFFR::fault_sweep(vector<const TpgFault*>& fault_list)
+{
+  for (vector<SimFault*>::const_iterator p = mFaultList.begin();
+       p != mFaultList.end(); ++ p) {
+    SimFault* ff = *p;
+    if ( ff->mSkip || ff->mObsMask == kPvAll0 ) {
+      continue;
+    }
+    const TpgFault* f = ff->mOrigF;
+    fault_list.push_back(f);
+  }
+}
+
+// @brief 検出可能な故障を見つける．
+// @param[in] num テストベクタの数
+// @param[in] mask マスク
+// @param[out] fault_list 検出された故障とその時のビットパタンのリスト
+void
+SimFFR::fault_sweep(ymuint num,
+		    PackedVal mask,
+		    vector<pair<const TpgFault*, PackedVal> >& fault_list)
 {
   for (vector<SimFault*>::const_iterator p = mFaultList.begin();
        p != mFaultList.end(); ++ p) {
@@ -183,7 +208,7 @@ SimFFR::fault_sweep(FsimOp& op,
     PackedVal pat = ff->mObsMask & mask;
     if ( pat != kPvAll0 ) {
       const TpgFault* f = ff->mOrigF;
-      op(f, pat);
+      fault_list.push_back(make_pair(f, pat));
     }
   }
 }

@@ -50,7 +50,7 @@ public:
   /// @param[in] elem_bv_list 要素とビットベクタ対のリスト
   /// @return 変化があったら true を返す．
   bool
-  multi_refinement(const vector<pair<ymuint, PackedVal> >& elem_bv_list);
+  multi_refinement(const vector<pair<const TpgFault*, PackedVal> >& elem_bv_list);
 
   /// @brief 同値類候補数を返す．
   ymuint

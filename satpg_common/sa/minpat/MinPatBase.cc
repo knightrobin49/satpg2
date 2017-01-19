@@ -67,7 +67,7 @@ MinPatBase::run(TpgNetwork& network,
 		bool mc_compaction,
 		bool has_thval,
 		ymuint thval,
-		vector<TestVector*>& tv_list,
+		vector<const TestVector*>& tv_list,
 		USTime& time)
 {
   StopWatch total_timer;
@@ -227,7 +227,7 @@ MinPatBase::run(TpgNetwork& network,
     McCompactor compactor(fsim3);
     compactor.set_verbose(verbose());
 
-    vector<TestVector*> new_tv_list;
+    vector<const TestVector*> new_tv_list;
     compactor.run(fault_list, tv_list, new_tv_list);
 
     tv_list = new_tv_list;

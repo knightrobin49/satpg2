@@ -67,7 +67,7 @@ protected:
   _sa_tv_mgr();
 
   /// @brief テストベクタのリストを取り出す．
-  vector<nsSa::TestVector*>&
+  vector<const nsSa::TestVector*>&
   _sa_tv_list();
 
   /// @brief 2値の故障シミュレータを取り出す．
@@ -83,7 +83,7 @@ protected:
   _td_tv_mgr();
 
   /// @brief テストベクタのリストを取り出す．
-  vector<nsTd::TestVector*>&
+  vector<const nsTd::TestVector*>&
   _td_tv_list();
 
   /// @brief 遷移故障用の2値の故障シミュレータを取り出す．

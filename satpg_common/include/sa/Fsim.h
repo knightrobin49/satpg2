@@ -6,11 +6,12 @@
 ///
 /// @author Yusuke Matsunaga (松永 裕介)
 ///
-/// Copyright (C) 2016 Yusuke Matsunaga
+/// Copyright (C) 2016, 2017 Yusuke Matsunaga
 /// All rights reserved.
 
 
 #include "sa/sa_nsdef.h"
+#include "PackedVal.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG_SA
@@ -91,7 +92,7 @@ public:
   /// @retval false 故障の検出が行えなかった．
   virtual
   bool
-  spsfp(TestVector* tv,
+  spsfp(const TestVector* tv,
 	const TpgFault* f) = 0;
 
   /// @brief SPSFP故障シミュレーションを行う．
@@ -106,27 +107,31 @@ public:
 
   /// @brief ひとつのパタンで故障シミュレーションを行う．
   /// @param[in] tv テストベクタ
-  /// @param[in] op 検出した時に起動されるファンクタオブジェクト
+  /// @param[out] fault_list 検出された故障のリスト
   virtual
   void
-  sppfp(TestVector* tv,
-	FsimOp& op) = 0;
+  sppfp(const TestVector* tv,
+	vector<const TpgFault*>& fault_list) = 0;
 
   /// @brief ひとつのパタンで故障シミュレーションを行う．
   /// @param[in] assign_list 値の割当リスト
-  /// @param[in] op 検出した時に起動されるファンクタオブジェクト
+  /// @param[out] fault_list 検出された故障のリスト
   virtual
   void
   sppfp(const NodeValList& assign_list,
-	FsimOp& op) = 0;
+	vector<const TpgFault*>& fault_list) = 0;
 
   /// @brief 複数のパタンで故障シミュレーションを行う．
+  /// @param[in] num テストベクタの数
   /// @param[in] tv_array テストベクタの配列
-  /// @param[in] op 検出した時に起動されるファンクタオブジェクト
+  /// @param[out] fault_list 検出された故障とその時のビットパタンのリスト
+  ///
+  /// num は高々 kBvBitLen 以下<br>
   virtual
   void
-  ppsfp(const vector<TestVector*>& tv_array,
-	FsimOp& op) = 0;
+  ppsfp(ymuint num,
+	const TestVector* tv_array[],
+	vector<pair<const TpgFault*, PackedVal> >& fault_list) = 0;
 
 };
 

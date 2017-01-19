@@ -65,10 +65,10 @@ PrintPatCmd::cmd_proc(TclObjVector& objv)
   bool hex_flag = mPoptHex->is_specified();
   bool num_flag = mPoptNum->is_specified();
 
-  vector<SaTestVector*>& tvlist = _sa_tv_list();
+  vector<const SaTestVector*>& tvlist = _sa_tv_list();
   ymuint n = tvlist.size();
   for (ymuint i = 0; i < n; ++ i) {
-    SaTestVector* tv = tvlist[i];
+    const SaTestVector* tv = tvlist[i];
     if ( num_flag ) {
       out << setw(5) << setfill('0') << (i + 1) << ": ";
     }
