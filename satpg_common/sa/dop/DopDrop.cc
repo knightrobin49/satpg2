@@ -35,8 +35,7 @@ new_DopDrop(FaultMgr& fmgr,
 DopDrop::DopDrop(FaultMgr& fmgr,
 		 Fsim& fsim) :
   mMgr(fmgr),
-  mFsim(fsim),
-  mOp(fmgr, fsim)
+  mFsim(fsim)
 {
 }
 

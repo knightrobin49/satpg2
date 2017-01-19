@@ -53,7 +53,6 @@ class RtpgStats;
 class MinPat;
 class MinPatStats;
 class Fsim;
-class FsimOp;
 
 END_NAMESPACE_YM_SATPG_SA
 
@@ -62,7 +61,6 @@ BEGIN_NAMESPACE_YM_SATPG
 typedef nsSa::TestVector SaTestVector;
 typedef nsSa::TvMgr SaTvMgr;
 typedef nsSa::Fsim SaFsim;
-typedef nsSa::FsimOp SaFsimOp;
 
 END_NAMESPACE_YM_SATPG
 

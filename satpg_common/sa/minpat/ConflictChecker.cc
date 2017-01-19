@@ -19,8 +19,6 @@
 #include "sa/StructSat.h"
 #include "sa/FoCone.h"
 
-#include "DetOp.h"
-
 #include "ym/RandGen.h"
 #include "ym/StopWatch.h"
 #include "ym/HashSet.h"
@@ -445,8 +443,6 @@ ConflictChecker::do_fsim(const vector<ymuint>& fid_list)
   local_timer.start();
 
   const TestVector* cur_array[kPvBitLen];
-
-  DetOp op;
 
   ymuint npat = fid_list.size();
   ymuint cpos = 0;

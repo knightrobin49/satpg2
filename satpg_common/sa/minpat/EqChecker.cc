@@ -14,7 +14,6 @@
 #include "sa/TvMgr.h"
 #include "sa/TestVector.h"
 #include "sa/Fsim.h"
-#include "DetOp.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG_SA
@@ -186,8 +185,6 @@ void
 EqChecker::do_fsim(const vector<ymuint>& fid_list)
 {
   const TestVector* cur_array[kPvBitLen];
-
-  DetOp op;
 
   ymuint nf = fid_list.size();
   ymuint npat = nf;

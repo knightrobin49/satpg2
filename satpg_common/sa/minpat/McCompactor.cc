@@ -8,7 +8,6 @@
 
 
 #include "McCompactor.h"
-#include "McOp.h"
 #include "sa/Fsim.h"
 #include "TpgFault.h"
 #include "ym/MinCov.h"

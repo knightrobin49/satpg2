@@ -8,113 +8,12 @@
 
 
 #include "Verifier.h"
-
 #include "TpgFault.h"
-
-#include "sa/FsimOp.h"
 #include "sa/TestVector.h"
-
 #include "ym/HashSet.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG_SA
-
-#if 0
-//////////////////////////////////////////////////////////////////////
-/// @class FopVer Verifier.h "Verifier.h"
-/// @brief Verifier で用いられる FsimOp
-//////////////////////////////////////////////////////////////////////
-
-class FopVer :
-  public FsimOp
-{
-public:
-
-  /// @brief コンストラクタ
-  /// @param[in] fsim 故障シミュレータ
-  FopVer(Fsim& fsim);
-
-  /// @brief デストラクタ
-  virtual
-  ~FopVer();
-
-
-public:
-  //////////////////////////////////////////////////////////////////////
-  // 外部インターフェイス
-  //////////////////////////////////////////////////////////////////////
-
-  /// @brief 故障を検出したときの処理
-  /// @param[in] f 故障
-  virtual
-  void
-  operator()(const TpgFault* f,
-	     PackedVal dpat);
-
-  /// @brief det_flag を下ろす．
-  void
-  clear_det_flag();
-
-  /// @brief 故障が見つかったら true を返す．
-  bool
-  is_detected(const TpgFault* f);
-
-
-private:
-  //////////////////////////////////////////////////////////////////////
-  // データメンバ
-  //////////////////////////////////////////////////////////////////////
-
-  // 故障シミュレータ
-  Fsim& mFsim;
-
-  // 検出済みの故障番号を入れるハッシュ
-  HashSet<ymuint> mDetSet;
-
-};
-
-
-//////////////////////////////////////////////////////////////////////
-// クラス FopVer
-//////////////////////////////////////////////////////////////////////
-
-// @brief コンストラクタ
-// @param[in] fsim 故障シミュレータ
-FopVer::FopVer(Fsim& fsim) :
-  mFsim(fsim)
-{
-}
-
-// @brief デeストラクタ
-FopVer::~FopVer()
-{
-}
-
-// @brief 故障を検出したときの処理
-// @param[in] f 故障
-void
-FopVer::operator()(const TpgFault* fault,
-		   PackedVal dpat)
-{
-  mFsim.set_skip(fault);
-  mDetSet.add(fault->id());
-}
-
-// @brief det_flag を下ろす．
-void
-FopVer::clear_det_flag()
-{
-  mDetSet.clear();
-}
-
-// @brief 故障が見つかったら true を返す．
-bool
-FopVer::is_detected(const TpgFault* fault)
-{
-  return mDetSet.check(fault->id());
-}
-#endif
-
 
 //////////////////////////////////////////////////////////////////////
 // クラス Verifier

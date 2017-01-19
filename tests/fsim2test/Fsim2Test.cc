@@ -9,7 +9,6 @@
 
 #include "TpgNetwork.h"
 #include "sa/TvMgr.h"
-#include "sa/FsimOp.h"
 #include "Fsim2.h"
 #include "ym/RandGen.h"
 #include "ym/StopWatch.h"
@@ -19,6 +18,7 @@ BEGIN_NAMESPACE_YM_SATPG_FSIM
 
 const char* argv0 = "";
 
+#if 0
 //////////////////////////////////////////////////////////////////////
 /// @class NopFop NopFop.h "NopFop.h"
 /// @brief 何もしない FsimOp
@@ -130,6 +130,7 @@ NopFop::det_num()
 {
   return mDetNum;
 }
+#endif
 
 // SPPFP のテスト
 pair<ymuint, ymuint>

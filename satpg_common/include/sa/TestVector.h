@@ -195,12 +195,6 @@ private:
   const TestVector&
   operator=(const TestVector& src);
 
-#if 0
-public:
-
-  // 暫定的に用意するメンバ
-  int det_count;
-#endif
 
 private:
   //////////////////////////////////////////////////////////////////////

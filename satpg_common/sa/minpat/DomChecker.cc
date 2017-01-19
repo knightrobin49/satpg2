@@ -17,8 +17,6 @@
 #include "sa/Fsim.h"
 #include "sa/StructSat.h"
 
-#include "DetOp.h"
-
 
 BEGIN_NAMESPACE_YM_SATPG_SA
 
@@ -255,8 +253,6 @@ void
 DomChecker::do_fsim(const vector<ymuint>& fid_list)
 {
   const TestVector* cur_array[kPvBitLen];
-
-  DetOp op;
 
   ymuint nf = fid_list.size();
   ymuint cpos = 0;

@@ -13,7 +13,6 @@
 #include "sa/TestVector.h"
 #include "sa/Fsim.h"
 #include "sa/RtpgStats.h"
-#include "FopRtpg.h"
 #include "ym/StopWatch.h"
 
 
@@ -92,10 +91,6 @@ RtpgImpl::run(FaultMgr& fmgr,
   }
 
   const TestVector* cur_array[kPvBitLen];
-
-  FopRtpg op(fsim, fmgr);
-
-  op.init();
 
   ymuint cpos = 0;
   ymuint pat_num = 0;

@@ -10,7 +10,6 @@
 
 
 #include "sa/DetectOp.h"
-#include "FopDrop.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG_SA
@@ -59,9 +58,6 @@ private:
 
   // 故障シミュレータ
   Fsim& mFsim;
-
-  // Fsim 用のファンクタ
-  FopDrop mOp;
 
 };
 

@@ -57,7 +57,7 @@ set (sa_SOURCES
   sa/dop/DopList.cc
   sa/dop/DopTvList.cc
   sa/dop/DopVerify.cc
-  sa/dop/FopDrop.cc
+#  sa/dop/FopDrop.cc
 
   sa/dtpg/DtpgSat.cc
   sa/dtpg/DtpgSatS.cc
@@ -67,8 +67,6 @@ set (sa_SOURCES
   sa/uop/UopDummy.cc
   sa/uop/UopList.cc
   sa/uop/UopSkip.cc
-
-  sa/fop/FopKDet.cc
 
   sa/fsim2/EventQ.cc
   sa/fsim2/Fsim2.cc
@@ -100,7 +98,6 @@ set (sa_SOURCES
   sa/fsim3/SnOr.cc
   sa/fsim3/SnXor.cc
 
-  sa/minpat/DetOp.cc
   sa/minpat/Verifier.cc
   sa/minpat/MinPatBase.cc
   sa/minpat/MinPatNaive.cc
@@ -115,10 +112,8 @@ set (sa_SOURCES
   sa/minpat/FgMgrBase.cc
   sa/minpat/Compactor.cc
   sa/minpat/EqSet.cc
-  sa/minpat/McOp.cc
   sa/minpat/McCompactor.cc
 
-  sa/rtpg/FopRtpg.cc
   sa/rtpg/RtpgImpl.cc
 
   sa/struct_sat/StructSat.cc
