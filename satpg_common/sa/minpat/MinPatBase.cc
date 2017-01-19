@@ -10,6 +10,7 @@
 #include "MinPatBase.h"
 
 #include "TpgNetwork.h"
+#include "FaultMgr.h"
 #include "TpgFault.h"
 
 #include "sa/TvMgr.h"
@@ -78,30 +79,22 @@ MinPatBase::run(TpgNetwork& network,
 
   mAnalyzer.set_verbose(verbose());
 
-  mAnalyzer.init(network, fmgr, tvmgr);
-
-  // 検出された故障番号のリスト
-  const vector<ymuint>& fid_list = mAnalyzer.fid_list();
-
-  // 故障のリストを作る(Fsim用)
   vector<const TpgFault*> fault_list;
-  ymuint max_fault_id = 0;
-  {
-    ymuint nf = fid_list.size();
-    fault_list.reserve(nf);
-    for (ymuint i = 0; i < nf; ++ i) {
-      ymuint fid = fid_list[i];
-      if ( max_fault_id < fid ) {
-	max_fault_id = fid;
-      }
-      const TpgFault* fault = mAnalyzer.fault(fid);
-      fault_list.push_back(fault);
-    }
-  }
+  mAnalyzer.init(network, tvmgr, fault_list);
 
-  // 故障シミュレータに故障リストをセットする．
-  fsim2.clear_skip(fault_list);
-  fsim3.clear_skip(fault_list);
+  // 故障番号のリストを作る
+  // 同時に故障シミュレータに故障リストをセットする．
+  ymuint max_fault_id = fmgr.max_fault_id();
+  vector<ymuint> fid_list;
+  fsim2.set_skip_all();
+  fsim3.set_skip_all();
+  for (ymuint i = 0; i < fault_list.size(); ++ i) {
+    const TpgFault* fault = fault_list[i];
+    ymuint fid = fault->id();
+    fmgr.set_status(fault, kFsDetected);
+    fsim2.clear_skip(fault);
+    fsim3.clear_skip(fault);
+  }
 
   init(fid_list, tvmgr, fsim2);
 

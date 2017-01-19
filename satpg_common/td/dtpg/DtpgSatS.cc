@@ -124,9 +124,6 @@ DtpgSatS::run(TpgNetwork& network,
 {
   clear_stats();
 
-  // 故障シミュレータに故障リストをセットする．
-  fsim.set_faults(fault_list);
-
   mMaxNodeId = network.node_num();
 
   ymuint max_fault_id = network.max_fault_id();

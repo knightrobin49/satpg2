@@ -141,18 +141,11 @@ Rtpg1Cmd::cmd_proc(TclObjVector& objv)
   FaultMgr& fmgr = _fault_mgr();
   TdFsim& fsim = _td_fsim();
   TdTvMgr& tvmgr = _td_tv_mgr();
-  const vector<const TpgFault*>& fault_list = fmgr.remain_list();
 
-  vector<const TpgFault*> det_fault_list;
   vector<TdTestVector*>& tv_list = _td_tv_list();
   nsTd::RtpgStats stats;
 
-  rtpg->run(fault_list, tvmgr, fsim, min_f, max_i, max_pat, wsa_limit, det_fault_list, tv_list, stats);
-
-  for (ymuint i = 0; i < det_fault_list.size(); ++ i) {
-    const TpgFault* fault = det_fault_list[i];
-    fmgr.set_status(fault, kFsDetected);
-  }
+  rtpg->run(fmgr, tvmgr, fsim, min_f, max_i, max_pat, wsa_limit, tv_list, stats);
 
   after_update_faults();
 

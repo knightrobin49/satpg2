@@ -49,7 +49,7 @@ RtpgImpl::init(ymuint32 seed)
 }
 
 // @brief RTPGを行なう．
-// @param[in] fault_list 故障リスト
+// @param[in] fmgr 故障マネージャ
 // @param[in] tvmgr テストベクタマネージャ
 // @param[in] fsim 故障シミュレータ
 // @param[in] min_f 1回のシミュレーションで検出する故障数の下限
@@ -59,13 +59,12 @@ RtpgImpl::init(ymuint32 seed)
 // @param[out] tvlist テストベクタのリスト
 // @param[out] stats 実行結果の情報を格納する変数
 void
-RtpgImpl::run(const vector<const TpgFault*>& fault_list,
+RtpgImpl::run(FaultMgr& fmgr,
 	      TvMgr& tvmgr,
 	      Fsim& fsim,
 	      ymuint min_f,
 	      ymuint max_i,
 	      ymuint max_pat,
-	      vector<const TpgFault*>& det_fault_list,
 	      vector<TestVector*>& tvlist,
 	      RtpgStats& stats)
 {
@@ -73,10 +72,19 @@ RtpgImpl::run(const vector<const TpgFault*>& fault_list,
 
   local_timer.start();
 
-  ymuint fnum = fault_list.size();
+  ymuint fnum = 0;
   ymuint undet_i = 0;
   ymuint epat_num = 0;
   ymuint total_det_count = 0;
+
+  fsim.set_skip_all();
+  for (ymuint i = 0; i < fmgr.max_fault_id(); ++ i) {
+    const TpgFault* f = fmgr.fault(i);
+    if ( f != nullptr && fmgr.status(f) == kFsUndetected ) {
+      fsim.clear_skip(f);
+      ++ fnum;
+    }
+  }
 
   TestVector* tv_array[kPvBitLen];
   for (ymuint i = 0; i < kPvBitLen; ++ i) {
@@ -86,9 +94,8 @@ RtpgImpl::run(const vector<const TpgFault*>& fault_list,
   vector<TestVector*> cur_array;
   cur_array.reserve(kPvBitLen);
 
-  FopRtpg op(fsim);
+  FopRtpg op(fsim, fmgr);
 
-  fsim.clear_skip(fault_list);
   op.init();
 
   ymuint pat_num = 0;
@@ -144,8 +151,6 @@ RtpgImpl::run(const vector<const TpgFault*>& fault_list,
       }
     }
   }
-
-  det_fault_list = op.fault_list();
 
   for (ymuint i = 0; i < kPvBitLen; ++ i) {
     tvmgr.delete_vector(tv_array[i]);

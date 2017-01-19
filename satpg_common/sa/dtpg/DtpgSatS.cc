@@ -109,27 +109,21 @@ DtpgSatS::~DtpgSatS()
 
 // @brief テスト生成を行なう．
 // @param[in] network 対象のネットワーク
-// @param[in] fmgr 故障マネージャ
-// @param[in] fsim 故障シミュレータ
 // @param[in] fault_list 対象の故障リスト
+// @param[in] fmgr 故障の状態を管理するオブジェクト
 // @param[out] stats 結果を格納する構造体
 void
 DtpgSatS::run(TpgNetwork& network,
-	      FaultMgr& fmgr,
-	      Fsim& fsim,
 	      const vector<const TpgFault*>& fault_list,
+	      FaultMgr& fmgr,
 	      DtpgStats& stats)
 {
   clear_stats();
 
-  // 故障シミュレータに故障リストをセットする．
-  fsim.clear_skip(fault_list);
-
   mMaxNodeId = network.node_num();
 
-  ymuint max_fault_id = network.max_fault_id();
-
   // fault_list に含まれる故障に印をつける．
+  ymuint max_fault_id = network.max_fault_id();
   vector<bool> fault_mark(max_fault_id, false);
   for (ymuint i = 0; i < fault_list.size(); ++ i) {
     const TpgFault* fault = fault_list[i];
@@ -158,11 +152,21 @@ DtpgSatS::run(TpgNetwork& network,
 
       cnf_end();
 
-      solve(struct_sat.solver(), vector<SatLiteral>(), fault, node, focone->output_list(),
-	    focone->gvar_map(), focone->fvar_map());
+      SatBool3 ans = solve(struct_sat.solver(), vector<SatLiteral>(), fault, node,
+			   focone->output_list(),
+			   focone->gvar_map(), focone->fvar_map());
 #else
-      run_single(fault);
+      SatBool3 ans = run_single(fault);
 #endif
+      if ( ans == kB3True ) {
+	fmgr.set_status(fault, kFsDetected);
+      }
+      else if ( ans == kB3False ) {
+	fmgr.set_status(fault, kFsUntestable);
+      }
+      else if ( ans == kB3X ) {
+	fmgr.set_status(fault, kFsAborted);
+      }
     }
   }
 
@@ -171,7 +175,7 @@ DtpgSatS::run(TpgNetwork& network,
 
 // @brief テスト生成を行なう．
 // @param[in] fault 対象の故障
-void
+SatBool3
 DtpgSatS::run_single(const TpgFault* fault)
 {
   cnf_begin();
@@ -329,8 +333,10 @@ DtpgSatS::run_single(const TpgFault* fault)
     assumptions.push_back(dlit);
   }
 
-  solve(solver, assumptions, fault, fnode, output_list,
-	gvar_map, fvar_map);
+  SatBool3 ans = solve(solver, assumptions, fault, fnode, output_list,
+		       gvar_map, fvar_map);
+
+  return ans;
 }
 
 END_NAMESPACE_YM_SATPG_SA

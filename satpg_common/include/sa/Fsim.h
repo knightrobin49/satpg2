@@ -81,7 +81,6 @@ public:
   /// @param[in] fault_list 故障のリスト
   ///
   /// fault_list に含まれない故障のスキップマークは付けられる．
-  virtual
   void
   clear_skip(const vector<const TpgFault*>& fault_list);
 

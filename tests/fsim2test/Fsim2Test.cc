@@ -173,6 +173,7 @@ ppsfp_test(Fsim2& fsim,
       for (ymuint i = 0; i < kPvBitLen; ++ i) {
 	if ( pat & (1ULL << i) ) {
 	  ++ nepat;
+	  break;
 	}
       }
     }
@@ -189,6 +190,7 @@ ppsfp_test(Fsim2& fsim,
     for (ymuint i = 0; i < wpos; ++ i) {
       if ( pat & (1ULL << i) ) {
 	++ nepat;
+	break;
       }
     }
   }

@@ -8,6 +8,7 @@
 
 
 #include "RtpgCmd.h"
+#include "TpgNetwork.h"
 #include "FaultMgr.h"
 #include "sa/Rtpg.h"
 #include "sa/RtpgStats.h"
@@ -92,18 +93,10 @@ RtpgCmd::cmd_proc(TclObjVector& objv)
   FaultMgr& fmgr = _fault_mgr();
   SaFsim& fsim = _sa_fsim();
   SaTvMgr& tvmgr = _sa_tv_mgr();
-  const vector<const TpgFault*>& fault_list = fmgr.remain_list();
 
-  vector<const TpgFault*> det_fault_list;
   vector<SaTestVector*>& tv_list = _sa_tv_list();
   nsSa::RtpgStats stats;
-
-  rtpg->run(fault_list, tvmgr, fsim, min_f, max_i, max_pat, det_fault_list, tv_list, stats);
-
-  for (ymuint i = 0; i < det_fault_list.size(); ++ i) {
-    const TpgFault* fault = det_fault_list[i];
-    fmgr.set_status(fault, kFsDetected);
-  }
+  rtpg->run(fmgr, tvmgr, fsim, min_f, max_i, max_pat, tv_list, stats);
 
   after_update_faults();
 

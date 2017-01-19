@@ -235,13 +235,41 @@ Fsim2::set_network(const TpgNetwork& network)
   }
 }
 
+// @brief 全ての故障にスキップマークをつける．
+void
+Fsim2::set_skip_all()
+{
+  for (ymuint i = 0; i < mSimFaults.size(); ++ i) {
+    mSimFaults[i].mSkip = true;
+  }
+}
+
 // @brief 故障にスキップマークをつける．
+// @param[in] f 対象の故障
 void
 Fsim2::set_skip(const TpgFault* f)
 {
   mFaultArray[f->id()]->mSkip = true;
 }
 
+// @brief 全ての故障のスキップマークを消す．
+void
+Fsim2::clear_skip_all()
+{
+  for (ymuint i = 0; i < mSimFaults.size(); ++ i) {
+    mSimFaults[i].mSkip = false;
+  }
+}
+
+// @brief 故障のスキップマークを消す．
+// @param[in] f 対象の故障
+void
+Fsim2::clear_skip(const TpgFault* f)
+{
+  mFaultArray[f->id()]->mSkip = false;
+}
+
+#if 0
 // @brief 故障リストを設定する．
 // @param[in] fault_list 対象の故障リスト
 //
@@ -273,6 +301,7 @@ Fsim2::set_faults(const vector<const TpgFault*>& fault_list)
     }
   }
 }
+#endif
 
 // @brief ひとつのパタンで故障シミュレーションを行う．
 // @param[in] tv テストベクタ

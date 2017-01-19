@@ -70,10 +70,25 @@ PrintStatsCmd::cmd_proc(TclObjVector& objv)
 
   FaultMgr& fmgr = _fault_mgr();
 
-  fprintf(stdout, "#A: # of total faults       = %7lu\n", fmgr.rep_list().size());
-  fprintf(stdout, "#B: # of detected faults    = %7lu\n", fmgr.det_list().size());
-  fprintf(stdout, "#C: # of redundant faults   = %7lu\n", fmgr.untest_list().size());
-  fprintf(stdout, "#D: # of undetected faults  = %7lu\n", fmgr.remain_list().size());
+  ymuint n_all = _network().max_fault_id();
+  ymuint n_rep = _network().rep_fault_num();
+  ymuint n_remain = 0;
+  ymuint n_untest = 0;
+  ymuint n_det = 0;
+  for (ymuint i = 0; i < n_rep; ++ i) {
+    const TpgFault* fault = _network().rep_fault(i);
+    switch ( fmgr.status(fault) ) {
+    case kFsDetected:   ++ n_det; break;
+    case kFsUntestable: ++ n_untest; break;
+    case kFsUndetected: ++ n_remain; break;
+    default: break;
+    }
+  }
+
+  fprintf(stdout, "#A: # of total faults       = %7lu\n", n_rep);
+  fprintf(stdout, "#B: # of detected faults    = %7lu\n", n_det);
+  fprintf(stdout, "#C: # of redundant faults   = %7lu\n", n_untest);
+  fprintf(stdout, "#D: # of undetected faults  = %7lu\n", n_remain);
   fprintf(stdout, "#E: # of generated patterns = %7lu\n", _sa_tv_list().size());
   fprintf(stdout, "#F: # of MFFCs              = %7u\n", _network().mffc_num());
   fprintf(stdout, "#G: # of FFRs               = %7u\n", _network().ffr_num());

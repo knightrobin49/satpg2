@@ -54,14 +54,14 @@ public:
 
   /// @brief 初期化する．
   /// @param[in] network ネットワーク
-  /// @param[in] fmgr 故障マネージャ
   /// @param[in] tvmgr テストベクタのマネージャ
+  /// @param[out] fault_list 検出された故障のリスト
   ///
   /// 結果には fid_list() でアクセスできる．
   void
   init(const TpgNetwork& network,
-       FaultMgr& fmgr,
-       TvMgr& tvmgr);
+       TvMgr& tvmgr,
+       vector<const TpgFault*>& fault_list);
 
   /// @brief ノード番号の最大値を得る．
   ymuint
@@ -71,9 +71,11 @@ public:
   ymuint
   max_fault_id() const;
 
+#if 0
   /// @brief 検出可能な故障番号のリストを得る．
   const vector<ymuint>&
   fid_list() const;
+#endif
 
   /// @brief 故障を得る．
   /// @param[in] fid 故障番号
@@ -184,8 +186,10 @@ private:
   // テストベクタ用の乱数生成器
   RandGen mRandGen;
 
+#if 0
   // 故障番号リスト
   vector<ymuint> mOrigFidList;
+#endif
 
   // ノードごとに関係する入力の番号のリストを収める配列
   vector<vector<ymuint> > mInputListArray;

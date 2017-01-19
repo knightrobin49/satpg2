@@ -29,8 +29,7 @@ BEGIN_NAMESPACE_YM_SATPG
 AtpgMgr::AtpgMgr() :
   mTimer(TM_SIZE, TM_MISC)
 {
-  mFaultMgr = new FaultMgr();
-
+  mFaultMgr = nullptr;
   mSaTvMgr = new nsSa::TvMgr();
 #if 1
   mSaFsim = nsSa::new_Fsim2();
@@ -47,7 +46,6 @@ AtpgMgr::AtpgMgr() :
 AtpgMgr::~AtpgMgr()
 {
   delete mFaultMgr;
-
   delete mSaTvMgr;
   delete mSaFsim;
   delete mSaFsim3;
@@ -95,7 +93,8 @@ AtpgMgr::misc_time() const
 void
 AtpgMgr::after_set_network()
 {
-  mFaultMgr->set_faults(mNetwork);
+  delete mFaultMgr;
+  mFaultMgr = new FaultMgr(_network());
 
   mSaTvMgr->clear();
   mSaTvMgr->init(mNetwork.ppi_num());

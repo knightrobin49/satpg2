@@ -39,7 +39,7 @@ public:
   init(ymuint32 seed) = 0;
 
   /// @brief RTPGを行なう．
-  /// @param[in] fault_list 故障のリスト
+  /// @param[in] fmgr 故障マネージャ
   /// @param[in] tvmgr テストベクタマネージャ
   /// @param[in] fsim 故障シミュレータ
   /// @param[in] min_f 1回のシミュレーションで検出する故障数の下限
@@ -51,14 +51,13 @@ public:
   /// @param[out] stats 実行結果の情報を格納する変数
   virtual
   void
-  run(const vector<const TpgFault*>& fault_list,
+  run(FaultMgr& fmgr,
       TvMgr& tvmgr,
       Fsim& fsim,
       ymuint min_f,
       ymuint max_i,
       ymuint max_pat,
       ymuint wsa_limit,
-      vector<const TpgFault*>& det_fault_list,
       vector<TestVector*>& tvlist,
       RtpgStats& stats) = 0;
 

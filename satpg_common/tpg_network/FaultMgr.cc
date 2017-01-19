@@ -16,9 +16,17 @@
 BEGIN_NAMESPACE_YM_SATPG
 
 // @brief コンストラクタ
-FaultMgr::FaultMgr()
+// @param[in] network 対象のネットワーク
+FaultMgr::FaultMgr(const TpgNetwork& network) :
+  mMaxFaultId(network.max_fault_id()),
+  mFaultArray(mMaxFaultId, nullptr),
+  mStatusArray(mMaxFaultId, kFsUndetected)
 {
-  mChanged = false;
+  ymuint n = network.rep_fault_num();
+  for (ymuint i = 0; i < n; ++ i) {
+    const TpgFault* f = network.rep_fault(i);
+    mFaultArray[f->id()] = f;
+  }
 }
 
 // @brief デストラクタ
@@ -28,39 +36,35 @@ FaultMgr::~FaultMgr()
 
 // @brief クリアする．
 void
-FaultMgr::clear()
+FaultMgr::clear_status()
 {
-  mStatusArray.clear();
-
-  mRepList.clear();
-  mDetList.clear();
-  mRemainList.clear();
-  mUntestList.clear();
-
-  mChanged = true;
+  for (ymuint i = 0; i < mStatusArray.size(); ++ i) {
+    mStatusArray[i] = kFsUndetected;
+  }
 }
 
-// @brief network の故障を設定する．
-void
-FaultMgr::set_faults(const TpgNetwork& network)
+// @brief 故障IDの最大値+1を返す．
+ymuint
+FaultMgr::max_fault_id() const
 {
-  clear();
+  return mMaxFaultId;
+}
 
-  ymuint max_id = network.max_fault_id();
-  mStatusArray.resize(max_id, kFsUndetected);
+// @brief 故障IDから故障を返す．
+// @param[in] id 故障ID
+const TpgFault*
+FaultMgr::fault(ymuint id) const
+{
+  ASSERT_COND( id < mMaxFaultId );
+  return mFaultArray[id];
+}
 
-  // 各ノードの故障を mRemainList に入れる．
-  // ただし外部出力に到達可能でない故障は mUntestList に入れる．
-  ymuint nn = network.node_num();
-  for (ymuint i = 0; i < nn; ++ i) {
-    const TpgNode* node = network.node(i);
-    ymuint nf = network.node_fault_num(node->id());
-    for (ymuint j = 0; j < nf; ++ j) {
-      const TpgFault* fault = network.node_fault(node->id(), j);
-      mRepList.push_back(fault);
-      mRemainList.push_back(fault);
-    }
-  }
+// @brief 故障の状態を得る．
+FaultStatus
+FaultMgr::status(const TpgFault* fault) const
+{
+  ASSERT_COND( fault->id() < mMaxFaultId );
+  return mStatusArray[fault->id()];
 }
 
 // @brief fault の状態を変更する．
@@ -70,47 +74,6 @@ FaultMgr::set_status(const TpgFault* fault,
 {
   ASSERT_COND( fault->id() < mStatusArray.size() );
   mStatusArray[fault->id()] = stat;
-  mChanged = true;
-}
-
-// @brief 故障リストをスキャンして未検出リストを更新する．
-void
-FaultMgr::update() const
-{
-  if ( mChanged ) {
-    ymuint n = mRemainList.size();
-    ymuint wpos = 0;
-    for (ymuint rpos = 0; rpos < n; ++ rpos) {
-      const TpgFault* f = mRemainList[rpos];
-      switch ( status(f) ) {
-      case kFsUndetected:
-	if ( wpos != rpos ) {
-	  mRemainList[wpos] = f;
-	}
-	++ wpos;
-	break;
-
-      case kFsDetected:
-	mDetList.push_back(f);
-	break;
-
-      case kFsUntestable:
-	mUntestList.push_back(f);
-	break;
-
-      case kFsAborted:
-	if ( wpos != rpos ) {
-	  mRemainList[wpos] = f;
-	}
-	++ wpos;
-	break;
-      }
-    }
-    if ( wpos < n ) {
-      mRemainList.erase(mRemainList.begin() + wpos, mRemainList.end());
-    }
-    mChanged = false;
-  }
 }
 
 END_NAMESPACE_YM_SATPG

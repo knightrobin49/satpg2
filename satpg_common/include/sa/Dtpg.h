@@ -12,6 +12,7 @@
 
 #include "sa/sa_nsdef.h"
 #include "sa/DtpgStats.h"
+#include "FaultStatus.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG_SA
@@ -57,16 +58,14 @@ public:
 
   /// @brief テスト生成を行なう．
   /// @param[in] tpgnetwork 対象のネットワーク
-  /// @param[in] fmgr 故障マネージャ
-  /// @param[in] fsim 故障シミュレータ
   /// @param[in] fault_list 対象の故障リスト
+  /// @param[in] fmgr 故障の状態を管理するオブジェクト
   /// @param[out] stats 結果を格納する構造体
   virtual
   void
   run(TpgNetwork& tgnetwork,
-      FaultMgr& fmgr,
-      Fsim& fsim,
       const vector<const TpgFault*>& fault_list,
+      FaultMgr& fmgr,
       DtpgStats& stats) = 0;
 
 };

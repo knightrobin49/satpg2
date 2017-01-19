@@ -9,10 +9,10 @@
 
 #include "AtpgCmd.h"
 #include "AtpgMgr.h"
+#include "FaultMgr.h"
 #include "TpgNetwork.h"
 #include "TpgNode.h"
 #include "TpgFault.h"
-#include "FaultMgr.h"
 #include "ym/BnNode.h"
 
 
@@ -170,16 +170,21 @@ AtpgCmd::after_set_network()
 void
 AtpgCmd::after_update_faults()
 {
-  FaultMgr& fault_mgr = _fault_mgr();
-
   // 諸元を TCL 変数にセットしておく
-  const vector<const TpgFault*>& remain_list = fault_mgr.remain_list();
-  const vector<const TpgFault*>& untest_list = fault_mgr.untest_list();
   ymuint n_all = _network().max_fault_id();
-  ymuint n_rep = fault_mgr.rep_list().size();
-  ymuint n_remain = remain_list.size();
-  ymuint n_untest = untest_list.size();
-  ymuint n_det = n_rep - n_remain - n_untest;
+  ymuint n_rep = _network().rep_fault_num();
+  ymuint n_remain = 0;
+  ymuint n_untest = 0;
+  ymuint n_det = 0;
+  for (ymuint i = 0; i < n_rep; ++ i) {
+    const TpgFault* fault = _network().rep_fault(i);
+    switch ( _fault_mgr().status(fault) ) {
+    case kFsDetected:   ++ n_det; break;
+    case kFsUntestable: ++ n_untest; break;
+    case kFsUndetected: ++ n_remain; break;
+    default: break;
+    }
+  }
 
   TclObj varname = "::atpg::info";
   int varflag = 0;

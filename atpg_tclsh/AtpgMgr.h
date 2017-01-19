@@ -97,7 +97,7 @@ public:
 
   /// @brief ネットワークの変更に関するハンドラを登録する．
   void
-  reg_network_handler(T2Binder<const TpgNetwork&, FaultMgr&>* handler);
+  reg_network_handler(T1Binder<const TpgNetwork&>* handler);
 
 
 public:
@@ -165,7 +165,7 @@ private:
   nsTd::Fsim* mTdFsim;
 
   // ネットワークが変更された時に呼ばれるイベントハンドラ
-  T2BindMgr<const TpgNetwork&, FaultMgr&> mNtwkBindMgr;
+  T1BindMgr<const TpgNetwork&> mNtwkBindMgr;
 
   // タイマー
   MStopWatch mTimer;
@@ -252,7 +252,7 @@ AtpgMgr::_td_fsim()
 // @brief ネットワークの変更に関するハンドラを登録する．
 inline
 void
-AtpgMgr::reg_network_handler(T2Binder<const TpgNetwork&, FaultMgr&>* handler)
+AtpgMgr::reg_network_handler(T1Binder<const TpgNetwork&>* handler)
 {
   mNtwkBindMgr.reg_binder(handler);
 }

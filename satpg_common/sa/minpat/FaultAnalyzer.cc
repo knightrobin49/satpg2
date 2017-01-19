@@ -12,7 +12,6 @@
 #include "TpgNetwork.h"
 #include "TpgNode.h"
 #include "TpgFault.h"
-#include "FaultMgr.h"
 
 #include "sa/TvMgr.h"
 #include "sa/TestVector.h"
@@ -111,12 +110,12 @@ FaultAnalyzer::verbose() const
 
 // @brief 初期化する．
 // @param[in] network ネットワーク
-// @param[in] fmgr 故障マネージャ
 // @param[in] tvmgr テストベクタのマネージャ
+// @param[out] fault_list 検出された故障のリスト
 void
 FaultAnalyzer::init(const TpgNetwork& network,
-		    FaultMgr& fmgr,
-		    TvMgr& tvmgr)
+		    TvMgr& tvmgr,
+		    vector<const TpgFault*>& fault_list)
 {
   StopWatch local_timer;
   local_timer.start();
@@ -180,13 +179,12 @@ FaultAnalyzer::init(const TpgNetwork& network,
       ++ f_all;
       switch ( stat ) {
       case kB3True:
-	fmgr.set_status(fault, kFsDetected);
+	fault_list.push_back(fault);
 	++ f_det;
 	det_flag[fault->id()] = true;
 	break;
 
       case kB3False:
-	fmgr.set_status(fault, kFsUntestable);
 	++ f_red;
 	break;
 
@@ -196,8 +194,10 @@ FaultAnalyzer::init(const TpgNetwork& network,
     }
   }
 
+#if 0
   mOrigFidList.clear();
   mOrigFidList.reserve(f_det);
+#endif
   for (ymuint i = 0; i < network.node_num(); ++ i) {
     const TpgNode* node = network.node(i);
 #if 0
@@ -207,8 +207,10 @@ FaultAnalyzer::init(const TpgNetwork& network,
       const TpgFault* f0 = node->input_fault(0, j);
       if ( f0 != nullptr ) {
 	if ( f0->is_rep() && det_flag[f0->id()] ) {
+#if 0
 	  // 代表故障で検出可能なら記録する．
 	  mOrigFidList.push_back(f0->id());
+#endif
 	}
 	if ( node->nval() == kVal0 && det_flag[f0->rep_fault()->id()] ) {
 	  // 非制御値の故障で検出可能なものがあることを記録する．
@@ -218,8 +220,10 @@ FaultAnalyzer::init(const TpgNetwork& network,
       const TpgFault* f1 = node->input_fault(1, j);
       if ( f1 != nullptr ) {
 	if ( f1->is_rep() && det_flag[f1->id()] ) {
+#if 0
 	  // 代表故障で検出可能なら記録する．
 	  mOrigFidList.push_back(f1->id());
+#endif
 	}
 	if ( node->nval() == kVal1 && det_flag[f1->rep_fault()->id()] ) {
 	  // 非制御値の故障で検出可能なものがあることを記録する．
@@ -230,18 +234,23 @@ FaultAnalyzer::init(const TpgNetwork& network,
     const TpgFault* f0 = node->output_fault(0);
     if ( f0 != nullptr && f0->is_rep() && det_flag[f0->id()] ) {
       if ( node->noval() != kVal0 || !has_ncfault ) {
+#if 0
 	// 非制御値でないか，入力側の非制御値の故障が検出可能でない時記録する．
 	mOrigFidList.push_back(f0->id());
+#endif
       }
     }
     const TpgFault* f1 = node->output_fault(1);
     if ( f1 != nullptr && f1->is_rep() && det_flag[f1->id()] ) {
       if ( node->noval() != kVal1 || !has_ncfault ) {
+#if 0
 	// 非制御値でないか，入力側の非制御値の故障が検出可能でない時記録する．
 	mOrigFidList.push_back(f1->id());
+#endif
       }
     }
 #else
+#if 0
     ymuint nf = network.node_fault_num(node->id());
     for (ymuint j = 0; j < nf; ++ j) {
       const TpgFault* fault = network.node_fault(node->id(), j);
@@ -249,6 +258,7 @@ FaultAnalyzer::init(const TpgNetwork& network,
 	mOrigFidList.push_back(fault->id());
       }
     }
+#endif
 #endif
   }
 
@@ -371,13 +381,6 @@ ymuint
 FaultAnalyzer::max_fault_id() const
 {
   return mMaxFaultId;
-}
-
-// @brief 検出可能な故障のリストを得る．
-const vector<ymuint>&
-FaultAnalyzer::fid_list() const
-{
-  return mOrigFidList;
 }
 
 // @brief 故障を得る．

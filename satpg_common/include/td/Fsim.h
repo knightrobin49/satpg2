@@ -46,18 +46,41 @@ public:
   void
   set_network(const TpgNetwork& network) = 0;
 
+  /// @brief 全ての故障にスキップマークをつける．
+  virtual
+  void
+  set_skip_all() = 0;
+
   /// @brief 故障にスキップマークをつける．
+  /// @param[in] f 対象の故障
   virtual
   void
   set_skip(const TpgFault* f) = 0;
 
-  /// @brief 故障リストを設定する．
-  /// @param[in] fault_list 対象の故障リスト
+  /// @brief 複数の故障にスキップマークをつける．
+  /// @param[in] fault_list 故障のリスト
   ///
-  /// スキップマークは消される．
+  /// fault_list に含まれない故障のスキップマークは消される．
+  void
+  set_skip(const vector<const TpgFault*>& fault_list);
+
+  /// @brief 全ての故障のスキップマークを消す．
   virtual
   void
-  set_faults(const vector<const TpgFault*>& fault_list) = 0;
+  clear_skip_all() = 0;
+
+  /// @brief 故障のスキップマークを消す．
+  /// @param[in] f 対象の故障
+  virtual
+  void
+  clear_skip(const TpgFault* f) = 0;
+
+  /// @brief 複数の故障のスキップマークを消す．
+  /// @param[in] fault_list 故障のリスト
+  ///
+  /// fault_list に含まれない故障のスキップマークは付けられる．
+  void
+  clear_skip(const vector<const TpgFault*>& fault_list);
 
   /// @brief SPSFP故障シミュレーションを行う．
   /// @param[in] tv テストベクタ

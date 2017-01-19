@@ -88,21 +88,18 @@ END_NONAMESPACE
 // @param[in] fmgr 故障マネージャ
 // @param[in] fsim 故障シミュレータ
 // @param[in] fault_list 対象の故障リスト
+// @param[in] fmgr 故障の状態を管理するオブジェクト
 // @param[out] stats 結果を格納する構造体
 void
 DtpgSatH::run(TpgNetwork& network,
-	      FaultMgr& fmgr,
-	      Fsim& fsim,
 	      const vector<const TpgFault*>& fault_list,
+	      FaultMgr& fmgr,
 	      DtpgStats& stats)
 {
   clear_stats();
 
   StopWatch timer;
   timer.start();
-
-  // 故障シミュレータに故障リストをセットする．
-  fsim.clear_skip(fault_list);
 
   ymuint max_fault_id = network.max_fault_id();
 
@@ -167,8 +164,18 @@ DtpgSatH::run(TpgNetwork& network,
 	timer.stop();
 
 	// 故障に対するテスト生成を行なう．
-	solve(struct_sat.solver(), assumption, fault, mffc_root, focone->output_list(),
-	      focone->gvar_map(), focone->fvar_map());
+	SatBool3 ans = solve(struct_sat.solver(), assumption, fault, mffc_root,
+			     focone->output_list(),
+			     focone->gvar_map(), focone->fvar_map());
+	if ( ans == kB3True ) {
+	  fmgr.set_status(fault, kFsDetected);
+	}
+	else if ( ans == kB3False ) {
+	  fmgr.set_status(fault, kFsUntestable);
+	}
+	else if ( ans == kB3X ) {
+	  fmgr.set_status(fault, kFsAborted);
+	}
 
 	timer.start();
       }
@@ -221,8 +228,18 @@ DtpgSatH::run(TpgNetwork& network,
 	  timer.stop();
 
 	  // 故障に対するテスト生成を行なう．
-	  solve(struct_sat.solver(), assumption, fault, mffc_root, mffc_cone->output_list(),
-		mffc_cone->gvar_map(), mffc_cone->fvar_map());
+	  SatBool3 ans = solve(struct_sat.solver(), assumption, fault, mffc_root,
+			       mffc_cone->output_list(),
+			       mffc_cone->gvar_map(), mffc_cone->fvar_map());
+	  if ( ans == kB3True ) {
+	    fmgr.set_status(fault, kFsDetected);
+	  }
+	  else if ( ans == kB3False ) {
+	    fmgr.set_status(fault, kFsUntestable);
+	  }
+	  else if ( ans == kB3X ) {
+	    fmgr.set_status(fault, kFsAborted);
+	}
 
 	  timer.start();
 

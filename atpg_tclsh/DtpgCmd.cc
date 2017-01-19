@@ -11,9 +11,9 @@
 #include "ym/TclPopt.h"
 #include "AtpgMgr.h"
 #include "TpgNetwork.h"
+#include "FaultMgr.h"
 #include "sa/DtpgStats.h"
 #include "sa/Dtpg.h"
-#include "FaultMgr.h"
 #include "sa/Fsim.h"
 #include "sa/BackTracer.h"
 #include "sa/DetectOp.h"
@@ -181,9 +181,19 @@ DtpgCmd::cmd_proc(TclObjVector& objv)
   engine->set_option(option_str);
   engine->timer_enable(timer_enable);
 
-  const vector<const TpgFault*>& fault_list = _fault_mgr().remain_list();
+  vector<const TpgFault*> fault_list;
+
+  _sa_fsim3().set_skip_all();
+  for (ymuint i = 0; i < _fault_mgr().max_fault_id(); ++ i) {
+    const TpgFault* f = _fault_mgr().fault(i);
+    if ( f != nullptr && _fault_mgr().status(f) == kFsUndetected ) {
+      _sa_fsim3().clear_skip(f);
+      fault_list.push_back(f);
+    }
+  }
+
   nsSa::DtpgStats stats;
-  engine->run(_network(), _fault_mgr(), _sa_fsim3(), fault_list, stats);
+  engine->run(_network(), fault_list, _fault_mgr(), stats);
 
   delete engine;
 
