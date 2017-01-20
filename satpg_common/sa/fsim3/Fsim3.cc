@@ -14,6 +14,7 @@
 #include "TpgFault.h"
 
 #include "sa/TestVector.h"
+#include "sa/TvDeck.h"
 #include "sa/NodeValList.h"
 
 #include "SimNode.h"
@@ -519,28 +520,23 @@ Fsim3::_sppfp(vector<const TpgFault*>& fault_list)
 }
 
 // @brief 複数のパタンで故障シミュレーションを行う．
-// @param[in] num テストベクタの数
-// @param[in] tv_array テストベクタの配列
+// @param[in] tvdeck テストベクタの配列
 // @param[out] fault_list 検出された故障とその時のビットパタンのリスト
-//
-// num は高々 kBvBitLen 以下<br>
 void
-Fsim3::ppsfp(ymuint num,
-	     const TestVector* tv_array[],
+Fsim3::ppsfp(const TvDeck& tvdeck,
 	     vector<pair<const TpgFault*, PackedVal> >& fault_list)
 {
   fault_list.clear();
 
-  ymuint npi = mNetwork->ppi_num();
-
   // tv_array を入力ごとに固めてセットしていく．
-  mGvalClearArray.clear();
+  ymuint num = tvdeck.num();
+  ymuint npi = mNetwork->ppi_num();
   for (ymuint i = 0; i < npi; ++ i) {
     PackedVal val_0 = kPvAll0;
     PackedVal val_1 = kPvAll0;
     PackedVal bit = 1UL;
     for (ymuint j = 0; j < num; ++ j, bit <<= 1) {
-      switch ( tv_array[j]->val3(i) ) {
+      switch ( tvdeck[j]->val3(i) ) {
       case kVal0:
 	val_0 |= bit;
 	break;
@@ -556,7 +552,7 @@ Fsim3::ppsfp(ymuint num,
 
     // 残ったビットには 0 番めのパタンを詰めておく．
     // これは無駄なイベントを発生させないため．
-    switch ( tv_array[0]->val3(i) ) {
+    switch ( tvdeck[0]->val3(i) ) {
     case kVal0:
       for (ymuint j = num; j < kPvBitLen; ++ j, bit <<= 1) {
 	val_0 |= bit;
@@ -579,6 +575,8 @@ Fsim3::ppsfp(ymuint num,
       update_gval(simnode);
     }
   }
+
+  mGvalClearArray.clear();
 
   // 正常値の計算を行う．
   calc_gval();

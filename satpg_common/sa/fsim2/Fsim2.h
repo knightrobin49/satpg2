@@ -119,15 +119,11 @@ public:
 	vector<const TpgFault*>& fault_list);
 
   /// @brief 複数のパタンで故障シミュレーションを行う．
-  /// @param[in] num テストベクタの数
-  /// @param[in] tv_array テストベクタの配列
+  /// @param[in] tvdeck テストベクタの配列
   /// @param[out] fault_list 検出された故障とその時のビットパタンのリスト
-  ///
-  /// num は高々 kBvBitLen 以下<br>
   virtual
   void
-  ppsfp(ymuint num,
-	const TestVector* tv_array[],
+  ppsfp(const TvDeck& tvdeck,
 	vector<pair<const TpgFault*, PackedVal> >& fault_list);
 
 
@@ -147,11 +143,9 @@ private:
   _set_sp2(const NodeValList& assign_list);
 
   /// @brief 複数のパタンを設定する．
-  /// @param[in] num テストベクタの数
-  /// @param[in] tv_array テストベクタの配列
+  /// @param[in] tvdeck テストベクタの配列
   void
-  _set_pp2(ymuint num,
-	   const TestVector* tv_array[]);
+  _set_pp2(const TvDeck& tvdeck);
 
   /// @brief SPSFP故障シミュレーションの本体
   /// @param[in] f 対象の故障

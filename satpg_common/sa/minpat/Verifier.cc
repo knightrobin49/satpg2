@@ -10,6 +10,7 @@
 #include "Verifier.h"
 #include "TpgFault.h"
 #include "sa/TestVector.h"
+#include "sa/TvDeck.h"
 #include "ym/HashSet.h"
 
 
@@ -43,17 +44,15 @@ Verifier::check(Fsim& fsim,
   // 検出された故障番号を入れるハッシュ表
   HashSet<ymuint> fhash;
 
-  const TestVector* cur_array[kPvBitLen];
+  TvDeck tvdeck;
   vector<pair<const TpgFault*, PackedVal> > det_fault_list;
-  ymuint cpos = 0;
   for (vector<const TestVector*>::const_iterator p = pat_list.begin();
        p != pat_list.end(); ++ p) {
     const TestVector* tv = *p;
-    cur_array[cpos] = tv;
-    ++ cpos;
-    if ( cpos == kPvBitLen ) {
-      fsim.ppsfp(kPvBitLen, cur_array, det_fault_list);
-      cpos = 0;
+    tvdeck.add(tv);
+    if ( tvdeck.is_full() ) {
+      fsim.ppsfp(tvdeck, det_fault_list);
+      tvdeck.clear();
       for (ymuint i = 0; i < det_fault_list.size(); ++ i) {
 	const TpgFault* f = det_fault_list[i].first;
 	// どのパタンで検出できたかは調べる必要はない．
@@ -61,8 +60,8 @@ Verifier::check(Fsim& fsim,
       }
     }
   }
-  if ( cpos > 0 ) {
-    fsim.ppsfp(cpos, cur_array, det_fault_list);
+  if ( !tvdeck.is_empty() ) {
+    fsim.ppsfp(tvdeck, det_fault_list);
     for (ymuint i = 0; i < det_fault_list.size(); ++ i) {
       const TpgFault* f = det_fault_list[i].first;
       // どのパタンで検出できたかは調べる必要はない．

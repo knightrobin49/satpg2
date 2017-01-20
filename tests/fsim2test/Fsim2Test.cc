@@ -8,7 +8,9 @@
 
 
 #include "TpgNetwork.h"
+#include "sa/TestVector.h"
 #include "sa/TvMgr.h"
+#include "sa/TvDeck.h"
 #include "Fsim2.h"
 #include "ym/RandGen.h"
 #include "ym/StopWatch.h"
@@ -17,120 +19,6 @@
 BEGIN_NAMESPACE_YM_SATPG_FSIM
 
 const char* argv0 = "";
-
-#if 0
-//////////////////////////////////////////////////////////////////////
-/// @class NopFop NopFop.h "NopFop.h"
-/// @brief 何もしない FsimOp
-//////////////////////////////////////////////////////////////////////
-class NopFop :
-  public FsimOp
-{
-public:
-
-  /// @brief コンストラクタ
-  /// @param[in] fsim 故障シミュレータ
-  NopFop(Fsim& fsim);
-
-  /// @brief デストラクタ
-  virtual
-  ~NopFop();
-
-
-public:
-  //////////////////////////////////////////////////////////////////////
-  // 外部インターフェイス
-  //////////////////////////////////////////////////////////////////////
-
-  /// @brief 故障を検出したときの処理
-  /// @param[in] f 故障
-  /// @param[in] dpat 検出したパタンを表すビットベクタ
-  virtual
-  void
-  operator()(const TpgFault* f,
-	     PackedVal dpat);
-
-  /// @brief 検出パタンをクリアする．
-  void
-  clear_pat();
-
-  /// @brief 直前のシミュレーションで検出されたパタンのビットを返す．
-  PackedVal
-  det_pat();
-
-  /// @brief 検出された故障数を返す．
-  ymuint
-  det_num();
-
-
-private:
-  //////////////////////////////////////////////////////////////////////
-  // 内部で用いられる関数
-  //////////////////////////////////////////////////////////////////////
-
-
-private:
-  //////////////////////////////////////////////////////////////////////
-  // データメンバ
-  //////////////////////////////////////////////////////////////////////
-
-  // 故障シミュレータ
-  Fsim& mFsim;
-
-  // 検出パタンのビット列
-  PackedVal mDetPat;
-
-  // 検出された故障数
-  ymuint mDetNum;
-
-};
-
-// @brief コンストラクタ
-// @param[in] fsim 故障シミュレータ
-NopFop::NopFop(Fsim& fsim) :
-  mFsim(fsim)
-{
-  mDetNum = 0;
-}
-
-// @brief デストラクタ
-NopFop::~NopFop()
-{
-}
-
-// @brief 故障を検出したときの処理
-// @param[in] f 故障
-// @param[in] dpat 検出したパタンを表すビットベクタ
-void
-NopFop::operator()(const TpgFault* f,
-		   PackedVal dpat)
-{
-  mFsim.set_skip(f);
-  mDetPat |= dpat;
-  ++ mDetNum;
-}
-
-// @brief 検出パタンをクリアする．
-void
-NopFop::clear_pat()
-{
-  mDetPat = kPvAll0;
-}
-
-// @brief 直前のシミュレーションで検出されたパタンのビットを返す．
-PackedVal
-NopFop::det_pat()
-{
-  return mDetPat;
-}
-
-// @brief 検出された故障数を返す．
-ymuint
-NopFop::det_num()
-{
-  return mDetNum;
-}
-#endif
 
 // SPPFP のテスト
 pair<ymuint, ymuint>
@@ -161,23 +49,21 @@ sppfp_test(Fsim2& fsim,
 // PPSFP のテスト
 pair<ymuint, ymuint>
 ppsfp_test(Fsim2& fsim,
-	   const vector<TestVector*>& tv_list)
+	   const vector<const TestVector*>& tv_list)
 {
-  const TestVector* tv_buff[kPvBitLen];
-
   ymuint nv = tv_list.size();
 
+  TvDeck tvdeck;
   ymuint det_num = 0;
   ymuint nepat = 0;
-  ymuint wpos = 0;
   for (ymuint i = 0; i < nv; ++ i) {
-    TestVector* tv = tv_list[i];
-    tv_buff[wpos] = tv;
-    ++ wpos;
-    if ( wpos == kPvBitLen ) {
+    const TestVector* tv = tv_list[i];
+    tvdeck.add(tv);
+    if ( tvdeck.is_full() ) {
       vector<pair<const TpgFault*, PackedVal> > det_list;
-      fsim.ppsfp(kPvBitLen, tv_buff, det_list);
-      wpos = 0;
+      fsim.ppsfp(tvdeck, det_list);
+
+      ymuint nb = tvdeck.num();
       PackedVal dpat_all = 0ULL;
       ymuint n = det_list.size();
       det_num += n;
@@ -187,25 +73,27 @@ ppsfp_test(Fsim2& fsim,
 	fsim.set_skip(f);
 	// dpat の最初の1のビットを求める．
 	ymuint first = 0;
-	for ( ; first < kPvBitLen; ++ first) {
+	for ( ; first < nb; ++ first) {
 	  if ( dpat & (1ULL << first) ) {
 	    break;
 	  }
 	}
-	ASSERT_COND( first < kPvBitLen );
+	ASSERT_COND( first < nb );
 	dpat_all |= (1ULL << first);
       }
-      for (ymuint i = 0; i < kPvBitLen; ++ i) {
+      for (ymuint i = 0; i < nb; ++ i) {
 	if ( dpat_all & (1ULL << i) ) {
 	  ++ nepat;
 	}
       }
+      tvdeck.clear();
     }
   }
-  if ( wpos > 0 ) {
+  if ( !tvdeck.is_empty() ) {
     vector<pair<const TpgFault*, PackedVal> > det_list;
-    fsim.ppsfp(wpos, tv_buff, det_list);
+    fsim.ppsfp(tvdeck, det_list);
 
+    ymuint nb = tvdeck.num();
     PackedVal dpat_all = 0ULL;
     ymuint n = det_list.size();
     det_num += n;
@@ -215,15 +103,15 @@ ppsfp_test(Fsim2& fsim,
       fsim.set_skip(f);
       // dpat の最初の1のビットを求める．
       ymuint first = 0;
-      for ( ; first < wpos; ++ first) {
+      for ( ; first < nb; ++ first) {
 	if ( dpat & (1ULL << first) ) {
 	  break;
 	}
       }
-      ASSERT_COND( first < wpos );
+      ASSERT_COND( first < nb );
       dpat_all |= (1ULL << first);
     }
-    for (ymuint i = 0; i < kPvBitLen; ++ i) {
+    for (ymuint i = 0; i < nb; ++ i) {
       if ( dpat_all & (1ULL << i) ) {
 	++ nepat;
       }
@@ -242,7 +130,7 @@ void
 randgen(RandGen& rg,
 	TvMgr& tvmgr,
 	ymuint nv,
-	vector<TestVector*>& tv_list)
+	vector<const TestVector*>& tv_list)
 {
   tv_list.clear();
   tv_list.resize(nv);
@@ -344,7 +232,7 @@ fsim2test(int argc,
   tvmgr.init(network.ppi_num());
 
   RandGen rg;
-  vector<TestVector*> tv_list;
+  vector<const TestVector*> tv_list;
 
   randgen(rg, tvmgr, npat, tv_list);
 

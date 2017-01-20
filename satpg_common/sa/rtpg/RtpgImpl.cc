@@ -11,6 +11,7 @@
 #include "FaultMgr.h"
 #include "sa/TvMgr.h"
 #include "sa/TestVector.h"
+#include "sa/TvDeck.h"
 #include "sa/Fsim.h"
 #include "sa/RtpgStats.h"
 #include "ym/StopWatch.h"
@@ -90,33 +91,34 @@ RtpgImpl::run(FaultMgr& fmgr,
     tv_array[i] = tvmgr.new_vector();
   }
 
-  const TestVector* cur_array[kPvBitLen];
+  TvDeck tvdeck;
 
-  ymuint cpos = 0;
   ymuint pat_num = 0;
+  ymuint rpos = 0;
   for ( ; ; ) {
     if ( pat_num < max_pat ) {
-      TestVector* tv = tv_array[cpos];
+      TestVector* tv = tv_array[rpos];
       tv->set_from_random(mRandGen);
-      cur_array[cpos] = tv;
-      ++ cpos;
+      tvdeck.add(tv);
       ++ pat_num;
-      if ( cpos < kPvBitLen ) {
+      ++ rpos;
+      if ( !tvdeck.is_full() ) {
 	continue;
       }
     }
-    else if ( cpos == 0 ) {
+    else if ( tvdeck.is_empty() ) {
       break;
     }
 
     vector<pair<const TpgFault*, PackedVal> > det_list;
-    fsim.ppsfp(cpos, cur_array, det_list);
+    fsim.ppsfp(tvdeck, det_list);
 
     ymuint det_count = det_list.size();
     bool det_flags[kPvBitLen];
     for (ymuint i = 0; i < kPvBitLen; ++ i) {
       det_flags[i] = false;
     }
+    ymuint num = tvdeck.num();
     for (ymuint i = 0; i < det_count; ++ i) {
       const TpgFault* f = det_list[i].first;
       fmgr.set_status(f, kFsDetected);
@@ -124,23 +126,26 @@ RtpgImpl::run(FaultMgr& fmgr,
       PackedVal dpat = det_list[i].second;
       // dpat の最初の1のビットを調べる．
       ymuint first = 0;
-      for ( ; first < cpos; ++ first) {
+      for ( ; first < num; ++ first) {
 	if ( dpat & (1ULL << first) ) {
 	  break;
 	}
       }
-      ASSERT_COND( first < cpos );
+      ASSERT_COND( first < num );
       det_flags[first] = true;
     }
-    for (ymuint i = 0; i < cpos; ++ i) {
+    for (ymuint i = 0; i < num; ++ i) {
       if ( det_flags[i] ) {
-	const TestVector* tv = cur_array[i];
+	// 検出できたパタンは tvlist に移す．
+	const TestVector* tv = tv_array[i];
 	tvlist.push_back(tv);
+	// tv_array には新しいパタンを補充しておく．
 	tv_array[i] = tvmgr.new_vector();
 	++ epat_num;
       }
     }
-    cpos = 0;
+    tvdeck.clear();
+    rpos = 0;
 
     total_det_count += det_count;
 

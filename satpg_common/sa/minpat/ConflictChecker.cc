@@ -14,6 +14,7 @@
 #include "TpgFault.h"
 #include "sa/TvMgr.h"
 #include "sa/TestVector.h"
+#include "sa/TvDeck.h"
 #include "sa/Fsim.h"
 
 #include "sa/StructSat.h"
@@ -442,34 +443,32 @@ ConflictChecker::do_fsim(const vector<ymuint>& fid_list)
   StopWatch local_timer;
   local_timer.start();
 
-  const TestVector* cur_array[kPvBitLen];
+  TvDeck tvdeck;
 
   ymuint npat = fid_list.size();
-  ymuint cpos = 0;
   ymuint base = 0;
   for (ymuint i = 0; i < fid_list.size(); ++ i) {
     ymuint fid = fid_list[i];
     const FaultInfo& fi = mAnalyzer.fault_info(fid);
     TestVector* tv = fi.testvector();
-    cur_array[cpos] = tv;
-    ++ cpos;
-    if ( cpos == kPvBitLen ) {
+    tvdeck.add(tv);
+    if ( tvdeck.is_full() ) {
       if ( mVerbose > 1 ) {
 	cout << "\rFSIM: " << base;
 	cout.flush();
       }
       vector<pair<const TpgFault*, PackedVal> > det_list;
-      mFsim.ppsfp(kPvBitLen, cur_array, det_list);
+      mFsim.ppsfp(tvdeck, det_list);
       record_pat(det_list, fid_list);
-      cpos = 0;
-      base += kPvBitLen;
+      base += tvdeck.num();
+      tvdeck.clear();
     }
   }
-  if ( cpos > 0 ) {
+  if ( !tvdeck.is_empty() ) {
     vector<pair<const TpgFault*, PackedVal> > det_list;
-    mFsim.ppsfp(cpos, cur_array, det_list);
+    mFsim.ppsfp(tvdeck, det_list);
     record_pat(det_list, fid_list);
-    base += cpos;
+    base += tvdeck.num();
   }
 
   TestVector* cur_array2[kPvBitLen];
@@ -479,15 +478,16 @@ ConflictChecker::do_fsim(const vector<ymuint>& fid_list)
 
   ymuint nochg_count = 0;
   for (ymuint c = 0; c < 1000; ++ c) {
+    tvdeck.clear();
     for (ymuint i = 0; i < kPvBitLen; ++ i) {
       cur_array2[i]->set_from_random(mRandGen);
-      cur_array[i] = cur_array2[i];
+      tvdeck.add(cur_array2[i]);
     }
     vector<pair<const TpgFault*, PackedVal> > det_list;
-    mFsim.ppsfp(kPvBitLen, cur_array, det_list);
+    mFsim.ppsfp(tvdeck, det_list);
     ymuint nchg = 0;
     nchg += record_pat(det_list, fid_list);
-    base += kPvBitLen;
+    base += tvdeck.num();
     if ( nchg == 0 ) {
       ++ nochg_count;
       if ( nochg_count > 3 ) {

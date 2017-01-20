@@ -15,6 +15,7 @@
 #include "TpgFault.h"
 
 #include "sa/TestVector.h"
+#include "sa/TvDeck.h"
 #include "sa/NodeValList.h"
 #include "sa/DetectOp.h"
 
@@ -311,19 +312,17 @@ Fsim2::sppfp(const NodeValList& assign_list,
 }
 
 // @brief 複数のパタンで故障シミュレーションを行う．
-// @param[in] num テストベクタの数
-// @param[in] tv_array テストベクタの配列
+// @param[in] tvdeck テストベクタの配列
 // @param[out] fault_list 検出された故障とその時のビットパタンのリスト
 //
 // num は高々 kBvBitLen 以下<br>
 void
-Fsim2::ppsfp(ymuint num,
-	     const TestVector* tv_array[],
+Fsim2::ppsfp(const TvDeck& tvdeck,
 	     vector<pair<const TpgFault*, PackedVal> >& fault_list)
 {
   fault_list.clear();
 
-  _set_pp2(num, tv_array);
+  _set_pp2(tvdeck);
 
   // 正常値の計算を行う．
   _calc_gval2();
@@ -353,7 +352,7 @@ Fsim2::ppsfp(ymuint num,
       obs = mEventQ.simulate();
     }
 
-    ffr->fault_sweep(num, obs, fault_list);
+    ffr->fault_sweep(tvdeck.num(), obs, fault_list);
   }
 }
 
@@ -419,25 +418,24 @@ Fsim2::_set_sp2(const NodeValList& assign_list)
 }
 
 // @brief 複数のパタンを設定する．
-// @param[in] num テストベクタの数
-// @param[in] tv_array テストベクタの配列
+// @param[in] tvdeck テストベクタの配列
 void
-Fsim2::_set_pp2(ymuint num,
-		const TestVector* tv_array[])
+Fsim2::_set_pp2(const TvDeck& tvdeck)
 {
-  // tv_array を入力ごとに固めてセットしていく．
+  // tvdeck を入力ごとに固めてセットしていく．
+  ymuint nv = tvdeck.num();
   ymuint npi = mInputArray.size();
   for (ymuint i = 0; i < npi; ++ i) {
     PackedVal val = kPvAll0;
     PackedVal bit = 1UL;
-    for (ymuint j = 0; j < num; ++ j, bit <<= 1) {
-      if ( tv_array[j]->val3(i) == kVal1 ) {
+    for (ymuint j = 0; j < nv; ++ j, bit <<= 1) {
+      if ( tvdeck[j]->val3(i) == kVal1 ) {
 	val |= bit;
       }
     }
     // 残ったビットには 0 番めのパタンを詰めておく．
-    if ( tv_array[0]->val3(i) == kVal1 ) {
-      for (ymuint j = num; j < kPvBitLen; ++ j, bit <<= 1) {
+    if ( tvdeck[0]->val3(i) == kVal1 ) {
+      for (ymuint j = nv; j < kPvBitLen; ++ j, bit <<= 1) {
 	val |= bit;
       }
     }

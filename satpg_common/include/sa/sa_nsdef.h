@@ -43,6 +43,7 @@ class BackTracer;
 class DetectOp;
 class UntestOp;
 class TestVector;
+class TvDeck;
 class TvMgr;
 class Dtpg;
 class DtpgEngine;

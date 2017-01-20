@@ -14,6 +14,7 @@
 
 #include "sa/TvMgr.h"
 #include "sa/TestVector.h"
+#include "sa/TvDeck.h"
 #include "sa/Fsim.h"
 #include "sa/StructSat.h"
 
@@ -252,34 +253,31 @@ DomChecker::get_dom_faults(const vector<ymuint>& src_fid_list,
 void
 DomChecker::do_fsim(const vector<ymuint>& fid_list)
 {
-  const TestVector* cur_array[kPvBitLen];
-
+  TvDeck tvdeck;
   ymuint nf = fid_list.size();
-  ymuint cpos = 0;
   ymuint npat = 0;
   for (ymuint i = 0; i < nf; ++ i) {
     ymuint fid = fid_list[i];
     const FaultInfo& fi = mAnalyzer.fault_info(fid);
     TestVector* tv = fi.testvector();
-    cur_array[cpos] = tv;
-    ++ cpos;
-    if ( cpos == kPvBitLen ) {
+    tvdeck.add(tv);
+    if ( tvdeck.is_full() ) {
       if ( mVerbose > 1 ) {
 	cout << "\rFSIM: " << setw(6) << npat;
 	cout.flush();
       }
       vector<pair<const TpgFault*, PackedVal> > det_list;
-      mFsim.ppsfp(kPvBitLen, cur_array, det_list);
+      mFsim.ppsfp(tvdeck, det_list);
       record_dom_cand(det_list);
-      cpos = 0;
-      npat += kPvBitLen;
+      npat += tvdeck.num();
+      tvdeck.clear();
     }
   }
-  if ( cpos > 0 ) {
+  if ( !tvdeck.is_empty() ) {
     vector<pair<const TpgFault*, PackedVal> > det_list;
-    mFsim.ppsfp(cpos, cur_array, det_list);
+    mFsim.ppsfp(tvdeck, det_list);
     record_dom_cand(det_list);
-    npat += cpos;
+    npat += tvdeck.num();
   }
 
   TestVector* cur_array2[kPvBitLen];
@@ -290,15 +288,16 @@ DomChecker::do_fsim(const vector<ymuint>& fid_list)
 
   ymuint nochg = 0;
   for ( ; ; ) {
+    tvdeck.clear();
     for (ymuint i = 0; i < kPvBitLen; ++ i) {
       cur_array2[i]->set_from_random(mRandGen);
-      cur_array[i] = cur_array2[i];
+      tvdeck.add(cur_array2[i]);
     }
     vector<pair<const TpgFault*, PackedVal> > det_list;
-    mFsim.ppsfp(kPvBitLen, cur_array, det_list);
+    mFsim.ppsfp(tvdeck, det_list);
     ymuint nchg = 0;
     nchg += record_dom_cand(det_list);
-    npat += kPvBitLen;
+    npat += tvdeck.num();
     if ( nchg == 0 ) {
       ++ nochg;
       if ( nochg > 2 ) {
