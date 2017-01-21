@@ -14,7 +14,6 @@
 #include "TpgFault.h"
 
 #include "sa/TestVector.h"
-#include "sa/TvDeck.h"
 #include "sa/NodeValList.h"
 
 #include "SimNode.h"
@@ -56,6 +55,7 @@ END_NONAMESPACE
 // @brief コンストラクタ
 Fsim3::Fsim3()
 {
+  mPatMap = kPvAll0;
 }
 
 // @brief デストラクタ
@@ -519,24 +519,55 @@ Fsim3::_sppfp(vector<const TpgFault*>& fault_list)
   clear_gval();
 }
 
+// @brief ppsfp 用のパタンバッファをクリアする．
+void
+Fsim3::clear_patterns()
+{
+  mPatMap = kPvAll0;
+}
+
+// @brief ppsfp 用のパタンを設定する．
+// @param[in] pos 位置番号 ( 0 <= pos < kPvBitLen )
+// @param[in] tv テストベクタ
+void
+Fsim3::set_pattern(ymuint pos,
+		   const TestVector* tv)
+{
+  ASSERT_COND( pos < kPvBitLen );
+  mPatBuff[pos] = tv;
+  mPatMap |= (1ULL << pos);
+}
+
 // @brief 複数のパタンで故障シミュレーションを行う．
-// @param[in] tvdeck テストベクタの配列
 // @param[out] fault_list 検出された故障とその時のビットパタンのリスト
 void
-Fsim3::ppsfp(const TvDeck& tvdeck,
-	     vector<pair<const TpgFault*, PackedVal> >& fault_list)
+Fsim3::ppsfp(vector<pair<const TpgFault*, PackedVal> >& fault_list)
 {
   fault_list.clear();
 
-  // tv_array を入力ごとに固めてセットしていく．
-  ymuint num = tvdeck.num();
+  if ( mPatMap == kPvAll0 ) {
+    return;
+  }
+
+  // 設定されていないビットはどこか他の設定されているビットをコピーする．
+  // 設定されている最初のビット位置を求める．
+  ymuint first = 0;
+  for ( ; first < kPvBitLen; ++ first) {
+    if ( mPatMap & (1ULL << first) ) {
+      break;
+    }
+  }
+  ASSERT_COND( first < kPvBitLen );
+
+  // mPatBuff の内容を入力ごとに固めてセットしていく．
   ymuint npi = mNetwork->ppi_num();
   for (ymuint i = 0; i < npi; ++ i) {
     PackedVal val_0 = kPvAll0;
     PackedVal val_1 = kPvAll0;
     PackedVal bit = 1UL;
-    for (ymuint j = 0; j < num; ++ j, bit <<= 1) {
-      switch ( tvdeck[j]->val3(i) ) {
+    for (ymuint j = 0; j < kPvBitLen; ++ j, bit <<= 1) {
+      ymuint pos = (mPatMap & bit) ? j : first;
+      switch ( mPatBuff[pos]->val3(i) ) {
       case kVal0:
 	val_0 |= bit;
 	break;
@@ -550,25 +581,6 @@ Fsim3::ppsfp(const TvDeck& tvdeck,
       }
     }
 
-    // 残ったビットには 0 番めのパタンを詰めておく．
-    // これは無駄なイベントを発生させないため．
-    switch ( tvdeck[0]->val3(i) ) {
-    case kVal0:
-      for (ymuint j = num; j < kPvBitLen; ++ j, bit <<= 1) {
-	val_0 |= bit;
-      }
-      break;
-
-    case kVal1:
-      for (ymuint j = num; j < kPvBitLen; ++ j, bit <<= 1) {
-	val_1 |= bit;
-      }
-      break;
-
-    default:
-      break;
-
-    }
     SimNode* simnode = mInputArray[i];
     if ( (val_0 | val_1) != kPvAll0 ) {
       simnode->set_gval(val_0, val_1);
@@ -618,6 +630,7 @@ Fsim3::ppsfp(const TvDeck& tvdeck,
       update_fval(root);
       obs = calc_fval();
     }
+    obs &= mPatMap;
 
     // obs と各々の故障の mObsMask との AND が 0 でなければ故障検出
     // できたということ．対応するテストベクタを記録する．

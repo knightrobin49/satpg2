@@ -15,7 +15,6 @@
 #include "TpgFault.h"
 
 #include "sa/TestVector.h"
-#include "sa/TvDeck.h"
 #include "sa/NodeValList.h"
 #include "sa/DetectOp.h"
 
@@ -80,6 +79,7 @@ BEGIN_NAMESPACE_YM_SATPG_FSIM
 // @brief コンストラクタ
 Fsim2::Fsim2()
 {
+  mPatMap = kPvAll0;
 }
 
 // @brief デストラクタ
@@ -311,18 +311,38 @@ Fsim2::sppfp(const NodeValList& assign_list,
   _sppfp2(fault_list);
 }
 
-// @brief 複数のパタンで故障シミュレーションを行う．
-// @param[in] tvdeck テストベクタの配列
-// @param[out] fault_list 検出された故障とその時のビットパタンのリスト
-//
-// num は高々 kBvBitLen 以下<br>
+// @brief ppsfp 用のパタンバッファをクリアする．
 void
-Fsim2::ppsfp(const TvDeck& tvdeck,
-	     vector<pair<const TpgFault*, PackedVal> >& fault_list)
+Fsim2::clear_patterns()
+{
+  mPatMap = kPvAll0;
+}
+
+// @brief ppsfp 用のパタンを設定する．
+// @param[in] pos 位置番号 ( 0 <= pos < kPvBitLen )
+// @param[in] tv テストベクタ
+void
+Fsim2::set_pattern(ymuint pos,
+		   const TestVector* tv)
+{
+  ASSERT_COND( pos < kPvBitLen );
+  mPatBuff[pos] = tv;
+  mPatMap |= (1ULL << pos);
+}
+
+// @brief 複数のパタンで故障シミュレーションを行う．
+// @param[out] fault_list 検出された故障とその時のビットパタンのリスト
+void
+Fsim2::ppsfp(vector<pair<const TpgFault*, PackedVal> >& fault_list)
 {
   fault_list.clear();
 
-  _set_pp2(tvdeck);
+  if ( mPatMap == kPvAll0 ) {
+    // パタンが一つも設定されていない．
+    return;
+  }
+
+  _set_pp2();
 
   // 正常値の計算を行う．
   _calc_gval2();
@@ -351,8 +371,9 @@ Fsim2::ppsfp(const TvDeck& tvdeck,
       mEventQ.put_trigger(root, ffr_req);
       obs = mEventQ.simulate();
     }
+    obs &= mPatMap;
 
-    ffr->fault_sweep(tvdeck.num(), obs, fault_list);
+    ffr->fault_sweep(obs, fault_list);
   }
 }
 
@@ -418,24 +439,26 @@ Fsim2::_set_sp2(const NodeValList& assign_list)
 }
 
 // @brief 複数のパタンを設定する．
-// @param[in] tvdeck テストベクタの配列
 void
-Fsim2::_set_pp2(const TvDeck& tvdeck)
+Fsim2::_set_pp2()
 {
-  // tvdeck を入力ごとに固めてセットしていく．
-  ymuint nv = tvdeck.num();
+  // 設定されていないビットはどこか他の設定されているビットをコピーする．
+  // 設定されている最初のビット位置を求める．
+  ymuint first = 0;
+  for ( ; first < kPvBitLen; ++ first) {
+    if ( mPatMap & (1ULL << first) ) {
+      break;
+    }
+  }
+  ASSERT_COND( first < kPvBitLen );
+
   ymuint npi = mInputArray.size();
   for (ymuint i = 0; i < npi; ++ i) {
     PackedVal val = kPvAll0;
-    PackedVal bit = 1UL;
-    for (ymuint j = 0; j < nv; ++ j, bit <<= 1) {
-      if ( tvdeck[j]->val3(i) == kVal1 ) {
-	val |= bit;
-      }
-    }
-    // 残ったビットには 0 番めのパタンを詰めておく．
-    if ( tvdeck[0]->val3(i) == kVal1 ) {
-      for (ymuint j = nv; j < kPvBitLen; ++ j, bit <<= 1) {
+    PackedVal bit = 1ULL;
+    for (ymuint j = 0; j < kPvBitLen; ++ j, bit <<= 1) {
+      ymuint pos = (mPatMap & bit) ? j : first;
+      if ( mPatBuff[pos]->val3(i) == kVal1 ) {
 	val |= bit;
       }
     }

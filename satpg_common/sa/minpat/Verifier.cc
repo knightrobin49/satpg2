@@ -44,15 +44,18 @@ Verifier::check(Fsim& fsim,
   // 検出された故障番号を入れるハッシュ表
   HashSet<ymuint> fhash;
 
-  TvDeck tvdeck;
+  ymuint wpos = 0;
+  fsim.clear_patterns();
   vector<pair<const TpgFault*, PackedVal> > det_fault_list;
   for (vector<const TestVector*>::const_iterator p = pat_list.begin();
        p != pat_list.end(); ++ p) {
     const TestVector* tv = *p;
-    tvdeck.add(tv);
-    if ( tvdeck.is_full() ) {
-      fsim.ppsfp(tvdeck, det_fault_list);
-      tvdeck.clear();
+    fsim.set_pattern(wpos, tv);
+    ++ wpos;
+    if ( wpos == kPvBitLen ) {
+      fsim.ppsfp(det_fault_list);
+      fsim.clear_patterns();
+      wpos = 0;
       for (ymuint i = 0; i < det_fault_list.size(); ++ i) {
 	const TpgFault* f = det_fault_list[i].first;
 	// どのパタンで検出できたかは調べる必要はない．
@@ -60,8 +63,8 @@ Verifier::check(Fsim& fsim,
       }
     }
   }
-  if ( !tvdeck.is_empty() ) {
-    fsim.ppsfp(tvdeck, det_fault_list);
+  if ( wpos > 0 ) {
+    fsim.ppsfp(det_fault_list);
     for (ymuint i = 0; i < det_fault_list.size(); ++ i) {
       const TpgFault* f = det_fault_list[i].first;
       // どのパタンで検出できたかは調べる必要はない．

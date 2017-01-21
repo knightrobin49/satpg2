@@ -121,13 +121,26 @@ public:
   sppfp(const NodeValList& assign_list,
 	vector<const TpgFault*>& fault_list) = 0;
 
-  /// @brief 複数のパタンで故障シミュレーションを行う．
-  /// @param[in] tvdeck テストベクタの配列
-  /// @param[out] fault_list 検出された故障とその時のビットパタンのリスト
+  /// @brief ppsfp 用のパタンバッファをクリアする．
   virtual
   void
-  ppsfp(const TvDeck& tvdeck,
-	vector<pair<const TpgFault*, PackedVal> >& fault_list) = 0;
+  clear_patterns() = 0;
+
+  /// @brief ppsfp 用のパタンを設定する．
+  /// @param[in] pos 位置番号 ( 0 <= pos < kPvBitLen )
+  /// @param[in] tv テストベクタ
+  virtual
+  void
+  set_pattern(ymuint pos,
+	      const TestVector* tv) = 0;
+
+  /// @brief 複数のパタンで故障シミュレーションを行う．
+  /// @param[out] fault_list 検出された故障とその時のビットパタンのリスト
+  ///
+  /// 最低1つのパタンが set_pattern() で設定されている必要がある．
+  virtual
+  void
+  ppsfp(vector<pair<const TpgFault*, PackedVal> >& fault_list) = 0;
 
 };
 

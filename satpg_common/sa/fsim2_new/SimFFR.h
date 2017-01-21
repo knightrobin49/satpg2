@@ -60,12 +60,10 @@ public:
   fault_sweep(vector<const TpgFault*>& fault_list);
 
   /// @brief 検出可能な故障を見つける．
-  /// @param[in] num テストベクタの数
   /// @param[in] mask マスク
   /// @param[out] fault_list 検出された故障とその時のビットパタンのリスト
   void
-  fault_sweep(ymuint num,
-	      PackedVal mask,
+  fault_sweep(PackedVal mask,
 	      vector<pair<const TpgFault*, PackedVal> >& fault_list);
 
 
@@ -191,12 +189,10 @@ SimFFR::fault_sweep(vector<const TpgFault*>& fault_list)
 }
 
 // @brief 検出可能な故障を見つける．
-// @param[in] num テストベクタの数
 // @param[in] mask マスク
 // @param[out] fault_list 検出された故障とその時のビットパタンのリスト
 void
-SimFFR::fault_sweep(ymuint num,
-		    PackedVal mask,
+SimFFR::fault_sweep(PackedVal mask,
 		    vector<pair<const TpgFault*, PackedVal> >& fault_list)
 {
   for (vector<SimFault*>::const_iterator p = mFaultList.begin();

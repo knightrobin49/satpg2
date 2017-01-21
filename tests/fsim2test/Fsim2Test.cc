@@ -53,17 +53,19 @@ ppsfp_test(Fsim2& fsim,
 {
   ymuint nv = tv_list.size();
 
-  TvDeck tvdeck;
+  fsim.clear_patterns();
+  ymuint wpos = 0;
   ymuint det_num = 0;
   ymuint nepat = 0;
   for (ymuint i = 0; i < nv; ++ i) {
     const TestVector* tv = tv_list[i];
-    tvdeck.add(tv);
-    if ( tvdeck.is_full() ) {
+    fsim.set_pattern(wpos, tv);
+    ++ wpos;
+    if ( wpos == kPvBitLen ) {
       vector<pair<const TpgFault*, PackedVal> > det_list;
-      fsim.ppsfp(tvdeck, det_list);
+      fsim.ppsfp(det_list);
 
-      ymuint nb = tvdeck.num();
+      ymuint nb = wpos;
       PackedVal dpat_all = 0ULL;
       ymuint n = det_list.size();
       det_num += n;
@@ -86,14 +88,15 @@ ppsfp_test(Fsim2& fsim,
 	  ++ nepat;
 	}
       }
-      tvdeck.clear();
+      fsim.clear_patterns();
+      wpos = 0;
     }
   }
-  if ( !tvdeck.is_empty() ) {
+  if ( wpos > 0 ) {
     vector<pair<const TpgFault*, PackedVal> > det_list;
-    fsim.ppsfp(tvdeck, det_list);
+    fsim.ppsfp(det_list);
 
-    ymuint nb = tvdeck.num();
+    ymuint nb = wpos;
     PackedVal dpat_all = 0ULL;
     ymuint n = det_list.size();
     det_num += n;

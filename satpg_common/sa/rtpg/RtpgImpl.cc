@@ -11,7 +11,6 @@
 #include "FaultMgr.h"
 #include "sa/TvMgr.h"
 #include "sa/TestVector.h"
-#include "sa/TvDeck.h"
 #include "sa/Fsim.h"
 #include "sa/RtpgStats.h"
 #include "ym/StopWatch.h"
@@ -91,34 +90,33 @@ RtpgImpl::run(FaultMgr& fmgr,
     tv_array[i] = tvmgr.new_vector();
   }
 
-  TvDeck tvdeck;
-
+  fsim.clear_patterns();
   ymuint pat_num = 0;
-  ymuint rpos = 0;
+  ymuint wpos = 0;
   for ( ; ; ) {
     if ( pat_num < max_pat ) {
-      TestVector* tv = tv_array[rpos];
+      TestVector* tv = tv_array[wpos];
       tv->set_from_random(mRandGen);
-      tvdeck.add(tv);
+      fsim.set_pattern(wpos, tv);
       ++ pat_num;
-      ++ rpos;
-      if ( !tvdeck.is_full() ) {
+      ++ wpos;
+      if ( wpos < kPvBitLen ) {
 	continue;
       }
     }
-    else if ( tvdeck.is_empty() ) {
+    else if ( wpos == 0 ) {
       break;
     }
 
     vector<pair<const TpgFault*, PackedVal> > det_list;
-    fsim.ppsfp(tvdeck, det_list);
+    fsim.ppsfp(det_list);
 
     ymuint det_count = det_list.size();
     bool det_flags[kPvBitLen];
     for (ymuint i = 0; i < kPvBitLen; ++ i) {
       det_flags[i] = false;
     }
-    ymuint num = tvdeck.num();
+    ymuint num = wpos;
     for (ymuint i = 0; i < det_count; ++ i) {
       const TpgFault* f = det_list[i].first;
       fmgr.set_status(f, kFsDetected);
@@ -144,8 +142,8 @@ RtpgImpl::run(FaultMgr& fmgr,
 	++ epat_num;
       }
     }
-    tvdeck.clear();
-    rpos = 0;
+    fsim.clear_patterns();
+    wpos = 0;
 
     total_det_count += det_count;
 

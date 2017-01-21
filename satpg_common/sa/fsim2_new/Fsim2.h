@@ -117,13 +117,24 @@ public:
   sppfp(const NodeValList& assign_list,
 	vector<const TpgFault*>& fault_list);
 
+  /// @brief ppsfp 用のパタンバッファをクリアする．
+  virtual
+  void
+  clear_patterns();
+
+  /// @brief ppsfp 用のパタンを設定する．
+  /// @param[in] pos 位置番号 ( 0 <= pos < kPvBitLen )
+  /// @param[in] tv テストベクタ
+  virtual
+  void
+  set_pattern(ymuint pos,
+	      const TestVector* tv);
+
   /// @brief 複数のパタンで故障シミュレーションを行う．
-  /// @param[in] tvdeck テストベクタの配列
   /// @param[out] fault_list 検出された故障とその時のビットパタンのリスト
   virtual
   void
-  ppsfp(const TvDeck& tvdeck,
-	vector<pair<const TpgFault*, PackedVal> >& fault_list);
+  ppsfp(vector<pair<const TpgFault*, PackedVal> >& fault_list);
 
 
 private:
@@ -142,9 +153,8 @@ private:
   _set_sp2(const NodeValList& assign_list);
 
   /// @brief 複数のパタンを設定する．
-  /// @param[in] tvdeck テストベクタの配列
   void
-  _set_pp2(const TvDeck& tvdeck);
+  _set_pp2();
 
   /// @brief SPSFP故障シミュレーションの本体
   /// @param[in] f 対象の故障
@@ -226,6 +236,12 @@ private:
 
   // SimNode->id() をキーにして所属する FFR を納めた配列
   vector<SimFFR*> mFFRMap;
+
+  // パタンの設定状況を表すビットベクタ
+  PackedVal mPatMap;
+
+  // パタンバッファ
+  const TestVector* mPatBuff[kPvBitLen];
 
   // イベントキュー
   EventQ mEventQ;

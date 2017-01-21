@@ -13,7 +13,6 @@
 
 #include "sa/TvMgr.h"
 #include "sa/TestVector.h"
-#include "sa/TvDeck.h"
 #include "sa/Fsim.h"
 
 
@@ -185,29 +184,31 @@ EqChecker::get_rep_faults(const vector<ymuint>& src_fid_list,
 void
 EqChecker::do_fsim(const vector<ymuint>& fid_list)
 {
-  TvDeck tvdeck;
-
   ymuint nf = fid_list.size();
+  mFsim.clear_patterns();
+  ymuint wpos = 0;
   ymuint npat = nf;
   for (ymuint i = 0; i < nf; ++ i) {
     ymuint fid = fid_list[i];
     const FaultInfo& fi = mAnalyzer.fault_info(fid);
     TestVector* tv = fi.testvector();
-    tvdeck.add(tv);
-    if ( tvdeck.is_full() ) {
+    mFsim.set_pattern(wpos, tv);
+    ++ wpos;
+    if ( wpos == kPvBitLen ) {
       if ( mVerbose > 1 ) {
 	cout << "\rFSIM: " << setw(6) << i;
 	cout.flush();
       }
       vector<pair<const TpgFault*, PackedVal> > fault_list;
-      mFsim.ppsfp(tvdeck, fault_list);
+      mFsim.ppsfp(fault_list);
       mEqSet.multi_refinement(fault_list);
-      tvdeck.clear();
+      mFsim.clear_patterns();
+      wpos = 0;
     }
   }
-  if ( !tvdeck.is_empty() ) {
+  if ( wpos > 0 ) {
     vector<pair<const TpgFault*, PackedVal> > fault_list;
-    mFsim.ppsfp(tvdeck, fault_list);
+    mFsim.ppsfp(fault_list);
     mEqSet.multi_refinement(fault_list);
   }
 
@@ -218,14 +219,14 @@ EqChecker::do_fsim(const vector<ymuint>& fid_list)
   }
 
   for ( ; ; ) {
-    tvdeck.clear();
+    mFsim.clear_patterns();
     for (ymuint i = 0; i < kPvBitLen; ++ i) {
       cur_array2[i]->set_from_random(mRandGen);
-      tvdeck.add(cur_array2[i]);
+      mFsim.set_pattern(i, cur_array2[i]);
     }
     vector<pair<const TpgFault*, PackedVal> > fault_list;
-    mFsim.ppsfp(tvdeck, fault_list);
-    npat += tvdeck.num();
+    mFsim.ppsfp(fault_list);
+    npat += kPvBitLen;
     ymuint nchg = 0;
     if ( mEqSet.multi_refinement(fault_list) ) {
       ++ nchg;
