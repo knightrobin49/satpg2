@@ -107,19 +107,21 @@ public:
 
   /// @brief ひとつのパタンで故障シミュレーションを行う．
   /// @param[in] tv テストベクタ
-  /// @param[out] fault_list 検出された故障のリスト
+  /// @return 検出された故障数を返す．
+  ///
+  /// 検出された故障は det_fault() で取得する．
   virtual
-  void
-  sppfp(const TestVector* tv,
-	vector<const TpgFault*>& fault_list) = 0;
+  ymuint
+  sppfp(const TestVector* tv) = 0;
 
   /// @brief ひとつのパタンで故障シミュレーションを行う．
   /// @param[in] assign_list 値の割当リスト
-  /// @param[out] fault_list 検出された故障のリスト
+  /// @return 検出された故障数を返す．
+  ///
+  /// 検出された故障は det_fault() で取得する．
   virtual
-  void
-  sppfp(const NodeValList& assign_list,
-	vector<const TpgFault*>& fault_list) = 0;
+  ymuint
+  sppfp(const NodeValList& assign_list) = 0;
 
   /// @brief ppsfp 用のパタンバッファをクリアする．
   virtual
@@ -135,12 +137,30 @@ public:
 	      const TestVector* tv) = 0;
 
   /// @brief 複数のパタンで故障シミュレーションを行う．
-  /// @param[out] fault_list 検出された故障とその時のビットパタンのリスト
+  /// @return 検出された故障数を返す．
   ///
-  /// 最低1つのパタンが set_pattern() で設定されている必要がある．
+  /// 検出された故障は det_fault() で取得する．<br>
+  /// 最低1つのパタンが set_pattern() で設定されている必要がある．<br>
   virtual
-  void
-  ppsfp(vector<pair<const TpgFault*, PackedVal> >& fault_list) = 0;
+  ymuint
+  ppsfp() = 0;
+
+  /// @brief 直前の sppfp/ppsfp で検出された故障数を返す．
+  virtual
+  ymuint
+  det_fault_num() = 0;
+
+  /// @brief 直前の sppfp/ppsfp で検出された故障を返す．
+  /// @param[in] pos 位置番号 ( 0 <= pos < det_fault_num() )
+  virtual
+  const TpgFault*
+  det_fault(ymuint pos) = 0;
+
+  /// @brief 直前の ppsfp で検出された故障の検出ビットパタンを返す．
+  /// @param[in] pos 位置番号 ( 0 <= pos < det_fault_num() )
+  virtual
+  PackedVal
+  det_fault_pat(ymuint pos) = 0;
 
 };
 

@@ -75,10 +75,9 @@ McCompactor::run(const vector<const TpgFault*>& fault_list,
   mincov.set_size(nf, np);
   for (ymuint i = 0; i < np; ++ i) {
     const TestVector* tv = orig_tv_list[i];
-    vector<const TpgFault*> fault_list;
-    mFsim.sppfp(tv, fault_list);
-    for (ymuint j = 0; j < fault_list.size(); ++ j) {
-      const TpgFault* f = fault_list[j];
+    ymuint n = mFsim.sppfp(tv);
+    for (ymuint j = 0; j < n; ++ j) {
+      const TpgFault* f = mFsim.det_fault(j);
       ymuint row_pos = row_map[f->id()];
       if ( row_pos > 0 ) {
 	-- row_pos;

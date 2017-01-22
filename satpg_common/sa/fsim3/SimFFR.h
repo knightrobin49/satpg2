@@ -41,13 +41,22 @@ public:
   void
   set_root(SimNode* root);
 
+  /// @brief この FFR に属する故障のリストをクリアする．
+  void
+  clear_fault_list();
+
+  /// @brief この FFR に属する故障のリストに追加する．
+  /// @param[in] f 追加する故障
+  void
+  add_fault(SimFault* f);
+
   /// @brief 根のノードを得る．
   SimNode*
   root() const;
 
   /// @brief この FFR に属する故障のリストを返す．
-  vector<SimFault*>&
-  fault_list();
+  const vector<SimFault*>&
+  fault_list() const;
 
 
 private:
@@ -88,6 +97,23 @@ SimFFR::set_root(SimNode* root)
   mRoot = root;
 }
 
+// @brief この FFR に属する故障のリストをクリアする．
+inline
+void
+SimFFR::clear_fault_list()
+{
+  mFaultList.clear();
+}
+
+// @brief この FFR に属する故障のリストに追加する．
+// @param[in] f 追加する故障
+inline
+void
+SimFFR::add_fault(SimFault* f)
+{
+  mFaultList.push_back(f);
+}
+
 // @brief 根のノードを得る．
 inline
 SimNode*
@@ -98,8 +124,8 @@ SimFFR::root() const
 
 // @brief この FFR に属する故障のリストを返す．
 inline
-vector<SimFault*>&
-SimFFR::fault_list()
+const vector<SimFault*>&
+SimFFR::fault_list() const
 {
   return mFaultList;
 }

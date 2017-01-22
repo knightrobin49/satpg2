@@ -267,18 +267,16 @@ DomChecker::do_fsim(const vector<ymuint>& fid_list)
 	cout << "\rFSIM: " << setw(6) << npat;
 	cout.flush();
       }
-      vector<pair<const TpgFault*, PackedVal> > det_list;
-      mFsim.ppsfp(det_list);
-      record_dom_cand(det_list);
+      mFsim.ppsfp();
+      record_dom_cand();
       npat += wpos;
       mFsim.clear_patterns();
       wpos = 0;
     }
   }
   if ( wpos > 0 ) {
-    vector<pair<const TpgFault*, PackedVal> > det_list;
-    mFsim.ppsfp(det_list);
-    record_dom_cand(det_list);
+    mFsim.ppsfp();
+    record_dom_cand();
     npat += wpos;
   }
 
@@ -295,10 +293,9 @@ DomChecker::do_fsim(const vector<ymuint>& fid_list)
       cur_array2[i]->set_from_random(mRandGen);
       mFsim.set_pattern(i, cur_array2[i]);
     }
-    vector<pair<const TpgFault*, PackedVal> > det_list;
-    mFsim.ppsfp(det_list);
+    mFsim.ppsfp();
     ymuint nchg = 0;
-    nchg += record_dom_cand(det_list);
+    nchg += record_dom_cand();
     npat += kPvBitLen;
     if ( nchg == 0 ) {
       ++ nochg;
@@ -393,15 +390,15 @@ DomChecker::do_fsim(const vector<ymuint>& fid_list)
 // 最初に候補となる故障は det_list に含まれない(ビットベクタが0)の故障
 // を含むので効率のよいやり方が思いつかなかった．
 ymuint
-DomChecker::record_dom_cand(const vector<pair<const TpgFault*, PackedVal> >& det_list)
+DomChecker::record_dom_cand()
 {
-  ymuint n = det_list.size();
+  ymuint n = mFsim.det_fault_num();
   ymuint nchg = 0;
 
   // det_list の内容を mDetFlag に転写する．
   for (ymuint i = 0; i < n; ++ i) {
-    const TpgFault* f = det_list[i].first;
-    PackedVal bv = det_list[i].second;
+    const TpgFault* f = mFsim.det_fault(i);
+    PackedVal bv = mFsim.det_fault_pat(i);
     mDetFlag[f->id()] = bv;
   }
 
@@ -413,9 +410,9 @@ DomChecker::record_dom_cand(const vector<pair<const TpgFault*, PackedVal> >& det
 
   // 検出結果を用いて支配される故障の候補リストを作る．
   for (ymuint i1 = 0; i1 < n; ++ i1) {
-    const TpgFault* f1 = det_list[i1].first;
+    const TpgFault* f1 = mFsim.det_fault(i1);
     ymuint f1_id = f1->id();
-    PackedVal bv1 = det_list[i1].second;
+    PackedVal bv1 = mFsim.det_fault_pat(i1);
     FaultData& fd1 = mFaultDataArray[f1_id];
     if ( fd1.mDetCount == 0 ) {
       // 初めて検出された場合
@@ -424,9 +421,9 @@ DomChecker::record_dom_cand(const vector<pair<const TpgFault*, PackedVal> >& det
 	if ( i2 == i1 ) {
 	  continue;
 	}
-	const TpgFault* f2 = det_list[i2].first;
+	const TpgFault* f2 = mFsim.det_fault(i2);
 	ymuint f2_id = f2->id();
-	PackedVal bv2 = det_list[i2].second;
+	PackedVal bv2 = mFsim.det_fault_pat(i2);
 	if ( (bv1 & bv2) == bv1 ) {
 	  // bv1 が 1 の部分は bv2 も 1
 	  tmp_list.push_back(f2_id);
@@ -464,7 +461,7 @@ DomChecker::record_dom_cand(const vector<pair<const TpgFault*, PackedVal> >& det
 
   // mDetFlag をクリアしておく．
   for (ymuint i1 = 0; i1 < n; ++ i1) {
-    const TpgFault* f1 = det_list[i1].first;
+    const TpgFault* f1 = mFsim.det_fault(i1);
     mDetFlag[f1->id()] = 0UL;
   }
 

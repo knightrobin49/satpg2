@@ -199,17 +199,15 @@ EqChecker::do_fsim(const vector<ymuint>& fid_list)
 	cout << "\rFSIM: " << setw(6) << i;
 	cout.flush();
       }
-      vector<pair<const TpgFault*, PackedVal> > fault_list;
-      mFsim.ppsfp(fault_list);
-      mEqSet.multi_refinement(fault_list);
+      mFsim.ppsfp();
+      mEqSet.multi_refinement(mFsim);
       mFsim.clear_patterns();
       wpos = 0;
     }
   }
   if ( wpos > 0 ) {
-    vector<pair<const TpgFault*, PackedVal> > fault_list;
-    mFsim.ppsfp(fault_list);
-    mEqSet.multi_refinement(fault_list);
+    mFsim.ppsfp();
+    mEqSet.multi_refinement(mFsim);
   }
 
   TestVector* cur_array2[kPvBitLen];
@@ -224,11 +222,10 @@ EqChecker::do_fsim(const vector<ymuint>& fid_list)
       cur_array2[i]->set_from_random(mRandGen);
       mFsim.set_pattern(i, cur_array2[i]);
     }
-    vector<pair<const TpgFault*, PackedVal> > fault_list;
-    mFsim.ppsfp(fault_list);
+    mFsim.ppsfp();
     npat += kPvBitLen;
     ymuint nchg = 0;
-    if ( mEqSet.multi_refinement(fault_list) ) {
+    if ( mEqSet.multi_refinement(mFsim) ) {
       ++ nchg;
     }
 

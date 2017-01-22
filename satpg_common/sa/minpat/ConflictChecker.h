@@ -99,8 +99,7 @@ private:
 
   /// @brief 故障シミュレーションの後処理
   ymuint
-  record_pat(const vector<pair<const TpgFault*, PackedVal> >& det_list,
-	     const vector<ymuint>& fid_list);
+  record_pat(const vector<ymuint>& fid_list);
 
   /// @brief analyze_conflict の統計情報を出力する．
   void

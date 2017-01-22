@@ -47,10 +47,10 @@ public:
   refinement(const vector<ymuint>& elem_list);
 
   /// @brief 細分化を行う．
-  /// @param[in] elem_bv_list 要素とビットベクタ対のリスト
+  /// @param[in] fsim 故障シミュレータ
   /// @return 変化があったら true を返す．
   bool
-  multi_refinement(const vector<pair<const TpgFault*, PackedVal> >& elem_bv_list);
+  multi_refinement(Fsim& fsim);
 
   /// @brief 同値類候補数を返す．
   ymuint

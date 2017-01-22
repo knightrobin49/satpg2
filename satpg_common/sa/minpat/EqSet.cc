@@ -9,6 +9,7 @@
 
 #include "EqSet.h"
 #include "TpgFault.h"
+#include "sa/Fsim.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG_SA
@@ -143,15 +144,16 @@ EqSet::refinement(const vector<ymuint>& elem_list)
 }
 
 // @brief 細分化を行う．
-// @param[in] elem_bv_list 要素とビットベクタ対のリスト
+// @param[in] fsim 故障シミュレータ
 // @return 変化があったら true を返す．
 bool
-EqSet::multi_refinement(const vector<pair<const TpgFault*, PackedVal> >& elem_bv_list)
+EqSet::multi_refinement(Fsim& fsim)
 {
-  // elem_bv_list から mMarkArray を作る．
-  for (ymuint i = 0; i < elem_bv_list.size(); ++ i) {
-    const TpgFault* f = elem_bv_list[i].first;
-    PackedVal bv = elem_bv_list[i].second;
+  // シミュレーション結果 から mMarkArray を作る．
+  ymuint n = fsim.det_fault_num();
+  for (ymuint i = 0; i < n; ++ i) {
+    const TpgFault* f = fsim.det_fault(i);
+    PackedVal bv = fsim.det_fault_pat(i);
     mMarkArray[f->id()] = bv;
   }
 
@@ -199,8 +201,8 @@ EqSet::multi_refinement(const vector<pair<const TpgFault*, PackedVal> >& elem_bv
   }
 
   // mMarkArray の印を消す．
-  for (ymuint i = 0; i < elem_bv_list.size(); ++ i) {
-    const TpgFault* f = elem_bv_list[i].first;
+  for (ymuint i = 0; i < n; ++ i) {
+    const TpgFault* f = fsim.det_fault(i);
     mMarkArray[f->id()] = 0UL;
   }
 

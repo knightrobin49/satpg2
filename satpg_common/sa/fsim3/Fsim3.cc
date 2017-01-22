@@ -212,9 +212,10 @@ Fsim3::set_network(const TpgNetwork& network)
   // 同時に各 SimFFR 内の故障リストも再構築する．
   for (vector<SimFFR>::iterator p = mFFRArray.begin();
        p != mFFRArray.end(); ++ p) {
-    p->fault_list().clear();
+    p->clear_fault_list();
   }
   mSimFaults.resize(nf);
+  mDetFaultArray.resize(nf);
   mFaultArray.resize(network.max_fault_id());
   ymuint fid = 0;
   for (ymuint i = 0; i < nn; ++ i) {
@@ -239,7 +240,7 @@ Fsim3::set_network(const TpgNetwork& network)
       SimFault* ff = &mSimFaults[fid];
       mFaultArray[fault->id()] = ff;
       ff->mSkip = false;
-      ffr->fault_list().push_back(ff);
+      ffr->add_fault(ff);
       ++ fid;
     }
   }
@@ -397,10 +398,11 @@ Fsim3::_spsfp(const TpgFault* f)
 
 // @brief ひとつのパタンで故障シミュレーションを行う．
 // @param[in] tv テストベクタ
-// @param[out] fault_list 検出された故障のリスト
-void
-Fsim3::sppfp(const TestVector* tv,
-	     vector<const TpgFault*>& fault_list)
+// @return 検出された故障数を返す．
+//
+// 検出された故障は det_fault() で取得する．
+ymuint
+Fsim3::sppfp(const TestVector* tv)
 {
   ymuint npi = mNetwork->ppi_num();
 
@@ -416,15 +418,16 @@ Fsim3::sppfp(const TestVector* tv,
     update_gval(simnode);
   }
 
-  _sppfp(fault_list);
+  return _sppfp();
 }
 
 // @brief ひとつのパタンで故障シミュレーションを行う．
 // @param[in] assign_list 値の割当リスト
-// @param[out] fault_list 検出された故障のリスト
-void
-Fsim3::sppfp(const NodeValList& assign_list,
-	     vector<const TpgFault*>& fault_list)
+// @return 検出された故障数を返す．
+//
+// 検出された故障は det_fault() で取得する．
+ymuint
+Fsim3::sppfp(const NodeValList& assign_list)
 {
   // assign_list を全ビットにセットしていく．
   mGvalClearArray.clear();
@@ -442,16 +445,18 @@ Fsim3::sppfp(const NodeValList& assign_list,
     update_gval(simnode);
   }
 
-  _sppfp(fault_list);
+  return _sppfp();
 }
 
 // @brief SPPFP故障シミュレーションの本体
-// @param[out] fault_list 検出された故障のリスト
-void
-Fsim3::_sppfp(vector<const TpgFault*>& fault_list)
+// @return 検出された故障数を返す．
+ymuint
+Fsim3::_sppfp()
 {
   // 正常値の計算を行う．
   calc_gval();
+
+  mDetNum = 0;
 
   ymuint bitpos = 0;
   SimFFR* ffr_buff[kPvBitLen];
@@ -478,7 +483,7 @@ Fsim3::_sppfp(vector<const TpgFault*>& fault_list)
 
     if ( root->is_output() ) {
       // 常に観測可能
-      fault_sweep(ffr, fault_list);
+      _fault_sweep(*ffr);
       continue;
     }
 
@@ -499,7 +504,7 @@ Fsim3::_sppfp(vector<const TpgFault*>& fault_list)
       PackedVal obs = calc_fval();
       for (ymuint i = 0; i < bitpos; ++ i, obs >>= 1) {
 	if ( obs & 1UL ) {
-	  fault_sweep(ffr_buff[i], fault_list);
+	  _fault_sweep(*ffr_buff[i]);
 	}
       }
       bitpos = 0;
@@ -510,13 +515,15 @@ Fsim3::_sppfp(vector<const TpgFault*>& fault_list)
     PackedVal obs = calc_fval();
     for (ymuint i = 0; i < bitpos; ++ i, obs >>= 1) {
       if ( obs & 1UL ) {
-	fault_sweep(ffr_buff[i], fault_list);
+	_fault_sweep(*ffr_buff[i]);
       }
     }
   }
 
   // 値をクリアする．
   clear_gval();
+
+  return mDetNum;
 }
 
 // @brief ppsfp 用のパタンバッファをクリアする．
@@ -539,14 +546,17 @@ Fsim3::set_pattern(ymuint pos,
 }
 
 // @brief 複数のパタンで故障シミュレーションを行う．
-// @param[out] fault_list 検出された故障とその時のビットパタンのリスト
-void
-Fsim3::ppsfp(vector<pair<const TpgFault*, PackedVal> >& fault_list)
+// @return 検出された故障数を返す．
+//
+// 検出された故障は det_fault() で取得する．<br>
+// 最低1つのパタンが set_pattern() で設定されている必要がある．<br>
+ymuint
+Fsim3::ppsfp()
 {
-  fault_list.clear();
+  mDetNum = 0;
 
   if ( mPatMap == kPvAll0 ) {
-    return;
+    return 0;
   }
 
   // 設定されていないビットはどこか他の設定されているビットをコピーする．
@@ -641,13 +651,42 @@ Fsim3::ppsfp(vector<pair<const TpgFault*, PackedVal> >& fault_list)
       PackedVal dbits = obs & ff->mObsMask;
       if ( dbits ) {
 	const TpgFault* f = ff->mOrigF;
-	fault_list.push_back(make_pair(f, dbits));
+	mDetFaultArray[mDetNum].mFault = f;
+	mDetFaultArray[mDetNum].mPat = dbits;
+	++ mDetNum;
       }
     }
   }
 
   // 値をクリアする．
   clear_gval();
+
+  return mDetNum;
+}
+
+// @brief 直前の sppfp/ppsfp で検出された故障数を返す．
+ymuint
+Fsim3::det_fault_num()
+{
+  return mDetNum;
+}
+
+// @brief 直前の sppfp/ppsfp で検出された故障を返す．
+// @param[in] pos 位置番号 ( 0 <= pos < det_fault_num() )
+const TpgFault*
+Fsim3::det_fault(ymuint pos)
+{
+  ASSERT_COND( pos < det_fault_num() );
+  return mDetFaultArray[pos].mFault;
+}
+
+// @brief 直前の ppsfp で検出された故障の検出ビットパタンを返す．
+// @param[in] pos 位置番号 ( 0 <= pos < det_fault_num() )
+PackedVal
+Fsim3::det_fault_pat(ymuint pos)
+{
+  ASSERT_COND( pos < det_fault_num() );
+  return mDetFaultArray[pos].mPat;
 }
 
 // @brief 現在保持している SimNode のネットワークを破棄する．
@@ -673,7 +712,7 @@ Fsim3::clear()
 
   for (vector<SimFFR>::iterator p = mFFRArray.begin();
        p != mFFRArray.end(); ++ p) {
-    p->fault_list().clear();
+    p->clear_fault_list();
   }
 
   mSimFaults.clear();
@@ -690,26 +729,18 @@ Fsim3::clear()
 // ffr 内の対象故障に対して故障が伝搬するかを調べる．
 // 結果は各故障の mObsMask に設定される．
 // また，すべての mObsMask の bitwise-OR を返す．
-//
-// 故障は SimFFR::fault_list() に格納されているが，
-// スキップフラグが立った故障はリストから取り除かれる．
 PackedVal
 Fsim3::ffr_simulate(SimFFR* ffr)
 {
   PackedVal ffr_req = kPvAll0;
-  vector<SimFault*>& flist = ffr->fault_list();
+  const vector<SimFault*>& flist = ffr->fault_list();
   ymuint fnum = flist.size();
-  ymuint wpos = 0;
   for (ymuint rpos = 0; rpos < fnum; ++ rpos) {
     SimFault* ff = flist[rpos];
     const TpgFault* f = ff->mOrigF;
     if ( ff->mSkip ) {
       continue;
     }
-    if ( wpos != rpos ) {
-      flist[wpos] = ff;
-    }
-    ++ wpos;
 
     // ff の故障伝搬を行う．
     SimNode* simnode = ff->mNode;
@@ -732,12 +763,6 @@ Fsim3::ffr_simulate(SimFFR* ffr)
 
     ff->mObsMask = lobs;
     ffr_req |= lobs;
-  }
-
-  if ( wpos < fnum ) {
-    // flist を切り詰める．
-    flist.erase(flist.begin() + wpos, flist.end());
-    fnum = wpos;
   }
 
   for (ymuint rpos = 0; rpos < fnum; ++ rpos) {
@@ -817,20 +842,20 @@ Fsim3::calc_fval()
 
 // @brief ffr 内の故障が検出可能か調べる．
 // @param[in] ffr 対象の FFR
-// @param[out] fault_list 検出された故障のリスト
 //
 // ここでは各FFR の fault_list() は変化しない．
 void
-Fsim3::fault_sweep(SimFFR* ffr,
-		   vector<const TpgFault*>& fault_list)
+Fsim3::_fault_sweep(const SimFFR& ffr)
 {
-  const vector<SimFault*>& flist = ffr->fault_list();
+  const vector<SimFault*>& flist = ffr.fault_list();
   ymuint fnum = flist.size();
   for (ymuint rpos = 0; rpos < fnum; ++ rpos) {
     SimFault* ff = flist[rpos];
     if ( ff->mObsMask ) {
       const TpgFault* f = ff->mOrigF;
-      fault_list.push_back(f);
+      mDetFaultArray[mDetNum].mFault = f;
+      mDetFaultArray[mDetNum].mPat = kPvAll1; // ダミー
+      ++ mDetNum;
     }
   }
 }

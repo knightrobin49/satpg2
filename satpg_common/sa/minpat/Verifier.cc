@@ -10,7 +10,6 @@
 #include "Verifier.h"
 #include "TpgFault.h"
 #include "sa/TestVector.h"
-#include "sa/TvDeck.h"
 #include "ym/HashSet.h"
 
 
@@ -46,27 +45,26 @@ Verifier::check(Fsim& fsim,
 
   ymuint wpos = 0;
   fsim.clear_patterns();
-  vector<pair<const TpgFault*, PackedVal> > det_fault_list;
   for (vector<const TestVector*>::const_iterator p = pat_list.begin();
        p != pat_list.end(); ++ p) {
     const TestVector* tv = *p;
     fsim.set_pattern(wpos, tv);
     ++ wpos;
     if ( wpos == kPvBitLen ) {
-      fsim.ppsfp(det_fault_list);
+      ymuint n = fsim.ppsfp();
       fsim.clear_patterns();
       wpos = 0;
-      for (ymuint i = 0; i < det_fault_list.size(); ++ i) {
-	const TpgFault* f = det_fault_list[i].first;
+      for (ymuint i = 0; i < n; ++ i) {
+	const TpgFault* f = fsim.det_fault(i);
 	// どのパタンで検出できたかは調べる必要はない．
 	fhash.add(f->id());
       }
     }
   }
   if ( wpos > 0 ) {
-    fsim.ppsfp(det_fault_list);
-    for (ymuint i = 0; i < det_fault_list.size(); ++ i) {
-      const TpgFault* f = det_fault_list[i].first;
+    ymuint n = fsim.ppsfp();
+    for (ymuint i = 0; i < n; ++ i) {
+      const TpgFault* f = fsim.det_fault(i);
       // どのパタンで検出できたかは調べる必要はない．
       fhash.add(f->id());
     }

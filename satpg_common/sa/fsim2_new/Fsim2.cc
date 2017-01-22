@@ -198,6 +198,7 @@ Fsim2::set_network(const TpgNetwork& network)
     p->clear_fault_list();
   }
   mSimFaults.resize(nf);
+  mDetFaultArray.resize(nf);
   mFaultArray.resize(network.max_fault_id());
   ymuint fid = 0;
   for (ymuint i = 0; i < nn; ++ i) {
@@ -262,24 +263,26 @@ Fsim2::clear_skip(const TpgFault* f)
 
 // @brief ひとつのパタンで故障シミュレーションを行う．
 // @param[in] tv テストベクタ
-// @param[out] fault_list 検出された故障のリスト
-void
-Fsim2::sppfp(const TestVector* tv,
-	     vector<const TpgFault*>& fault_list)
+// @return 検出された故障数を返す．
+//
+// 検出された故障は det_fault() で取得する．
+ymuint
+Fsim2::sppfp(const TestVector* tv)
 {
   _set_sp2(tv);
-  _sppfp2(fault_list);
+  return _sppfp2();
 }
 
 // @brief ひとつのパタンで故障シミュレーションを行う．
 // @param[in] assign_list 値の割当リスト
-// @param[out] fault_list 検出された故障のリスト
-void
-Fsim2::sppfp(const NodeValList& assign_list,
-	     vector<const TpgFault*>& fault_list)
+// @return 検出された故障数を返す．
+//
+// 検出された故障は det_fault() で取得する．
+ymuint
+Fsim2::sppfp(const NodeValList& assign_list)
 {
   _set_sp2(assign_list);
-  _sppfp2(fault_list);
+  return _sppfp2();
 }
 
 // @brief ppsfp 用のパタンバッファをクリアする．
@@ -302,14 +305,15 @@ Fsim2::set_pattern(ymuint pos,
 }
 
 // @brief 複数のパタンで故障シミュレーションを行う．
-// @param[out] fault_list 検出された故障とその時のビットパタンのリスト
-void
-Fsim2::ppsfp(vector<pair<const TpgFault*, PackedVal> >& fault_list)
+// @return 検出された故障数を返す．
+//
+// 検出された故障は det_fault() で取得する．<br>
+// 最低1つのパタンが set_pattern() で設定されている必要がある．<br>
+ymuint
+Fsim2::ppsfp()
 {
-  fault_list.clear();
-
   if ( mPatMap == kPvAll0 ) {
-    return;
+    return 0;
   }
 
   _set_pp2();
@@ -320,11 +324,11 @@ Fsim2::ppsfp(vector<pair<const TpgFault*, PackedVal> >& fault_list)
   // FFR ごとに処理を行う．
   for (vector<SimFFR>::iterator p = mFFRArray.begin();
        p != mFFRArray.end(); ++ p) {
-    SimFFR* ffr = &(*p);
+    const SimFFR& ffr = *p;
     // FFR 内の故障伝搬を行う．
     // 結果は SimFault::mObsMask に保存される．
     // FFR 内の全ての obs マスクを ffr_req に入れる．
-    PackedVal ffr_req = ffr->fault_prop2();
+    PackedVal ffr_req = ffr.fault_prop2();
 
     // ffr_req が 0 ならその後のシミュレーションを行う必要はない．
     if ( ffr_req == kPvAll0 ) {
@@ -332,7 +336,7 @@ Fsim2::ppsfp(vector<pair<const TpgFault*, PackedVal> >& fault_list)
     }
 
     // FFR の出力の故障伝搬を行う．
-    SimNode* root = ffr->root();
+    SimNode* root = ffr.root();
     PackedVal obs = kPvAll0;
     if ( root->is_output() ) {
       obs = kPvAll1;
@@ -343,8 +347,35 @@ Fsim2::ppsfp(vector<pair<const TpgFault*, PackedVal> >& fault_list)
     }
     obs &= mPatMap;
 
-    ffr->fault_sweep(obs, fault_list);
+    _fault_sweep(ffr, obs);
   }
+
+  return mDetNum;
+}
+
+// @brief 直前の sppfp/ppsfp で検出された故障数を返す．
+ymuint
+Fsim2::det_fault_num()
+{
+  return mDetNum;
+}
+
+// @brief 直前の sppfp/ppsfp で検出された故障を返す．
+// @param[in] pos 位置番号 ( 0 <= pos < det_fault_num() )
+const TpgFault*
+Fsim2::det_fault(ymuint pos)
+{
+  ASSERT_COND( pos < det_fault_num() );
+  return mDetFaultArray[pos].mFault;
+}
+
+// @brief 直前の ppsfp で検出された故障の検出ビットパタンを返す．
+// @param[in] pos 位置番号 ( 0 <= pos < det_fault_num() )
+PackedVal
+Fsim2::det_fault_pat(ymuint pos)
+{
+  ASSERT_COND( pos < det_fault_num() );
+  return mDetFaultArray[pos].mPat;
 }
 
 // @brief SPSFP故障シミュレーションを行う．
@@ -439,12 +470,14 @@ Fsim2::_set_pp2()
 }
 
 // @brief SPPFP故障シミュレーションの本体
-// @param[out] fault_list 検出された故障のリスト
-void
-Fsim2::_sppfp2(vector<const TpgFault*>& fault_list)
+// @return 検出された故障数を返す．
+ymuint
+Fsim2::_sppfp2()
 {
   // 正常値の計算を行う．
   _calc_gval2();
+
+  mDetNum = 0;
 
   ymuint bitpos = 0;
   SimFFR* ffr_buff[kPvBitLen];
@@ -465,7 +498,7 @@ Fsim2::_sppfp2(vector<const TpgFault*>& fault_list)
     SimNode* root = ffr->root();
     if ( root->is_output() ) {
       // 常に観測可能
-      ffr->fault_sweep(fault_list);
+      _fault_sweep(*ffr);
       continue;
     }
 
@@ -479,7 +512,7 @@ Fsim2::_sppfp2(vector<const TpgFault*>& fault_list)
       PackedVal obs = eventq_simulate2();
       for (ymuint i = 0; i < kPvBitLen; ++ i, obs >>= 1) {
 	if ( obs & 1UL ) {
-	  ffr_buff[i]->fault_sweep(fault_list);
+	  _fault_sweep(*ffr_buff[i]);
 	}
       }
       bitpos = 0;
@@ -489,10 +522,12 @@ Fsim2::_sppfp2(vector<const TpgFault*>& fault_list)
     PackedVal obs = eventq_simulate2();
     for (ymuint i = 0; i < bitpos; ++ i, obs >>= 1) {
       if ( obs & 1UL ) {
-	ffr_buff[i]->fault_sweep(fault_list);
+	_fault_sweep(*ffr_buff[i]);
       }
     }
   }
+
+  return mDetNum;
 }
 
 // @brief SPSFP故障シミュレーションの本体
@@ -614,6 +649,49 @@ Fsim2::eventq_simulate2()
   }
   mClearArray.clear();
   return obs;
+}
+
+// @brief FFR の故障をスキャンして結果をセットする(sppfp用)
+// @param[in] ffr 対象の FFR
+void
+Fsim2::_fault_sweep(const SimFFR& ffr)
+{
+  const vector<SimFault*>& flist = ffr.fault_list();
+  for (vector<SimFault*>::const_iterator p = flist.begin();
+       p != flist.end(); ++ p) {
+    SimFault* ff = *p;
+    if ( ff->mSkip || ff->mObsMask == kPvAll0 ) {
+      continue;
+    }
+    const TpgFault* f = ff->mOrigF;
+    mDetFaultArray[mDetNum].mFault = f;
+    mDetFaultArray[mDetNum].mPat = kPvAll1; // ダミー
+    ++ mDetNum;
+  }
+}
+
+// @brief FFR の故障をスキャンして結果をセットする(ppsfp用)
+// @param[in] ffr 対象の FFR
+// @param[in] pat 検出パタン
+void
+Fsim2::_fault_sweep(const SimFFR& ffr,
+		    PackedVal mask)
+{
+  const vector<SimFault*>& flist = ffr.fault_list();
+  for (vector<SimFault*>::const_iterator p = flist.begin();
+       p != flist.end(); ++ p) {
+    SimFault* ff = *p;
+    if ( ff->mSkip ) {
+      continue;
+    }
+    PackedVal pat = ff->mObsMask & mask;
+    if ( pat != kPvAll0 ) {
+      const TpgFault* f = ff->mOrigF;
+      mDetFaultArray[mDetNum].mFault = f;
+      mDetFaultArray[mDetNum].mPat = pat;
+      ++ mDetNum;
+    }
+  }
 }
 
 // @brief 現在保持している SimNode のネットワークを破棄する．

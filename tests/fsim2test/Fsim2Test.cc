@@ -10,7 +10,6 @@
 #include "TpgNetwork.h"
 #include "sa/TestVector.h"
 #include "sa/TvMgr.h"
-#include "sa/TvDeck.h"
 #include "Fsim2.h"
 #include "ym/RandGen.h"
 #include "ym/StopWatch.h"
@@ -30,14 +29,12 @@ sppfp_test(Fsim2& fsim,
   ymuint nv = tv_list.size();
   for (ymuint i = 0; i < nv; ++ i) {
     TestVector* tv = tv_list[i];
-    vector<const TpgFault*> fault_list;
-    fsim.sppfp(tv, fault_list);
-    ymuint n = fault_list.size();
+    ymuint n = fsim.sppfp(tv);
     if ( n > 0 ) {
       det_num += n;
       ++ nepat;
       for (ymuint j = 0; j < n; ++ j) {
-	const TpgFault* f = fault_list[j];
+	const TpgFault* f = fsim.det_fault(j);
 	fsim.set_skip(f);
       }
     }
@@ -62,16 +59,14 @@ ppsfp_test(Fsim2& fsim,
     fsim.set_pattern(wpos, tv);
     ++ wpos;
     if ( wpos == kPvBitLen ) {
-      vector<pair<const TpgFault*, PackedVal> > det_list;
-      fsim.ppsfp(det_list);
+      ymuint n = fsim.ppsfp();
 
       ymuint nb = wpos;
       PackedVal dpat_all = 0ULL;
-      ymuint n = det_list.size();
       det_num += n;
       for (ymuint j = 0; j < n; ++ j) {
-	const TpgFault* f = det_list[j].first;
-	PackedVal dpat = det_list[j].second;
+	const TpgFault* f = fsim.det_fault(j);
+	PackedVal dpat = fsim.det_fault_pat(j);
 	fsim.set_skip(f);
 	// dpat の最初の1のビットを求める．
 	ymuint first = 0;
@@ -93,16 +88,14 @@ ppsfp_test(Fsim2& fsim,
     }
   }
   if ( wpos > 0 ) {
-    vector<pair<const TpgFault*, PackedVal> > det_list;
-    fsim.ppsfp(det_list);
+    ymuint n = fsim.ppsfp();
 
     ymuint nb = wpos;
     PackedVal dpat_all = 0ULL;
-    ymuint n = det_list.size();
     det_num += n;
     for (ymuint j = 0; j < n; ++ j) {
-      const TpgFault* f = det_list[j].first;
-      PackedVal dpat = det_list[j].second;
+      const TpgFault* f = fsim.det_fault(j);
+      PackedVal dpat = fsim.det_fault_pat(j);
       fsim.set_skip(f);
       // dpat の最初の1のビットを求める．
       ymuint first = 0;

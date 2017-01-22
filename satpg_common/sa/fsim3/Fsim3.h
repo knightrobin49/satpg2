@@ -97,19 +97,21 @@ public:
 
   /// @brief ひとつのパタンで故障シミュレーションを行う．
   /// @param[in] tv テストベクタ
-  /// @param[out] fault_list 検出された故障のリスト
+  /// @return 検出された故障数を返す．
+  ///
+  /// 検出された故障は det_fault() で取得する．
   virtual
-  void
-  sppfp(const TestVector* tv,
-	vector<const TpgFault*>& fault_list);
+  ymuint
+  sppfp(const TestVector* tv);
 
   /// @brief ひとつのパタンで故障シミュレーションを行う．
   /// @param[in] assign_list 値の割当リスト
-  /// @param[out] fault_list 検出された故障のリスト
+  /// @return 検出された故障数を返す．
+  ///
+  /// 検出された故障は det_fault() で取得する．
   virtual
-  void
-  sppfp(const NodeValList& assign_list,
-	vector<const TpgFault*>& fault_list);
+  ymuint
+  sppfp(const NodeValList& assign_list);
 
   /// @brief ppsfp 用のパタンバッファをクリアする．
   virtual
@@ -125,10 +127,30 @@ public:
 	      const TestVector* tv);
 
   /// @brief 複数のパタンで故障シミュレーションを行う．
-  /// @param[out] fault_list 検出された故障とその時のビットパタンのリスト
+  /// @return 検出された故障数を返す．
+  ///
+  /// 検出された故障は det_fault() で取得する．<br>
+  /// 最低1つのパタンが set_pattern() で設定されている必要がある．<br>
   virtual
-  void
-  ppsfp(vector<pair<const TpgFault*, PackedVal> >& fault_list);
+  ymuint
+  ppsfp();
+
+  /// @brief 直前の sppfp/ppsfp で検出された故障数を返す．
+  virtual
+  ymuint
+  det_fault_num();
+
+  /// @brief 直前の sppfp/ppsfp で検出された故障を返す．
+  /// @param[in] pos 位置番号 ( 0 <= pos < det_fault_num() )
+  virtual
+  const TpgFault*
+  det_fault(ymuint pos);
+
+  /// @brief 直前の ppsfp で検出された故障の検出ビットパタンを返す．
+  /// @param[in] pos 位置番号 ( 0 <= pos < det_fault_num() )
+  virtual
+  PackedVal
+  det_fault_pat(ymuint pos);
 
 
 private:
@@ -144,9 +166,9 @@ private:
   _spsfp(const TpgFault* f);
 
   /// @brief SPPFP故障シミュレーションの本体
-  /// @param[out] fault_list 検出された故障のリスト
-  void
-  _sppfp(vector<const TpgFault*>& fault_list);
+  /// @return 検出された故障数を返す．
+  ymuint
+  _sppfp();
 
   /// @brief FFR 内の故障シミュレーションを行う．
   /// @param[in] ffr 対象のFFR
@@ -192,8 +214,7 @@ private:
   ///
   /// ここでは各FFR の fault_list() は変化しない．
   void
-  fault_sweep(SimFFR* ffr,
-	      vector<const TpgFault*>& fault_list);
+  _fault_sweep(const SimFFR& ffr);
 
 
 private:
@@ -217,6 +238,21 @@ private:
   SimNode*
   make_node(GateType type,
 	    const vector<SimNode*>& inputs);
+
+
+private:
+  //////////////////////////////////////////////////////////////////////
+  // 内部で用いられるデータ構造
+  //////////////////////////////////////////////////////////////////////
+
+  // ppsfp の結果を格納する構造体
+  struct FaultPat
+  {
+    // 故障
+    const TpgFault* mFault;
+    // 検出したビットパタン
+    PackedVal mPat;
+  };
 
 
 private:
@@ -267,6 +303,13 @@ private:
 
   // TpgFault::id() をキーにして SimFault を格納する配列
   vector<SimFault*> mFaultArray;
+
+  // 検出された故障を格納する配列
+  // サイズは常に mSimFaults.size();
+  vector<FaultPat> mDetFaultArray;
+
+  // 検出された故障数
+  ymuint mDetNum;
 
 };
 

@@ -51,10 +51,9 @@ void
 DopDrop::operator()(const TpgFault* f,
 		    const NodeValList& assign_list)
 {
-  vector<const TpgFault*> fault_list;
-  mFsim.sppfp(assign_list, fault_list);
-  for (ymuint i = 0; i < fault_list.size(); ++ i) {
-    const TpgFault* f = fault_list[i];
+  ymuint n = mFsim.sppfp(assign_list);
+  for (ymuint i = 0; i < n; ++ i) {
+    const TpgFault* f = mFsim.det_fault(i);
     mMgr.set_status(f, kFsDetected);
     mFsim.set_skip(f);
   }

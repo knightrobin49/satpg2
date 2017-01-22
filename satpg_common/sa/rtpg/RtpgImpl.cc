@@ -108,20 +108,18 @@ RtpgImpl::run(FaultMgr& fmgr,
       break;
     }
 
-    vector<pair<const TpgFault*, PackedVal> > det_list;
-    fsim.ppsfp(det_list);
+    ymuint det_count = fsim.ppsfp();
 
-    ymuint det_count = det_list.size();
     bool det_flags[kPvBitLen];
     for (ymuint i = 0; i < kPvBitLen; ++ i) {
       det_flags[i] = false;
     }
     ymuint num = wpos;
     for (ymuint i = 0; i < det_count; ++ i) {
-      const TpgFault* f = det_list[i].first;
+      const TpgFault* f = fsim.det_fault(i);
       fmgr.set_status(f, kFsDetected);
       fsim.set_skip(f);
-      PackedVal dpat = det_list[i].second;
+      PackedVal dpat = fsim.det_fault_pat(i);
       // dpat の最初の1のビットを調べる．
       ymuint first = 0;
       for ( ; first < num; ++ first) {

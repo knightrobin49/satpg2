@@ -457,18 +457,16 @@ ConflictChecker::do_fsim(const vector<ymuint>& fid_list)
 	cout << "\rFSIM: " << base;
 	cout.flush();
       }
-      vector<pair<const TpgFault*, PackedVal> > det_list;
-      mFsim.ppsfp(det_list);
-      record_pat(det_list, fid_list);
+      mFsim.ppsfp();
+      record_pat(fid_list);
       base += wpos;
       mFsim.clear_patterns();
       wpos = 0;
     }
   }
   if ( wpos > 0 ) {
-    vector<pair<const TpgFault*, PackedVal> > det_list;
-    mFsim.ppsfp(det_list);
-    record_pat(det_list, fid_list);
+    mFsim.ppsfp();
+    record_pat(fid_list);
     base += wpos;
   }
 
@@ -485,10 +483,9 @@ ConflictChecker::do_fsim(const vector<ymuint>& fid_list)
       mFsim.set_pattern(i, cur_array2[i]);
     }
 
-    vector<pair<const TpgFault*, PackedVal> > det_list;
-    mFsim.ppsfp(det_list);
+    mFsim.ppsfp();
     ymuint nchg = 0;
-    nchg += record_pat(det_list, fid_list);
+    nchg += record_pat(fid_list);
     base += kPvBitLen;
     if ( nchg == 0 ) {
       ++ nochg_count;
@@ -532,23 +529,22 @@ ConflictChecker::do_fsim(const vector<ymuint>& fid_list)
 }
 
 ymuint
-ConflictChecker::record_pat(const vector<pair<const TpgFault*, PackedVal> >& det_list,
-			    const vector<ymuint>& fid_list)
+ConflictChecker::record_pat(const vector<ymuint>& fid_list)
 {
-  ymuint n = det_list.size();
+  ymuint n = mFsim.det_fault_num();
   ymuint nchg = 0;
   vector<PackedVal> det_flag(mMaxFaultId, false);
   for (ymuint i = 0; i < n; ++ i) {
-    const TpgFault* f = det_list[i].first;
-    PackedVal pv = det_list[i].second;
+    const TpgFault* f = mFsim.det_fault(i);
+    PackedVal pv = mFsim.det_fault_pat(i);
     det_flag[f->id()] = pv;
   }
 
   // 検出結果を用いて支配される故障の候補リストを作る．
   for (ymuint i = 0; i < n; ++ i) {
-    const TpgFault* f1 = det_list[i].first;
+    const TpgFault* f1 = mFsim.det_fault(i);
     ymuint f1_id = f1->id();
-    PackedVal bv1 = det_list[i].second;
+    PackedVal bv1 = mFsim.det_fault_pat(i);
     FaultData& fd1 = mFaultDataArray[f1_id];
 
     if ( fd1.mDetCount == 0 ) {
