@@ -256,42 +256,49 @@ DomChecker::do_fsim(const vector<ymuint>& fid_list)
   ymuint wpos = 0;
   ymuint nf = fid_list.size();
   ymuint npat = 0;
-  for (ymuint i = 0; i < nf; ++ i) {
-    ymuint fid = fid_list[i];
-    const FaultInfo& fi = mAnalyzer.fault_info(fid);
-    TestVector* tv = fi.testvector();
-    mFsim.set_pattern(wpos, tv);
-    ++ wpos;
-    if ( wpos == kPvBitLen ) {
-      if ( mVerbose > 1 ) {
-	cout << "\rFSIM: " << setw(6) << npat;
-	cout.flush();
+  for (ymuint i = 0; ; ++ i) {
+    if ( i < nf ) {
+      ymuint fid = fid_list[i];
+      const FaultInfo& fi = mAnalyzer.fault_info(fid);
+      TestVector* tv = fi.testvector();
+      mFsim.set_pattern(wpos, tv);
+      ++ wpos;
+      if ( wpos < kPvBitLen ) {
+	continue;
       }
-      mFsim.ppsfp();
-      record_dom_cand();
-      npat += wpos;
-      mFsim.clear_patterns();
-      wpos = 0;
     }
-  }
-  if ( wpos > 0 ) {
+    else if ( wpos == 0 ) {
+      break;
+    }
+
+    if ( mVerbose > 1 ) {
+      cout << "\rFSIM: " << setw(6) << npat;
+      cout.flush();
+    }
     mFsim.ppsfp();
     record_dom_cand();
     npat += wpos;
+    mFsim.clear_patterns();
+    wpos = 0;
   }
 
-  TestVector* cur_array2[kPvBitLen];
+  TestVector* cur_array[kPvBitLen];
   for (ymuint i = 0; i < kPvBitLen; ++ i) {
     TestVector* tv = mTvMgr.new_vector();
-    cur_array2[i] = tv;
+    cur_array[i] = tv;
   }
 
   ymuint nochg = 0;
   for ( ; ; ) {
     mFsim.clear_patterns();
     for (ymuint i = 0; i < kPvBitLen; ++ i) {
-      cur_array2[i]->set_from_random(mRandGen);
-      mFsim.set_pattern(i, cur_array2[i]);
+      cur_array[i]->set_from_random(mRandGen);
+      mFsim.set_pattern(i, cur_array[i]);
+    }
+
+    if ( mVerbose > 1 ) {
+      cout << "\rFSIM: " << setw(6) << npat;
+      cout.flush();
     }
     mFsim.ppsfp();
     ymuint nchg = 0;
@@ -306,10 +313,6 @@ DomChecker::do_fsim(const vector<ymuint>& fid_list)
     else {
       nochg = 0;
     }
-    if ( mVerbose > 1 ) {
-      cout << "\rFSIM: " << setw(6) << npat;
-      cout.flush();
-    }
   }
   if ( mVerbose > 1 ) {
     cout << endl;
@@ -319,7 +322,7 @@ DomChecker::do_fsim(const vector<ymuint>& fid_list)
 
   // 乱数パタンは削除しておく．
   for (ymuint i = 0; i < kPvBitLen; ++ i) {
-    mTvMgr.delete_vector(cur_array2[i]);
+    mTvMgr.delete_vector(cur_array[i]);
   }
 
   // 構造的に独立な故障対を対象外にする．

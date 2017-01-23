@@ -187,40 +187,48 @@ EqChecker::do_fsim(const vector<ymuint>& fid_list)
   ymuint nf = fid_list.size();
   mFsim.clear_patterns();
   ymuint wpos = 0;
-  ymuint npat = nf;
-  for (ymuint i = 0; i < nf; ++ i) {
-    ymuint fid = fid_list[i];
-    const FaultInfo& fi = mAnalyzer.fault_info(fid);
-    TestVector* tv = fi.testvector();
-    mFsim.set_pattern(wpos, tv);
-    ++ wpos;
-    if ( wpos == kPvBitLen ) {
-      if ( mVerbose > 1 ) {
-	cout << "\rFSIM: " << setw(6) << i;
-	cout.flush();
+  for (ymuint i = 0; ; ++ i) {
+    if ( i < nf ) {
+      ymuint fid = fid_list[i];
+      const FaultInfo& fi = mAnalyzer.fault_info(fid);
+      TestVector* tv = fi.testvector();
+      mFsim.set_pattern(wpos, tv);
+      ++ wpos;
+      if ( wpos < kPvBitLen ) {
+	continue;
       }
-      mFsim.ppsfp();
-      mEqSet.multi_refinement(mFsim);
-      mFsim.clear_patterns();
-      wpos = 0;
     }
-  }
-  if ( wpos > 0 ) {
+    else if ( wpos == 0 ) {
+      break;
+    }
+
+    if ( mVerbose > 1 ) {
+      cout << "\rFSIM: " << setw(6) << i;
+      cout.flush();
+    }
     mFsim.ppsfp();
     mEqSet.multi_refinement(mFsim);
+    mFsim.clear_patterns();
+    wpos = 0;
   }
+  ymuint npat = nf;
 
-  TestVector* cur_array2[kPvBitLen];
+  TestVector* cur_array[kPvBitLen];
   for (ymuint i = 0; i < kPvBitLen; ++ i) {
     TestVector* tv = mTvMgr.new_vector();
-    cur_array2[i] = tv;
+    cur_array[i] = tv;
   }
 
   for ( ; ; ) {
     mFsim.clear_patterns();
     for (ymuint i = 0; i < kPvBitLen; ++ i) {
-      cur_array2[i]->set_from_random(mRandGen);
-      mFsim.set_pattern(i, cur_array2[i]);
+      cur_array[i]->set_from_random(mRandGen);
+      mFsim.set_pattern(i, cur_array[i]);
+    }
+
+    if ( mVerbose > 1 ) {
+      cout << "\rFSIM: " << setw(6) << npat;
+      cout.flush();
     }
     mFsim.ppsfp();
     npat += kPvBitLen;
@@ -232,10 +240,6 @@ EqChecker::do_fsim(const vector<ymuint>& fid_list)
     if ( nchg == 0 ) {
       break;
     }
-    if ( mVerbose > 1 ) {
-      cout << "\rFSIM: " << setw(6) << npat;
-      cout.flush();
-    }
   }
   if ( mVerbose > 1 ) {
     cout << endl;
@@ -243,7 +247,7 @@ EqChecker::do_fsim(const vector<ymuint>& fid_list)
 
   // 乱数パタンは削除しておく．
   for (ymuint i = 0; i < kPvBitLen; ++ i) {
-    mTvMgr.delete_vector(cur_array2[i]);
+    mTvMgr.delete_vector(cur_array[i]);
   }
 
   mPat = npat;

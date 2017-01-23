@@ -45,24 +45,24 @@ Verifier::check(Fsim& fsim,
 
   ymuint wpos = 0;
   fsim.clear_patterns();
-  for (vector<const TestVector*>::const_iterator p = pat_list.begin();
-       p != pat_list.end(); ++ p) {
-    const TestVector* tv = *p;
-    fsim.set_pattern(wpos, tv);
-    ++ wpos;
-    if ( wpos == kPvBitLen ) {
-      ymuint n = fsim.ppsfp();
-      fsim.clear_patterns();
-      wpos = 0;
-      for (ymuint i = 0; i < n; ++ i) {
-	const TpgFault* f = fsim.det_fault(i);
-	// どのパタンで検出できたかは調べる必要はない．
-	fhash.add(f->id());
+  ymuint num = pat_list.size();
+  for (ymuint rpos = 0; ; ++ rpos) {
+    if ( rpos < num ) {
+      const TestVector* tv = pat_list[rpos];
+      fsim.set_pattern(wpos, tv);
+      ++ wpos;
+      if ( wpos < kPvBitLen ) {
+	continue;
       }
     }
-  }
-  if ( wpos > 0 ) {
+    else if ( wpos == 0 ) {
+      break;
+    }
+
     ymuint n = fsim.ppsfp();
+    fsim.clear_patterns();
+    wpos = 0;
+
     for (ymuint i = 0; i < n; ++ i) {
       const TpgFault* f = fsim.det_fault(i);
       // どのパタンで検出できたかは調べる必要はない．

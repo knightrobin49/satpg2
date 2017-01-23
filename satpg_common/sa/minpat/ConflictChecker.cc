@@ -443,46 +443,53 @@ ConflictChecker::do_fsim(const vector<ymuint>& fid_list)
   local_timer.start();
 
   mFsim.clear_patterns();
+  ymuint nf = fid_list.size();
   ymuint wpos = 0;
   ymuint npat = fid_list.size();
   ymuint base = 0;
-  for (ymuint i = 0; i < fid_list.size(); ++ i) {
-    ymuint fid = fid_list[i];
-    const FaultInfo& fi = mAnalyzer.fault_info(fid);
-    TestVector* tv = fi.testvector();
-    mFsim.set_pattern(wpos, tv);
-    ++ wpos;
-    if ( wpos == kPvBitLen ) {
-      if ( mVerbose > 1 ) {
-	cout << "\rFSIM: " << base;
-	cout.flush();
+  for (ymuint i = 0; ; ++ i) {
+    if ( i < nf ) {
+      ymuint fid = fid_list[i];
+      const FaultInfo& fi = mAnalyzer.fault_info(fid);
+      TestVector* tv = fi.testvector();
+      mFsim.set_pattern(wpos, tv);
+      ++ wpos;
+      if ( wpos < kPvBitLen ) {
+	continue;
       }
-      mFsim.ppsfp();
-      record_pat(fid_list);
-      base += wpos;
-      mFsim.clear_patterns();
-      wpos = 0;
     }
-  }
-  if ( wpos > 0 ) {
+    else if ( wpos == 0 ) {
+      break;
+    }
+
+    if ( mVerbose > 1 ) {
+      cout << "\rFSIM: " << base;
+      cout.flush();
+    }
     mFsim.ppsfp();
     record_pat(fid_list);
     base += wpos;
+    mFsim.clear_patterns();
+    wpos = 0;
   }
 
-  TestVector* cur_array2[kPvBitLen];
+  TestVector* cur_array[kPvBitLen];
   for (ymuint i = 0; i < kPvBitLen; ++ i) {
-    cur_array2[i] = mTvMgr.new_vector();
+    cur_array[i] = mTvMgr.new_vector();
   }
 
   ymuint nochg_count = 0;
   for (ymuint c = 0; c < 1000; ++ c) {
     mFsim.clear_patterns();
     for (ymuint i = 0; i < kPvBitLen; ++ i) {
-      cur_array2[i]->set_from_random(mRandGen);
-      mFsim.set_pattern(i, cur_array2[i]);
+      cur_array[i]->set_from_random(mRandGen);
+      mFsim.set_pattern(i, cur_array[i]);
     }
 
+    if ( mVerbose > 1 ) {
+      cout << "\rFSIM: " << base;
+      cout.flush();
+    }
     mFsim.ppsfp();
     ymuint nchg = 0;
     nchg += record_pat(fid_list);
@@ -496,10 +503,6 @@ ConflictChecker::do_fsim(const vector<ymuint>& fid_list)
     else {
       nochg_count = 0;
     }
-    if ( mVerbose > 1 ) {
-      cout << "\rFSIM: " << base;
-      cout.flush();
-    }
   }
   if ( mVerbose > 1 ) {
     cout << endl;
@@ -507,7 +510,7 @@ ConflictChecker::do_fsim(const vector<ymuint>& fid_list)
 
   // 乱数パタンは削除しておく．
   for (ymuint i = 0; i < kPvBitLen; ++ i) {
-    mTvMgr.delete_vector(cur_array2[i]);
+    mTvMgr.delete_vector(cur_array[i]);
   }
 
   // mCandList の後始末．

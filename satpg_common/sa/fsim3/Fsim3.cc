@@ -545,6 +545,20 @@ Fsim3::set_pattern(ymuint pos,
   mPatMap |= (1ULL << pos);
 }
 
+// @brief 設定した ppsfp 用のパタンを読み出す．
+// @param[in] pos 位置番号 ( 0 <= pos < kPvBitLen )
+const TestVector*
+Fsim3::get_pattern(ymuint pos)
+{
+  ASSERT_COND( pos < kPvBitLen );
+  if ( mPatMap & (1ULL << pos) ) {
+    return mPatBuff[pos];
+  }
+  else {
+    return nullptr;
+  }
+}
+
 // @brief 複数のパタンで故障シミュレーションを行う．
 // @return 検出された故障数を返す．
 //

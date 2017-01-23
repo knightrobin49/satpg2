@@ -126,6 +126,12 @@ public:
   set_pattern(ymuint pos,
 	      const TestVector* tv);
 
+  /// @brief 設定した ppsfp 用のパタンを読み出す．
+  /// @param[in] pos 位置番号 ( 0 <= pos < kPvBitLen )
+  virtual
+  const TestVector*
+  get_pattern(ymuint pos);
+
   /// @brief 複数のパタンで故障シミュレーションを行う．
   /// @return 検出された故障数を返す．
   ///
