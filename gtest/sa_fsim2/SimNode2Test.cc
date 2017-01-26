@@ -94,6 +94,7 @@ SimNodeTest::test_gate(ymuint ni,
 		       GateType gate_type,
 		       int vals[])
 {
+  ymuint np = 1 << ni;
   vector<SimNode*> inputs(ni);
   for (ymuint i = 0; i < ni; ++ i) {
     inputs[i] = SimNode::new_input(i);
@@ -116,6 +117,7 @@ SimNodeTest::test_gate(ymuint ni,
   test_fval(node, 0xaaaaaaaaaaaaaaaaUL);
   test_fval(node, kPvAll0);
 
+#if 0
   // _calc_gval() のテスト
   // ここで書き込む値に対して意味はない．
   init_val(node, kPvAll0);
@@ -123,7 +125,6 @@ SimNodeTest::test_gate(ymuint ni,
     init_val(inputs[i], kPvAll0);
   }
 
-  ymuint np = 1 << ni;
   for (ymuint p = 0; p < np; ++ p) {
     for (ymuint i = 0; i < ni; ++ i) {
       if ( p & (1 << i) ) {
@@ -141,6 +142,7 @@ SimNodeTest::test_gate(ymuint ni,
       EXPECT_EQ( kPvAll0, val );
     }
   }
+#endif
 
   // _calc_fval() のテスト
   init_val(node, kPvAll0);

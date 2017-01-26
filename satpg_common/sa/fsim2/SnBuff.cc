@@ -35,14 +35,6 @@ SnBuff::gate_type() const
   return kGateBUFF;
 }
 
-// @brief 正常値の計算を行う．(2値版)
-PackedVal
-SnBuff::_calc_gval2()
-{
-  PackedVal val = _fanin()->gval();
-  return val;
-}
-
 // @brief 故障値の計算を行う．(2値版)
 PackedVal
 SnBuff::_calc_fval2()
@@ -56,14 +48,6 @@ PackedVal
 SnBuff::_calc_gobs2(ymuint ipos)
 {
   return kPvAll1;
-}
-
-// @brief 正常値の計算を行う．(3値版)
-PackedVal3
-SnBuff::_calc_gval3()
-{
-  SimNode* inode = _fanin();
-  return inode->gval3();
 }
 
 // @brief 故障値の計算を行う．(3値版)
@@ -105,28 +89,12 @@ SnNot::gate_type() const
   return kGateNOT;
 }
 
-// @brief 正常値の計算を行う．(2値版)
-PackedVal
-SnNot::_calc_gval2()
-{
-  PackedVal val = _fanin()->gval();
-  return ~val;
-}
-
 // @brief 故障値の計算を行う．(2値版)
 PackedVal
 SnNot::_calc_fval2()
 {
   PackedVal val = _fanin()->fval();
   return ~val;
-}
-
-// @brief 正常値の計算を行う．(3値版)
-PackedVal3
-SnNot::_calc_gval3()
-{
-  SimNode* inode = _fanin();
-  return ~inode->gval3();
 }
 
 // @brief 故障値の計算を行う．(3値版)

@@ -231,12 +231,6 @@ public:
   // 2値版の故障シミュレーション用の仮想関数
   //////////////////////////////////////////////////////////////////////
 
-  /// @brief 正常値の計算を行う．(2値版)
-  /// @return 計算結果を返す．
-  virtual
-  PackedVal
-  _calc_gval2() = 0;
-
   /// @brief 故障値の計算を行う．(2値版)
   /// @return 計算結果を返す．
   virtual
@@ -253,12 +247,6 @@ public:
   //////////////////////////////////////////////////////////////////////
   // 3値版の故障シミュレーション用の仮想関数
   //////////////////////////////////////////////////////////////////////
-
-  /// @brief 正常値の計算を行う．(3値版)
-  /// @return 計算結果を返す．
-  virtual
-  PackedVal3
-  _calc_gval3() = 0;
 
   /// @brief 故障値の計算を行う．(3値版)
   /// @return 計算結果を返す．
@@ -465,7 +453,7 @@ inline
 void
 SimNode::calc_gval2()
 {
-  PackedVal val = _calc_gval2();
+  PackedVal val = _calc_fval2();
   mGval = mFval = val;
 }
 
@@ -546,7 +534,7 @@ void
 SimNode::calc_gval3()
 {
 #if USE_VAL3
-  PackedVal3 val = _calc_gval3();
+  PackedVal3 val = _calc_fval3();
   mGval = mFval = val;
 #endif
 }

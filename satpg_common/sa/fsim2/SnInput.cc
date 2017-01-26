@@ -59,14 +59,6 @@ SnInput::dump(ostream& s) const
   s << "INPUT" << endl;
 }
 
-// @brief 正常値の計算を行う．(2値版)
-PackedVal
-SnInput::_calc_gval2()
-{
-  ASSERT_NOT_REACHED;
-  return kPvAll0;
-}
-
 // @brief 故障値の計算を行う．(2値版)
 PackedVal
 SnInput::_calc_fval2()
@@ -80,14 +72,6 @@ PackedVal
 SnInput::_calc_gobs2(ymuint ipos)
 {
   return kPvAll0;
-}
-
-// @brief 正常値の計算を行う．(3値版)
-PackedVal3
-SnInput::_calc_gval3()
-{
-  ASSERT_NOT_REACHED;
-  return PackedVal3();
 }
 
 // @brief 故障値の計算を行う．(3値版)

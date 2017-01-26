@@ -35,18 +35,6 @@ SnAnd::gate_type() const
   return kGateAND;
 }
 
-// @brief 正常値の計算を行う．(2値版)
-PackedVal
-SnAnd::_calc_gval2()
-{
-  ymuint n = _fanin_num();
-  PackedVal val = _fanin(0)->gval();
-  for (ymuint i = 1; i < n; ++ i) {
-    val &= _fanin(i)->gval();
-  }
-  return val;
-}
-
 // @brief 故障値の計算を行う．(2値版)
 PackedVal
 SnAnd::_calc_fval2()
@@ -71,20 +59,6 @@ SnAnd::_calc_gobs2(ymuint ipos)
     obs &= _fanin(i)->gval();
   }
   return obs;
-}
-
-// @brief 正常値の計算を行う．(3値版)
-PackedVal3
-SnAnd::_calc_gval3()
-{
-  ymuint n = _fanin_num();
-  SimNode* inode0 = _fanin(0);
-  PackedVal3 val = inode0->gval3();
-  for (ymuint i = 1; i < n; ++ i) {
-    SimNode* inode = _fanin(i);
-    val &= inode->gval3();
-  }
-  return val;
 }
 
 // @brief 故障値の計算を行う．(3値版)
@@ -140,18 +114,6 @@ SnAnd2::gate_type() const
   return kGateAND;
 }
 
-// @brief 正常値の計算を行う．(2値版)
-PackedVal
-SnAnd2::_calc_gval2()
-{
-  SimNode* inode0 = _fanin(0);
-  SimNode* inode1 = _fanin(1);
-  PackedVal val0 = inode0->gval();
-  PackedVal val1 = inode1->gval();
-  PackedVal val = val0 & val1;
-  return val;
-}
-
 // @brief 故障値の計算を行う．(2値版)
 PackedVal
 SnAnd2::_calc_fval2()
@@ -170,18 +132,6 @@ SnAnd2::_calc_gobs2(ymuint ipos)
 {
   ymuint alt_pos = ipos ^ 1;
   return _fanin(alt_pos)->gval();
-}
-
-// @brief 正常値の計算を行う．(3値版)
-PackedVal3
-SnAnd2::_calc_gval3()
-{
-  SimNode* inode0 = _fanin(0);
-  SimNode* inode1 = _fanin(1);
-  PackedVal3 val0 = inode0->gval3();
-  PackedVal3 val1 = inode1->gval3();
-  PackedVal3 val = val0 & val1;
-  return val;
 }
 
 // @brief 故障値の計算を行う．(3値版)
@@ -228,20 +178,6 @@ SnAnd3::gate_type() const
   return kGateAND;
 }
 
-// @brief 正常値の計算を行う．(2値版)
-PackedVal
-SnAnd3::_calc_gval2()
-{
-  SimNode* inode0 = _fanin(0);
-  SimNode* inode1 = _fanin(1);
-  SimNode* inode2 = _fanin(2);
-  PackedVal val0 = inode0->gval();
-  PackedVal val1 = inode1->gval();
-  PackedVal val2 = inode2->gval();
-  PackedVal val = val0 & val1 & val2;
-  return val;
-}
-
 // @brief 故障値の計算を行う．(2値版)
 PackedVal
 SnAnd3::_calc_fval2()
@@ -267,20 +203,6 @@ SnAnd3::_calc_gobs2(ymuint ipos)
   default: ASSERT_NOT_REACHED; break;
   }
   return kPvAll0;
-}
-
-// @brief 正常値の計算を行う．(3値版)
-PackedVal3
-SnAnd3::_calc_gval3()
-{
-  SimNode* inode0 = _fanin(0);
-  SimNode* inode1 = _fanin(1);
-  SimNode* inode2 = _fanin(2);
-  PackedVal3 val0 = inode0->gval3();
-  PackedVal3 val1 = inode1->gval3();
-  PackedVal3 val2 = inode2->gval3();
-  PackedVal3 val = val0 & val1 & val2;
-  return val;
 }
 
 // @brief 故障値の計算を行う．(3値版)
@@ -334,22 +256,6 @@ SnAnd4::gate_type() const
   return kGateAND;
 }
 
-// @brief 正常値の計算を行う．(2値版)
-PackedVal
-SnAnd4::_calc_gval2()
-{
-  SimNode* inode0 = _fanin(0);
-  SimNode* inode1 = _fanin(1);
-  SimNode* inode2 = _fanin(2);
-  SimNode* inode3 = _fanin(3);
-  PackedVal val0 = inode0->gval();
-  PackedVal val1 = inode1->gval();
-  PackedVal val2 = inode2->gval();
-  PackedVal val3 = inode3->gval();
-  PackedVal val = val0 & val1 & val2 & val3;
-  return val;
-}
-
 // @brief 故障値の計算を行う．(2値版)
 PackedVal
 SnAnd4::_calc_fval2()
@@ -378,22 +284,6 @@ SnAnd4::_calc_gobs2(ymuint ipos)
   default: ASSERT_NOT_REACHED; break;
   }
   return kPvAll0;
-}
-
-// @brief 正常値の計算を行う．(3値版)
-PackedVal3
-SnAnd4::_calc_gval3()
-{
-  SimNode* inode0 = _fanin(0);
-  SimNode* inode1 = _fanin(1);
-  SimNode* inode2 = _fanin(2);
-  SimNode* inode3 = _fanin(3);
-  PackedVal3 val0 = inode0->gval3();
-  PackedVal3 val1 = inode1->gval3();
-  PackedVal3 val2 = inode2->gval3();
-  PackedVal3 val3 = inode3->gval3();
-  PackedVal3 val = val0 & val1 & val2 & val3;
-  return val;
 }
 
 // @brief 故障値の計算を行う．(3値版)
@@ -450,18 +340,6 @@ SnNand::gate_type() const
   return kGateNAND;
 }
 
-// @brief 正常値の計算を行う．(2値版)
-PackedVal
-SnNand::_calc_gval2()
-{
-  ymuint n = _fanin_num();
-  PackedVal val = _fanin(0)->gval();
-  for (ymuint i = 1; i < n; ++ i) {
-    val &= _fanin(i)->gval();
-  }
-  return ~val;
-}
-
 // @brief 故障値の計算を行う．(2値版)
 PackedVal
 SnNand::_calc_fval2()
@@ -470,20 +348,6 @@ SnNand::_calc_fval2()
   PackedVal val = _fanin(0)->fval();
   for (ymuint i = 1; i < n; ++ i) {
     val &= _fanin(i)->fval();
-  }
-  return ~val;
-}
-
-// @brief 正常値の計算を行う．(3値版)
-PackedVal3
-SnNand::_calc_gval3()
-{
-  ymuint n = _fanin_num();
-  SimNode* inode0 = _fanin(0);
-  PackedVal3 val = inode0->gval3();
-  for (ymuint i = 1; i < n; ++ i) {
-    SimNode* inode = _fanin(i);
-    val &= inode->gval3();
   }
   return ~val;
 }
@@ -526,18 +390,6 @@ SnNand2::gate_type() const
   return kGateNAND;
 }
 
-// @brief 正常値の計算を行う．(2値版)
-PackedVal
-SnNand2::_calc_gval2()
-{
-  SimNode* inode0 = _fanin(0);
-  SimNode* inode1 = _fanin(1);
-  PackedVal val0 = inode0->gval();
-  PackedVal val1 = inode1->gval();
-  PackedVal val = val0 & val1;
-  return ~val;
-}
-
 // @brief 故障値の計算を行う．(2値版)
 PackedVal
 SnNand2::_calc_fval2()
@@ -547,18 +399,6 @@ SnNand2::_calc_fval2()
   PackedVal val0 = inode0->fval();
   PackedVal val1 = inode1->fval();
   PackedVal val = val0 & val1;
-  return ~val;
-}
-
-// @brief 正常値の計算を行う．(3値版)
-PackedVal3
-SnNand2::_calc_gval3()
-{
-  SimNode* inode0 = _fanin(0);
-  SimNode* inode1 = _fanin(1);
-  PackedVal3 val0 = inode0->gval3();
-  PackedVal3 val1 = inode1->gval3();
-  PackedVal3 val = val0 & val1;
   return ~val;
 }
 
@@ -598,20 +438,6 @@ SnNand3::gate_type() const
   return kGateNAND;
 }
 
-// @brief 正常値の計算を行う．(2値版)
-PackedVal
-SnNand3::_calc_gval2()
-{
-  SimNode* inode0 = _fanin(0);
-  SimNode* inode1 = _fanin(1);
-  SimNode* inode2 = _fanin(2);
-  PackedVal val0 = inode0->gval();
-  PackedVal val1 = inode1->gval();
-  PackedVal val2 = inode2->gval();
-  PackedVal val = val0 & val1 & val2;
-  return ~val;
-}
-
 // @brief 故障値の計算を行う．(2値版)
 PackedVal
 SnNand3::_calc_fval2()
@@ -623,20 +449,6 @@ SnNand3::_calc_fval2()
   PackedVal val1 = inode1->fval();
   PackedVal val2 = inode2->fval();
   PackedVal val = val0 & val1 & val2;
-  return ~val;
-}
-
-// @brief 正常値の計算を行う．(3値版)
-PackedVal3
-SnNand3::_calc_gval3()
-{
-  SimNode* inode0 = _fanin(0);
-  SimNode* inode1 = _fanin(1);
-  SimNode* inode2 = _fanin(2);
-  PackedVal3 val0 = inode0->gval3();
-  PackedVal3 val1 = inode1->gval3();
-  PackedVal3 val2 = inode2->gval3();
-  PackedVal3 val = val0 & val1 & val2;
   return ~val;
 }
 
@@ -678,22 +490,6 @@ SnNand4::gate_type() const
   return kGateNAND;
 }
 
-// @brief 正常値の計算を行う．(2値版)
-PackedVal
-SnNand4::_calc_gval2()
-{
-  SimNode* inode0 = _fanin(0);
-  SimNode* inode1 = _fanin(1);
-  SimNode* inode2 = _fanin(2);
-  SimNode* inode3 = _fanin(3);
-  PackedVal val0 = inode0->gval();
-  PackedVal val1 = inode1->gval();
-  PackedVal val2 = inode2->gval();
-  PackedVal val3 = inode3->gval();
-  PackedVal val = val0 & val1 & val2 & val3;
-  return ~val;
-}
-
 // @brief 故障値の計算を行う．(2値版)
 PackedVal
 SnNand4::_calc_fval2()
@@ -707,22 +503,6 @@ SnNand4::_calc_fval2()
   PackedVal val2 = inode2->fval();
   PackedVal val3 = inode3->fval();
   PackedVal val = val0 & val1 & val2 & val3;
-  return ~val;
-}
-
-// @brief 正常値の計算を行う．(3値版)
-PackedVal3
-SnNand4::_calc_gval3()
-{
-  SimNode* inode0 = _fanin(0);
-  SimNode* inode1 = _fanin(1);
-  SimNode* inode2 = _fanin(2);
-  SimNode* inode3 = _fanin(3);
-  PackedVal3 val0 = inode0->gval3();
-  PackedVal3 val1 = inode1->gval3();
-  PackedVal3 val2 = inode2->gval3();
-  PackedVal3 val3 = inode3->gval3();
-  PackedVal3 val = val0 & val1 & val2 & val3;
   return ~val;
 }
 

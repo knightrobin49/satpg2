@@ -150,27 +150,9 @@ SimNodeTest::test_gate(ymuint ni,
   test_fval(node, 0xaaaaaaaaaaaaaaaaUL, 0xaaaaaaaaaaaaaaaaUL);
   test_fval(node, kPvAll0, kPvAll1);
 
-  // _calc_gval3() のテスト
-  // ここで書き込む値に対して意味はない．
-  init_val(node, PackedVal3(kPvAll0, kPvAll0));
-  for (ymuint i = 0; i < ni; ++ i) {
-    init_val(inputs[i], PackedVal3(kPvAll0, kPvAll0));
-  }
-
   ymuint np = 1;
   for (ymuint i = 0; i < ni; ++ i) {
     np *= 3;
-  }
-  for (ymuint p = 0; p < np; ++ p) {
-    ymuint x = p;
-    for (ymuint i = 0; i < ni; ++ i) {
-      ymuint y = x % 3;
-      x /= 3;
-      PackedVal3 val = int2val3(y);
-      inputs[i]->set_gval3(val);
-    }
-    PackedVal3 val = node->_calc_gval3();
-    test_val3(val, vals[p]);
   }
 
   // _calc_fval3() のテスト
