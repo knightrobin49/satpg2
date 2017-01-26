@@ -419,7 +419,7 @@ Fsim2::ppsfp()
     }
     obs &= mPatMap;
 
-    _fault_sweep(ffr, obs);
+    _fault_sweep(ffr.fault_list(), obs);
   }
 
   return mDetNum;
@@ -543,7 +543,7 @@ Fsim2::_sppfp2()
     SimNode* root = ffr->root();
     if ( root->is_output() ) {
       // 常に観測可能
-      _fault_sweep(*ffr);
+      _fault_sweep(ffr->fault_list());
       continue;
     }
 
@@ -557,7 +557,7 @@ Fsim2::_sppfp2()
       PackedVal obs = mEventQ.simulate();
       for (ymuint i = 0; i < kPvBitLen; ++ i, obs >>= 1) {
 	if ( obs & 1UL ) {
-	  _fault_sweep(*ffr_buff[i]);
+	  _fault_sweep(ffr_buff[i]->fault_list());
 	}
       }
       bitpos = 0;
@@ -567,7 +567,7 @@ Fsim2::_sppfp2()
     PackedVal obs = mEventQ.simulate();
     for (ymuint i = 0; i < bitpos; ++ i, obs >>= 1) {
       if ( obs & 1UL ) {
-	_fault_sweep(*ffr_buff[i]);
+	_fault_sweep(ffr_buff[i]->fault_list());
       }
     }
   }
@@ -642,14 +642,13 @@ Fsim2::_calc_gval2()
   }
 }
 
-// @brief FFR の故障をスキャンして結果をセットする(sppfp用)
-// @param[in] ffr 対象の FFR
+// @brief 故障をスキャンして結果をセットする(sppfp用)
+// @param[in] fault_list 故障のリスト
 void
-Fsim2::_fault_sweep(const SimFFR& ffr)
+Fsim2::_fault_sweep(const vector<SimFault*>& fault_list)
 {
-  const vector<SimFault*>& flist = ffr.fault_list();
-  for (vector<SimFault*>::const_iterator p = flist.begin();
-       p != flist.end(); ++ p) {
+  for (vector<SimFault*>::const_iterator p = fault_list.begin();
+       p != fault_list.end(); ++ p) {
     SimFault* ff = *p;
     if ( ff->mSkip || ff->mObsMask == kPvAll0 ) {
       continue;
@@ -661,16 +660,15 @@ Fsim2::_fault_sweep(const SimFFR& ffr)
   }
 }
 
-// @brief FFR の故障をスキャンして結果をセットする(ppsfp用)
-// @param[in] ffr 対象の FFR
+// @brief 故障をスキャンして結果をセットする(ppsfp用)
+// @param[in] fault_list 故障のリスト
 // @param[in] pat 検出パタン
 void
-Fsim2::_fault_sweep(const SimFFR& ffr,
+Fsim2::_fault_sweep(const vector<SimFault*>& fault_list,
 		    PackedVal mask)
 {
-  const vector<SimFault*>& flist = ffr.fault_list();
-  for (vector<SimFault*>::const_iterator p = flist.begin();
-       p != flist.end(); ++ p) {
+  for (vector<SimFault*>::const_iterator p = fault_list.begin();
+       p != fault_list.end(); ++ p) {
     SimFault* ff = *p;
     if ( ff->mSkip ) {
       continue;

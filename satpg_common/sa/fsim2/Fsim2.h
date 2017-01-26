@@ -203,16 +203,16 @@ private:
   void
   _calc_gval2();
 
-  /// @brief FFR の故障をスキャンして結果をセットする(sppfp用)
-  /// @param[in] ffr 対象の FFR
+  /// @brief 故障をスキャンして結果をセットする(sppfp用)
+  /// @param[in] fault_list 故障のリスト
   void
-  _fault_sweep(const SimFFR& ffr);
+  _fault_sweep(const vector<SimFault*>& fault_list);
 
-  /// @brief FFR の故障をスキャンして結果をセットする(ppsfp用)
-  /// @param[in] ffr 対象の FFR
+  /// @brief 故障をスキャンして結果をセットする(ppsfp用)
+  /// @param[in] fault_list 故障のリスト
   /// @param[in] pat 検出パタン
   void
-  _fault_sweep(const SimFFR& ffr,
+  _fault_sweep(const vector<SimFault*>& fault_list,
 	       PackedVal pat);
 
 
