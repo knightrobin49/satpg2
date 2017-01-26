@@ -153,10 +153,10 @@ SimNodeTest::test_gate(ymuint ni,
   for (ymuint p = 0; p < np; ++ p) {
     for (ymuint i = 0; i < ni; ++ i) {
       if ( p & (1 << i) ) {
-	inputs[i]->set_fval2(kPvAll1);
+	inputs[i]->set_gval2(kPvAll1);
       }
       else {
-	inputs[i]->set_fval2(kPvAll0);
+	inputs[i]->set_gval2(kPvAll0);
       }
     }
     PackedVal val = node->_calc_fval2();
@@ -220,7 +220,7 @@ void
 SimNodeTest::test_fval(SimNode* node,
 		       PackedVal val)
 {
-  node->set_fval2(val);
+  node->set_gval2(val);
   EXPECT_EQ( val, node->fval() );
 }
 

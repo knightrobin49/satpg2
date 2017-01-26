@@ -168,7 +168,7 @@ SimNodeTest::test_gate(ymuint ni,
       ymuint y = x % 3;
       x /= 3;
       PackedVal3 val = int2val3(y);
-      inputs[i]->set_fval3(val);
+      inputs[i]->set_gval3(val);
     }
     PackedVal3 val = node->_calc_fval3();
     test_val3(val, vals[p]);
@@ -263,7 +263,7 @@ SimNodeTest::test_fval(SimNode* node,
 		       PackedVal val1)
 {
   // 書き込んだ値が読み出せるかテストする．
-  node->set_fval3(PackedVal3(val0, val1));
+  node->set_gval3(PackedVal3(val0, val1));
   EXPECT_EQ( val0, node->fval3().val0() );
   EXPECT_EQ( val1, node->fval3().val1() );
 }

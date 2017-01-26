@@ -164,11 +164,6 @@ public:
   void
   calc_gval2();
 
-  /// @brief 故障値のセットを行う．
-  /// @param[in] val 値
-  void
-  set_fval2(PackedVal val);
-
   /// @brief 故障値のイベントをセットする．
   /// @param[in] mask 反転マスク
   void
@@ -205,11 +200,6 @@ public:
   /// @brief 正常値を計算する．
   void
   calc_gval3();
-
-  /// @brief 故障値をセットする．(3値版)
-  /// @param[in] val 値
-  void
-  set_fval3(PackedVal3 val);
 
   /// @brief 故障値をセットする．(3値版)
   /// @param[in] mask 反転マスク
@@ -453,17 +443,7 @@ inline
 void
 SimNode::calc_gval2()
 {
-  PackedVal val = _calc_fval2();
-  mGval = mFval = val;
-}
-
-// @brief 故障値のセットを行う．
-// @param[in] val 値
-inline
-void
-SimNode::set_fval2(PackedVal val)
-{
-  mFval = val;
+  set_gval2(_calc_fval2());
 }
 
 // @brief 故障値のイベントをセットする．
@@ -534,19 +514,7 @@ void
 SimNode::calc_gval3()
 {
 #if USE_VAL3
-  PackedVal3 val = _calc_fval3();
-  mGval = mFval = val;
-#endif
-}
-
-// @brief 故障値をセットする．(3値版)
-// @param[in] val 値
-inline
-void
-SimNode::set_fval3(PackedVal3 val)
-{
-#if USE_VAL3
-  mFval = val;
+  set_gval3(_calc_fval3());
 #endif
 }
 
