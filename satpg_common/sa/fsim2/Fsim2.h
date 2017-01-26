@@ -174,34 +174,34 @@ private:
   /// @brief 一つのパタンを全ビットに展開して設定する．
   /// @param[in] tv 設定するテストベクタ
   void
-  _set_sp2(const TestVector* tv);
+  _set_sp(const TestVector* tv);
 
   /// @brief 一つのパタンを全ビットに展開して設定する．
   /// @param[in] assign_list 設定する値の割り当てリスト
   void
-  _set_sp2(const NodeValList& assign_list);
+  _set_sp(const NodeValList& assign_list);
 
   /// @brief 複数のパタンを設定する．
   void
-  _set_pp2();
+  _set_pp();
 
   /// @brief SPSFP故障シミュレーションの本体
   /// @param[in] f 対象の故障
   /// @retval true 故障の検出が行えた．
   /// @retval false 故障の検出が行えなかった．
   bool
-  _spsfp2(const TpgFault* f);
+  _spsfp(const TpgFault* f);
 
   /// @brief SPPFP故障シミュレーションの本体
   /// @return 検出された故障数を返す．
   ymuint
-  _sppfp2();
+  _sppfp();
 
   /// @brief 正常値の計算を行う．
   ///
   /// 入力ノードに gval の設定は済んでいるものとする．
   void
-  _calc_gval2();
+  _calc_gval();
 
   /// @brief 故障をスキャンして結果をセットする(sppfp用)
   /// @param[in] fault_list 故障のリスト

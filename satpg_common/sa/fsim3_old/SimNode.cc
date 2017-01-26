@@ -3,13 +3,13 @@
 /// @brief SimNode の実装ファイル
 /// @author Yusuke Matsunaga (松永 裕介)
 ///
-/// Copyright (C) 2016 Yusuke Matsunaga
+/// Copyright (C) 2005-2010, 2012-2014 Yusuke Matsunaga
 /// All rights reserved.
 
 
 #include "SimNode.h"
+#include "SimFFR.h"
 #include "SnInput.h"
-#include "SnBuff.h"
 #include "SnAnd.h"
 #include "SnOr.h"
 #include "SnXor.h"
@@ -22,11 +22,12 @@ BEGIN_NAMESPACE_YM_SATPG_FSIM
 //////////////////////////////////////////////////////////////////////
 
 // コンストラクタ
-SimNode::SimNode(ymuint id) :
+SimNode::SimNode(ymuint32 id) :
   mId(id),
-  mFanoutNum(0),
-  mFanoutTop(nullptr),
+  mNfo(0),
   mFanouts(nullptr),
+  mFanoutIpos(0),
+  mFFR(nullptr),
   mLevel(0)
 {
 }
@@ -37,16 +38,16 @@ SimNode::~SimNode()
   delete [] mFanouts;
 }
 
-// @brief 入力ノードを生成するクラスメソッド
+// @brief 外部入力ノードを生成するクラスメソッド
 SimNode*
-SimNode::new_input(ymuint id)
+SimNode::new_input(ymuint32 id)
 {
   return new SnInput(id);
 }
 
-// @brief ゲートを生成するクラスメソッド
+// @brief ノードを生成するクラスメソッド
 SimNode*
-SimNode::new_gate(ymuint id,
+SimNode::new_node(ymuint32 id,
 		  GateType type,
 		  const vector<SimNode*>& inputs)
 {
@@ -119,6 +120,13 @@ SimNode::new_gate(ymuint id,
   return node;
 }
 
+// @brief FFR の根のノードの時 true を返す．
+bool
+SimNode::is_ffr_root() const
+{
+  return mFFR->root() == this;
+}
+
 // @brief レベルを設定する．
 void
 SimNode::set_level(ymuint level)
@@ -131,18 +139,30 @@ void
 SimNode::set_fanout_list(const vector<SimNode*>& fo_list,
 			 ymuint ipos)
 {
-  ymuint nfo = fo_list.size();
-  if ( nfo > 0 ) {
-    mFanoutTop = fo_list[0];
-    if ( nfo > 1 ) {
-      mFanouts = new SimNode*[nfo - 1];
-      for (ymuint i = 1; i < nfo; ++ i) {
-	mFanouts[i - 1] = fo_list[i];
-      }
-    }
+  mNfo = fo_list.size();
+  mFanouts = new SimNode*[mNfo];
+  ymuint i = 0;
+  for (vector<SimNode*>::const_iterator p = fo_list.begin();
+       p != fo_list.end(); ++ p, ++ i) {
+    mFanouts[i] = *p;
   }
+  mFanoutIpos |= (ipos << 2);
+}
 
-  mFanoutNum |= (nfo << 16) | (ipos << 4);
+// @brief ローカルな obs の計算を行う．
+PackedVal
+SimNode::calc_lobs()
+{
+  if ( is_ffr_root() ) {
+    return kPvAll1;
+  }
+  if ( !check_lobs() ) {
+    SimNode* onode = fanout(0);
+    ymuint pos = fanout_ipos();
+    mLobs = onode->calc_lobs() & onode->calc_gobs(pos);
+    set_lobs();
+  }
+  return mLobs;
 }
 
 END_NAMESPACE_YM_SATPG_FSIM

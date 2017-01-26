@@ -5,7 +5,7 @@
 /// @brief SnAnd のヘッダファイル
 /// @author Yusuke Matsunaga (松永 裕介)
 ///
-/// Copyright (C) 2005-2010, 2012, 2014 Yusuke Matsunaga
+/// Copyright (C) 2016 Yusuke Matsunaga
 /// All rights reserved.
 
 
@@ -24,7 +24,7 @@ class SnAnd :
 public:
 
   /// @brief コンストラクタ
-  SnAnd(ymuint32 id,
+  SnAnd(ymuint id,
 	const vector<SimNode*>& inputs);
 
   /// @brief デストラクタ
@@ -34,30 +34,26 @@ public:
 
 public:
 
-  /// @brief 正常値の計算を行う．
-  ///
-  /// 結果は mGval0, mGval1 に格納される．
+  /// @brief ゲートタイプを返す．
   virtual
-  void
-  _calc_gval();
+  GateType
+  gate_type() const;
 
-  /// @brief 故障値の計算を行う．
-  /// @param[in] mask マスク
-  ///
-  /// 結果は mFval0, mFval1 に格納される．
+
+public:
+  //////////////////////////////////////////////////////////////////////
+  // 3値版の故障シミュレーション用の仮想関数
+  //////////////////////////////////////////////////////////////////////
+
+  /// @brief 故障値の計算を行う．(3値版)
   virtual
-  void
-  _calc_fval(PackedVal mask);
+  PackedVal3
+  _calc_fval();
 
-  /// @brief ゲートの入力から出力までの可観測性を計算する．
+  /// @brief ゲートの入力から出力までの可観測性を計算する．(3値版)
   virtual
   PackedVal
-  calc_gobs(ymuint ipos);
-
-  /// @brief 内容をダンプする．
-  virtual
-  void
-  dump(ostream& s) const;
+  _calc_gobs(ymuint ipos);
 
 };
 
@@ -72,7 +68,7 @@ class SnAnd2 :
 public:
 
   /// @brief コンストラクタ
-  SnAnd2(ymuint32 id,
+  SnAnd2(ymuint id,
 	 const vector<SimNode*>& inputs);
 
   /// @brief デストラクタ
@@ -82,30 +78,26 @@ public:
 
 public:
 
-  /// @brief 正常値の計算を行う．
-  ///
-  /// 結果は mGval0, mGval1 に格納される．
+  /// @brief ゲートタイプを返す．
   virtual
-  void
-  _calc_gval();
+  GateType
+  gate_type() const;
 
-  /// @brief 故障値の計算を行う．
-  /// @param[in] mask マスク
-  ///
-  /// 結果は mFval0, mFval1 に格納される．
+
+public:
+  //////////////////////////////////////////////////////////////////////
+  // 3値版の故障シミュレーション用の仮想関数
+  //////////////////////////////////////////////////////////////////////
+
+  /// @brief 故障値の計算を行う．(3値版)
   virtual
-  void
-  _calc_fval(PackedVal mask);
+  PackedVal3
+  _calc_fval();
 
-  /// @brief ゲートの入力から出力までの可観測性を計算する．
+  /// @brief ゲートの入力から出力までの可観測性を計算する．(3値版)
   virtual
   PackedVal
-  calc_gobs(ymuint ipos);
-
-  /// @brief 内容をダンプする．
-  virtual
-  void
-  dump(ostream& s) const;
+  _calc_gobs(ymuint ipos);
 
 };
 
@@ -120,7 +112,7 @@ class SnAnd3 :
 public:
 
   /// @brief コンストラクタ
-  SnAnd3(ymuint32 id,
+  SnAnd3(ymuint id,
 	 const vector<SimNode*>& inputs);
 
   /// @brief デストラクタ
@@ -130,30 +122,26 @@ public:
 
 public:
 
-  /// @brief 正常値の計算を行う．
-  ///
-  /// 結果は mGval0, mGval1 に格納される．
+  /// @brief ゲートタイプを返す．
   virtual
-  void
-  _calc_gval();
+  GateType
+  gate_type() const;
 
-  /// @brief 故障値の計算を行う．
-  /// @param[in] mask マスク
-  ///
-  /// 結果は mFval0, mFval1 に格納される．
+
+public:
+  //////////////////////////////////////////////////////////////////////
+  // 3値版の故障シミュレーション用の仮想関数
+  //////////////////////////////////////////////////////////////////////
+
+  /// @brief 故障値の計算を行う．(3値版)
   virtual
-  void
-  _calc_fval(PackedVal mask);
+  PackedVal3
+  _calc_fval();
 
-  /// @brief ゲートの入力から出力までの可観測性を計算する．
+  /// @brief ゲートの入力から出力までの可観測性を計算する．(3値版)
   virtual
   PackedVal
-  calc_gobs(ymuint ipos);
-
-  /// @brief 内容をダンプする．
-  virtual
-  void
-  dump(ostream& s) const;
+  _calc_gobs(ymuint ipos);
 
 };
 
@@ -168,7 +156,7 @@ class SnAnd4 :
 public:
 
   /// @brief コンストラクタ
-  SnAnd4(ymuint32 id,
+  SnAnd4(ymuint id,
 	 const vector<SimNode*>& inputs);
 
   /// @brief デストラクタ
@@ -178,30 +166,26 @@ public:
 
 public:
 
-  /// @brief 正常値の計算を行う．
-  ///
-  /// 結果は mGval0, mGval1 に格納される．
+  /// @brief ゲートタイプを返す．
   virtual
-  void
-  _calc_gval();
+  GateType
+  gate_type() const;
 
-  /// @brief 故障値の計算を行う．
-  /// @param[in] mask マスク
-  ///
-  /// 結果は mFval0, mFval1 に格納される．
+
+public:
+  //////////////////////////////////////////////////////////////////////
+  // 3値版の故障シミュレーション用の仮想関数
+  //////////////////////////////////////////////////////////////////////
+
+  /// @brief 故障値の計算を行う．(3値版)
   virtual
-  void
-  _calc_fval(PackedVal mask);
+  PackedVal3
+  _calc_fval();
 
-  /// @brief ゲートの入力から出力までの可観測性を計算する．
+  /// @brief ゲートの入力から出力までの可観測性を計算する．(3値版)
   virtual
   PackedVal
-  calc_gobs(ymuint ipos);
-
-  /// @brief 内容をダンプする．
-  virtual
-  void
-  dump(ostream& s) const;
+  _calc_gobs(ymuint ipos);
 
 };
 
@@ -216,7 +200,7 @@ class SnNand :
 public:
 
   /// @brief コンストラクタ
-  SnNand(ymuint32 id,
+  SnNand(ymuint id,
 	 const vector<SimNode*>& inputs);
 
   /// @brief デストラクタ
@@ -226,25 +210,21 @@ public:
 
 public:
 
-  /// @brief 正常値の計算を行う．
-  ///
-  /// 結果は mGval0, mGval1 に格納される．
+  /// @brief ゲートタイプを返す．
   virtual
-  void
-  _calc_gval();
+  GateType
+  gate_type() const;
 
-  /// @brief 故障値の計算を行う．
-  /// @param[in] mask マスク
-  ///
-  /// 結果は mFval0, mFval1 に格納される．
-  virtual
-  void
-  _calc_fval(PackedVal mask);
 
-  /// @brief 内容をダンプする．
+public:
+  //////////////////////////////////////////////////////////////////////
+  // 3値版の故障シミュレーション用の仮想関数
+  //////////////////////////////////////////////////////////////////////
+
+  /// @brief 故障値の計算を行う．(3値版)
   virtual
-  void
-  dump(ostream& s) const;
+  PackedVal3
+  _calc_fval();
 
 };
 
@@ -259,7 +239,7 @@ class SnNand2 :
 public:
 
   /// @brief コンストラクタ
-  SnNand2(ymuint32 id,
+  SnNand2(ymuint id,
 	  const vector<SimNode*>& inputs);
 
   /// @brief デストラクタ
@@ -269,25 +249,21 @@ public:
 
 public:
 
-  /// @brief 正常値の計算を行う．
-  ///
-  /// 結果は mGval0, mGval1 に格納される．
+  /// @brief ゲートタイプを返す．
   virtual
-  void
-  _calc_gval();
+  GateType
+  gate_type() const;
 
-  /// @brief 故障値の計算を行う．
-  /// @param[in] mask マスク
-  ///
-  /// 結果は mFval0, mFval1 に格納される．
-  virtual
-  void
-  _calc_fval(PackedVal mask);
 
-  /// @brief 内容をダンプする．
+public:
+  //////////////////////////////////////////////////////////////////////
+  // 3値版の故障シミュレーション用の仮想関数
+  //////////////////////////////////////////////////////////////////////
+
+  /// @brief 故障値の計算を行う．(3値版)
   virtual
-  void
-  dump(ostream& s) const;
+  PackedVal3
+  _calc_fval();
 
 };
 
@@ -302,7 +278,7 @@ class SnNand3 :
 public:
 
   /// @brief コンストラクタ
-  SnNand3(ymuint32 id,
+  SnNand3(ymuint id,
 	  const vector<SimNode*>& inputs);
 
   /// @brief デストラクタ
@@ -312,25 +288,21 @@ public:
 
 public:
 
-  /// @brief 正常値の計算を行う．
-  ///
-  /// 結果は mGval0, mGval1 に格納される．
+  /// @brief ゲートタイプを返す．
   virtual
-  void
-  _calc_gval();
+  GateType
+  gate_type() const;
 
-  /// @brief 故障値の計算を行う．
-  /// @param[in] mask マスク
-  ///
-  /// 結果は mFval0, mFval1 に格納される．
-  virtual
-  void
-  _calc_fval(PackedVal mask);
 
-  /// @brief 内容をダンプする．
+public:
+  //////////////////////////////////////////////////////////////////////
+  // 3値版の故障シミュレーション用の仮想関数
+  //////////////////////////////////////////////////////////////////////
+
+  /// @brief 故障値の計算を行う．(3値版)
   virtual
-  void
-  dump(ostream& s) const;
+  PackedVal3
+  _calc_fval();
 
 };
 
@@ -345,7 +317,7 @@ class SnNand4 :
 public:
 
   /// @brief コンストラクタ
-  SnNand4(ymuint32 id,
+  SnNand4(ymuint id,
 	  const vector<SimNode*>& inputs);
 
   /// @brief デストラクタ
@@ -355,25 +327,21 @@ public:
 
 public:
 
-  /// @brief 正常値の計算を行う．
-  ///
-  /// 結果は mGval0, mGval1 に格納される．
+  /// @brief ゲートタイプを返す．
   virtual
-  void
-  _calc_gval();
+  GateType
+  gate_type() const;
 
-  /// @brief 故障値の計算を行う．
-  /// @param[in] mask マスク
-  ///
-  /// 結果は mFval0, mFval1 に格納される．
-  virtual
-  void
-  _calc_fval(PackedVal mask);
 
-  /// @brief 内容をダンプする．
+public:
+  //////////////////////////////////////////////////////////////////////
+  // 3値版の故障シミュレーション用の仮想関数
+  //////////////////////////////////////////////////////////////////////
+
+  /// @brief 故障値の計算を行う．(3値版)
   virtual
-  void
-  dump(ostream& s) const;
+  PackedVal3
+  _calc_fval();
 
 };
 

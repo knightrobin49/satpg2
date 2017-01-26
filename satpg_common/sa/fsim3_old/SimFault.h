@@ -5,10 +5,11 @@
 /// @brief SimFault のヘッダファイル
 /// @author Yusuke Matsunaga (松永 裕介)
 ///
-/// Copyright (C) 2016 Yusuke Matsunaga
+/// Copyright (C) 2005-2010, 2012-2014 Yusuke Matsunaga
 /// All rights reserved.
 
-#include "fsim2_nsdef.h"
+
+#include "fsim3_nsdef.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG_FSIM
@@ -37,7 +38,7 @@ struct SimFault
     mNode = node;
     mIpos = ipos;
     mInode = inode;
-    mSkip = true;
+    mSkip = false;
   }
 
   // 元の故障
@@ -47,7 +48,7 @@ struct SimFault
   SimNode* mNode;
 
   // 入力の故障の場合の入力位置
-  ymuint mIpos;
+  ymuint32 mIpos;
 
   // 入力の故障の場合の入力のゲート
   SimNode* mInode;

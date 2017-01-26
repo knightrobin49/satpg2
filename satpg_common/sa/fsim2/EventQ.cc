@@ -67,7 +67,7 @@ void
 EventQ::put_trigger(SimNode* node,
 		    PackedVal valmask)
 {
-  node->flip_fval2(valmask);
+  node->flip_fval(valmask);
   add_to_clear_list(node);
   put_fanouts(node);
 }
@@ -91,7 +91,7 @@ EventQ::simulate(SimNode* target)
 
     // すでに検出済みのビットはマスクしておく
     // これは無駄なイベントの発生を抑える．
-    PackedVal diff = node->calc_fval2(~obs);
+    PackedVal diff = node->calc_fval(~obs);
     if ( diff != kPvAll0 ) {
       add_to_clear_list(node);
       if ( node->is_output() || node == target ) {
@@ -129,7 +129,7 @@ EventQ::clear()
 {
   for (ymuint i = 0; i < mClearPos; ++ i) {
     SimNode* node = mClearArray[i];
-    node->clear_fval2();
+    node->clear_fval();
   }
   mClearPos = 0;
 }

@@ -1,11 +1,11 @@
-﻿#ifndef EVENTQ_H
-#define EVENTQ_H
+﻿#ifndef FSIM_EVENTQ_H
+#define FSIM_EVENTQ_H
 
 /// @file EventQ.h
 /// @brief EventQ のヘッダファイル
 /// @author Yusuke Matsunaga (松永 裕介)
 ///
-/// Copyright (C) 2005-2010, 2012-2014 Yusuke Matsunaga
+/// Copyright (C) 2016 Yusuke Matsunaga
 /// All rights reserved.
 
 
@@ -35,13 +35,47 @@ public:
 
 
 public:
+  //////////////////////////////////////////////////////////////////////
+  // 外部インターフェイス
+  //////////////////////////////////////////////////////////////////////
 
   /// @brief 初期化を行う．
   /// @param[in] max_level 最大レベル
+  /// @param[in] node_num ノード数
   void
-  init(ymuint max_level);
+  init(ymuint max_level,
+       ymuint node_num);
+
+  /// @brief 初期イベントを追加する．
+  /// @param[in] node 対象のノード
+  /// @param[in] valmask 反転マスク
+  void
+  put_trigger(SimNode* node,
+	      PackedVal valmask);
+
+  /// @brief イベントドリブンシミュレーションを行う．
+  /// @param[in] target 目標のノード
+  /// @retval 出力における変化ビットを返す．
+  ///
+  /// target が nullptr でない時にはイベントが target まで到達したら
+  /// シミュレーションを終える．
+  /// target が nullptr の時には出力ノードまでイベントを伝える．
+  PackedVal
+  simulate(SimNode* target = nullptr);
+
+
+private:
+  //////////////////////////////////////////////////////////////////////
+  // 内部で用いられる関数
+  //////////////////////////////////////////////////////////////////////
+
+  /// @brief ファンアウトのノードをキューに積む．
+  /// @param[in] node 対象のノード
+  void
+  put_fanouts(SimNode* node);
 
   /// @brief キューに積む
+  /// @param[in] node 対象のノード
   void
   put(SimNode* node);
 
@@ -49,6 +83,15 @@ public:
   /// @retval nullptr キューが空だった．
   SimNode*
   get();
+
+  /// @brief clear リストに追加する．
+  /// @param[in] node 対象のノード
+  void
+  add_to_clear_list(SimNode* node);
+
+  /// @brief clear リストに入っているノードの値を元に戻す．
+  void
+  clear();
 
 
 private:
@@ -67,6 +110,15 @@ private:
 
   // キューに入っているノード数
   ymuint mNum;
+
+  // mCearArray のサイズ
+  ymuint mClearArraySize;
+
+  // clear 用のノード配列
+  SimNode** mClearArray;
+
+  // mCelarArray の最後の要素位置
+  ymuint mClearPos;
 
 };
 
@@ -115,6 +167,15 @@ EventQ::get()
   return nullptr;
 }
 
+// @brief clear 用リストに追加する．
+inline
+void
+EventQ::add_to_clear_list(SimNode* node)
+{
+  mClearArray[mClearPos] = node;
+  ++ mClearPos;
+}
+
 END_NAMESPACE_YM_SATPG_FSIM
 
-#endif // FSIM3_EVENTQ_H
+#endif // FSIM_EVENTQ_H

@@ -1,15 +1,15 @@
-﻿#ifndef FSIM_EVENTQ_H
-#define FSIM_EVENTQ_H
+﻿#ifndef EVENTQ_H
+#define EVENTQ_H
 
 /// @file EventQ.h
 /// @brief EventQ のヘッダファイル
 /// @author Yusuke Matsunaga (松永 裕介)
 ///
-/// Copyright (C) 2016 Yusuke Matsunaga
+/// Copyright (C) 2005-2010, 2012-2014 Yusuke Matsunaga
 /// All rights reserved.
 
 
-#include "fsim2_nsdef.h"
+#include "fsim3_nsdef.h"
 #include "SimNode.h"
 
 
@@ -117,4 +117,4 @@ EventQ::get()
 
 END_NAMESPACE_YM_SATPG_FSIM
 
-#endif // FSIM_EVENTQ_H
+#endif // FSIM3_EVENTQ_H

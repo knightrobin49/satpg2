@@ -52,7 +52,7 @@ public:
 
   /// @brief FFR内の故障シミュレーションを行う．
   PackedVal
-  fault_prop2() const;
+  fault_prop() const;
 
   /// @brief このFFRに属する故障リストを得る．
   const vector<SimFault*>&
@@ -124,7 +124,7 @@ SimFFR::add_fault(SimFault* f)
 // @brief FFR内の故障シミュレーションを行う．
 inline
 PackedVal
-SimFFR::fault_prop2() const
+SimFFR::fault_prop() const
 {
   PackedVal ffr_req = kPvAll0;
   for (vector<SimFault*>::const_iterator p = mFaultList.begin();
@@ -140,7 +140,7 @@ SimFFR::fault_prop2() const
     for (SimNode* node = simnode; !node->is_ffr_root(); ) {
       SimNode* onode = node->fanout_top();
       ymuint pos = node->fanout_ipos();
-      lobs &= onode->_calc_gobs2(pos);
+      lobs &= onode->_calc_gobs(pos);
       node = onode;
     }
 
@@ -149,7 +149,7 @@ SimFFR::fault_prop2() const
     if ( f->is_branch_fault() ) {
       // 入力の故障
       ymuint ipos = ff->mIpos;
-      lobs &= simnode->_calc_gobs2(ipos);
+      lobs &= simnode->_calc_gobs(ipos);
     }
     if ( f->val() == 1 ) {
       valdiff = ~valdiff;

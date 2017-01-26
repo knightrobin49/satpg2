@@ -5,12 +5,11 @@
 /// @brief SnInput のヘッダファイル
 /// @author Yusuke Matsunaga (松永 裕介)
 ///
-/// Copyright (C) 2005-2010, 2012-2014 Yusuke Matsunaga
+/// Copyright (C) 2016 Yusuke Matsunaga
 /// All rights reserved.
 
 
 #include "SimNode.h"
-#include "SnGate.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG_FSIM
@@ -26,7 +25,7 @@ public:
 
   /// @brief コンストラクタ
   explicit
-  SnInput(ymuint32 id);
+  SnInput(ymuint id);
 
   /// @brief デストラクタ
   virtual
@@ -35,126 +34,44 @@ public:
 
 public:
 
+  /// @brief ゲートタイプを返す．
+  ///
+  /// ここでは kGateBUFF を返す．
+  virtual
+  GateType
+  gate_type() const;
+
   /// @brief ファンイン数を得る．
   virtual
   ymuint
-  nfi() const;
+  fanin_num() const;
 
   /// @brief pos 番めのファンインを得る．
   virtual
   SimNode*
   fanin(ymuint pos) const;
 
-  /// @brief 正常値の計算を行う．
-  ///
-  /// 結果は mGval0, mGval1 に格納される．
-  virtual
-  void
-  _calc_gval();
 
-  /// @brief 故障値の計算を行う．
-  /// @param[in] mask マスク
-  ///
-  /// 結果は mFval0, mFval1 に格納される．
-  virtual
-  void
-  _calc_fval(PackedVal mask);
+public:
+  //////////////////////////////////////////////////////////////////////
+  // 3値版の故障シミュレーション用の仮想関数
+  //////////////////////////////////////////////////////////////////////
 
-  /// @brief ゲートの入力から出力までの可観測性を計算する．
+  /// @brief 故障値の計算を行う．(3値版)
+  virtual
+  PackedVal3
+  _calc_fval();
+
+  /// @brief ゲートの入力から出力までの可観測性を計算する．(3値版)
   virtual
   PackedVal
-  calc_gobs(ymuint ipos);
-
-  /// @brief 内容をダンプする．
-  virtual
-  void
-  dump(ostream& s) const;
-
-};
-
-
-//////////////////////////////////////////////////////////////////////
-/// @class SnBuff SimNode.h
-/// @brief BUFFノード
-//////////////////////////////////////////////////////////////////////
-class SnBuff :
-  public SnGate1
-{
-public:
-
-  /// @brief コンストラクタ
-  SnBuff(ymuint32 id,
-	 const vector<SimNode*>& inputs);
-
-  /// @brief デストラクタ
-  virtual
-  ~SnBuff();
+  _calc_gobs(ymuint ipos);
 
 
 public:
-
-  /// @brief 正常値の計算を行う．
-  ///
-  /// 結果は mGval0, mGval1 に格納される．
-  virtual
-  void
-  _calc_gval();
-
-  /// @brief 故障値の計算を行う．
-  /// @param[in] mask マスク
-  ///
-  /// 結果は mFval0, mFval1 に格納される．
-  virtual
-  void
-  _calc_fval(PackedVal mask);
-
-  /// @brief ゲートの入力から出力までの可観測性を計算する．
-  virtual
-  PackedVal
-  calc_gobs(ymuint ipos);
-
-  /// @brief 内容をダンプする．
-  virtual
-  void
-  dump(ostream& s) const;
-
-};
-
-
-//////////////////////////////////////////////////////////////////////
-/// @class SnNot SimNode.h
-/// @brief NOTノード
-//////////////////////////////////////////////////////////////////////
-class SnNot :
-  public SnBuff
-{
-public:
-
-  /// @brief コンストラクタ
-  SnNot(ymuint32 id,
-	const vector<SimNode*>& inputs);
-
-  /// @brief デストラクタ
-  virtual
-  ~SnNot();
-
-
-public:
-
-  /// @brief 正常値の計算を行う．
-  ///
-  /// 結果は mGval0, mGval1 に格納される．
-  virtual
-  void
-  _calc_gval();
-
-  /// @brief 故障値の計算を行う．
-  /// @param[in] mask マスク
-  ///
-  /// 結果は mFval0, mFval1 に格納される．
-  virtual
-  void
-  _calc_fval(PackedVal mask);
+  //////////////////////////////////////////////////////////////////////
+  // SimNode の仮想関数
+  //////////////////////////////////////////////////////////////////////
 
   /// @brief 内容をダンプする．
   virtual

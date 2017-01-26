@@ -35,15 +35,15 @@ SnBuff::gate_type() const
   return kGateBUFF;
 }
 
-// @brief 故障値の計算を行う．(2値版)
-PackedVal
+// @brief 故障値の計算を行う．(3値版)
+PackedVal3
 SnBuff::_calc_fval()
 {
-  PackedVal val = _fanin()->fval();
-  return val;
+  SimNode* inode = _fanin();
+  return inode->fval();
 }
 
-// @brief ゲートの入力から出力までの可観測性を計算する．(2値版)
+// @brief ゲートの入力から出力までの可観測性を計算する．(3値版)
 PackedVal
 SnBuff::_calc_gobs(ymuint ipos)
 {
@@ -74,12 +74,12 @@ SnNot::gate_type() const
   return kGateNOT;
 }
 
-// @brief 故障値の計算を行う．(2値版)
-PackedVal
+// @brief 故障値の計算を行う．(3値版)
+PackedVal3
 SnNot::_calc_fval()
 {
-  PackedVal val = _fanin()->fval();
-  return ~val;
+  SimNode* inode = _fanin();
+  return ~inode->fval();
 }
 
 END_NAMESPACE_YM_SATPG_FSIM

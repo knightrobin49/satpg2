@@ -1,47 +1,56 @@
-﻿#ifndef SPBUFF_H
-#define SPBUFF_H
+﻿#ifndef SNBUFF_H
+#define SNBUFF_H
 
-/// @file SpBuff.h
-/// @brief SpBuff のヘッダファイル
+/// @file SnBuff.h
+/// @brief SnBuff のヘッダファイル
 /// @author Yusuke Matsunaga (松永 裕介)
 ///
 /// Copyright (C) 2016 Yusuke Matsunaga
 /// All rights reserved.
 
 
-#include "SpGate.h"
+#include "SnGate.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG_FSIM
 
 //////////////////////////////////////////////////////////////////////
-/// @class SpBuff SimBuff.h
+/// @class SnBuff SimBuff.h
 /// @brief BUFFノード
 //////////////////////////////////////////////////////////////////////
-class SpBuff :
-  public SpGate1
+class SnBuff :
+  public SnGate1
 {
 public:
 
   /// @brief コンストラクタ
-  SpBuff(const vector<SimPrim*>& fanins);
+  SnBuff(ymuint id,
+	 const vector<SimNode*>& inputs);
 
   /// @brief デストラクタ
   virtual
-  ~SpBuff();
+  ~SnBuff();
+
+
+public:
+
+  /// @brief ゲートタイプを返す．
+  virtual
+  GateType
+  gate_type() const;
 
 
 public:
   //////////////////////////////////////////////////////////////////////
-  // 2値版の故障シミュレーション用の仮想関数
+  // 3値版の故障シミュレーション用の仮想関数
   //////////////////////////////////////////////////////////////////////
 
-  /// @brief 出力値の計算を行う．(2値版)
+  /// @brief 故障値の計算を行う．(3値版)
   virtual
-  PackedVal
-  _calc_val();
+  PackedVal3
+  _calc_fval();
 
-  /// @brief ゲートの入力から出力までの可観測性を計算する．(2値版)
+  /// @brief ゲートの入力から出力までの可観測性を計算する．(3値版)
   virtual
   PackedVal
   _calc_gobs(ymuint ipos);
@@ -50,34 +59,43 @@ public:
 
 
 //////////////////////////////////////////////////////////////////////
-/// @class SpNot SimPrim.h
+/// @class SnNot SimNode.h
 /// @brief NOTノード
 //////////////////////////////////////////////////////////////////////
-class SpNot :
-  public SpBuff
+class SnNot :
+  public SnBuff
 {
 public:
 
   /// @brief コンストラクタ
-  SpNot(const vector<SimPrim*>& fanins);
+  SnNot(ymuint id,
+	const vector<SimNode*>& inputs);
 
   /// @brief デストラクタ
   virtual
-  ~SpNot();
+  ~SnNot();
+
+
+public:
+
+  /// @brief ゲートタイプを返す．
+  virtual
+  GateType
+  gate_type() const;
 
 
 public:
   //////////////////////////////////////////////////////////////////////
-  // 2値版の故障シミュレーション用の仮想関数
+  // 3値版の故障シミュレーション用の仮想関数
   //////////////////////////////////////////////////////////////////////
 
-  /// @brief 出力値の計算を行う．(2値版)
+  /// @brief 故障値の計算を行う．(3値版)
   virtual
-  PackedVal
-  _calc_val();
+  PackedVal3
+  _calc_fval();
 
 };
 
 END_NAMESPACE_YM_SATPG_FSIM
 
-#endif // SPBUFF_H
+#endif // SNBUFF_H

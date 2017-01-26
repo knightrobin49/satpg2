@@ -61,7 +61,7 @@ SnInput::dump(ostream& s) const
 
 // @brief 故障値の計算を行う．(2値版)
 PackedVal
-SnInput::_calc_fval2()
+SnInput::_calc_fval()
 {
   ASSERT_NOT_REACHED;
   return kPvAll0;
@@ -69,22 +69,7 @@ SnInput::_calc_fval2()
 
 // @brief ゲートの入力から出力までの可観測性を計算する．(2値版)
 PackedVal
-SnInput::_calc_gobs2(ymuint ipos)
-{
-  return kPvAll0;
-}
-
-// @brief 故障値の計算を行う．(3値版)
-PackedVal3
-SnInput::_calc_fval3()
-{
-  ASSERT_NOT_REACHED;
-  return PackedVal3();
-}
-
-// @brief ゲートの入力から出力までの可観測性を計算する．(3値版)
-PackedVal
-SnInput::_calc_gobs3(ymuint ipos)
+SnInput::_calc_gobs(ymuint ipos)
 {
   return kPvAll0;
 }

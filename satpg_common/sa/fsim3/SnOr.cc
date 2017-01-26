@@ -3,7 +3,7 @@
 /// @brief SnOr の実装ファイル
 /// @author Yusuke Matsunaga (松永 裕介)
 ///
-/// Copyright (C) 2005-2010, 2012-2014 Yusuke Matsunaga
+/// Copyright (C) 2016 Yusuke Matsunaga
 /// All rights reserved.
 
 
@@ -17,7 +17,7 @@ BEGIN_NAMESPACE_YM_SATPG_FSIM
 //////////////////////////////////////////////////////////////////////
 
 // @brief コンストラクタ
-SnOr::SnOr(ymuint32 id,
+SnOr::SnOr(ymuint id,
 	   const vector<SimNode*>& inputs) :
   SnGate(id, inputs)
 {
@@ -28,63 +28,40 @@ SnOr::~SnOr()
 {
 }
 
-// @brief 正常値の計算を行う．
-void
-SnOr::_calc_gval()
+// @brief ゲートタイプを返す．
+GateType
+SnOr::gate_type() const
 {
-  PackedVal val0 = mFanins[0]->gval_0();
-  PackedVal val1 = mFanins[0]->gval_1();
-  for (ymuint i = 1; i < mNfi; ++ i) {
-    val0 &= mFanins[i]->gval_0();
-    val1 |= mFanins[i]->gval_1();
-  }
-  mGval0 = val0;
-  mGval1 = val1;
+  return kGateOR;
 }
 
-// @brief 故障値の計算を行う．
-// @param[in] mask マスク
-//
-// 結果は mFval0, mFval1 に格納される．
-void
-SnOr::_calc_fval(PackedVal mask)
+// @brief 故障値の計算を行う．(3値版)
+PackedVal3
+SnOr::_calc_fval()
 {
-  PackedVal val0 = mFanins[0]->fval_0();
-  PackedVal val1 = mFanins[0]->fval_1();
-  for (ymuint i = 1; i < mNfi; ++ i) {
-    val0 &= mFanins[i]->fval_0();
-    val1 |= mFanins[i]->fval_1();
+  ymuint n = _fanin_num();
+  SimNode* inode0 = _fanin(0);
+  PackedVal3 val = inode0->fval();
+  for (ymuint i = 1; i < n; ++ i) {
+    SimNode* inode = _fanin(i);
+    val |= inode->fval();
   }
-  mFval0 &= ~mask;
-  mFval0 |= val0 & mask;
-  mFval1 &= ~mask;
-  mFval1 |= val1 & mask;
+  return val;
 }
 
-// @brief ゲートの入力から出力までの可観測性を計算する．
+// @brief ゲートの入力から出力までの可観測性を計算する．(3値版)
 PackedVal
-SnOr::calc_gobs(ymuint ipos)
+SnOr::_calc_gobs(ymuint ipos)
 {
   PackedVal obs = kPvAll1;
   for (ymuint i = 0; i < ipos; ++ i) {
-    obs &= mFanins[i]->gval_0();
+    obs &= _fanin(i)->gval().val0();
   }
-  for (ymuint i = ipos + 1; i < mNfi; ++ i) {
-    obs &= mFanins[i]->gval_0();
+  ymuint n = _fanin_num();
+  for (ymuint i = ipos + 1; i < n; ++ i) {
+    obs &= _fanin(i)->gval().val0();
   }
   return obs;
-}
-
-// @brief 内容をダンプする．
-void
-SnOr::dump(ostream& s) const
-{
-  ymuint n = mNfi;
-  s << "OR(" << mFanins[0]->id();
-  for (ymuint i = 1; i < n; ++ i) {
-    s << ", " << mFanins[i]->id();
-  }
-  s << ")" << endl;
 }
 
 
@@ -93,7 +70,7 @@ SnOr::dump(ostream& s) const
 //////////////////////////////////////////////////////////////////////
 
 // @brief コンストラクタ
-SnOr2::SnOr2(ymuint32 id,
+SnOr2::SnOr2(ymuint id,
 	     const vector<SimNode*>& inputs) :
   SnGate2(id, inputs)
 {
@@ -104,41 +81,31 @@ SnOr2::~SnOr2()
 {
 }
 
-// @brief 正常値の計算を行う．
-void
-SnOr2::_calc_gval()
+// @brief ゲートタイプを返す．
+GateType
+SnOr2::gate_type() const
 {
-  mGval0 = mFanins[0]->gval_0() & mFanins[1]->gval_0();
-  mGval1 = mFanins[0]->gval_1() | mFanins[1]->gval_1();
+  return kGateOR;
 }
 
-// @brief 故障値の計算を行う．
-// @param[in] mask マスク
-//
-// 結果は mFval0, mFval1 に格納される．
-void
-SnOr2::_calc_fval(PackedVal mask)
+// @brief 故障値の計算を行う．(3値版)
+PackedVal3
+SnOr2::_calc_fval()
 {
-  mFval0 &= ~mask;
-  mFval0 |= (mFanins[0]->fval_0() & mFanins[1]->fval_0()) & mask;
-  mFval1 &= ~mask;
-  mFval1 |= (mFanins[0]->fval_1() | mFanins[1]->fval_1()) & mask;
+  SimNode* inode0 = _fanin(0);
+  SimNode* inode1 = _fanin(1);
+  PackedVal3 val0 = inode0->fval();
+  PackedVal3 val1 = inode1->fval();
+  PackedVal3 val = val0 | val1;
+  return val;
 }
 
-// @brief ゲートの入力から出力までの可観測性を計算する．
+// @brief ゲートの入力から出力までの可観測性を計算する．(3値版)
 PackedVal
-SnOr2::calc_gobs(ymuint ipos)
+SnOr2::_calc_gobs(ymuint ipos)
 {
-  return mFanins[ipos ^ 1]->gval_0();
-}
-
-// @brief 内容をダンプする．
-void
-SnOr2::dump(ostream& s) const
-{
-  s << "OR2(" << mFanins[0]->id();
-  s << ", " << mFanins[1]->id();
-  s << ")" << endl;
+  ymuint alt_pos = ipos ^ 1;
+  return _fanin(alt_pos)->gval().val0();
 }
 
 
@@ -147,7 +114,7 @@ SnOr2::dump(ostream& s) const
 //////////////////////////////////////////////////////////////////////
 
 // @brief コンストラクタ
-SnOr3::SnOr3(ymuint32 id,
+SnOr3::SnOr3(ymuint id,
 	     const vector<SimNode*>& inputs) :
   SnGate3(id, inputs)
 {
@@ -158,65 +125,38 @@ SnOr3::~SnOr3()
 {
 }
 
-// @brief 正常値の計算を行う．
-void
-SnOr3::_calc_gval()
+// @brief ゲートタイプを返す．
+GateType
+SnOr3::gate_type() const
 {
-  mGval0 = mFanins[0]->gval_0() & mFanins[1]->gval_0() & mFanins[2]->gval_0();
-  mGval1 = mFanins[0]->gval_1() | mFanins[1]->gval_1() | mFanins[2]->gval_1();
+  return kGateOR;
 }
 
-// @brief 故障値の計算を行う．
-// @param[in] mask マスク
-// @note 結果は mFval0, mFval1 に格納される．
-void
-SnOr3::_calc_fval(PackedVal mask)
+// @brief 故障値の計算を行う．(3値版)
+PackedVal3
+SnOr3::_calc_fval()
 {
-  mFval0 &= ~mask;
-  mFval0 |= (mFanins[0]->fval_0() & mFanins[1]->fval_0() & mFanins[2]->fval_0()) & mask;
-  mFval1 &= ~mask;
-  mFval1 |= (mFanins[0]->fval_1() | mFanins[1]->fval_1() | mFanins[2]->fval_1()) & mask;
+  SimNode* inode0 = _fanin(0);
+  SimNode* inode1 = _fanin(1);
+  SimNode* inode2 = _fanin(2);
+  PackedVal3 val0 = inode0->fval();
+  PackedVal3 val1 = inode1->fval();
+  PackedVal3 val2 = inode2->fval();
+  PackedVal3 val = val0 | val1 | val2;
+  return val;
 }
 
-// @brief ゲートの入力から出力までの可観測性を計算する．
+// @brief ゲートの入力から出力までの可観測性を計算する．(3値版)
 PackedVal
-SnOr3::calc_gobs(ymuint ipos)
+SnOr3::_calc_gobs(ymuint ipos)
 {
-  ymuint idx1 = 0;
-  ymuint idx2 = 0;
   switch ( ipos ) {
-  case 0:
-    idx1 = 1;
-    idx2 = 2;
-    break;
-
-  case 1:
-    idx1 = 0;
-    idx2 = 2;
-    break;
-
-  case 2:
-    idx1 = 0;
-    idx2 = 1;
-    break;
-
-  default:
-    ASSERT_NOT_REACHED;
-    break;
+  case 0: return _fanin(1)->gval().val0() & _fanin(2)->gval().val0();
+  case 1: return _fanin(0)->gval().val0() & _fanin(2)->gval().val0();
+  case 2: return _fanin(0)->gval().val0() & _fanin(1)->gval().val0();
+  default: ASSERT_NOT_REACHED; break;
   }
-  PackedVal pat0 = mFanins[idx1]->gval_0();
-  PackedVal pat1 = mFanins[idx2]->gval_0();
-  return pat0 & pat1;
-}
-
-// @brief 内容をダンプする．
-void
-SnOr3::dump(ostream& s) const
-{
-  s << "OR3(" << mFanins[0]->id();
-  s << ", " << mFanins[1]->id();
-  s << ", " << mFanins[2]->id();
-  s << ")" << endl;
+  return kPvAll0;
 }
 
 
@@ -225,7 +165,7 @@ SnOr3::dump(ostream& s) const
 //////////////////////////////////////////////////////////////////////
 
 // @brief コンストラクタ
-SnOr4::SnOr4(ymuint32 id,
+SnOr4::SnOr4(ymuint id,
 	     const vector<SimNode*>& inputs) :
   SnGate4(id, inputs)
 {
@@ -236,77 +176,41 @@ SnOr4::~SnOr4()
 {
 }
 
-// @brief 正常値の計算を行う．
-void
-SnOr4::_calc_gval()
+// @brief ゲートタイプを返す．
+GateType
+SnOr4::gate_type() const
 {
-  mGval0 = mFanins[0]->gval_0() & mFanins[1]->gval_0() & mFanins[2]->gval_0() & mFanins[3]->gval_0();
-  mGval1 = mFanins[0]->gval_1() | mFanins[1]->gval_1() | mFanins[2]->gval_1() | mFanins[3]->gval_1();
+  return kGateOR;
 }
 
-// @brief 故障値の計算を行う．
-// @param[in] mask マスク
-// @note 結果は mFval0, mFval1 に格納される．
-void
-SnOr4::_calc_fval(PackedVal mask)
+// @brief 故障値の計算を行う．(3値版)
+PackedVal3
+SnOr4::_calc_fval()
 {
-  mFval0 &= ~mask;
-  mFval0 |= (mFanins[0]->fval_0() & mFanins[1]->fval_0() & mFanins[2]->fval_0() & mFanins[3]->fval_0()) & mask;
-  mFval1 &= ~mask;
-  mFval1 |= (mFanins[0]->fval_1() | mFanins[1]->fval_1() | mFanins[2]->fval_1() | mFanins[3]->fval_1()) & mask;
+  SimNode* inode0 = _fanin(0);
+  SimNode* inode1 = _fanin(1);
+  SimNode* inode2 = _fanin(2);
+  SimNode* inode3 = _fanin(3);
+  PackedVal3 val0 = inode0->fval();
+  PackedVal3 val1 = inode1->fval();
+  PackedVal3 val2 = inode2->fval();
+  PackedVal3 val3 = inode3->fval();
+  PackedVal3 val = val0 | val1 | val2 | val3;
+  return val;
 }
 
-// @brief ゲートの入力から出力までの可観測性を計算する．
+// @brief ゲートの入力から出力までの可観測性を計算する．(3値版)
 PackedVal
-SnOr4::calc_gobs(ymuint ipos)
+SnOr4::_calc_gobs(ymuint ipos)
 {
-  ymuint idx1 = 0;
-  ymuint idx2 = 0;
-  ymuint idx3 = 0;
   switch ( ipos ) {
-  case 0:
-    idx1 = 1;
-    idx2 = 2;
-    idx3 = 3;
-    break;
-
-  case 1:
-    idx1 = 0;
-    idx2 = 2;
-    idx3 = 3;
-    break;
-
-  case 2:
-    idx1 = 0;
-    idx2 = 1;
-    idx3 = 3;
-    break;
-
-  case 3:
-    idx1 = 0;
-    idx2 = 1;
-    idx3 = 2;
-    break;
-
-  default:
-    ASSERT_NOT_REACHED;
-    break;
+  case 0: return _fanin(1)->gval().val0() & _fanin(2)->gval().val0() & _fanin(3)->gval().val0();
+  case 1: return _fanin(0)->gval().val0() & _fanin(2)->gval().val0() & _fanin(3)->gval().val0();
+  case 2: return _fanin(0)->gval().val0() & _fanin(1)->gval().val0() & _fanin(3)->gval().val0();
+  case 3: return _fanin(0)->gval().val0() & _fanin(1)->gval().val0() & _fanin(2)->gval().val0();
+  default: ASSERT_NOT_REACHED; break;
   }
-  PackedVal pat0 = mFanins[idx1]->gval_0();
-  PackedVal pat1 = mFanins[idx2]->gval_0();
-  PackedVal pat2 = mFanins[idx3]->gval_0();
-  return pat0 & pat1 & pat2;
-}
-
-// @brief 内容をダンプする．
-void
-SnOr4::dump(ostream& s) const
-{
-  s << "OR4(" << mFanins[0]->id();
-  s << ", " << mFanins[1]->id();
-  s << ", " << mFanins[2]->id();
-  s << ", " << mFanins[3]->id();
-  s << ")" << endl;
+  return kPvAll0;
 }
 
 
@@ -315,7 +219,7 @@ SnOr4::dump(ostream& s) const
 //////////////////////////////////////////////////////////////////////
 
 // @brief コンストラクタ
-SnNor::SnNor(ymuint32 id,
+SnNor::SnNor(ymuint id,
 	     const vector<SimNode*>& inputs) :
   SnOr(id, inputs)
 {
@@ -326,48 +230,25 @@ SnNor::~SnNor()
 {
 }
 
-// @brief 正常値の計算を行う．
-void
-SnNor::_calc_gval()
+// @brief ゲートタイプを返す．
+GateType
+SnNor::gate_type() const
 {
-  PackedVal val0 = mFanins[0]->gval_0();
-  PackedVal val1 = mFanins[0]->gval_1();
-  for (ymuint i = 1; i < mNfi; ++ i) {
-    val0 &= mFanins[i]->gval_0();
-    val1 |= mFanins[i]->gval_1();
-  }
-  mGval0 = val1;
-  mGval1 = val0;
+  return kGateNOR;
 }
 
-// @brief 故障値の計算を行う．
-// @param[in] mask マスク
-//
-// 結果は mFval0, mFval1 に格納される．
-void
-SnNor::_calc_fval(PackedVal mask)
+// @brief 故障値の計算を行う．(3値版)
+PackedVal3
+SnNor::_calc_fval()
 {
-  PackedVal val0 = mFanins[0]->fval_0();
-  PackedVal val1 = mFanins[0]->fval_1();
-  for (ymuint i = 1; i < mNfi; ++ i) {
-    val0 &= mFanins[i]->fval_0();
-    val1 |= mFanins[i]->fval_1();
+  ymuint n = _fanin_num();
+  SimNode* inode0 = _fanin(0);
+  PackedVal3 val = inode0->fval();
+  for (ymuint i = 1; i < n; ++ i) {
+    SimNode* inode = _fanin(i);
+    val |= inode->fval();
   }
-  mFval0 &= ~mask;
-  mFval0 |= val1 & mask;
-  mFval1 &= ~mask;
-  mFval1 |= val0 & mask;
-}
-
-// @brief 内容をダンプする．
-void
-SnNor::dump(ostream& s) const
-{
-  s << "NOR(" << mFanins[0]->id();
-  for (ymuint i = 1; i < mNfi; ++ i) {
-    s << ", " << mFanins[i]->id();
-  }
-  s << ")" << endl;
+  return ~val;
 }
 
 
@@ -376,7 +257,7 @@ SnNor::dump(ostream& s) const
 //////////////////////////////////////////////////////////////////////
 
 // @brief コンストラクタ
-SnNor2::SnNor2(ymuint32 id,
+SnNor2::SnNor2(ymuint id,
 	       const vector<SimNode*>& inputs) :
   SnOr2(id, inputs)
 {
@@ -387,34 +268,23 @@ SnNor2::~SnNor2()
 {
 }
 
-// @brief 正常値の計算を行う．
-void
-SnNor2::_calc_gval()
+// @brief ゲートタイプを返す．
+GateType
+SnNor2::gate_type() const
 {
-  mGval1 = mFanins[0]->gval_0() & mFanins[1]->gval_0();
-  mGval0 = mFanins[0]->gval_1() | mFanins[1]->gval_1();
+  return kGateNOR;
 }
 
-// @brief 故障値の計算を行う．
-// @param[in] mask マスク
-//
-// 結果は mFval0, mFval1 に格納される．
-void
-SnNor2::_calc_fval(PackedVal mask)
+// @brief 故障値の計算を行う．(3値版)
+PackedVal3
+SnNor2::_calc_fval()
 {
-  mFval1 &= ~mask;
-  mFval1 |= (mFanins[0]->fval_0() & mFanins[1]->fval_0()) & mask;
-  mFval0 &= ~mask;
-  mFval0 |= (mFanins[0]->fval_1() | mFanins[1]->fval_1()) & mask;
-}
-
-// @brief 内容をダンプする．
-void
-SnNor2::dump(ostream& s) const
-{
-  s << "NOR2(" << mFanins[0]->id();
-  s << ", " << mFanins[1]->id();
-  s << ")" << endl;
+  SimNode* inode0 = _fanin(0);
+  SimNode* inode1 = _fanin(1);
+  PackedVal3 val0 = inode0->fval();
+  PackedVal3 val1 = inode1->fval();
+  PackedVal3 val = val0 | val1;
+  return ~val;
 }
 
 
@@ -423,7 +293,7 @@ SnNor2::dump(ostream& s) const
 //////////////////////////////////////////////////////////////////////
 
 // @brief コンストラクタ
-SnNor3::SnNor3(ymuint32 id,
+SnNor3::SnNor3(ymuint id,
 	       const vector<SimNode*>& inputs) :
   SnOr3(id, inputs)
 {
@@ -434,35 +304,25 @@ SnNor3::~SnNor3()
 {
 }
 
-// @brief 正常値の計算を行う．
-void
-SnNor3::_calc_gval()
+// @brief ゲートタイプを返す．
+GateType
+SnNor3::gate_type() const
 {
-  mGval1 = mFanins[0]->gval_0() & mFanins[1]->gval_0() & mFanins[2]->gval_0();
-  mGval0 = mFanins[0]->gval_1() | mFanins[1]->gval_1() | mFanins[2]->gval_1();
+  return kGateNOR;
 }
 
-// @brief 故障値の計算を行う．
-// @param[in] mask マスク
-//
-// 結果は mFval0, mFval1 に格納される．
-void
-SnNor3::_calc_fval(PackedVal mask)
+// @brief 故障値の計算を行う．(3値版)
+PackedVal3
+SnNor3::_calc_fval()
 {
-  mFval1 &= ~mask;
-  mFval1 |= (mFanins[0]->fval_0() & mFanins[1]->fval_0() & mFanins[2]->fval_0()) & mask;
-  mFval0 &= ~mask;
-  mFval0 |= (mFanins[0]->fval_1() | mFanins[1]->fval_1() | mFanins[2]->fval_1()) & mask;
-}
-
-// @brief 内容をダンプする．
-void
-SnNor3::dump(ostream& s) const
-{
-  s << "NOR3(" << mFanins[0]->id();
-  s << ", " << mFanins[1]->id();
-  s << ", " << mFanins[2]->id();
-  s << ")" << endl;
+  SimNode* inode0 = _fanin(0);
+  SimNode* inode1 = _fanin(1);
+  SimNode* inode2 = _fanin(2);
+  PackedVal3 val0 = inode0->fval();
+  PackedVal3 val1 = inode1->fval();
+  PackedVal3 val2 = inode2->fval();
+  PackedVal3 val = val0 | val1 | val2;
+  return ~val;
 }
 
 
@@ -471,7 +331,7 @@ SnNor3::dump(ostream& s) const
 //////////////////////////////////////////////////////////////////////
 
 // @brief コンストラクタ
-SnNor4::SnNor4(ymuint32 id,
+SnNor4::SnNor4(ymuint id,
 	       const vector<SimNode*>& inputs) :
   SnOr4(id, inputs)
 {
@@ -482,36 +342,27 @@ SnNor4::~SnNor4()
 {
 }
 
-// @brief 正常値の計算を行う．
-void
-SnNor4::_calc_gval()
+// @brief ゲートタイプを返す．
+GateType
+SnNor4::gate_type() const
 {
-  mGval1 = mFanins[0]->gval_0() & mFanins[1]->gval_0() & mFanins[2]->gval_0() & mFanins[3]->gval_0();
-  mGval0 = mFanins[0]->gval_1() | mFanins[1]->gval_1() | mFanins[2]->gval_1() | mFanins[3]->gval_1();
+  return kGateNOR;
 }
 
-// @brief 故障値の計算を行う．
-// @param[in] mask マスク
-//
-// 結果は mFval0, mFval1 に格納される．
-void
-SnNor4::_calc_fval(PackedVal mask)
+// @brief 故障値の計算を行う．(3値版)
+PackedVal3
+SnNor4::_calc_fval()
 {
-  mFval1 &= ~mask;
-  mFval1 |= (mFanins[0]->fval_0() & mFanins[1]->fval_0() & mFanins[2]->fval_0() & mFanins[3]->fval_0()) & mask;
-  mFval0 &= ~mask;
-  mFval0 |= (mFanins[0]->fval_1() | mFanins[1]->fval_1() | mFanins[2]->fval_1() | mFanins[3]->fval_1()) & mask;
-}
-
-// @brief 内容をダンプする．
-void
-SnNor4::dump(ostream& s) const
-{
-  s << "NOR4(" << mFanins[0]->id();
-  s << ", " << mFanins[1]->id();
-  s << ", " << mFanins[2]->id();
-  s << ", " << mFanins[3]->id();
-  s << ")" << endl;
+  SimNode* inode0 = _fanin(0);
+  SimNode* inode1 = _fanin(1);
+  SimNode* inode2 = _fanin(2);
+  SimNode* inode3 = _fanin(3);
+  PackedVal3 val0 = inode0->fval();
+  PackedVal3 val1 = inode1->fval();
+  PackedVal3 val2 = inode2->fval();
+  PackedVal3 val3 = inode3->fval();
+  PackedVal3 val = val0 | val1 | val2 | val3;
+  return ~val;
 }
 
 END_NAMESPACE_YM_SATPG_FSIM

@@ -5,7 +5,7 @@
 /// @brief SnXor のヘッダファイル
 /// @author Yusuke Matsunaga (松永 裕介)
 ///
-/// Copyright (C) 2016 Yusuke Matsunaga
+/// Copyright (C) 2005-2010, 2012-2014 Yusuke Matsunaga
 /// All rights reserved.
 
 
@@ -24,7 +24,7 @@ class SnXor :
 public:
 
   /// @brief コンストラクタ
-  SnXor(ymuint id,
+  SnXor(ymuint32 id,
 	const vector<SimNode*>& inputs);
 
   /// @brief デストラクタ
@@ -34,26 +34,30 @@ public:
 
 public:
 
-  /// @brief ゲートタイプを返す．
+  /// @brief 正常値の計算を行う．
+  ///
+  /// 結果は mGval0, mGval1 に格納される．
   virtual
-  GateType
-  gate_type() const;
+  void
+  _calc_gval();
 
-
-public:
-  //////////////////////////////////////////////////////////////////////
-  // 3値版の故障シミュレーション用の仮想関数
-  //////////////////////////////////////////////////////////////////////
-
-  /// @brief 故障値の計算を行う．(3値版)
+  /// @brief 故障値の計算を行う．
+  /// @param[in] mask マスク
+  ///
+  /// 結果は mFval0, mFval1 に格納される．
   virtual
-  PackedVal3
-  _calc_fval();
+  void
+  _calc_fval(PackedVal mask);
 
-  /// @brief ゲートの入力から出力までの可観測性を計算する．(3値版)
+  /// @brief ゲートの入力から出力までの可観測性を計算する．
   virtual
   PackedVal
-  _calc_gobs(ymuint ipos);
+  calc_gobs(ymuint ipos);
+
+  /// @brief 内容をダンプする．
+  virtual
+  void
+  dump(ostream& s) const;
 
 };
 
@@ -68,7 +72,7 @@ class SnXor2 :
 public:
 
   /// @brief コンストラクタ
-  SnXor2(ymuint id,
+  SnXor2(ymuint32 id,
 	 const vector<SimNode*>& inputs);
 
   /// @brief デストラクタ
@@ -78,26 +82,30 @@ public:
 
 public:
 
-  /// @brief ゲートタイプを返す．
+  /// @brief 正常値の計算を行う．
+  ///
+  /// 結果は mGval0, mGval1 に格納される．
   virtual
-  GateType
-  gate_type() const;
+  void
+  _calc_gval();
 
-
-public:
-  //////////////////////////////////////////////////////////////////////
-  // 3値版の故障シミュレーション用の仮想関数
-  //////////////////////////////////////////////////////////////////////
-
-  /// @brief 故障値の計算を行う．(3値版)
+  /// @brief 故障値の計算を行う．
+  /// @param[in] mask マスク
+  ///
+  /// 結果は mFval0, mFval1 に格納される．
   virtual
-  PackedVal3
-  _calc_fval();
+  void
+  _calc_fval(PackedVal mask);
 
-  /// @brief ゲートの入力から出力までの可観測性を計算する．(3値版)
+  /// @brief ゲートの入力から出力までの可観測性を計算する．
   virtual
   PackedVal
-  _calc_gobs(ymuint ipos);
+  calc_gobs(ymuint ipos);
+
+  /// @brief 内容をダンプする．
+  virtual
+  void
+  dump(ostream& s) const;
 
 };
 
@@ -112,7 +120,7 @@ class SnXnor :
 public:
 
   /// @brief コンストラクタ
-  SnXnor(ymuint id,
+  SnXnor(ymuint32 id,
 	 const vector<SimNode*>& inputs);
 
   /// @brief デストラクタ
@@ -122,21 +130,25 @@ public:
 
 public:
 
-  /// @brief ゲートタイプを返す．
+  /// @brief 正常値の計算を行う．
+  ///
+  /// 結果は mGval0, mGval1 に格納される．
   virtual
-  GateType
-  gate_type() const;
+  void
+  _calc_gval();
 
-
-public:
-  //////////////////////////////////////////////////////////////////////
-  // 3値版の故障シミュレーション用の仮想関数
-  //////////////////////////////////////////////////////////////////////
-
-  /// @brief 故障値の計算を行う．(3値版)
+  /// @brief 故障値の計算を行う．
+  /// @param[in] mask マスク
+  ///
+  /// 結果は mFval0, mFval1 に格納される．
   virtual
-  PackedVal3
-  _calc_fval();
+  void
+  _calc_fval(PackedVal mask);
+
+  /// @brief 内容をダンプする．
+  virtual
+  void
+  dump(ostream& s) const;
 
 };
 
@@ -151,7 +163,7 @@ class SnXnor2 :
 public:
 
   /// @brief コンストラクタ
-  SnXnor2(ymuint id,
+  SnXnor2(ymuint32 id,
 	  const vector<SimNode*>& inputs);
 
   /// @brief デストラクタ
@@ -161,21 +173,25 @@ public:
 
 public:
 
-  /// @brief ゲートタイプを返す．
+  /// @brief 正常値の計算を行う．
+  ///
+  /// 結果は mGval0, mGval1 に格納される．
   virtual
-  GateType
-  gate_type() const;
+  void
+  _calc_gval();
 
-
-public:
-  //////////////////////////////////////////////////////////////////////
-  // 3値版の故障シミュレーション用の仮想関数
-  //////////////////////////////////////////////////////////////////////
-
-  /// @brief 故障値の計算を行う．(3値版)
+  /// @brief 故障値の計算を行う．
+  /// @param[in] mask マスク
+  ///
+  /// 結果は mFval0, mFval1 に格納される．
   virtual
-  PackedVal3
-  _calc_fval();
+  void
+  _calc_fval(PackedVal mask);
+
+  /// @brief 内容をダンプする．
+  virtual
+  void
+  dump(ostream& s) const;
 
 };
 

@@ -6,14 +6,14 @@
 ///
 /// @author Yusuke Matsunaga (松永 裕介)
 ///
-/// Copyright (C) 2005-2010, 2012-2014, 2016, 2017 Yusuke Matsunaga
+/// Copyright (C) 2017 Yusuke Matsunaga
 /// All rights reserved.
 
 
 #include "sa/Fsim.h"
 
 #include "fsim3_nsdef.h"
-#include "PackedVal.h"
+#include "PackedVal3.h"
 #include "EventQ.h"
 #include "SimFault.h"
 #include "TpgNode.h"
@@ -27,7 +27,6 @@ class SimNode;
 //////////////////////////////////////////////////////////////////////
 /// @class Fsim3 Fsim3.h "Fsim3.h"
 /// @brief 故障シミュレーションを行うモジュール
-/// @sa ModBase
 //////////////////////////////////////////////////////////////////////
 class Fsim3 :
   public Fsim
@@ -44,11 +43,13 @@ public:
 
 public:
   //////////////////////////////////////////////////////////////////////
-  // Fsim の仮想関数
-  /////////////////////////////////////////////////////////////////////
+  // 外部インターフェイス
+  //////////////////////////////////////////////////////////////////////
 
   /// @brief ネットワークをセットする．
   /// @param[in] network ネットワーク
+  ///
+  /// 全ての故障のスキップマークはクリアされる．
   virtual
   void
   set_network(const TpgNetwork& network);
@@ -74,6 +75,12 @@ public:
   virtual
   void
   clear_skip(const TpgFault* f);
+
+
+public:
+  //////////////////////////////////////////////////////////////////////
+  // 2値の故障シミュレーションを行う関数
+  //////////////////////////////////////////////////////////////////////
 
   /// @brief SPSFP故障シミュレーションを行う．
   /// @param[in] tv テストベクタ
@@ -161,8 +168,22 @@ public:
 
 private:
   //////////////////////////////////////////////////////////////////////
-  // 内部で用いられる下請け関数
+  // 内部で用いられる2値用の下請け関数
   //////////////////////////////////////////////////////////////////////
+
+  /// @brief 一つのパタンを全ビットに展開して設定する．
+  /// @param[in] tv 設定するテストベクタ
+  void
+  _set_sp(const TestVector* tv);
+
+  /// @brief 一つのパタンを全ビットに展開して設定する．
+  /// @param[in] assign_list 設定する値の割り当てリスト
+  void
+  _set_sp(const NodeValList& assign_list);
+
+  /// @brief 複数のパタンを設定する．
+  void
+  _set_pp();
 
   /// @brief SPSFP故障シミュレーションの本体
   /// @param[in] f 対象の故障
@@ -176,65 +197,34 @@ private:
   ymuint
   _sppfp();
 
-  /// @brief FFR 内の故障シミュレーションを行う．
-  /// @param[in] ffr 対象のFFR
-  ///
-  /// ffr 内の対象故障に対して故障が伝搬するかを調べる．
-  /// 結果は各故障の mObsMask に設定される．
-  /// また，すべての mObsMask の bitwise-OR を返す．
-  ///
-  /// 故障は SimFFR::fault_list() に格納されているが，
-  /// スキップフラグが立った故障はリストから取り除かれる．
-  PackedVal
-  ffr_simulate(SimFFR* ffr);
-
   /// @brief 正常値の計算を行う．
   ///
-  /// 値の変わったノードは mGvalClearArray に積まれる．
+  /// 入力ノードに gval の設定は済んでいるものとする．
   void
-  calc_gval();
+  _calc_gval();
 
-  /// @brief 正常値が更新されたときの処理を行なう．
+  /// @brief 故障をスキャンして結果をセットする(sppfp用)
+  /// @param[in] fault_list 故障のリスト
   void
-  update_gval(SimNode* node);
+  _fault_sweep(const vector<SimFault*>& fault_list);
 
-  /// @brief 正常値をクリアする．
-  ///
-  /// mGvalClearArray を使う．
+  /// @brief 故障をスキャンして結果をセットする(ppsfp用)
+  /// @param[in] fault_list 故障のリスト
+  /// @param[in] pat 検出パタン
   void
-  clear_gval();
-
-  /// @brief 故障値の計算を行う．
-  ///
-  /// この関数を抜けた時点で故障値はクリアされている．
-  PackedVal
-  calc_fval();
-
-  /// @brief 故障値が更新されたときの処理を行なう．
-  void
-  update_fval(SimNode* node);
-
-  /// @brief ffr 内の故障が検出可能か調べる．
-  /// @param[in] ffr 対象の FFR
-  /// @param[out] fault_list 検出された故障のリスト
-  ///
-  /// ここでは各FFR の fault_list() は変化しない．
-  void
-  _fault_sweep(const SimFFR& ffr);
+  _fault_sweep(const vector<SimFault*>& fault_list,
+	       PackedVal pat);
 
 
 private:
   //////////////////////////////////////////////////////////////////////
-  // SimNode/SimFault 関係の設定関数
+  // SimNode / SimFault の設定に関する関数
   //////////////////////////////////////////////////////////////////////
 
   /// @brief 現在保持している SimNode のネットワークを破棄する．
+  /// 内部で clear_faults() を呼ぶ．
   void
   clear();
-
-  /// @brief node に対応する SimNode を得る．
-  SimNode*
-  find_simnode(const TpgNode* node) const;
 
   /// @brief 外部入力ノードを作る．
   SimNode*
@@ -242,7 +232,7 @@ private:
 
   /// @brief logic ノードを作る．
   SimNode*
-  make_node(GateType type,
+  make_gate(GateType type,
 	    const vector<SimNode*>& inputs);
 
 
@@ -266,21 +256,13 @@ private:
   // データメンバ
   //////////////////////////////////////////////////////////////////////
 
-  // 対象のネットワーク
-  const TpgNetwork* mNetwork;
-
-  // TpgNode の id をキーにして SimNode を入れる配列
-  vector<SimNode*> mSimMap;
-
   // 全ての SimNode を納めた配列
   vector<SimNode*> mNodeArray;
 
   // 外部入力に対応する SimNode を納めた配列
-  // サイズは mNetwork->pseudo_input_num()
   vector<SimNode*> mInputArray;
 
   // 外部出力に対応する SimNode を納めた配列
-  // サイズは mNetwork->pseudo_output_num()
   vector<SimNode*> mOutputArray;
 
   // 入力からのトポロジカル順に並べた logic ノードの配列
@@ -288,6 +270,9 @@ private:
 
   // FFR を納めた配列
   vector<SimFFR> mFFRArray;
+
+  // SimNode->id() をキーにして所属する FFR を納めた配列
+  vector<SimFFR*> mFFRMap;
 
   // パタンの設定状況を表すビットベクタ
   PackedVal mPatMap;
@@ -298,16 +283,10 @@ private:
   // イベントキュー
   EventQ mEventQ;
 
-  // 正常値を消去する必要のあるノードを入れておく配列
-  vector<SimNode*> mGvalClearArray;
-
-  // 故障値を消去する必要のあるノードを入れておく配列
-  vector<SimNode*> mFvalClearArray;
-
   // 故障シミュレーション用の故障の配列
   vector<SimFault> mSimFaults;
 
-  // TpgFault::id() をキーにして SimFault を格納する配列
+  // TpgFault::id() をキーとして SimFault を格納する配列
   vector<SimFault*> mFaultArray;
 
   // 検出された故障を格納する配列
@@ -319,34 +298,6 @@ private:
 
 };
 
-
-//////////////////////////////////////////////////////////////////////
-// インライン関数の定義
-//////////////////////////////////////////////////////////////////////
-
-// @brief 正常値が更新されたときの処理を行なう．
-inline
-void
-Fsim3::update_gval(SimNode* node)
-{
-  mGvalClearArray.push_back(node);
-  ymuint no = node->nfo();
-  for (ymuint i = 0; i < no; ++ i) {
-    mEventQ.put(node->fanout(i));
-  }
-}
-
-// @brief 故障値が更新されたときの処理を行なう．
-void
-Fsim3::update_fval(SimNode* node)
-{
-  mFvalClearArray.push_back(node);
-  ymuint no = node->nfo();
-  for (ymuint i = 0; i < no; ++ i) {
-    mEventQ.put(node->fanout(i));
-  }
-}
-
 END_NAMESPACE_YM_SATPG_FSIM
 
-#endif // FSIM3_H
+#endif // FSIM_H

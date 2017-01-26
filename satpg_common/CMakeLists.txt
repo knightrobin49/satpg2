@@ -57,7 +57,6 @@ set (sa_SOURCES
   sa/dop/DopList.cc
   sa/dop/DopTvList.cc
   sa/dop/DopVerify.cc
-#  sa/dop/FopDrop.cc
 
   sa/dtpg/DtpgSat.cc
   sa/dtpg/DtpgSatS.cc
@@ -78,21 +77,11 @@ set (sa_SOURCES
   sa/fsim2/SnOr.cc
   sa/fsim2/SnXor.cc
 
-  sa/fsim2_new/EventQ.cc
-  sa/fsim2_new/Fsim2.cc
-  sa/fsim2_new/SimNode.cc
-  sa/fsim2_new/SimPrim.cc
-  sa/fsim2_new/SpAnd.cc
-  sa/fsim2_new/SpBuff.cc
-  sa/fsim2_new/SpGate.cc
-  sa/fsim2_new/SpInput.cc
-  sa/fsim2_new/SpOr.cc
-  sa/fsim2_new/SpXor.cc
-
   sa/fsim3/EventQ.cc
   sa/fsim3/Fsim3.cc
   sa/fsim3/SimNode.cc
   sa/fsim3/SnAnd.cc
+  sa/fsim3/SnBuff.cc
   sa/fsim3/SnGate.cc
   sa/fsim3/SnInput.cc
   sa/fsim3/SnOr.cc

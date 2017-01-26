@@ -5,16 +5,16 @@
 /// @brief SimFFR のヘッダファイル
 /// @author Yusuke Matsunaga (松永 裕介)
 ///
-/// Copyright (C) 2005-2010, 2012-2014 Yusuke Matsunaga
+/// Copyright (C) 2016 Yusuke Matsunaga
 /// All rights reserved.
 
 
 #include "fsim3_nsdef.h"
+#include "SimNode.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG_FSIM
 
-class SimNode;
 class SimFault;
 
 //////////////////////////////////////////////////////////////////////
@@ -33,28 +33,28 @@ public:
 
 
 public:
-  //////////////////////////////////////////////////////////////////////
-  // 外部インターフェイス
-  //////////////////////////////////////////////////////////////////////
 
   /// @brief 根のノードをセットする．
   void
   set_root(SimNode* root);
 
-  /// @brief この FFR に属する故障のリストをクリアする．
-  void
-  clear_fault_list();
-
-  /// @brief この FFR に属する故障のリストに追加する．
-  /// @param[in] f 追加する故障
-  void
-  add_fault(SimFault* f);
-
   /// @brief 根のノードを得る．
   SimNode*
   root() const;
 
-  /// @brief この FFR に属する故障のリストを返す．
+  /// @brief このFFRの故障リストをクリアする．
+  void
+  clear_fault_list();
+
+  /// @brief このFFRの故障リストに故障を追加する．
+  void
+  add_fault(SimFault* f);
+
+  /// @brief FFR内の故障シミュレーションを行う．
+  PackedVal
+  fault_prop() const;
+
+  /// @brief このFFRに属する故障リストを得る．
   const vector<SimFault*>&
   fault_list() const;
 
@@ -97,23 +97,6 @@ SimFFR::set_root(SimNode* root)
   mRoot = root;
 }
 
-// @brief この FFR に属する故障のリストをクリアする．
-inline
-void
-SimFFR::clear_fault_list()
-{
-  mFaultList.clear();
-}
-
-// @brief この FFR に属する故障のリストに追加する．
-// @param[in] f 追加する故障
-inline
-void
-SimFFR::add_fault(SimFault* f)
-{
-  mFaultList.push_back(f);
-}
-
 // @brief 根のノードを得る．
 inline
 SimNode*
@@ -122,7 +105,70 @@ SimFFR::root() const
   return mRoot;
 }
 
-// @brief この FFR に属する故障のリストを返す．
+// @brief このFFRの故障リストをクリアする．
+inline
+void
+SimFFR::clear_fault_list()
+{
+  mFaultList.clear();
+}
+
+// @brief このFFRの故障リストに故障を追加する．
+inline
+void
+SimFFR::add_fault(SimFault* f)
+{
+  mFaultList.push_back(f);
+}
+
+// @brief FFR内の故障シミュレーションを行う．
+inline
+PackedVal
+SimFFR::fault_prop() const
+{
+  PackedVal ffr_req = kPvAll0;
+  for (vector<SimFault*>::const_iterator p = mFaultList.begin();
+       p != mFaultList.end(); ++ p) {
+    SimFault* ff = *p;
+    if ( ff->mSkip ) {
+      continue;
+    }
+
+    // ff の故障伝搬を行う．
+    PackedVal lobs = kPvAll1;
+    SimNode* simnode = ff->mNode;
+    for (SimNode* node = simnode; !node->is_ffr_root(); ) {
+      SimNode* onode = node->fanout_top();
+      ymuint pos = node->fanout_ipos();
+      lobs &= onode->_calc_gobs(pos);
+      node = onode;
+    }
+
+    SimNode* isimnode = ff->mInode;
+    const TpgFault* f = ff->mOrigF;
+    if ( f->is_branch_fault() ) {
+      // 入力の故障
+      ymuint ipos = ff->mIpos;
+      lobs &= simnode->_calc_gobs(ipos);
+    }
+
+    PackedVal valdiff;
+    if ( f->val() == 1 ) {
+      valdiff = isimnode->gval().val0();
+    }
+    else {
+      valdiff = isimnode->gval().val1();
+    }
+    lobs &= valdiff;
+
+    ff->mObsMask = lobs;
+    ffr_req |= lobs;
+  }
+
+  return ffr_req;
+}
+
+// @brief このFFRに属する故障リストを得る．
 inline
 const vector<SimFault*>&
 SimFFR::fault_list() const

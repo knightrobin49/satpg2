@@ -299,8 +299,8 @@ bool
 Fsim2::spsfp(const TestVector* tv,
 	     const TpgFault* f)
 {
-  _set_sp2(tv);
-  return _spsfp2(f);
+  _set_sp(tv);
+  return _spsfp(f);
 }
 
 // @brief SPSFP故障シミュレーションを行う．
@@ -312,8 +312,8 @@ bool
 Fsim2::spsfp(const NodeValList& assign_list,
 	     const TpgFault* f)
 {
-  _set_sp2(assign_list);
-  return _spsfp2(f);
+  _set_sp(assign_list);
+  return _spsfp(f);
 }
 
 // @brief ひとつのパタンで故障シミュレーションを行う．
@@ -324,8 +324,8 @@ Fsim2::spsfp(const NodeValList& assign_list,
 ymuint
 Fsim2::sppfp(const TestVector* tv)
 {
-  _set_sp2(tv);
-  return _sppfp2();
+  _set_sp(tv);
+  return _sppfp();
 }
 
 // @brief ひとつのパタンで故障シミュレーションを行う．
@@ -336,8 +336,8 @@ Fsim2::sppfp(const TestVector* tv)
 ymuint
 Fsim2::sppfp(const NodeValList& assign_list)
 {
-  _set_sp2(assign_list);
-  return _sppfp2();
+  _set_sp(assign_list);
+  return _sppfp();
 }
 
 // @brief ppsfp 用のパタンバッファをクリアする．
@@ -388,10 +388,10 @@ Fsim2::ppsfp()
     return 0;
   }
 
-  _set_pp2();
+  _set_pp();
 
   // 正常値の計算を行う．
-  _calc_gval2();
+  _calc_gval();
 
   // FFR ごとに処理を行う．
   for (vector<SimFFR>::iterator p = mFFRArray.begin();
@@ -400,7 +400,7 @@ Fsim2::ppsfp()
     // FFR 内の故障伝搬を行う．
     // 結果は SimFault::mObsMask に保存される．
     // FFR 内の全ての obs マスクを ffr_req に入れる．
-    PackedVal ffr_req = ffr.fault_prop2();
+    PackedVal ffr_req = ffr.fault_prop();
 
     // ffr_req が 0 ならその後のシミュレーションを行う必要はない．
     if ( ffr_req == kPvAll0 ) {
@@ -453,26 +453,26 @@ Fsim2::det_fault_pat(ymuint pos)
 // @brief 一つのパタンを全ビットに展開して設定する．
 // @param[in] tv 設定するテストベクタ
 void
-Fsim2::_set_sp2(const TestVector* tv)
+Fsim2::_set_sp(const TestVector* tv)
 {
   ymuint npi = mInputArray.size();
   for (ymuint i = 0; i < npi; ++ i) {
     SimNode* simnode = mInputArray[i];
     PackedVal val = (tv->val3(i) == kVal1) ? kPvAll1 : kPvAll0;
-    simnode->set_gval2(val);
+    simnode->set_gval(val);
   }
 }
 
 // @brief 一つのパタンを全ビットに展開して設定する．
 // @param[in] assign_list 設定する値の割り当てリスト
 void
-Fsim2::_set_sp2(const NodeValList& assign_list)
+Fsim2::_set_sp(const NodeValList& assign_list)
 {
   // デフォルトで 0 にする．
   ymuint npi = mInputArray.size();
   for (ymuint i = 0; i < npi; ++ i) {
     SimNode* simnode = mInputArray[i];
-    simnode->set_gval2(kPvAll0);
+    simnode->set_gval(kPvAll0);
   }
 
   ymuint n = assign_list.size();
@@ -480,14 +480,14 @@ Fsim2::_set_sp2(const NodeValList& assign_list)
     NodeVal nv = assign_list[i];
     if ( nv.val() ) {
       SimNode* simnode = mInputArray[nv.node()->input_id()];
-      simnode->set_gval2(kPvAll1);
+      simnode->set_gval(kPvAll1);
     }
   }
 }
 
 // @brief 複数のパタンを設定する．
 void
-Fsim2::_set_pp2()
+Fsim2::_set_pp()
 {
   // 設定されていないビットはどこか他の設定されているビットをコピーする．
   // 設定されている最初のビット位置を求める．
@@ -510,19 +510,19 @@ Fsim2::_set_pp2()
       }
     }
     SimNode* simnode = mInputArray[i];
-    simnode->set_gval2(val);
+    simnode->set_gval(val);
   }
 }
 
 // @brief SPPFP故障シミュレーションの本体
 // @return 検出された故障数を返す．
 ymuint
-Fsim2::_sppfp2()
+Fsim2::_sppfp()
 {
   mDetNum = 0;
 
   // 正常値の計算を行う．
-  _calc_gval2();
+  _calc_gval();
 
   ymuint bitpos = 0;
   SimFFR* ffr_buff[kPvBitLen];
@@ -533,7 +533,7 @@ Fsim2::_sppfp2()
     // FFR 内の故障伝搬を行う．
     // 結果は SimFault.mObsMask に保存される．
     // FFR 内の全ての obs マスクを ffr_req に入れる．
-    PackedVal ffr_req = ffr->fault_prop2();
+    PackedVal ffr_req = ffr->fault_prop();
 
     // ffr_req が 0 ならその後のシミュレーションを行う必要はない．
     if ( ffr_req == kPvAll0 ) {
@@ -580,10 +580,10 @@ Fsim2::_sppfp2()
 // @retval true 故障の検出が行えた．
 // @retval false 故障の検出が行えなかった．
 bool
-Fsim2::_spsfp2(const TpgFault* f)
+Fsim2::_spsfp(const TpgFault* f)
 {
   // 正常値の計算を行う．
-  _calc_gval2();
+  _calc_gval();
 
   // FFR 内の故障伝搬を行う．
   SimFault* ff = mFaultArray[f->id()];
@@ -594,7 +594,7 @@ Fsim2::_spsfp2(const TpgFault* f)
   for (SimNode* node = simnode; !node->is_ffr_root(); ) {
     SimNode* onode = node->fanout_top();
     ymuint pos = node->fanout_ipos();
-    lobs &= onode->_calc_gobs2(pos);
+    lobs &= onode->_calc_gobs(pos);
     node = onode;
   }
 
@@ -602,7 +602,7 @@ Fsim2::_spsfp2(const TpgFault* f)
   if ( f->is_branch_fault() ) {
     // 入力の故障
     ymuint ipos = ff->mIpos;
-    lobs &= simnode->_calc_gobs2(ipos);
+    lobs &= simnode->_calc_gobs(ipos);
   }
   if ( f->val() == 1 ) {
     valdiff = ~valdiff;
@@ -633,12 +633,12 @@ Fsim2::_spsfp2(const TpgFault* f)
 //
 // 入力ノードに gval の設定は済んでいるものとする．
 void
-Fsim2::_calc_gval2()
+Fsim2::_calc_gval()
 {
   for (vector<SimNode*>::iterator q = mLogicArray.begin();
        q != mLogicArray.end(); ++ q) {
     SimNode* node = *q;
-    node->calc_gval2();
+    node->calc_gval();
   }
 }
 

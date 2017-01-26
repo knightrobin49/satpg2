@@ -1,35 +1,38 @@
-﻿#ifndef SIMNODE_H
-#define SIMNODE_H
+﻿#ifndef FSIM_SIMNODE_H
+#define FSIM_SIMNODE_H
 
 /// @file SimNode.h
 /// @brief SimNode のヘッダファイル
 /// @author Yusuke Matsunaga (松永 裕介)
 ///
-/// Copyright (C) 2005-2010, 2012-2014 Yusuke Matsunaga
+/// Copyright (C) 2017 Yusuke Matsunaga
 /// All rights reserved.
 
-
 #include "fsim3_nsdef.h"
-#include "EqElem.h"
-#include "PackedVal.h"
 #include "TpgNode.h"
+#include "PackedVal.h"
+#include "PackedVal3.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG_FSIM
 
-class SimFFR;
-
 //////////////////////////////////////////////////////////////////////
 /// @class SimNode SimNode.h "SimNode.h"
 /// @brief 故障シミュレーション用のノード
+///
+/// 出力値の計算はゲートの種類によって異なるので仮想関数にしている．<br>
+/// 注意が必要なのがファンアウトの情報．最初のファンアウトだけ個別のポインタで
+/// 持ち，２番目以降のファンアウトは配列で保持する．これは多くのノードが
+/// 一つしかファンアウトを持たず，その場合に配列を使うとメモリ参照が余分に発生する
+/// ため．
 //////////////////////////////////////////////////////////////////////
-class SimNode :
-  public EqElem
+class SimNode
 {
+  friend class EventQ;
 protected:
 
   /// @brief コンストラクタ
-  SimNode(ymuint32 id);
+  SimNode(ymuint id);
 
 
 public:
@@ -40,16 +43,19 @@ public:
 
 
 public:
+  //////////////////////////////////////////////////////////////////////
+  // 生成用のクラスメソッド
+  //////////////////////////////////////////////////////////////////////
 
-  /// @brief 外部入力ノードを生成するクラスメソッド
+  /// @brief 入力ノードを生成するクラスメソッド
   static
   SimNode*
-  new_input(ymuint32 id);
+  new_input(ymuint id);
 
-  /// @brief ノードを生成するクラスメソッド
+  /// @brief 論理ノードを生成するクラスメソッド
   static
   SimNode*
-  new_node(ymuint32 id,
+  new_gate(ymuint id,
 	   GateType type,
 	   const vector<SimNode*>& inputs);
 
@@ -59,22 +65,19 @@ public:
   // 構造に関する情報の取得
   //////////////////////////////////////////////////////////////////////
 
-  /// @brief 名前を設定する．
-  void
-  set_name(const char* name);
-
-  /// @brief 名前を得る．
-  const char*
-  name() const;
-
   /// @brief ID番号を返す．
-  ymuint32
+  ymuint
   id() const;
+
+  /// @brief ゲートタイプを返す．
+  virtual
+  GateType
+  gate_type() const = 0;
 
   /// @brief ファンイン数を得る．
   virtual
   ymuint
-  nfi() const = 0;
+  fanin_num() const = 0;
 
   /// @brief pos 番めのファンインを得る．
   virtual
@@ -83,19 +86,22 @@ public:
 
   /// @brief ファンアウト数を得る．
   ymuint
-  nfo() const;
+  fanout_num() const;
+
+  /// @brief ファンアウトの先頭のノードを得る．
+  SimNode*
+  fanout_top() const;
 
   /// @brief pos 番目のファンアウトを得る．
+  /// @param[in] pos 位置番号 ( 0 <= pos < fanout_num() - 1 )
+  ///
+  /// ただし fanout_top() のノードは含まれない．
   SimNode*
   fanout(ymuint pos) const;
 
   /// @brief 最初のファンアウト先の入力位置を得る．
   ymuint
   fanout_ipos() const;
-
-  /// @brief FFR を得る．
-  SimFFR*
-  ffr() const;
 
   /// @brief FFR の根のノードの時 true を返す．
   bool
@@ -109,81 +115,10 @@ public:
   bool
   is_output() const;
 
-
-public:
-  //////////////////////////////////////////////////////////////////////
-  // 故障シミュレーションに関する情報の取得/設定
-  //////////////////////////////////////////////////////////////////////
-
-  /// @brief 正常値のセットを行う．(3値版)
-  /// @param[in] val_0, val_1 値
-  ///
-  /// 通常は外部入力に対して行われる．
-  /// 故障値も同様にセットされる．
+  /// @brief 内容をダンプする．
+  virtual
   void
-  set_gval(PackedVal val_0,
-	   PackedVal val_1);
-
-  /// @brief 正常値の 0 パタンを得る．
-  PackedVal
-  gval_0() const;
-
-  /// @brief 正常値の 1 パタンを得る．
-  PackedVal
-  gval_1() const;
-
-  /// @brief 故障値をセットする．(3値版)
-  /// @param[in] val_0, val_1 値
-  void
-  set_fval(PackedVal val_0,
-	   PackedVal val_1);
-
-  /// @brief 故障値のマスクをセットする．
-  void
-  set_fmask(PackedVal mask);
-
-  /// @brief 故障値の 0 パタンを得る．
-  PackedVal
-  fval_0() const;
-
-  /// @brief 故障値の 1 パタンを得る．
-  PackedVal
-  fval_1() const;
-
-  /// @brief 故障値をクリアする．
-  void
-  clear_fval();
-
-  /// @brief 正常値の計算を行う．
-  /// @return 結果が X でなければ true を返す．
-  ///
-  /// 結果は mGval にセットされる．
-  bool
-  calc_gval();
-
-  /// @brief 故障値の計算を行う．
-  /// @param[in] mask マスク
-  /// @return 故障差を返す．
-  ///
-  /// 結果は mFval にセットされる．
-  PackedVal
-  calc_fval(PackedVal mask);
-
-  /// @brief ローカルな obs の計算を行う．
-  PackedVal
-  calc_lobs();
-
-  /// @brief lobs が計算済みかチェックする．
-  bool
-  check_lobs() const;
-
-  /// @brief lobs が計算済みの印をつける．
-  void
-  set_lobs();
-
-  /// @brief lobs の計算済みの印を消す．
-  void
-  clear_lobs();
+  dump(ostream& s) const = 0;
 
 
 public:
@@ -200,62 +135,100 @@ public:
   set_fanout_list(const vector<SimNode*>& fo_list,
 		  ymuint ipos);
 
-  /// @brief FFR を設定する．
+  /// @brief FFR の根の印をつける．
   void
-  set_ffr(SimFFR* ffr);
+  set_ffr_root();
 
 
 public:
   //////////////////////////////////////////////////////////////////////
-  // 派生クラスで実装する仮想関数
+  // 3値の故障シミュレーションに関する情報の取得/設定
   //////////////////////////////////////////////////////////////////////
 
-  /// @brief 正常値の計算を行う．
-  ///
-  /// 結果は mGval0, mGval1 に格納される．
-  virtual
-  void
-  _calc_gval() = 0;
+  /// @brief 正常値を得る．(3値版)
+  PackedVal3
+  gval() const;
 
-  /// @brief 故障値の計算を行う．
+  /// @brief 故障値を得る．(3値版)
+  PackedVal3
+  fval() const;
+
+  /// @brief 正常値のセットを行う．(3値版)
+  /// @param[in] val 値
+  ///
+  /// 通常は外部入力に対して行われる．
+  /// 故障値も同様にセットされる．
+  void
+  set_gval(PackedVal3 val);
+
+  /// @brief 正常値のセットを行う．(3値版)
+  /// @param[in] val0, val1 値
+  void
+  set_gval(PackedVal val0,
+	   PackedVal val1);
+
+  /// @brief 正常値を計算する．
+  void
+  calc_gval();
+
+  /// @brief 故障値をセットする．(3値版)
+  /// @param[in] mask 反転マスク
+  void
+  flip_fval(PackedVal mask);
+
+  /// @brief 故障値を計算する．
   /// @param[in] mask マスク
-  ///
-  /// 結果は mFval0, mFval1 に格納される．
-  virtual
-  void
-  _calc_fval(PackedVal mask) = 0;
+  PackedVal
+  calc_fval(PackedVal mask);
 
-  /// @brief ゲートの入力から出力までの可観測性を計算する
+  /// @brief 故障値をクリアする．(3値版)
+  void
+  clear_fval();
+
+
+public:
+  //////////////////////////////////////////////////////////////////////
+  // 3値版の故障シミュレーション用の仮想関数
+  //////////////////////////////////////////////////////////////////////
+
+  /// @brief 故障値の計算を行う．(3値版)
+  /// @return 計算結果を返す．
+  virtual
+  PackedVal3
+  _calc_fval() = 0;
+
+  /// @brief ゲートの入力から出力までの可観測性を計算する．(3値版)
   virtual
   PackedVal
-  calc_gobs(ymuint ipos) = 0;
-
-  /// @brief 内容をダンプする．
-  virtual
-  void
-  dump(ostream& s) const = 0;
+  _calc_gobs(ymuint ipos) = 0;
 
 
 protected:
+  //////////////////////////////////////////////////////////////////////
+  // 派生クラスで用いられる関数
+  //////////////////////////////////////////////////////////////////////
 
   /// @brief レベルを設定する．
   void
   set_level(ymuint level);
 
 
-protected:
+private:
+  //////////////////////////////////////////////////////////////////////
+  // EventQ 用の関数
+  //////////////////////////////////////////////////////////////////////
 
-  // 正常値0
-  PackedVal mGval0;
+  /// @brief キューに積まれていたら true を返す．
+  bool
+  in_queue() const;
 
-  // 正常値1
-  PackedVal mGval1;
+  /// @brief キューフラグをセットする．
+  void
+  set_queue();
 
-  // 故障値0
-  PackedVal mFval0;
-
-  // 故障値1
-  PackedVal mFval1;
+  /// @brief キューフラグをクリアする．
+  void
+  clear_queue();
 
 
 private:
@@ -264,31 +237,34 @@ private:
   //////////////////////////////////////////////////////////////////////
 
   // ID 番号
-  ymuint32 mId;
+  ymuint mId;
 
   // ファンアウトリストの要素数
-  ymuint32 mNfo;
+  // その他以下の情報もパックして持つ．
+  // - 0      : 出力のマーク
+  // - 1      : FFRの根のマーク
+  // - 2      : EventQ に入っているかどうかを示すマーク
+  // - 4 - 15 : 最初のファンアウトの入力位置(FFR内のノードのみ意味を持つ)
+  // - 16 -   : ファンアウト数
+  ymuint mFanoutNum;
+
+  // ファンアウトの先頭のノード
+  SimNode* mFanoutTop;
 
   // ファンアウトリスト
   SimNode** mFanouts;
 
-  // 最初のファンアウトの入力位置(FFR内のノードのみ意味を持つ)
-  ymuint32 mFanoutIpos;
-
-  // FFR
-  SimFFR* mFFR;
-
   // レベル
-  ymuint32 mLevel;
+  ymuint mLevel;
 
-  // FFR 内のローカルな obs
-  PackedVal mLobs;
+  // イベントキューの次の要素
+  SimNode* mLink;
 
-  // 故障値に対するマスク
-  PackedVal mFmask;
+  // 正常値
+  PackedVal3 mGval;
 
-  // 名前
-  const char* mName;
+  // 故障値
+  PackedVal3 mFval;
 
 };
 
@@ -299,7 +275,7 @@ private:
 
 // @brief ID番号を返す．
 inline
-ymuint32
+ymuint
 SimNode::id() const
 {
   return mId;
@@ -308,9 +284,17 @@ SimNode::id() const
 // @brief ファンアウト数を得る．
 inline
 ymuint
-SimNode::nfo() const
+SimNode::fanout_num() const
 {
-  return mNfo;
+  return mFanoutNum >> 16;
+}
+
+// @brief ファンアウトの先頭のノードを得る．
+inline
+SimNode*
+SimNode::fanout_top() const
+{
+  return mFanoutTop;
 }
 
 // @brief pos 番目のファンアウトを得る．
@@ -326,15 +310,15 @@ inline
 ymuint
 SimNode::fanout_ipos() const
 {
-  return mFanoutIpos >> 2;
+  return (mFanoutNum >> 4) & 0x0FFFU;
 }
 
-// @brief FFR を得る．
+// @brief FFR の根のノードの時 true を返す．
 inline
-SimFFR*
-SimNode::ffr() const
+bool
+SimNode::is_ffr_root() const
 {
-  return mFFR;
+  return static_cast<bool>((mFanoutNum >> 1) & 1U);
 }
 
 // @brief レベルを得る．
@@ -350,7 +334,7 @@ inline
 bool
 SimNode::is_output() const
 {
-  return (mFanoutIpos & 1U) == 1U;
+  return static_cast<bool>((mFanoutNum >> 0) & 1U);
 }
 
 // @brief 出力マークをつける．
@@ -358,99 +342,83 @@ inline
 void
 SimNode::set_output()
 {
-  mFanoutIpos |= 1U;
+  mFanoutNum |= 1U;
 }
 
-// @brief lobs が計算済みかチェックする．
-inline
-bool
-SimNode::check_lobs() const
-{
-  return ((mFanoutIpos >> 1) & 1U) == 1U;
-}
-
-// @brief lobs が計算済みの印をつける．
+// @brief FFR の根の印をつける．
 inline
 void
-SimNode::set_lobs()
+SimNode::set_ffr_root()
 {
-  mFanoutIpos |= (1U << 1);
+  mFanoutNum |= 2U;
 }
 
-// @brief lobs の計算済みの印を消す．
+// @brief 正常値を得る．(3値版)
 inline
-void
-SimNode::clear_lobs()
+PackedVal3
+SimNode::gval() const
 {
-  mFanoutIpos &= ~(1U << 1);
+  return mGval;
+}
+
+// @brief 故障値を得る．(3値版)
+inline
+PackedVal3
+SimNode::fval() const
+{
+  return mFval;
 }
 
 // @brief 正常値のセットを行う．(3値版)
-// @param[in] val_0, val_1 値
+// @param[in] val 値
 //
 // 通常は外部入力に対して行われる．
 // 故障値も同様にセットされる．
 inline
 void
-SimNode::set_gval(PackedVal val_0,
-		  PackedVal val_1)
+SimNode::set_gval(PackedVal3 val)
 {
-  mGval0 = val_0;
-  mGval1 = val_1;
-  mFval0 = val_0;
-  mFval1 = val_1;
-  mFmask = kPvAll1;
+  mGval = mFval = val;
 }
 
-// @brief 正常値の 0 パタンを得る．
-inline
-PackedVal
-SimNode::gval_0() const
-{
-  return mGval0;
-}
-
-// @brief 正常値の 1 パタンを得る．
-inline
-PackedVal
-SimNode::gval_1() const
-{
-  return mGval1;
-}
-
-// @brief 故障値をセットする．
-// @param[in] val_0, val_1 値
+// @brief 正常値のセットを行う．(3値版)
+// @param[in] val0, val1 値
+//
+// 通常は外部入力に対して行われる．
+// 故障値も同様にセットされる．
 inline
 void
-SimNode::set_fval(PackedVal val_0,
-		  PackedVal val_1)
+SimNode::set_gval(PackedVal val0,
+		  PackedVal val1)
 {
-  mFval0 = val_0;
-  mFval1 = val_1;
+  mGval = mFval = PackedVal3(val0, val1);
 }
 
-// @brief 故障値のマスクをセットする．
+// @brief 正常値を計算する．
 inline
 void
-SimNode::set_fmask(PackedVal mask)
+SimNode::calc_gval()
 {
-  mFmask = mask;
+  set_gval(_calc_fval());
 }
 
-// @brief 故障値の 0 パタンを得る．
+// @brief 故障値をセットする．(3値版)
+// @param[in] mask 反転マスク
 inline
-PackedVal
-SimNode::fval_0() const
+void
+SimNode::flip_fval(PackedVal mask)
 {
-  return mFval0;
+  mFval.set_with_mask(~mGval, mask);
 }
 
-// @brief 故障値の 1 パタンを得る．
+// @brief 故障値を計算する．
+// @param[in] mask マスク
 inline
 PackedVal
-SimNode::fval_1() const
+SimNode::calc_fval(PackedVal mask)
 {
-  return mFval1;
+  mFval.set_with_mask(_calc_fval(), mask);
+  return diff(mGval, mFval);
 }
 
 // @brief 故障値をクリアする．
@@ -458,61 +426,33 @@ inline
 void
 SimNode::clear_fval()
 {
-  mFval0 = mGval0;
-  mFval1 = mGval1;
-  mFmask = kPvAll1;
+  mFval = mGval;
 }
 
-// @brief 正常値の計算を行う．
-// @return 結果が X でなければ true を返す．
-//
-// 結果は mGval にセットされる．
+// @brief キューに積まれていたら true を返す．
 inline
 bool
-SimNode::calc_gval()
+SimNode::in_queue() const
 {
-  _calc_gval();
-  mFval0 = mGval0;
-  mFval1 = mGval1;
-  return (mGval0 | mGval1) != kPvAll0;
+  return static_cast<bool>((mFanoutNum >> 3) & 1U);
 }
 
-// @brief 故障値の計算を行う．
-// @return 故障差を返す．
-//
-// 結果は mFval にセットされる．
-inline
-PackedVal
-SimNode::calc_fval(PackedVal mask)
-{
-  _calc_fval(mFmask & mask);
-  return (mGval0 ^ mFval0) | (mGval1 ^ mFval1);
-}
-
-// @brief FFR を設定する．
+// @brief キューフラグをセットする．
 inline
 void
-SimNode::set_ffr(SimFFR* ffr)
+SimNode::set_queue()
 {
-  mFFR = ffr;
+  mFanoutNum |= 1U << 3;
 }
 
-// @brief 名前を設定する．
+// @brief キューフラグをクリアする．
 inline
 void
-SimNode::set_name(const char* name)
+SimNode::clear_queue()
 {
-  mName = name;
-}
-
-// @brief 名前を得る．
-inline
-const char*
-SimNode::name() const
-{
-  return mName;
+  mFanoutNum &= ~(1U << 3);
 }
 
 END_NAMESPACE_YM_SATPG_FSIM
 
-#endif // SIMNODE_H
+#endif // FSIM_SIMNODE_H

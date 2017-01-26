@@ -3,7 +3,7 @@
 /// @brief SnInput の実装ファイル
 /// @author Yusuke Matsunaga (松永 裕介)
 ///
-/// Copyright (C) 2005-2010, 2012-2014 Yusuke Matsunaga
+/// Copyright (C) 2016 Yusuke Matsunaga
 /// All rights reserved.
 
 
@@ -17,7 +17,7 @@ BEGIN_NAMESPACE_YM_SATPG_FSIM
 //////////////////////////////////////////////////////////////////////
 
 // @brief コンストラクタ
-SnInput::SnInput(ymuint32 id) :
+SnInput::SnInput(ymuint id) :
   SimNode(id)
 {
   set_level(0);
@@ -28,9 +28,18 @@ SnInput::~SnInput()
 {
 }
 
+// @brief ゲートタイプを返す．
+//
+// ここでは kGateBUFF を返す．
+GateType
+SnInput::gate_type() const
+{
+  return kGateBUFF;
+}
+
 // @brief ファンイン数を得る．
 ymuint
-SnInput::nfi() const
+SnInput::fanin_num() const
 {
   return 0;
 }
@@ -43,29 +52,6 @@ SnInput::fanin(ymuint pos) const
   return nullptr;
 }
 
-// @brief 正常値の計算を行う．
-void
-SnInput::_calc_gval()
-{
-  ASSERT_NOT_REACHED;
-}
-
-// @brief 故障値の計算を行う．
-// @param[in] mask マスク
-// @note 結果は mFval0, mFval1 に格納される．
-void
-SnInput::_calc_fval(PackedVal mask)
-{
-  ASSERT_NOT_REACHED;
-}
-
-// @brief ゲートの入力から出力までの可観測性を計算する．
-PackedVal
-SnInput::calc_gobs(ymuint ipos)
-{
-  return kPvAll0;
-}
-
 // @brief 内容をダンプする．
 void
 SnInput::dump(ostream& s) const
@@ -73,100 +59,19 @@ SnInput::dump(ostream& s) const
   s << "INPUT" << endl;
 }
 
-
-//////////////////////////////////////////////////////////////////////
-// SnBuff
-//////////////////////////////////////////////////////////////////////
-
-// @brief コンストラクタ
-SnBuff::SnBuff(ymuint32 id,
-	       const vector<SimNode*>& inputs) :
-  SnGate1(id, inputs)
+// @brief 故障値の計算を行う．(3値版)
+PackedVal3
+SnInput::_calc_fval()
 {
+  ASSERT_NOT_REACHED;
+  return PackedVal3();
 }
 
-// @brief デストラクタ
-SnBuff::~SnBuff()
-{
-}
-
-// @brief 正常値の計算を行う．
-void
-SnBuff::_calc_gval()
-{
-  mGval0 = mFanin->gval_0();
-  mGval1 = mFanin->gval_1();
-}
-
-// @brief 故障値の計算を行う．
-// @param[in] mask マスク
-// @note 結果は mFval0, mFval1 に格納される．
-void
-SnBuff::_calc_fval(PackedVal mask)
-{
-  mFval0 &= ~mask;
-  mFval0 |= mFanin->fval_0() & mask;
-  mFval1 &= ~mask;
-  mFval1 |= mFanin->fval_1() & mask;
-}
-
-// @brief ゲートの入力から出力までの可観測性を計算する．
+// @brief ゲートの入力から出力までの可観測性を計算する．(3値版)
 PackedVal
-SnBuff::calc_gobs(ymuint ipos)
+SnInput::_calc_gobs(ymuint ipos)
 {
-  return kPvAll1;
-}
-
-// @brief 内容をダンプする．
-void
-SnBuff::dump(ostream& s) const
-{
-  s << "BUFF(" << mFanin->id() << ")" << endl;
-}
-
-
-//////////////////////////////////////////////////////////////////////
-// SnNot
-//////////////////////////////////////////////////////////////////////
-
-// @brief コンストラクタ
-SnNot::SnNot(ymuint32 id,
-	     const vector<SimNode*>& inputs) :
-  SnBuff(id, inputs)
-{
-}
-
-// @brief デストラクタ
-SnNot::~SnNot()
-{
-}
-
-// @brief 正常値の計算を行う．
-void
-SnNot::_calc_gval()
-{
-  mGval1 = mFanin->gval_0();
-  mGval0 = mFanin->gval_1();
-}
-
-// @brief 故障値の計算を行う．
-// @param[in] mask マスク
-//
-// 結果は mFval0, mFval1 に格納される．
-void
-SnNot::_calc_fval(PackedVal mask)
-{
-  mFval1 &= ~mask;
-  mFval1 |= mFanin->fval_0() & mask;
-  mFval0 &= ~mask;
-  mFval0 |= mFanin->fval_1() & mask;
-}
-
-// @brief 内容をダンプする．
-void
-SnNot::dump(ostream& s) const
-{
-  s << "NOT(" << mFanin->id() << ")" << endl;
+  return kPvAll0;
 }
 
 END_NAMESPACE_YM_SATPG_FSIM
