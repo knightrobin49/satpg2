@@ -67,8 +67,10 @@ Fsim2::set_network(const TpgNetwork& network)
   ymuint no = mNetwork->ppo_num();
 
   // SimNode の生成
+
   // 対応付けを行うマップの初期化
-  mSimMap.resize(nn);
+  vector<SimNode*> simmap(nn);
+
   mInputArray.resize(ni);
   vector<SimNode*> output_array(no);
 
@@ -89,7 +91,7 @@ Fsim2::set_network(const TpgNetwork& network)
     }
     else if ( tpgnode->is_ppo() ) {
       // 外部出力に対応する SimNode の生成
-      SimNode* inode = find_simnode(tpgnode->fanin(0));
+      SimNode* inode = simmap[tpgnode->fanin(0)->id()];
       // 実際にはバッファタイプのノードに出力の印をつけるだけ．
       node = make_gate(kGateBUFF, vector<SimNode*>(1, inode));
       node->set_output();
@@ -102,7 +104,7 @@ Fsim2::set_network(const TpgNetwork& network)
 	      tpgnode->is_dff_clear() ||
 	      tpgnode->is_dff_preset() ) {
       // DFFの制御端子に対応する SimNode の生成
-      SimNode* inode = find_simnode(tpgnode->fanin(0));
+      SimNode* inode = simmap[tpgnode->fanin(0)->id()];
       // 実際にはバッファタイプのノードに出力の印をつけるだけ．
       node = make_gate(kGateBUFF, vector<SimNode*>(1, inode));
       node->set_output();
@@ -118,7 +120,7 @@ Fsim2::set_network(const TpgNetwork& network)
       vector<SimNode*> inputs(ni);
       for (ymuint i = 0; i < ni; ++ i) {
 	const TpgNode* itpgnode = tpgnode->fanin(i);
-	SimNode* inode = find_simnode(itpgnode);
+	SimNode* inode = simmap[itpgnode->id()];
 	ASSERT_COND(inode );
 	inputs[i] = inode;
       }
@@ -130,14 +132,14 @@ Fsim2::set_network(const TpgNetwork& network)
       // ファンアウトリストを作る．
       for (ymuint i = 0; i < ni; ++ i) {
 	const TpgNode* itpgnode = tpgnode->fanin(i);
-	SimNode* inode = find_simnode(itpgnode);
+	SimNode* inode = simmap[itpgnode->id()];
 	ASSERT_COND(inode );
 	fanout_lists[inode->id()].push_back(node);
 	ipos[inode->id()] = i;
       }
     }
     // 対応表に登録しておく．
-    mSimMap[tpgnode->id()] = node;
+    simmap[tpgnode->id()] = node;
   }
   ASSERT_COND( mNodeArray.size() == nn );
 
@@ -203,7 +205,7 @@ Fsim2::set_network(const TpgNetwork& network)
   ymuint fid = 0;
   for (ymuint i = 0; i < nn; ++ i) {
     const TpgNode* tpgnode = network.node(i);
-    SimNode* simnode = find_simnode(tpgnode);
+    SimNode* simnode = simmap[tpgnode->id()];
     SimFFR* ffr = mFFRMap[simnode->id()];
     ymuint nf1 = network.node_fault_num(tpgnode->id());
     for (ymuint j = 0; j < nf1; ++ j) {
@@ -213,7 +215,7 @@ Fsim2::set_network(const TpgNetwork& network)
       if ( fault->is_branch_fault() ) {
 	ipos = fault->tpg_pos();
 	const TpgNode* inode = tpgnode->fanin(ipos);
-	isimnode = find_simnode(inode);
+	isimnode = simmap[inode->id()];
       }
       else {
 	isimnode = simnode;
@@ -712,8 +714,6 @@ Fsim2::_fault_sweep(const SimFFR& ffr,
 void
 Fsim2::clear()
 {
-  mSimMap.clear();
-
   // mNodeArray が全てのノードを持っている
   for (vector<SimNode*>::iterator p = mNodeArray.begin();
        p != mNodeArray.end(); ++ p) {
@@ -767,13 +767,6 @@ Fsim2::make_gate(GateType type,
   mNodeArray.push_back(node);
   mGvalArray.push_back(gval);
   return node;
-}
-
-// @brief node に対応する SimNode* を得る．
-SimNode*
-Fsim2::find_simnode(const TpgNode* node) const
-{
-  return mSimMap[node->id()];
 }
 
 END_NAMESPACE_YM_SATPG_FSIM

@@ -236,10 +236,6 @@ private:
   void
   clear();
 
-  /// @brief node に対応する SimNode を得る．
-  SimNode*
-  find_simnode(const TpgNode* node) const;
-
   /// @brief 外部入力ノードを作る．
   SimNode*
   make_input();
@@ -272,9 +268,6 @@ private:
 
   // 対象のネットワーク
   const TpgNetwork* mNetwork;
-
-  // TpgNode の id をキーにして SimNode を入れる配列
-  vector<SimNode*> mSimMap;
 
   // 全ての SimNode を納めた配列
   vector<SimNode*> mNodeArray;
