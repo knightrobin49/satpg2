@@ -203,6 +203,11 @@ private:
   void
   _calc_gval();
 
+  /// @brief FFR内の故障シミュレーションを行う．
+  /// @param[in] fault_list 故障のリスト
+  PackedVal
+  _fault_prop(const vector<SimFault*>& fault_list);
+
   /// @brief 故障をスキャンして結果をセットする(sppfp用)
   /// @param[in] fault_list 故障のリスト
   void
