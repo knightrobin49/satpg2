@@ -92,16 +92,16 @@ public:
   SimNode*
   fanout_top() const;
 
-  /// @brief pos 番目のファンアウトを得る．
-  /// @param[in] pos 位置番号 ( 0 <= pos < fanout_num() - 1 )
-  ///
-  /// ただし fanout_top() のノードは含まれない．
-  SimNode*
-  fanout(ymuint pos) const;
-
   /// @brief 最初のファンアウト先の入力位置を得る．
   ymuint
   fanout_ipos() const;
+
+  /// @brief pos 番目のファンアウトを得る．
+  /// @param[in] pos 位置番号 ( 0 <= pos < fanout_num() )
+  ///
+  /// ただし fanout_num() > 1 の時しか使えない．
+  SimNode*
+  fanout(ymuint pos) const;
 
   /// @brief FFR の根のノードの時 true を返す．
   bool
@@ -251,9 +251,6 @@ private:
   // ファンアウトの先頭のノード
   SimNode* mFanoutTop;
 
-  // ファンアウトリスト
-  SimNode** mFanouts;
-
   // レベル
   ymuint mLevel;
 
@@ -265,6 +262,9 @@ private:
 
   // 故障値
   PackedVal3 mFval;
+
+  // イベントマスク
+  PackedVal mEventMask;
 
 };
 
@@ -297,20 +297,21 @@ SimNode::fanout_top() const
   return mFanoutTop;
 }
 
-// @brief pos 番目のファンアウトを得る．
-inline
-SimNode*
-SimNode::fanout(ymuint pos) const
-{
-  return mFanouts[pos];
-}
-
 // @brief 最初のファンアウト先の入力位置を得る．
 inline
 ymuint
 SimNode::fanout_ipos() const
 {
   return (mFanoutNum >> 4) & 0x0FFFU;
+}
+
+// @brief pos 番目のファンアウトを得る．
+inline
+SimNode*
+SimNode::fanout(ymuint pos) const
+{
+  SimNode** fanouts = reinterpret_cast<SimNode**>(mFanoutTop);
+  return fanouts[pos];
 }
 
 // @brief FFR の根のノードの時 true を返す．
@@ -379,6 +380,7 @@ void
 SimNode::set_gval(PackedVal3 val)
 {
   mGval = mFval = val;
+  mEventMask = kPvAll1;
 }
 
 // @brief 正常値のセットを行う．(3値版)
@@ -391,7 +393,7 @@ void
 SimNode::set_gval(PackedVal val0,
 		  PackedVal val1)
 {
-  mGval = mFval = PackedVal3(val0, val1);
+  set_gval(PackedVal3(val0, val1));
 }
 
 // @brief 正常値を計算する．
@@ -408,7 +410,11 @@ inline
 void
 SimNode::flip_fval(PackedVal mask)
 {
-  mFval.set_with_mask(~mGval, mask);
+  mFval.set_with_mask(~mFval, mask);
+  // このノードよりファンイン側からイベントが
+  // 伝搬してきた時にこのビットだけは上書きさせない
+  // ためのギミック
+  mEventMask = ~mask;
 }
 
 // @brief 故障値を計算する．
@@ -417,6 +423,7 @@ inline
 PackedVal
 SimNode::calc_fval(PackedVal mask)
 {
+  mask &= mEventMask;
   mFval.set_with_mask(_calc_fval(), mask);
   return diff(mGval, mFval);
 }
@@ -427,6 +434,7 @@ void
 SimNode::clear_fval()
 {
   mFval = mGval;
+  mEventMask = kPvAll1;
 }
 
 // @brief キューに積まれていたら true を返す．

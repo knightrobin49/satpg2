@@ -26,7 +26,6 @@ SimNode::SimNode(ymuint id) :
   mId(id),
   mFanoutNum(0),
   mFanoutTop(nullptr),
-  mFanouts(nullptr),
   mLevel(0)
 {
 }
@@ -34,7 +33,10 @@ SimNode::SimNode(ymuint id) :
 // デストラクタ
 SimNode::~SimNode()
 {
-  delete [] mFanouts;
+  if ( fanout_num() > 1 ) {
+    SimNode** fanouts = reinterpret_cast<SimNode**>(mFanoutTop);
+    delete [] fanouts;
+  }
 }
 
 // @brief 入力ノードを生成するクラスメソッド
@@ -133,12 +135,15 @@ SimNode::set_fanout_list(const vector<SimNode*>& fo_list,
 {
   ymuint nfo = fo_list.size();
   if ( nfo > 0 ) {
-    mFanoutTop = fo_list[0];
-    if ( nfo > 1 ) {
-      mFanouts = new SimNode*[nfo - 1];
-      for (ymuint i = 1; i < nfo; ++ i) {
-	mFanouts[i - 1] = fo_list[i];
+    if ( nfo == 1 ) {
+      mFanoutTop = fo_list[0];
+    }
+    else {
+      SimNode** fanouts = new SimNode*[nfo];
+      for (ymuint i = 0; i < nfo; ++ i) {
+	fanouts[i] = fo_list[i];
       }
+      mFanoutTop = reinterpret_cast<SimNode*>(fanouts);
     }
   }
 

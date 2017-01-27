@@ -103,35 +103,13 @@ EventQ::simulate(SimNode* target)
     }
   }
   // 今の故障シミュレーションで値の変わったノードを元にもどしておく
-  clear();
-
-  return obs;
-}
-
-// @brief ファンアウトのノードをキューに積む．
-// @param[in] node 対象のノード
-void
-EventQ::put_fanouts(SimNode* node)
-{
-  ymuint no = node->fanout_num();
-  if ( no > 0 ) {
-    put(node->fanout_top());
-    -- no;
-    for (ymuint i = 0; i < no; ++ i) {
-      put(node->fanout(i));
-    }
-  }
-}
-
-// @brief clear リストに入っているノードの値を元に戻す．
-void
-EventQ::clear()
-{
   for (ymuint i = 0; i < mClearPos; ++ i) {
     SimNode* node = mClearArray[i];
     node->clear_fval();
   }
   mClearPos = 0;
+
+  return obs;
 }
 
 END_NAMESPACE_YM_SATPG_FSIM
