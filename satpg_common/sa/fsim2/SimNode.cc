@@ -135,8 +135,10 @@ SimNode::set_fanout_list(const vector<SimNode*>& fo_list,
 {
   ymuint nfo = fo_list.size();
   if ( nfo > 0 ) {
-    mFanoutTop = fo_list[0];
-    if ( nfo > 1 ) {
+    if ( nfo == 1 ) {
+      mFanoutTop = fo_list[0];
+    }
+    else {
       SimNode** fanouts = new SimNode*[nfo];
       for (ymuint i = 0; i < nfo; ++ i) {
 	fanouts[i] = fo_list[i];
