@@ -254,6 +254,8 @@ private:
   // 故障値
   PackedVal mFval;
 
+  // イベントマスク
+  PackedVal mEventMask;
 };
 
 
@@ -365,6 +367,7 @@ void
 SimNode::set_gval(PackedVal val)
 {
   mGval = mFval = val;
+  mEventMask = kPvAll1;
 }
 
 // @brief 正常値を計算する．
@@ -381,7 +384,11 @@ inline
 void
 SimNode::flip_fval(PackedVal mask)
 {
-  mFval = (gval() ^ mask);
+  mFval = (fval() ^ mask);
+  // このノードよりファンイン側からイベントが
+  // 伝搬してきた時にこのビットだけは上書きさせない
+  // ためのギミック
+  mEventMask = ~mask;
 }
 
 // @brief 故障値を計算する．
@@ -390,6 +397,7 @@ PackedVal
 SimNode::calc_fval(PackedVal mask)
 {
   PackedVal val = _calc_fval();
+  mask &= mEventMask;
   mFval &= ~mask;
   mFval |= (val & mask);
   return gval() ^ fval();
@@ -401,6 +409,7 @@ void
 SimNode::clear_fval()
 {
   mFval = mGval;
+  mEventMask = kPvAll1;
 }
 
 // @brief キューに積まれていたら true を返す．

@@ -34,7 +34,8 @@ SimNode::SimNode(ymuint id) :
 SimNode::~SimNode()
 {
   if ( fanout_num() > 1 ) {
-    delete [] mFanoutTop;
+    SimNode** fanouts = reinterpret_cast<SimNode**>(mFanoutTop);
+    delete [] fanouts;
   }
 }
 
