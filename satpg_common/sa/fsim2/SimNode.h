@@ -92,16 +92,16 @@ public:
   SimNode*
   fanout_top() const;
 
-  /// @brief pos 番目のファンアウトを得る．
-  /// @param[in] pos 位置番号 ( 0 <= pos < fanout_num() - 1 )
-  ///
-  /// ただし fanout_top() のノードは含まれない．
-  SimNode*
-  fanout(ymuint pos) const;
-
   /// @brief 最初のファンアウト先の入力位置を得る．
   ymuint
   fanout_ipos() const;
+
+  /// @brief pos 番目のファンアウトを得る．
+  /// @param[in] pos 位置番号 ( 0 <= pos < fanout_num() )
+  ///
+  /// ただし fanout_num() == 1 の時は使えない．
+  SimNode*
+  fanout(ymuint pos) const;
 
   /// @brief FFR の根のノードの時 true を返す．
   bool
@@ -242,9 +242,6 @@ private:
   // ファンアウトの先頭のノード
   SimNode* mFanoutTop;
 
-  // ファンアウトリスト
-  SimNode** mFanouts;
-
   // レベル
   ymuint mLevel;
 
@@ -293,7 +290,8 @@ inline
 SimNode*
 SimNode::fanout(ymuint pos) const
 {
-  return mFanouts[pos];
+  SimNode** fanouts = reinterpret_cast<SimNode**>(mFanoutTop);
+  return fanouts[pos];
 }
 
 // @brief 最初のファンアウト先の入力位置を得る．

@@ -89,10 +89,6 @@ private:
   void
   add_to_clear_list(SimNode* node);
 
-  /// @brief clear リストに入っているノードの値を元に戻す．
-  void
-  clear();
-
 
 private:
   //////////////////////////////////////////////////////////////////////
@@ -126,6 +122,23 @@ private:
 //////////////////////////////////////////////////////////////////////
 // インライン関数の定義
 //////////////////////////////////////////////////////////////////////
+
+// @brief ファンアウトのノードをキューに積む．
+// @param[in] node 対象のノード
+inline
+void
+EventQ::put_fanouts(SimNode* node)
+{
+  ymuint no = node->fanout_num();
+  if ( no == 1 ) {
+    put(node->fanout_top());
+  }
+  else {
+    for (ymuint i = 0; i < no; ++ i) {
+      put(node->fanout(i));
+    }
+  }
+}
 
 // @brief キューに積む
 inline
