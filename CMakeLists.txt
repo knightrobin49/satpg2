@@ -105,6 +105,7 @@ add_subdirectory ( ym-sat )
 add_subdirectory ( ym-tclpp )
 
 add_subdirectory ( tests/fsim2test )
+add_subdirectory ( tests/fsim3test )
 #add_subdirectory ( tests )
 add_subdirectory ( gtest )
 add_subdirectory ( satpg_common )
