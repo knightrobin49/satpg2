@@ -8,6 +8,7 @@
 
 
 #include "TpgNetwork.h"
+#include "TpgFault.h"
 #include "sa/TestVector.h"
 #include "sa/TvMgr.h"
 #include "Fsim3.h"
@@ -19,16 +20,49 @@ BEGIN_NAMESPACE_YM_SATPG_FSIM
 
 const char* argv0 = "";
 
+// SPSFP のテスト
+pair<ymuint, ymuint>
+spsfp_test(const TpgNetwork& network,
+	   Fsim3& fsim,
+	   const vector<const TestVector*>& tv_list)
+{
+  vector<bool> mark(network.max_fault_id(), false);
+  ymuint nf = network.rep_fault_num();
+  ymuint det_num = 0;
+  ymuint nepat = 0;
+  ymuint nv = tv_list.size();
+  for (ymuint i = 0; i < nv; ++ i) {
+    const TestVector* tv = tv_list[i];
+    bool detect = false;
+    for (ymuint j = 0; j < nf; ++ j) {
+      const TpgFault* f = network.rep_fault(j);
+      if ( mark[f->id()] ) {
+	continue;
+      }
+      if ( fsim.spsfp(tv, f) ) {
+	++ det_num;
+	detect = true;
+	mark[f->id()] = true;
+      }
+    }
+    if ( detect ) {
+      ++ nepat;
+    }
+  }
+
+  return make_pair(det_num, nepat);
+}
+
 // SPPFP のテスト
 pair<ymuint, ymuint>
 sppfp_test(Fsim3& fsim,
-	   const vector<TestVector*>& tv_list)
+	   const vector<const TestVector*>& tv_list)
 {
   ymuint det_num = 0;
   ymuint nepat = 0;
   ymuint nv = tv_list.size();
   for (ymuint i = 0; i < nv; ++ i) {
-    TestVector* tv = tv_list[i];
+    const TestVector* tv = tv_list[i];
     ymuint n = fsim.sppfp(tv);
     if ( n > 0 ) {
       det_num += n;
@@ -140,7 +174,7 @@ randgen(RandGen& rg,
 void
 usage()
 {
-  cerr << "USAGE: " << argv0 << " ?-n #pat? --blif|--iscas89 <file>" << endl;
+  cerr << "USAGE: " << argv0 << " ?-n #pat? ?--ppspf|--sppfp? --blif|--iscas89 <file>" << endl;
 }
 
 int
@@ -150,6 +184,9 @@ fsim2test(int argc,
   ymuint npat = 0;
   bool blif = false;
   bool iscas89 = false;
+
+  bool ppsfp = false;
+  bool sppfp = false;
 
   argv0 = argv[0];
 
@@ -168,6 +205,20 @@ fsim2test(int argc,
 	  return -1;
 	}
       }
+      else if ( strcmp(argv[pos], "--ppsfp") == 0 ) {
+	if ( sppfp ) {
+	  cerr << "--ppspf and --sppfp are mutual exclusive" << endl;
+	  return -1;
+	}
+	ppsfp = true;
+      }
+      else if ( strcmp(argv[pos], "--sppfp") == 0 ) {
+	if ( ppsfp ) {
+	  cerr << "--ppspf and --sppfp are mutual exclusive" << endl;
+	  return -1;
+	}
+	sppfp = true;
+      }
       else if ( strcmp(argv[pos], "--blif") == 0 ) {
 	if ( iscas89 ) {
 	  cerr << "--blif and --iscas89 are mutual exclusive" << endl;
@@ -181,6 +232,11 @@ fsim2test(int argc,
 	  return -1;
 	}
 	iscas89 = true;
+      }
+      else {
+	cerr << argv[pos] << ": illegal option" << endl;
+	usage();
+	return -1;
       }
     }
     else {
@@ -235,7 +291,16 @@ fsim2test(int argc,
   StopWatch timer;
   timer.start();
 
-  pair<ymuint, ymuint> dpnum = ppsfp_test(fsim, tv_list);
+  pair<ymuint, ymuint> dpnum;
+  if ( ppsfp ) {
+    dpnum = ppsfp_test(fsim, tv_list);
+  }
+  else if ( sppfp ) {
+    dpnum = sppfp_test(fsim, tv_list);
+  }
+  else {
+    dpnum = spsfp_test(network, fsim, tv_list);
+  }
   ymuint det_num = dpnum.first;
   ymuint nepat = dpnum.second;
 
