@@ -41,32 +41,35 @@ enum GateType {
   /// @brief 定数1
   kGateCONST1 = 1,
 
+  /// @brief 入力
+  kGateINPUT  = 2,
+
   /// @brief バッファ
-  kGateBUFF   = 2,
+  kGateBUFF   = 3,
 
   /// @brief NOT
-  kGateNOT    = 3,
+  kGateNOT    = 4,
 
   /// @brief AND
-  kGateAND    = 4,
+  kGateAND    = 5,
 
   /// @brief NAND
-  kGateNAND   = 5,
+  kGateNAND   = 6,
 
   /// @brief OR
-  kGateOR     = 6,
+  kGateOR     = 7,
 
   /// @brief NOR
-  kGateNOR    = 7,
+  kGateNOR    = 8,
 
   /// @brief XOR
-  kGateXOR    = 8,
+  kGateXOR    = 9,
 
   /// @brief XNOR
-  kGateXNOR   = 9,
+  kGateXNOR   = 10,
 
   /// @brief 上記以外
-  kGateCPLX   = 10
+  kGateCPLX   = 11
 };
 
 /// @brief GateType のストリーム演算子

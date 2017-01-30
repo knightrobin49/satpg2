@@ -11,7 +11,6 @@
 #include "fsim2_nsdef.h"
 #include "TpgNode.h"
 #include "PackedVal.h"
-#include "PackedVal3.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG_FSIM
@@ -145,36 +144,32 @@ public:
   // 2値の故障シミュレーションに関する情報の取得/設定
   //////////////////////////////////////////////////////////////////////
 
-  /// @brief 正常値を得る．
+  /// @brief 出力値を得る．
   PackedVal
-  gval() const;
+  val() const;
 
-  /// @brief 故障値を得る．
-  PackedVal
-  fval() const;
-
-  /// @brief 正常値のセットを行う．
+  /// @brief 出力値のセットを行う．
   /// @param[in] val 値
   void
-  set_gval(PackedVal val);
+  set_val(PackedVal val);
 
-  /// @brief 正常値を計算する．
-  void
-  calc_gval();
-
-  /// @brief 故障値のイベントをセットする．
-  /// @param[in] mask 反転マスク
-  void
-  flip_fval(PackedVal mask);
-
-  /// @brief 故障値を計算する．
+  /// @brief 出力値のセットを行う(マスク付き)．
+  /// @param[in] val 値
   /// @param[in] mask マスク
-  PackedVal
-  calc_fval(PackedVal mask);
-
-  /// @brief 故障値をクリアする．(2値版)
   void
-  clear_fval();
+  set_val(PackedVal val,
+	  PackedVal mask);
+
+  /// @brief 出力値を計算する．
+  void
+  calc_val();
+
+  /// @brief 出力値を計算する(マスク付き)．
+  /// @param[in] mask マスク
+  ///
+  /// mask で1の立っているビットだけ更新する．
+  void
+  calc_val(PackedVal mask);
 
 
 public:
@@ -182,11 +177,11 @@ public:
   // 2値版の故障シミュレーション用の仮想関数
   //////////////////////////////////////////////////////////////////////
 
-  /// @brief 故障値の計算を行う．(2値版)
+  /// @brief 出力値の計算を行う．(2値版)
   /// @return 計算結果を返す．
   virtual
   PackedVal
-  _calc_fval() = 0;
+  _calc_val() = 0;
 
   /// @brief ゲートの入力から出力までの可観測性を計算する．(2値版)
   virtual
@@ -221,6 +216,18 @@ private:
   void
   clear_queue();
 
+  /// @brief 反転マスクを持っていたら true を返す．
+  bool
+  has_flip_mask() const;
+
+  /// @brief 反転フラグをセットする．
+  void
+  set_flip();
+
+  /// @brief 反転フラグをクリアする．
+  void
+  clear_flip();
+
 
 private:
   //////////////////////////////////////////////////////////////////////
@@ -235,6 +242,7 @@ private:
   // - 0      : 出力のマーク
   // - 1      : FFRの根のマーク
   // - 2      : EventQ に入っているかどうかを示すマーク
+  // - 3      : 反転フラグ
   // - 4 - 15 : 最初のファンアウトの入力位置(FFR内のノードのみ意味を持つ)
   // - 16 -   : ファンアウト数
   ymuint mFanoutNum;
@@ -248,14 +256,9 @@ private:
   // イベントキューの次の要素
   SimNode* mLink;
 
-  // 正常値
-  PackedVal mGval;
+  // 出力値
+  PackedVal mVal;
 
-  // 故障値
-  PackedVal mFval;
-
-  // イベントマスク
-  PackedVal mEventMask;
 };
 
 
@@ -344,72 +347,52 @@ SimNode::set_ffr_root()
   mFanoutNum |= 2U;
 }
 
-// @brief 正常値を得る．
+// @brief 出力値を得る．
 inline
 PackedVal
-SimNode::gval() const
+SimNode::val() const
 {
-  return mGval;
+  return mVal;
 }
 
-// @brief 故障値を得る．
-inline
-PackedVal
-SimNode::fval() const
-{
-  return mFval;
-}
-
-// @brief 正常値のセットを行う．
+// @brief 出力値のセットを行う．
 // @param[in] val 値
 inline
 void
-SimNode::set_gval(PackedVal val)
+SimNode::set_val(PackedVal val)
 {
-  mGval = mFval = val;
-  mEventMask = kPvAll1;
+  mVal = val;
 }
 
-// @brief 正常値を計算する．
+// @brief 出力値のセットを行う(マスク付き)．
+// @param[in] val 値
+// @param[in] mask マスク
 inline
 void
-SimNode::calc_gval()
+SimNode::set_val(PackedVal val,
+		 PackedVal mask)
 {
-  set_gval(_calc_fval());
+  mVal &= ~mask;
+  mVal |= (val & mask);
 }
 
-// @brief 故障値のイベントをセットする．
-// @param[in] mask 反転マスク
+// @brief 出力値を計算する．
 inline
 void
-SimNode::flip_fval(PackedVal mask)
+SimNode::calc_val()
 {
-  mFval = (fval() ^ mask);
-  // このノードよりファンイン側からイベントが
-  // 伝搬してきた時にこのビットだけは上書きさせない
-  // ためのギミック
-  mEventMask = ~mask;
+  set_val(_calc_val());
 }
 
-// @brief 故障値を計算する．
-inline
-PackedVal
-SimNode::calc_fval(PackedVal mask)
-{
-  PackedVal val = _calc_fval();
-  mask &= mEventMask;
-  mFval &= ~mask;
-  mFval |= (val & mask);
-  return gval() ^ fval();
-}
-
-// @brief 故障値をクリアする．
+// @brief 出力値を計算する(マスク付き)．
+// @param[in] mask マスク
+//
+// mask で1の立っているビットだけ更新する．
 inline
 void
-SimNode::clear_fval()
+SimNode::calc_val(PackedVal mask)
 {
-  mFval = mGval;
-  mEventMask = kPvAll1;
+  set_val(_calc_val(), mask);
 }
 
 // @brief キューに積まれていたら true を返す．
@@ -417,7 +400,7 @@ inline
 bool
 SimNode::in_queue() const
 {
-  return static_cast<bool>((mFanoutNum >> 3) & 1U);
+  return static_cast<bool>((mFanoutNum >> 2) & 1U);
 }
 
 // @brief キューフラグをセットする．
@@ -425,13 +408,37 @@ inline
 void
 SimNode::set_queue()
 {
-  mFanoutNum |= 1U << 3;
+  mFanoutNum |= 1U << 2;
 }
 
 // @brief キューフラグをクリアする．
 inline
 void
 SimNode::clear_queue()
+{
+  mFanoutNum &= ~(1U << 2);
+}
+
+// @brief 反転マスクを持っていたら true を返す．
+inline
+bool
+SimNode::has_flip_mask() const
+{
+  return static_cast<bool>((mFanoutNum >> 3) & 1U);
+}
+
+// @brief 反転フラグをセットする．
+inline
+void
+SimNode::set_flip()
+{
+  mFanoutNum |= 1U << 3;
+}
+
+// @brief 反転フラグをクリアする．
+inline
+void
+SimNode::clear_flip()
 {
   mFanoutNum &= ~(1U << 3);
 }

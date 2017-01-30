@@ -32,30 +32,23 @@ public:
 	    GateType gate_type,
 	    int vals[]);
 
-  /// @brief gval の書き込み読み出しテスト
+  /// @brief val の書き込み読み出しテスト
   /// @param[in] node 対象のノード
   /// @param[in] val 書き込む値
   void
-  test_gval(SimNode* node,
-	    PackedVal val);
-
-  /// @brief fval の書き込み読み出しテスト
-  /// @param[in] node 対象のノード
-  /// @param[in] val 書き込む値
-  void
-  test_fval(SimNode* node,
-	    PackedVal val);
+  test_val(SimNode* node,
+	   PackedVal val);
 
 };
 
 BEGIN_NONAMESPACE
 
-// gval/fval を初期化する．
+// val を初期化する．
 void
 init_val(SimNode* node,
 	 PackedVal val)
 {
-  node->set_gval(val);
+  node->set_val(val);
 }
 
 END_NONAMESPACE
@@ -66,21 +59,13 @@ SimNodeTest::test_input()
 {
   SimNode* node = SimNode::new_input(0);
 
-  // gval の書き込み読み出しテスト
-  init_val(node, kPvAll0);
-
-  test_gval(node, kPvAll1);
-  test_gval(node, 0x5555555555555555UL);
-  test_gval(node, 0xaaaaaaaaaaaaaaaaUL);
-  test_gval(node, kPvAll0);
-
-  // fval の書き込み読み出しテスト
+  // val の書き込み読み出しテスト
   init_val(node, kPvAll1);
 
-  test_fval(node, kPvAll1);
-  test_fval(node, 0x5555555555555555UL);
-  test_fval(node, 0xaaaaaaaaaaaaaaaaUL);
-  test_fval(node, kPvAll0);
+  test_val(node, kPvAll1);
+  test_val(node, 0x5555555555555555UL);
+  test_val(node, 0xaaaaaaaaaaaaaaaaUL);
+  test_val(node, kPvAll0);
 
   delete node;
 }
@@ -101,25 +86,15 @@ SimNodeTest::test_gate(ymuint ni,
   }
   SimNode* node = SimNode::new_gate(ni, gate_type, inputs);
 
-  // gval の書き込み読み出しテスト
-  init_val(node, kPvAll0);
-
-  test_gval(node, kPvAll1);
-  test_gval(node, 0x5555555555555555UL);
-  test_gval(node, 0xaaaaaaaaaaaaaaaaUL);
-  test_gval(node, kPvAll0);
-
-  // fval の書き込み読み出しテスト
+  // val の書き込み読み出しテスト
   init_val(node, kPvAll1);
 
-  test_fval(node, kPvAll1);
-  test_fval(node, 0x5555555555555555UL);
-  test_fval(node, 0xaaaaaaaaaaaaaaaaUL);
-  test_fval(node, kPvAll0);
+  test_val(node, kPvAll1);
+  test_val(node, 0x5555555555555555UL);
+  test_val(node, 0xaaaaaaaaaaaaaaaaUL);
+  test_val(node, kPvAll0);
 
-#if 0
-  // _calc_gval() のテスト
-  // ここで書き込む値に対して意味はない．
+  // _calc_val() のテスト
   init_val(node, kPvAll0);
   for (ymuint i = 0; i < ni; ++ i) {
     init_val(inputs[i], kPvAll0);
@@ -128,38 +103,13 @@ SimNodeTest::test_gate(ymuint ni,
   for (ymuint p = 0; p < np; ++ p) {
     for (ymuint i = 0; i < ni; ++ i) {
       if ( p & (1 << i) ) {
-	inputs[i]->set_gval(kPvAll1);
+	inputs[i]->set_val(kPvAll1);
       }
       else {
-	inputs[i]->set_gval(kPvAll0);
+	inputs[i]->set_val(kPvAll0);
       }
     }
-    PackedVal val = node->_calc_gval();
-    if ( vals[p] ) {
-      EXPECT_EQ( kPvAll1, val );
-    }
-    else {
-      EXPECT_EQ( kPvAll0, val );
-    }
-  }
-#endif
-
-  // _calc_fval() のテスト
-  init_val(node, kPvAll0);
-  for (ymuint i = 0; i < ni; ++ i) {
-    init_val(inputs[i], kPvAll0);
-  }
-
-  for (ymuint p = 0; p < np; ++ p) {
-    for (ymuint i = 0; i < ni; ++ i) {
-      if ( p & (1 << i) ) {
-	inputs[i]->set_gval(kPvAll1);
-      }
-      else {
-	inputs[i]->set_gval(kPvAll0);
-      }
-    }
-    PackedVal val = node->_calc_fval();
+    PackedVal val = node->_calc_val();
     if ( vals[p] ) {
       EXPECT_EQ( kPvAll1, val );
     }
@@ -179,10 +129,10 @@ SimNodeTest::test_gate(ymuint ni,
     for (ymuint p = 0; p < np; ++ p) {
       for (ymuint i = 0; i < ni; ++ i) {
 	if ( p & (1 << i) ) {
-	  inputs[i]->set_gval(kPvAll1);
+	  inputs[i]->set_val(kPvAll1);
 	}
 	else {
-	  inputs[i]->set_gval(kPvAll0);
+	  inputs[i]->set_val(kPvAll0);
 	}
       }
       PackedVal val = node->_calc_gobs(ipos);
@@ -202,26 +152,15 @@ SimNodeTest::test_gate(ymuint ni,
   delete node;
 }
 
-// @brief gval の書き込み読み出しテスト
+// @brief val の書き込み読み出しテスト
 // @param[in] node 対象のノード
 // @param[in] val 書き込む値
 void
-SimNodeTest::test_gval(SimNode* node,
-		       PackedVal val)
+SimNodeTest::test_val(SimNode* node,
+		      PackedVal val)
 {
-  node->set_gval(val);
-  EXPECT_EQ( val, node->gval() );
-}
-
-// @brief fval の書き込み読み出しテスト
-// @param[in] node 対象のノード
-// @param[in] val 書き込む値
-void
-SimNodeTest::test_fval(SimNode* node,
-		       PackedVal val)
-{
-  node->set_gval(val);
-  EXPECT_EQ( val, node->fval() );
+  node->set_val(val);
+  EXPECT_EQ( val, node->val() );
 }
 
 TEST_F(SimNodeTest, INPUT)

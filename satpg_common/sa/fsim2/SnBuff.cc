@@ -35,11 +35,11 @@ SnBuff::gate_type() const
   return kGateBUFF;
 }
 
-// @brief 故障値の計算を行う．(2値版)
+// @brief 出力値の計算を行う．(2値版)
 PackedVal
-SnBuff::_calc_fval()
+SnBuff::_calc_val()
 {
-  PackedVal val = _fanin()->fval();
+  PackedVal val = _fanin()->val();
   return val;
 }
 
@@ -74,11 +74,11 @@ SnNot::gate_type() const
   return kGateNOT;
 }
 
-// @brief 故障値の計算を行う．(2値版)
+// @brief 出力値の計算を行う．(2値版)
 PackedVal
-SnNot::_calc_fval()
+SnNot::_calc_val()
 {
-  PackedVal val = _fanin()->fval();
+  PackedVal val = _fanin()->val();
   return ~val;
 }
 

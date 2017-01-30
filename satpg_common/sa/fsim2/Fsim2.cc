@@ -410,7 +410,7 @@ Fsim2::ppsfp()
       obs = kPvAll1;
     }
     else {
-      mEventQ.put_trigger(root, ffr_req);
+      mEventQ.put_trigger(root, ffr_req, true);
       obs = mEventQ.simulate();
     }
 
@@ -454,7 +454,7 @@ Fsim2::_set_sp(const TestVector* tv)
   for (ymuint i = 0; i < npi; ++ i) {
     SimNode* simnode = mInputArray[i];
     PackedVal val = (tv->val3(i) == kVal1) ? kPvAll1 : kPvAll0;
-    simnode->set_gval(val);
+    simnode->set_val(val);
   }
 }
 
@@ -467,7 +467,7 @@ Fsim2::_set_sp(const NodeValList& assign_list)
   ymuint npi = mInputArray.size();
   for (ymuint i = 0; i < npi; ++ i) {
     SimNode* simnode = mInputArray[i];
-    simnode->set_gval(kPvAll0);
+    simnode->set_val(kPvAll0);
   }
 
   ymuint n = assign_list.size();
@@ -475,7 +475,7 @@ Fsim2::_set_sp(const NodeValList& assign_list)
     NodeVal nv = assign_list[i];
     if ( nv.val() ) {
       SimNode* simnode = mInputArray[nv.node()->input_id()];
-      simnode->set_gval(kPvAll1);
+      simnode->set_val(kPvAll1);
     }
   }
 }
@@ -505,7 +505,7 @@ Fsim2::_set_pp()
       }
     }
     SimNode* simnode = mInputArray[i];
-    simnode->set_gval(val);
+    simnode->set_val(val);
   }
 }
 
@@ -544,7 +544,7 @@ Fsim2::_sppfp()
 
     // キューに積んでおく
     PackedVal bitmask = 1ULL << bitpos;
-    mEventQ.put_trigger(root, bitmask);
+    mEventQ.put_trigger(root, bitmask, false);
     ffr_buff[bitpos] = &ffr;
 
     ++ bitpos;
@@ -593,7 +593,7 @@ Fsim2::_spsfp(const TpgFault* f)
     node = onode;
   }
 
-  PackedVal valdiff = ff->mInode->gval();
+  PackedVal valdiff = ff->mInode->val();
   if ( f->is_branch_fault() ) {
     // 入力の故障
     ymuint ipos = ff->mIpos;
@@ -619,7 +619,7 @@ Fsim2::_spsfp(const TpgFault* f)
     return true;
   }
 
-  mEventQ.put_trigger(root, kPvAll1);
+  mEventQ.put_trigger(root, kPvAll1, true);
   PackedVal obs = mEventQ.simulate();
   return (obs != kPvAll0);
 }
@@ -633,7 +633,7 @@ Fsim2::_calc_gval()
   for (vector<SimNode*>::iterator q = mLogicArray.begin();
        q != mLogicArray.end(); ++ q) {
     SimNode* node = *q;
-    node->calc_gval();
+    node->calc_val();
   }
 }
 
@@ -667,8 +667,8 @@ Fsim2::_fault_prop(const vector<SimFault*>& fault_list)
       lobs &= simnode->_calc_gobs(ipos);
     }
 
-    PackedVal igval = ff->mInode->gval();
-    PackedVal valdiff = ( f->val() == 1 ) ? ~igval : igval;
+    PackedVal ival = ff->mInode->val();
+    PackedVal valdiff = ( f->val() == 1 ) ? ~ival : ival;
     lobs &= valdiff;
 
     ff->mObsMask = lobs;

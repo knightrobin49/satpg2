@@ -41,6 +41,7 @@ operator<<(ostream& s,
   switch ( gate_type ) {
   case kGateCONST0: s << "CONST-0"; break;
   case kGateCONST1: s << "CONST-1"; break;
+  case kGateINPUT:  s << "INPUT"; break;
   case kGateBUFF:   s << "BUFF"; break;
   case kGateNOT:    s << "NOT"; break;
   case kGateAND:    s << "AND"; break;

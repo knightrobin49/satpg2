@@ -28,6 +28,9 @@ SimNode::SimNode(ymuint id) :
   mFanoutTop(nullptr),
   mLevel(0)
 {
+#if 0
+  mFlipMask = kPvAll0;
+#endif
 }
 
 // デストラクタ

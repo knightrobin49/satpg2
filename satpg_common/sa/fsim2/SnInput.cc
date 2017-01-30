@@ -34,7 +34,7 @@ SnInput::~SnInput()
 GateType
 SnInput::gate_type() const
 {
-  return kGateBUFF;
+  return kGateINPUT;
 }
 
 // @brief ファンイン数を得る．
@@ -59,9 +59,9 @@ SnInput::dump(ostream& s) const
   s << "INPUT" << endl;
 }
 
-// @brief 故障値の計算を行う．(2値版)
+// @brief 出力値の計算を行う．(2値版)
 PackedVal
-SnInput::_calc_fval()
+SnInput::_calc_val()
 {
   ASSERT_NOT_REACHED;
   return kPvAll0;

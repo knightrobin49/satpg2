@@ -49,9 +49,11 @@ public:
   /// @brief 初期イベントを追加する．
   /// @param[in] node 対象のノード
   /// @param[in] valmask 反転マスク
+  /// @param[in] immediate 反転マスクをすぐに適用する時に true にする．
   void
   put_trigger(SimNode* node,
-	      PackedVal valmask);
+	      PackedVal valmask,
+	      bool immediate);
 
   /// @brief イベントドリブンシミュレーションを行う．
   /// @param[in] target 目標のノード
@@ -86,8 +88,32 @@ private:
 
   /// @brief clear リストに追加する．
   /// @param[in] node 対象のノード
+  /// @param[in] old_val 元の値
   void
-  add_to_clear_list(SimNode* node);
+  add_to_clear_list(SimNode* node,
+		    PackedVal old_val);
+
+  /// @brief 反転フラグをセットする．
+  /// @param[in] node 対象のノード
+  /// @param[in] flip_mask 反転マスク
+  void
+  set_flip_mask(SimNode* node,
+		PackedVal flip_mask);
+
+
+private:
+  //////////////////////////////////////////////////////////////////////
+  // 内部で用いられるデータ構造
+  //////////////////////////////////////////////////////////////////////
+
+  // 値を元に戻すための構造体
+  struct RestoreInfo
+  {
+    // ノード
+    SimNode* mNode;
+    // 元の値
+    PackedVal mVal;
+  };
 
 
 private:
@@ -110,11 +136,22 @@ private:
   // mCearArray のサイズ
   ymuint mClearArraySize;
 
-  // clear 用のノード配列
-  SimNode** mClearArray;
+  // clear 用の情報の配列
+  RestoreInfo* mClearArray;
 
   // mCelarArray の最後の要素位置
   ymuint mClearPos;
+
+  // 反転マスクの配列
+  // サイズは mClearArraySize と同じ
+  PackedVal* mFlipMaskArray;
+
+  // 反転マスクをセットしたノードのリスト
+  // 仕様上 kPvBitLen が最大
+  SimNode* mMaskList[kPvBitLen];
+
+  // mMaskList の最後の要素位置
+  ymuint mMaskPos;
 
 };
 
@@ -181,12 +218,31 @@ EventQ::get()
 }
 
 // @brief clear 用リストに追加する．
+// @param[in] node 対象のノード
+// @param[in] old_val 元の値
 inline
 void
-EventQ::add_to_clear_list(SimNode* node)
+EventQ::add_to_clear_list(SimNode* node,
+			  PackedVal old_val)
 {
-  mClearArray[mClearPos] = node;
+  RestoreInfo& rinfo = mClearArray[mClearPos];
+  rinfo.mNode = node;
+  rinfo.mVal = old_val;
   ++ mClearPos;
+}
+
+// @brief 反転フラグをセットする．
+// @param[in] node 対象のノード
+// @param[in] flip_mask 反転マスク
+inline
+void
+EventQ::set_flip_mask(SimNode* node,
+		      PackedVal flip_mask)
+{
+  node->set_flip();
+  mFlipMaskArray[node->id()] = flip_mask;
+  mMaskList[mMaskPos] = node;
+  ++ mMaskPos;
 }
 
 END_NAMESPACE_YM_SATPG_FSIM

@@ -35,14 +35,14 @@ SnXor::gate_type() const
   return kGateXOR;
 }
 
-// @brief 故障値の計算を行う．(2値版)
+// @brief 出力値の計算を行う．(2値版)
 PackedVal
-SnXor::_calc_fval()
+SnXor::_calc_val()
 {
   ymuint n = _fanin_num();
-  PackedVal val = _fanin(0)->fval();
+  PackedVal val = _fanin(0)->val();
   for (ymuint i = 1; i < n; ++ i) {
-    val ^= _fanin(i)->fval();
+    val ^= _fanin(i)->val();
   }
   return val;
 }
@@ -78,14 +78,14 @@ SnXor2::gate_type() const
   return kGateXOR;
 }
 
-// @brief 故障値の計算を行う．(2値版)
+// @brief 出力値の計算を行う．(2値版)
 PackedVal
-SnXor2::_calc_fval()
+SnXor2::_calc_val()
 {
   SimNode* inode0 = _fanin(0);
   SimNode* inode1 = _fanin(1);
-  PackedVal val0 = inode0->fval();
-  PackedVal val1 = inode1->fval();
+  PackedVal val0 = inode0->val();
+  PackedVal val1 = inode1->val();
   PackedVal val = val0 ^ val1;
   return val;
 }
@@ -121,14 +121,14 @@ SnXnor::gate_type() const
   return kGateXNOR;
 }
 
-// @brief 故障値の計算を行う．(2値版)
+// @brief 出力値の計算を行う．(2値版)
 PackedVal
-SnXnor::_calc_fval()
+SnXnor::_calc_val()
 {
   ymuint n = _fanin_num();
-  PackedVal val = _fanin(0)->fval();
+  PackedVal val = _fanin(0)->val();
   for (ymuint i = 1; i < n; ++ i) {
-    val ^= _fanin(i)->fval();
+    val ^= _fanin(i)->val();
   }
   return ~val;
 }
@@ -157,14 +157,14 @@ SnXnor2::gate_type() const
   return kGateXNOR;
 }
 
-// @brief 故障値の計算を行う．(2値版)
+// @brief 出力値の計算を行う．(2値版)
 PackedVal
-SnXnor2::_calc_fval()
+SnXnor2::_calc_val()
 {
   SimNode* inode0 = _fanin(0);
   SimNode* inode1 = _fanin(1);
-  PackedVal val0 = inode0->fval();
-  PackedVal val1 = inode1->fval();
+  PackedVal val0 = inode0->val();
+  PackedVal val1 = inode1->val();
   PackedVal val = val0 ^ val1;
   return ~val;
 }

@@ -24,7 +24,9 @@ EventQ::EventQ() :
   mNum(0),
   mClearArraySize(0),
   mClearArray(nullptr),
-  mClearPos(0)
+  mClearPos(0),
+  mFlipMaskArray(nullptr),
+  mMaskPos(0)
 {
 }
 
@@ -33,6 +35,7 @@ EventQ::~EventQ()
 {
   delete [] mArray;
   delete [] mClearArray;
+  delete [] mFlipMaskArray;
 }
 
 // @brief 初期化を行う．
@@ -50,7 +53,9 @@ EventQ::init(ymuint max_level,
   if ( node_num > mClearArraySize ) {
     delete [] mClearArray;
     mClearArraySize = node_num;
-    mClearArray = new SimNode*[mClearArraySize];
+    mClearArray = new RestoreInfo[mClearArraySize];
+    delete [] mFlipMaskArray;
+    mFlipMaskArray = new PackedVal[mClearArraySize];
   }
 
   mCurLevel = 0;
@@ -65,11 +70,25 @@ EventQ::init(ymuint max_level,
 // @param[in] valmask 反転マスク
 void
 EventQ::put_trigger(SimNode* node,
-		    PackedVal valmask)
+		    PackedVal valmask,
+		    bool immediate)
 {
-  node->flip_fval(valmask);
-  add_to_clear_list(node);
-  put_fanouts(node);
+  if ( immediate || node->gate_type() == kGateINPUT ) {
+    // 入力の場合，他のイベントの干渉は受けないので
+    // 今計算してしまう．
+    // もしくは ppsfp のようにイベントが単独であると
+    // わかっている場合も即座に計算してしまう．
+    PackedVal old_val = node->val();
+    node->set_val(old_val ^ valmask);
+    add_to_clear_list(node, old_val);
+    put_fanouts(node);
+  }
+  else {
+    // 複数のイベントを登録する場合があるので
+    // ここでは計算せずに反転マスクのみをセットする．
+    set_flip_mask(node, valmask);
+    put(node);
+  }
 }
 
 // @brief イベントドリブンシミュレーションを行う．
@@ -91,10 +110,17 @@ EventQ::simulate(SimNode* target)
 
     // すでに検出済みのビットはマスクしておく
     // これは無駄なイベントの発生を抑える．
-    PackedVal diff = node->calc_fval(~obs);
-    if ( diff != kPvAll0 ) {
-      add_to_clear_list(node);
+    PackedVal old_val = node->val();
+    node->calc_val(~obs);
+    PackedVal new_val = node->val();
+    if ( node->has_flip_mask() ) {
+      new_val ^= mFlipMaskArray[node->id()];
+      node->set_val(new_val);
+    }
+    if ( new_val != old_val ) {
+      add_to_clear_list(node, old_val);
       if ( node->is_output() || node == target ) {
+	PackedVal diff = new_val ^ old_val;
 	obs |= diff;
       }
       else {
@@ -102,12 +128,20 @@ EventQ::simulate(SimNode* target)
       }
     }
   }
+
   // 今の故障シミュレーションで値の変わったノードを元にもどしておく
   for (ymuint i = 0; i < mClearPos; ++ i) {
-    SimNode* node = mClearArray[i];
-    node->clear_fval();
+    RestoreInfo& rinfo = mClearArray[i];
+    SimNode* node = rinfo.mNode;
+    node->set_val(rinfo.mVal);
   }
   mClearPos = 0;
+
+  for (ymuint i = 0; i < mMaskPos; ++ i) {
+    SimNode* node = mMaskList[i];
+    node->clear_flip();
+  }
+  mMaskPos = 0;
 
   return obs;
 }
