@@ -28,6 +28,19 @@ const PackedVal kPvAll1 = ~0UL;
 const ymuint kPvBitLen = 64;
 
 
+/// @brief 2つのビットベクタの差分を求める．
+/// @param[in] left, right オペランド
+///
+/// 異なっているビットに1を立てた2値のビットベクタを返す．
+inline
+PackedVal
+diff(PackedVal left,
+     PackedVal right)
+{
+  // って中身はただの XOR 演算
+  return left ^ right;
+}
+
 /// @brief word 中の1のビット数を数える．
 /// @param[in] word 対象のワード
 /// @return word 中の1のビット数

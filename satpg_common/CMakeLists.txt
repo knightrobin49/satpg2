@@ -3,6 +3,8 @@
 # サブディレクトリの設定
 # ===================================================================
 
+add_subdirectory ( sa/fsim )
+
 
 # ===================================================================
 #  ソースファイルの設定
@@ -62,30 +64,12 @@ set (sa_SOURCES
   sa/dtpg/DtpgSatS.cc
   sa/dtpg/DtpgSatH.cc
 
+  sa/fsim/Fsim.cc
+
   sa/uop/UopBase.cc
   sa/uop/UopDummy.cc
   sa/uop/UopList.cc
   sa/uop/UopSkip.cc
-
-  sa/fsim2/EventQ.cc
-  sa/fsim2/Fsim2.cc
-  sa/fsim2/SimNode.cc
-  sa/fsim2/SnAnd.cc
-  sa/fsim2/SnBuff.cc
-  sa/fsim2/SnGate.cc
-  sa/fsim2/SnInput.cc
-  sa/fsim2/SnOr.cc
-  sa/fsim2/SnXor.cc
-
-  sa/fsim3/EventQ.cc
-  sa/fsim3/Fsim3.cc
-  sa/fsim3/SimNode.cc
-  sa/fsim3/SnAnd.cc
-  sa/fsim3/SnBuff.cc
-  sa/fsim3/SnGate.cc
-  sa/fsim3/SnInput.cc
-  sa/fsim3/SnOr.cc
-  sa/fsim3/SnXor.cc
 
   sa/minpat/Verifier.cc
   sa/minpat/MinPatBase.cc

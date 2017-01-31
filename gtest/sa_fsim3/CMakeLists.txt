@@ -3,7 +3,7 @@
 # インクルードパスの設定
 # ===================================================================
 include_directories(
-  ${PROJECT_SOURCE_DIR}/satpg_common/sa/fsim3
+  ${PROJECT_SOURCE_DIR}/satpg_common/sa/fsim
   )
 
 
@@ -24,6 +24,7 @@ include_directories(
 add_executable ( SaFsim3SimNodeTest
   SimNodeTest.cc
   $<TARGET_OBJECTS:satpg_common_d>
+  $<TARGET_OBJECTS:satpg_sa_fsim3_d>
   $<TARGET_OBJECTS:ym_common_d>
   $<TARGET_OBJECTS:ym_logic_d>
   $<TARGET_OBJECTS:ym_cell_d>
@@ -35,6 +36,10 @@ add_executable ( SaFsim3SimNodeTest
 
 target_compile_options ( SaFsim3SimNodeTest
   PRIVATE "-g"
+  )
+
+target_compile_definitions ( SaFsim3SimNodeTest
+  PRIVATE "-DFSIM_VAL3"
   )
 
 target_link_libraries ( SaFsim3SimNodeTest

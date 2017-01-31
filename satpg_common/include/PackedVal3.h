@@ -115,6 +115,14 @@ public:
   const PackedVal3&
   operator^=(PackedVal3 right);
 
+  /// @brief XOR付き代入
+  /// @param[in] right オペランド
+  /// @return 演算後の自身の参照を返す．
+  ///
+  /// right が2値のバージョン
+  const PackedVal3&
+  operator^=(PackedVal right);
+
 
 private:
   //////////////////////////////////////////////////////////////////////
@@ -140,29 +148,57 @@ private:
 // PackedVal3 の演算
 //////////////////////////////////////////////////////////////////////
 
+/// @relates PackedVal3
+/// @brief 比較演算子 (EQ)
+/// @param[in] left, right オペランド
+bool
+operator==(PackedVal3 left,
+	   PackedVal3 right);
+
+/// @relates PackedVal3
+/// @brief 比較演算子 (NE)
+/// @param[in] left, right オペランド
+bool
+operator!=(PackedVal3 left,
+	   PackedVal3 right);
+
+/// @relates PackedVal3
 /// @brief 否定演算
 /// @param[in] right オペランド
 PackedVal3
 operator~(PackedVal3 right);
 
+/// @relates PackedVal3
 /// @brief AND演算
 /// @param[in] left, right オペランド
 PackedVal3
 operator&(PackedVal3 left,
 	  PackedVal3 right);
 
+/// @relates PackedVal3
 /// @brief OR演算
 /// @param[in] left, right オペランド
 PackedVal3
 operator|(PackedVal3 left,
 	  PackedVal3 right);
 
+/// @relates PackedVal3
 /// @brief XOR演算
 /// @param[in] left, right オペランド
 PackedVal3
 operator^(PackedVal3 left,
 	  PackedVal3 right);
 
+/// @relates PackedVal3
+/// @brief XOR演算
+/// @param[in] left, right オペランド
+///
+/// right が2値のバージョン
+PackedVal3
+operator^(PackedVal3 left,
+	  PackedVal right);
+
+/// @relates PackedVal3
 /// @brief DIFF演算
 /// @param[in] left, right オペランド
 ///
@@ -313,6 +349,28 @@ PackedVal3::negate()
   return *this;
 }
 
+// @relates PackedVal3
+// @brief 比較演算子 (EQ)
+// @param[in] left, right オペランド
+inline
+bool
+operator==(PackedVal3 left,
+	   PackedVal3 right)
+{
+  return left.val0() == right.val0() && left.val1() == right.val1();
+}
+
+// @relates PackedVal3
+// @brief 比較演算子 (NE)
+// @param[in] left, right オペランド
+inline
+bool
+operator!=(PackedVal3 left,
+	   PackedVal3 right)
+{
+  return !operator==(left, right);
+}
+
 // @brief 否定演算
 // @param[in] right オペランド
 inline
@@ -407,6 +465,42 @@ operator^(PackedVal3 left,
   PackedVal val0 = tmp0_0 & tmp1_0;
   PackedVal val1 = tmp0_1 | tmp1_1;
 
+  return PackedVal3(val0, val1);
+}
+
+// @brief XOR付き代入
+// @param[in] right オペランド
+// @return 演算後の自身の参照を返す．
+//
+// right が2値のバージョン
+inline
+const PackedVal3&
+PackedVal3::operator^=(PackedVal right)
+{
+  PackedVal tmp_val0 = val0();
+  PackedVal tmp_val1 = val1();
+
+  mVal0 &= ~right;
+  mVal0 |= tmp_val1 & right;
+  mVal1 &= ~right;
+  mVal1 |= tmp_val0 & right;
+
+  return *this;
+}
+
+// @brief XOR演算
+// @param[in] left, right オペランド
+//
+// right が2値のバージョン
+inline
+PackedVal3
+operator^(PackedVal3 left,
+	  PackedVal right)
+{
+  PackedVal tmp_val0 = left.val0();
+  PackedVal tmp_val1 = left.val1();
+  PackedVal val0 = (tmp_val0 & ~right) | (tmp_val1 &  right);
+  PackedVal val1 = (tmp_val0 &  right) | (tmp_val1 & ~right);
   return PackedVal3(val0, val1);
 }
 
