@@ -40,17 +40,6 @@ public:
   void
   set_option(const string& option_str) = 0;
 
-  /// @brief 統計情報をクリアする．
-  virtual
-  void
-  clear_stats() = 0;
-
-  /// @brief 統計情報を得る．
-  /// @param[in] stats 結果を格納する構造体
-  virtual
-  void
-  get_stats(DtpgStats& stats) const = 0;
-
   /// @breif 時間計測を制御する．
   virtual
   void

@@ -64,40 +64,6 @@ DtpgSat::set_option(const string& option_str)
   }
 }
 
-// @brief 統計情報をクリアする．
-void
-DtpgSat::clear_stats()
-{
-  mStats.mCnfGenCount = 0;
-  mStats.mCnfGenTime.set(0.0, 0.0, 0.0);
-
-  mStats.mDetCount = 0;
-  mStats.mDetTime.set(0.0, 0.0, 0.0);
-  mStats.mDetStats.clear();
-  mStats.mDetStatsMax.clear();
-
-  mStats.mRedCount = 0;
-  mStats.mRedTime.set(0.0, 0.0, 0.0);
-  mStats.mRedStats.clear();
-  mStats.mRedStatsMax.clear();
-
-  mStats.mPartRedCount = 0;
-  mStats.mPartRedTime.set(0.0, 0.0, 0.0);
-  mStats.mPartRedStats.clear();
-  mStats.mPartRedStatsMax.clear();
-
-  mStats.mAbortCount = 0;
-  mStats.mAbortTime.set(0.0, 0.0, 0.0);
-}
-
-// @brief 統計情報を得る．
-// @param[in] stats 結果を格納する構造体
-void
-DtpgSat::get_stats(DtpgStats& stats) const
-{
-  stats = mStats;
-}
-
 // @breif 時間計測を制御する．
 void
 DtpgSat::timer_enable(bool enable)
@@ -117,8 +83,8 @@ void
 DtpgSat::cnf_end()
 {
   USTime time = timer_stop();
-  mStats.mCnfGenTime += time;
-  ++ mStats.mCnfGenCount;
+  //mStats.mCnfGenTime += time;
+  //++ mStats.mCnfGenCount;
 }
 
 // @brief 時間計測を開始する．
@@ -185,18 +151,18 @@ DtpgSat::solve(SatSolver& solver,
     mDetectOp(fault, mLastAssign);
 
     timer.stop();
-    mStats.mBackTraceTime += timer.time();
+    //mStats.mBackTraceTime += timer.time();
 
-    mStats.update_det(sat_stats, time);
+    //mStats.update_det(sat_stats, time);
   }
   else if ( ans == kB3False ) {
     // 検出不能と判定された．
     mUntestOp(fault);
 
-    mStats.update_red(sat_stats, time);
+    //mStats.update_red(sat_stats, time);
   }
   else { // ans == kB3X つまりアボート
-    mStats.update_abort(sat_stats, time);
+    //mStats.update_abort(sat_stats, time);
   }
   return ans;
 }

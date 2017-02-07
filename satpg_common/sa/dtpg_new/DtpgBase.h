@@ -1,12 +1,12 @@
-﻿#ifndef DTPGSAT_H
-#define DTPGSAT_H
+﻿#ifndef DTPGBASE_H
+#define DTPGBASE_H
 
-/// @file DtpgSat.h
-/// @brief DtpgSat のヘッダファイル
+/// @file DtpgBase.h
+/// @brief DtpgBase のヘッダファイル
 ///
 /// @author Yusuke Matsunaga (松永 裕介)
 ///
-/// Copyright (C) 2016 Yusuke Matsunaga
+/// Copyright (C) 2017 Yusuke Matsunaga
 /// All rights reserved.
 
 
@@ -24,11 +24,10 @@
 BEGIN_NAMESPACE_YM_SATPG_SA
 
 //////////////////////////////////////////////////////////////////////
-/// @class DtpgSat DtpgSat.h "DtpgSat.h"
-/// @brief DtpgSat の実装用の基底クラス
+/// @class DtpgBase DtpgBase.h "DtpgBase.h"
+/// @brief DtpgBase の実装用の基底クラス
 //////////////////////////////////////////////////////////////////////
-class DtpgSat :
-  public Dtpg
+class DtpgBase
 {
 public:
 
@@ -37,29 +36,19 @@ public:
   /// @param[in] sat_option SATソルバに渡すオプション文字列
   /// @param[in] sat_outp SATソルバ用の出力ストリーム
   /// @param[in] bt バックトレーサー
-  /// @param[in] dop パタンが求められた時に実行されるファンクタ
-  /// @param[in] uop 検出不能と判定された時に実行されるファンクタ
-  DtpgSat(const string& sat_type,
+  DtpgBase(const string& sat_type,
 	  const string& sat_option,
 	  ostream* sat_outp,
-	  BackTracer& bt,
-	  DetectOp& dop,
-	  UntestOp& uop);
+	  BackTracer& bt);
 
   /// @brief デストラクタ
-  virtual
-  ~DtpgSat();
+  ~DtpgBase();
 
 
 public:
   //////////////////////////////////////////////////////////////////////
   // 外部インターフェイス
   //////////////////////////////////////////////////////////////////////
-
-  /// @brief オプションを設定する．
-  virtual
-  void
-  set_option(const string& option_str);
 
   /// @breif 時間計測を制御する．
   virtual
@@ -90,7 +79,7 @@ protected:
 
   /// @brief CNF 作成を終了する．
   void
-  cnf_end();
+  cnf_end(DtpgStats& stats);
 
   /// @brief 最後に生成された値割当リストを得る．
   const NodeValList&
@@ -106,6 +95,15 @@ protected:
 
   /// @brief 一つの SAT問題を解く．
   /// @param[in] solver SATソルバ
+  /// @param[in] assumption 仮定(値割り当て)のリスト
+  /// @param[in] fault 対象の故障
+  /// @param[in] root 故障位置のノード
+  /// @param[in] output_list 故障に関係のある外部出力のリスト
+  /// @param[in] gvar_map 正常値の変数番号マップ
+  /// @param[in] fvar_map 故障値の変数番号マップ
+  /// @param[out] nodeval_list 結果の値割り当てリスト
+  /// @param[inout] stats DTPGの統計情報
+  /// @return 結果を返す．
   SatBool3
   solve(SatSolver& solver,
 	const vector<SatLiteral>& assumptions,
@@ -113,7 +111,9 @@ protected:
 	const TpgNode* root,
 	const vector<const TpgNode*>& output_list,
 	const VidMap& gvar_map,
-	const VidMap& fvar_map);
+	const VidMap& fvar_map,
+	NodeValList& nodeval_list,
+	DtpgStats& stats);
 
 
 private:
@@ -130,20 +130,8 @@ private:
   // SAT solver の記録用ストリーム
   ostream* mSatOutP;
 
-  // ノードのIDの最大値
-  ymuint32 mMaxNodeId;
-
   // バックトレーサー
   BackTracer& mBackTracer;
-
-  // 検出時に呼ばれるファンクタ
-  DetectOp& mDetectOp;
-
-  // 検出不能時に呼ばれるファンクタ
-  UntestOp& mUntestOp;
-
-  // 最後に生成された値割当
-  NodeValList mLastAssign;
 
   // 時間計測を行なうかどうかの制御フラグ
   bool mTimerEnable;
@@ -161,7 +149,7 @@ private:
 // @brief SATソルバのタイプを得る．
 inline
 string
-DtpgSat::sat_type() const
+DtpgBase::sat_type() const
 {
   return mSatType;
 }
@@ -169,7 +157,7 @@ DtpgSat::sat_type() const
 // @brief SATソルバのオプションを得る．
 inline
 string
-DtpgSat::sat_option() const
+DtpgBase::sat_option() const
 {
   return mSatOption;
 }
@@ -177,11 +165,11 @@ DtpgSat::sat_option() const
 // @brief SATソルバのログ出力を得る．
 inline
 ostream*
-DtpgSat::sat_outp() const
+DtpgBase::sat_outp() const
 {
   return mSatOutP;
 }
 
 END_NAMESPACE_YM_SATPG_SA
 
-#endif // DTPGSAT_H
+#endif // DTPGBASE_H

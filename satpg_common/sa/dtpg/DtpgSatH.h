@@ -6,7 +6,7 @@
 ///
 /// @author Yusuke Matsunaga (松永 裕介)
 ///
-/// Copyright (C) 2005-2010, 2012-2014, 2015 Yusuke Matsunaga
+/// Copyright (C) 2017 Yusuke Matsunaga
 /// All rights reserved.
 
 
@@ -20,7 +20,7 @@ BEGIN_NAMESPACE_YM_SATPG_SA
 /// @brief MFFC と FFR の構造を考慮した階層的な DtpgSat
 //////////////////////////////////////////////////////////////////////
 class DtpgSatH :
-  public DtpgSat
+  public Dtpg
 {
 public:
 
@@ -48,6 +48,16 @@ public:
   // 外部インターフェイス
   //////////////////////////////////////////////////////////////////////
 
+  /// @brief オプション文字列をセットする．
+  virtual
+  void
+  set_option(const string& option_str);
+
+  /// @breif 時間計測を制御する．
+  virtual
+  void
+  timer_enable(bool enable);
+
   /// @brief テスト生成を行なう．
   /// @param[in] network 対象のネットワーク
   /// @param[in] fault_list 対象の故障リスト
@@ -65,6 +75,30 @@ private:
   //////////////////////////////////////////////////////////////////////
   // 内部で用いられる関数
   //////////////////////////////////////////////////////////////////////
+
+
+private:
+  //////////////////////////////////////////////////////////////////////
+  // データメンバ
+  //////////////////////////////////////////////////////////////////////
+
+  // SAT solver のタイプ
+  string mSatType;
+
+  // SAT solver のオプション
+  string mSatOption;
+
+  // SAT solver の記録用ストリーム
+  ostream* mSatOutP;
+
+  // バックトレーサー
+  BackTracer& mBackTracer;
+
+  // 検出時に呼ばれるファンクタ
+  DetectOp& mDetectOp;
+
+  // 検出不能時に呼ばれるファンクタ
+  UntestOp& mUntestOp;
 
 };
 

@@ -3,19 +3,23 @@
 /// @brief DtpgSatH の実装ファイル
 /// @author Yusuke Matsunaga (松永 裕介)
 ///
-/// Copyright (C) 2005-2010, 2012-2014 Yusuke Matsunaga
+/// Copyright (C) 2017 Yusuke Matsunaga
 /// All rights reserved.
 
 
 #include "DtpgSatH.h"
-#include "sa/DtpgStats.h"
-#include "sa/StructSat.h"
-#include "sa/FoCone.h"
-#include "sa/MffcCone.h"
-#include "TpgFault.h"
+
 #include "TpgNetwork.h"
+#include "TpgFault.h"
 #include "FaultMgr.h"
-#include "sa/Fsim.h"
+
+#include "sa/DtpgStats.h"
+
+#include "sa/DetectOp.h"
+#include "sa/UntestOp.h"
+
+#include "../dtpg_new/DtpgF.h"
+#include "../dtpg_new/DtpgM.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG_SA
@@ -45,7 +49,12 @@ DtpgSatH::DtpgSatH(const string& sat_type,
 		   BackTracer& bt,
 		   DetectOp& dop,
 		   UntestOp& uop) :
-  DtpgSat(sat_type, sat_option, sat_outp, bt, dop, uop)
+  mSatType(sat_type),
+  mSatOption(sat_option),
+  mSatOutP(sat_outp),
+  mBackTracer(bt),
+  mDetectOp(dop),
+  mUntestOp(uop)
 {
 }
 
@@ -54,34 +63,17 @@ DtpgSatH::~DtpgSatH()
 {
 }
 
-BEGIN_NONAMESPACE
-
+// @brief オプション文字列をセットする．
 void
-get_ffr_faults(const TpgNetwork& network,
-	       const TpgNode* node,
-	       const vector<bool>& fault_mark,
-	       vector<const TpgFault*>& fault_list)
+DtpgSatH::set_option(const string& option_str)
 {
-  // node 上のマークされている故障を fault_list に入れる．
-  ymuint nf = network.node_fault_num(node->id());
-  for (ymuint i = 0; i < nf; ++ i) {
-    const TpgFault* f = network.node_fault(node->id(), i);
-    if ( fault_mark[f->id()] ) {
-      fault_list.push_back(f);
-    }
-  }
-
-  // ファンインが同じ FFR のノードなら再帰する．
-  ymuint ni = node->fanin_num();
-  for (ymuint i = 0; i < ni; ++ i) {
-    const TpgNode* inode = node->fanin(i);
-    if ( inode->ffr_root() == node->ffr_root() ) {
-      get_ffr_faults(network, inode, fault_mark, fault_list);
-    }
-  }
 }
 
-END_NONAMESPACE
+// @breif 時間計測を制御する．
+void
+DtpgSatH::timer_enable(bool enable)
+{
+}
 
 // @brief テスト生成を行なう．
 // @param[in] network 対象のネットワーク
@@ -96,14 +88,8 @@ DtpgSatH::run(TpgNetwork& network,
 	      FaultMgr& fmgr,
 	      DtpgStats& stats)
 {
-  clear_stats();
-
-  StopWatch timer;
-  timer.start();
-
-  ymuint max_fault_id = network.max_fault_id();
-
   // fault_list に含まれる故障に印をつける．
+  ymuint max_fault_id = network.max_fault_id();
   vector<bool> fault_mark(max_fault_id, false);
   for (ymuint i = 0; i < fault_list.size(); ++ i) {
     const TpgFault* fault = fault_list[i];
@@ -122,138 +108,75 @@ DtpgSatH::run(TpgNetwork& network,
     const TpgNode* mffc_root = node;
     ymuint ne = mffc_root->mffc_elem_num();
     if ( ne == 1 ) {
+      DtpgF dtpg_f(mSatType, mSatOption, mSatOutP, mBackTracer, network, mffc_root);
+
       // mffc_root を根とする FFR に含まれる故障を求める．
       vector<const TpgFault*> f_list;
-      get_ffr_faults(network, mffc_root, fault_mark, f_list);
+      ymuint nf = dtpg_f.fault_num();
+      for (ymuint j = 0; j < nf; ++ j) {
+	const TpgFault* f = dtpg_f.fault(j);
+	if ( fault_mark[f->id()] ) {
+	  f_list.push_back(f);
+	}
+      }
       if ( f_list.empty() ) {
 	// 故障が残っていないのでパス
 	continue;
       }
 
-      timer.stop();
-      cnf_begin();
+      dtpg_f.cnf_gen(stats);
 
-      StructSat struct_sat(max_id, sat_type(), sat_option());
-      const FoCone* focone = struct_sat.add_focone(mffc_root, kVal1);
-
-      cnf_end();
-      timer.start();
-
-      ymuint nf = f_list.size();
-      for (ymuint i = 0; i < nf; ++ i) {
-	const TpgFault* fault = f_list[i];
-	if ( fmgr.status(fault) != kFsUndetected ) {
-	  continue;
+      nf = f_list.size();
+      for (ymuint j = 0; j < nf; ++ j) {
+	const TpgFault* fault = f_list[j];
+	if ( fmgr.status(fault) == kFsUndetected ) {
+	  // 故障に対するテスト生成を行なう．
+	  NodeValList nodeval_list;
+	  SatBool3 ans = dtpg_f.dtpg(fault, nodeval_list, stats);
+	  if ( ans == kB3True ) {
+	    mDetectOp(fault, nodeval_list);
+	  }
+	  else if ( ans == kB3False ) {
+	    mUntestOp(fault);
+	  }
 	}
-
-	// FFR 内の故障活性化&伝搬条件を求める．
-	NodeValList assignment;
-	struct_sat.add_ffr_condition(mffc_root, fault, assignment);
-
-	vector<SatLiteral> assumption;
-	struct_sat.conv_to_assumption(assignment, assumption);
-
-#if 0
-	cout << fault->str() << ":";
-	for (ymuint i = 0; i < assumption.size(); ++ i) {
-	  cout << " " << assumption[i];
-	}
-	cout << endl;
-#endif
-
-	timer.stop();
-
-	// 故障に対するテスト生成を行なう．
-	SatBool3 ans = solve(struct_sat.solver(), assumption, fault, mffc_root,
-			     focone->output_list(),
-			     focone->gvar_map(), focone->fvar_map());
-	if ( ans == kB3True ) {
-	  fmgr.set_status(fault, kFsDetected);
-	}
-	else if ( ans == kB3False ) {
-	  fmgr.set_status(fault, kFsUntestable);
-	}
-	else if ( ans == kB3X ) {
-	  fmgr.set_status(fault, kFsAborted);
-	}
-
-	timer.start();
       }
     }
     else {
-      vector<vector<const TpgFault*> > f_list(ne);
-      ymuint nf = 0;
-      for (ymuint j = 0; j < ne; ++ j) {
-	const TpgNode* node1 = mffc_root->mffc_elem(j);
-	// node1 を根とする FFR に含まれる故障を求める．
-	get_ffr_faults(network, node1, fault_mark, f_list[j]);
-	nf += f_list[j].size();
+      DtpgM dtpg_m(mSatType, mSatOption, mSatOutP, mBackTracer, network, mffc_root);
+
+      // mffc_root を根とする FFR に含まれる故障を求める．
+      vector<const TpgFault*> f_list;
+      ymuint nf = dtpg_m.fault_num();
+      for (ymuint j = 0; j < nf; ++ j) {
+	const TpgFault* f = dtpg_m.fault(j);
+	if ( fault_mark[f->id()] ) {
+	  f_list.push_back(f);
+	}
       }
-      if ( nf == 0 ) {
+      if ( f_list.empty() ) {
 	// 故障が残っていないのでパス
 	continue;
       }
 
-      timer.stop();
+      dtpg_m.cnf_gen(stats);
 
-      cnf_begin();
-
-      StructSat struct_sat(max_id, sat_type(), sat_option());
-      const MffcCone* mffc_cone = struct_sat.add_mffccone(mffc_root);
-
-      cnf_end();
-
-      timer.start();
-
-      for (ymuint j = 0; j < ne; ++ j) {
-	const TpgNode* ffr_root = mffc_root->mffc_elem(j);
-	const vector<const TpgFault*>& f_list1 = f_list[j];
-	ymuint nf = f_list1.size();
-	for (ymuint i = 0; i < nf; ++ i) {
-	  const TpgFault* fault = f_list1[i];
-	  if ( fmgr.status(fault) != kFsUndetected ) {
-	    continue;
-	  }
-
-	  // FFR 内の故障活性化&伝搬条件を求める．
-	  NodeValList assignment;
-	  struct_sat.add_ffr_condition(ffr_root, fault, assignment);
-
-	  vector<SatLiteral> assumption;
-	  struct_sat.conv_to_assumption(assignment, assumption);
-
-	  // ffr_root の出力に故障を挿入する．
-	  mffc_cone->select_fault_node(j, assumption);
-
-	  timer.stop();
-
+      for (ymuint j = 0; j < nf; ++ j) {
+	const TpgFault* fault = f_list[j];
+	if ( fmgr.status(fault) == kFsUndetected ) {
 	  // 故障に対するテスト生成を行なう．
-	  SatBool3 ans = solve(struct_sat.solver(), assumption, fault, mffc_root,
-			       mffc_cone->output_list(),
-			       mffc_cone->gvar_map(), mffc_cone->fvar_map());
+	  NodeValList nodeval_list;
+	  SatBool3 ans = dtpg_m.dtpg(fault, nodeval_list, stats);
 	  if ( ans == kB3True ) {
-	    fmgr.set_status(fault, kFsDetected);
+	    mDetectOp(fault, nodeval_list);
 	  }
 	  else if ( ans == kB3False ) {
-	    fmgr.set_status(fault, kFsUntestable);
+	    mUntestOp(fault);
 	  }
-	  else if ( ans == kB3X ) {
-	    fmgr.set_status(fault, kFsAborted);
-	}
-
-	  timer.start();
-
 	}
       }
     }
   }
-
-#if 0
-  USTime time = timer.time();
-  cout << "MISC time = " << time << endl;
-#endif
-
-  get_stats(stats);
 }
 
 END_NAMESPACE_YM_SATPG_SA

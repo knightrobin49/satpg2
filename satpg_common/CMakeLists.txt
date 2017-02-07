@@ -64,6 +64,11 @@ set (sa_SOURCES
   sa/dtpg/DtpgSatS.cc
   sa/dtpg/DtpgSatH.cc
 
+  sa/dtpg_new/DtpgBase.cc
+  sa/dtpg_new/DtpgS.cc
+  sa/dtpg_new/DtpgF.cc
+  sa/dtpg_new/DtpgM.cc
+
   sa/fsim/Fsim.cc
 
   sa/uop/UopBase.cc

@@ -24,6 +24,15 @@ BEGIN_NAMESPACE_YM_SATPG_SA
 struct DtpgStats
 {
 
+  /// @brief 空のコンストラクタ
+  ///
+  /// 適切な初期化を行う．
+  DtpgStats();
+
+  /// @brief 初期化する．
+  void
+  clear();
+
   /// @brief DetStats を更新する
   void
   update_det(const SatStats& sat_stats,
@@ -107,6 +116,42 @@ struct DtpgStats
 //////////////////////////////////////////////////////////////////////
 // インライン関数の定義
 //////////////////////////////////////////////////////////////////////
+
+// @brief 空のコンストラクタ
+//
+// 適切な初期化を行う．
+inline
+DtpgStats::DtpgStats()
+{
+  clear();
+}
+
+// @brief 初期化する．
+inline
+void
+DtpgStats::clear()
+{
+  mCnfGenCount = 0;
+  mCnfGenTime.set(0.0, 0.0, 0.0);
+
+  mDetCount = 0;
+  mDetTime.set(0.0, 0.0, 0.0);
+  mDetStats.clear();
+  mDetStatsMax.clear();
+
+  mRedCount = 0;
+  mRedTime.set(0.0, 0.0, 0.0);
+  mRedStats.clear();
+  mRedStatsMax.clear();
+
+  mPartRedCount = 0;
+  mPartRedTime.set(0.0, 0.0, 0.0);
+  mPartRedStats.clear();
+  mPartRedStatsMax.clear();
+
+  mAbortCount = 0;
+  mAbortTime.set(0.0, 0.0, 0.0);
+}
 
 // @brief DetStats を更新する
 inline
