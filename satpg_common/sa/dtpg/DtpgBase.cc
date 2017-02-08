@@ -27,7 +27,7 @@ BEGIN_NAMESPACE_YM_SATPG_SA
 DtpgBase::DtpgBase(BackTracer& bt) :
   mBackTracer(bt)
 {
-  mTimerEnable = false;
+  mTimerEnable = true;
 }
 
 // @brief デストラクタ

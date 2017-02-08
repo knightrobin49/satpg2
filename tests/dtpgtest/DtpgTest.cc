@@ -214,7 +214,6 @@ dtpg_test(int argc,
 
   DtpgStats stats;
   pair<ymuint, ymuint> num_pair;
-#if 0
   if ( single ) {
     num_pair = single_test(sat_type, sat_option, sat_outp, network, fmgr, bt, stats);
   }
@@ -224,7 +223,6 @@ dtpg_test(int argc,
   else {
     ASSERT_NOT_REACHED;
   }
-#endif
 
   timer.stop();
   USTime time = timer.time();
@@ -241,6 +239,117 @@ dtpg_test(int argc,
        << "# of detected faults    = " << detect_num << endl
        << "# of untestable faults  = " << untest_num << endl
        << "Total CPU time          = " << time << endl;
+
+  ios::fmtflags save = cout.flags();
+  cout.setf(ios::fixed, ios::floatfield);
+  if ( stats.mCnfGenCount > 0 ) {
+    cout << "CNF generation" << endl
+	 << "  " << setw(10) << stats.mCnfGenCount
+	 << "  " << stats.mCnfGenTime
+	 << "  " << setw(8) << stats.mCnfGenTime.usr_time_usec() / stats.mCnfGenCount
+	 << "u usec"
+	 << "  " << setw(8) << stats.mCnfGenTime.sys_time_usec() / stats.mCnfGenCount
+	 << "s usec" << endl;
+  }
+  if ( stats.mDetCount > 0 ) {
+    cout << endl
+	 << "*** SAT instances (" << stats.mDetCount << ") ***" << endl
+	 << "Total CPU time  (s)            = " << setw(10) << stats.mDetTime.usr_time() << "u"
+	 << " " << setw(8) << stats.mDetTime.sys_time() << "s" << endl
+	 << "Ave. CPU time (usec)           = "
+	 << setw(10) << stats.mDetTime.usr_time_usec() / stats.mDetCount
+	 << "u"
+	 << " " << setw(8) << stats.mDetTime.sys_time_usec() / stats.mDetCount
+	 << "s" << endl
+
+	 << "# of restarts (Ave./Max)       = "
+	 << setw(10) << (double) stats.mDetStats.mRestart / stats.mDetCount
+	 << " / " << setw(8) << stats.mDetStatsMax.mRestart << endl
+
+	 << "# of conflicts (Ave./Max)      = "
+	 << setw(10) << (double) stats.mDetStats.mConflictNum / stats.mDetCount
+	 << " / " << setw(8) << stats.mDetStatsMax.mConflictNum << endl
+
+	 << "# of decisions (Ave./Max)      = "
+	 << setw(10) << (double) stats.mDetStats.mDecisionNum / stats.mDetCount
+	 << " / " << setw(8) << stats.mDetStatsMax.mDecisionNum << endl
+
+	 << "# of implications (Ave./Max)   = "
+	 << setw(10) << (double) stats.mDetStats.mPropagationNum / stats.mDetCount
+	 << " / " << setw(8) << stats.mDetStatsMax.mPropagationNum << endl;
+  }
+  if ( stats.mRedCount > 0 ) {
+    cout << endl
+	 << "*** UNSAT instances (" << stats.mRedCount << ") ***" << endl
+	 << "Total CPU time  (s)            = " << setw(10) << stats.mRedTime.usr_time() << "u"
+	 << " " << setw(8) << stats.mRedTime.sys_time() << "s" << endl
+	 << "Ave. CPU time (usec)           = "
+	 << setw(10) << stats.mRedTime.usr_time_usec() / stats.mRedCount
+	 << "u"
+	 << " " << setw(8) << stats.mRedTime.sys_time_usec() / stats.mRedCount
+	 << "s" << endl
+
+	 << "# of restarts (Ave./Max)       = "
+	 << setw(10) << (double) stats.mRedStats.mRestart / stats.mRedCount
+	 << " / " << setw(8) << stats.mRedStatsMax.mRestart << endl
+
+	 << "# of conflicts (Ave./Max)      = "
+	 << setw(10) << (double) stats.mRedStats.mConflictNum / stats.mRedCount
+	 << " / " << setw(8) << stats.mRedStatsMax.mConflictNum << endl
+
+	 << "# of decisions (Ave./Max)      = "
+	 << setw(10) << (double) stats.mRedStats.mDecisionNum / stats.mRedCount
+	 << " / " << setw(8) << stats.mRedStatsMax.mDecisionNum << endl
+
+	 << "# of implications (Ave./Max)   = "
+	 << setw(10) << (double) stats.mRedStats.mPropagationNum / stats.mRedCount
+	 << " / " << setw(8) << stats.mRedStatsMax.mPropagationNum << endl;
+  }
+  if ( stats.mPartRedCount > 0 ) {
+    cout << endl
+	 << "*** Partial UNSAT instances (" << stats.mPartRedCount << ") ***" << endl
+	 << "Total CPU time  (s)            = " << setw(10) << stats.mPartRedTime.usr_time() << "u"
+	 << " " << setw(8) << stats.mPartRedTime.sys_time() << "s" << endl
+	 << "Ave. CPU time (usec)           = "
+	 << setw(10) << stats.mPartRedTime.usr_time_usec() / stats.mPartRedCount
+	 << "u"
+	 << " " << setw(8) << stats.mPartRedTime.sys_time_usec() / stats.mPartRedCount
+	 << "s" << endl
+
+	 << "# of restarts (Ave./Max)       = "
+	 << setw(10) << (double) stats.mPartRedStats.mRestart / stats.mPartRedCount
+	 << " / " << setw(8) << stats.mPartRedStatsMax.mRestart << endl
+
+	 << "# of conflicts (Ave./Max)      = "
+	 << setw(10) << (double) stats.mPartRedStats.mConflictNum / stats.mPartRedCount
+	 << " / " << setw(8) << stats.mPartRedStatsMax.mConflictNum << endl
+
+	 << "# of decisions (Ave./Max)      = "
+	 << setw(10) << (double) stats.mPartRedStats.mDecisionNum / stats.mPartRedCount
+	 << " / " << setw(8) << stats.mPartRedStatsMax.mDecisionNum << endl
+
+	 << "# of implications (Ave./Max)   = "
+	 << setw(10) << (double) stats.mPartRedStats.mPropagationNum / stats.mPartRedCount
+	 << " / " << setw(8) << stats.mPartRedStatsMax.mPropagationNum << endl;
+  }
+  if ( stats.mAbortCount > 0 ) {
+    cout << endl
+	 << "*** ABORT instances ***" << endl
+	 << "  " << setw(10) << stats.mAbortCount
+	 << "  " << stats.mAbortTime
+	 << "  " << setw(8) << stats.mAbortTime.usr_time_usec() / stats.mAbortCount
+	 << "u usec"
+	 << "  " << setw(8) << stats.mAbortTime.sys_time_usec() / stats.mAbortCount
+	 << "s usec" << endl;
+  }
+  cout << endl
+       << "*** backtrace time ***" << endl
+       << "  " << stats.mBackTraceTime
+       << "  " << setw(8) << stats.mBackTraceTime.usr_time_usec() / stats.mDetCount
+       << "u usec"
+       << "  " << setw(8) << stats.mBackTraceTime.sys_time_usec() / stats.mDetCount
+       << "s usec" << endl;
+  cout.flags(save);
 
   return 0;
 }
