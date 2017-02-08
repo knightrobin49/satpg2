@@ -10,7 +10,7 @@
 /// All rights reserved.
 
 
-#include "DtpgBase.h"
+#include "sa/DtpgBase.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG_SA

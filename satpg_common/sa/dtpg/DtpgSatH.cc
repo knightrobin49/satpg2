@@ -13,13 +13,10 @@
 #include "TpgFault.h"
 #include "FaultMgr.h"
 
-#include "sa/DtpgStats.h"
-
+#include "sa/DtpgM.h"
 #include "sa/DetectOp.h"
 #include "sa/UntestOp.h"
 
-#include "../dtpg_new/DtpgF.h"
-#include "../dtpg_new/DtpgM.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG_SA
@@ -105,74 +102,35 @@ DtpgSatH::run(TpgNetwork& network,
       continue;
     }
 
-    const TpgNode* mffc_root = node;
-    ymuint ne = mffc_root->mffc_elem_num();
-    if ( ne == 1 ) {
-      DtpgF dtpg_f(mSatType, mSatOption, mSatOutP, mBackTracer, network, mffc_root);
+    DtpgM dtpg_m(mSatType, mSatOption, mSatOutP, mBackTracer, network, node);
 
-      // mffc_root を根とする FFR に含まれる故障を求める．
-      vector<const TpgFault*> f_list;
-      ymuint nf = dtpg_f.fault_num();
-      for (ymuint j = 0; j < nf; ++ j) {
-	const TpgFault* f = dtpg_f.fault(j);
-	if ( fault_mark[f->id()] ) {
-	  f_list.push_back(f);
-	}
-      }
-      if ( f_list.empty() ) {
-	// 故障が残っていないのでパス
-	continue;
-      }
-
-      dtpg_f.cnf_gen(stats);
-
-      nf = f_list.size();
-      for (ymuint j = 0; j < nf; ++ j) {
-	const TpgFault* fault = f_list[j];
-	if ( fmgr.status(fault) == kFsUndetected ) {
-	  // 故障に対するテスト生成を行なう．
-	  NodeValList nodeval_list;
-	  SatBool3 ans = dtpg_f.dtpg(fault, nodeval_list, stats);
-	  if ( ans == kB3True ) {
-	    mDetectOp(fault, nodeval_list);
-	  }
-	  else if ( ans == kB3False ) {
-	    mUntestOp(fault);
-	  }
-	}
+    // node を根とする MFFC に含まれる故障のうち fault_list に入っていたものを求める．
+    vector<const TpgFault*> f_list;
+    ymuint nf = dtpg_m.fault_num();
+    for (ymuint j = 0; j < nf; ++ j) {
+      const TpgFault* f = dtpg_m.fault(j);
+      if ( fault_mark[f->id()] ) {
+	f_list.push_back(f);
       }
     }
-    else {
-      DtpgM dtpg_m(mSatType, mSatOption, mSatOutP, mBackTracer, network, mffc_root);
+    if ( f_list.empty() ) {
+      // 故障が残っていないのでパス
+      continue;
+    }
 
-      // mffc_root を根とする FFR に含まれる故障を求める．
-      vector<const TpgFault*> f_list;
-      ymuint nf = dtpg_m.fault_num();
-      for (ymuint j = 0; j < nf; ++ j) {
-	const TpgFault* f = dtpg_m.fault(j);
-	if ( fault_mark[f->id()] ) {
-	  f_list.push_back(f);
+    dtpg_m.cnf_gen(stats);
+
+    for (ymuint j = 0; j < nf; ++ j) {
+      const TpgFault* fault = f_list[j];
+      if ( fmgr.status(fault) == kFsUndetected ) {
+	// 故障に対するテスト生成を行なう．
+	NodeValList nodeval_list;
+	SatBool3 ans = dtpg_m.dtpg(fault, nodeval_list, stats);
+	if ( ans == kB3True ) {
+	  mDetectOp(fault, nodeval_list);
 	}
-      }
-      if ( f_list.empty() ) {
-	// 故障が残っていないのでパス
-	continue;
-      }
-
-      dtpg_m.cnf_gen(stats);
-
-      for (ymuint j = 0; j < nf; ++ j) {
-	const TpgFault* fault = f_list[j];
-	if ( fmgr.status(fault) == kFsUndetected ) {
-	  // 故障に対するテスト生成を行なう．
-	  NodeValList nodeval_list;
-	  SatBool3 ans = dtpg_m.dtpg(fault, nodeval_list, stats);
-	  if ( ans == kB3True ) {
-	    mDetectOp(fault, nodeval_list);
-	  }
-	  else if ( ans == kB3False ) {
-	    mUntestOp(fault);
-	  }
+	else if ( ans == kB3False ) {
+	  mUntestOp(fault);
 	}
       }
     }

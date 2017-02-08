@@ -9,10 +9,9 @@
 
 #include "DtpgSatS.h"
 #include "FaultMgr.h"
+#include "sa/DtpgS.h"
 #include "sa/DetectOp.h"
 #include "sa/UntestOp.h"
-
-#include "../dtpg_new/DtpgS.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG_SA

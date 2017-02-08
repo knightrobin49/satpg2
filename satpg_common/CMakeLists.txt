@@ -66,7 +66,6 @@ set (sa_SOURCES
 
   sa/dtpg_new/DtpgBase.cc
   sa/dtpg_new/DtpgS.cc
-  sa/dtpg_new/DtpgF.cc
   sa/dtpg_new/DtpgM.cc
 
   sa/fsim/Fsim.cc

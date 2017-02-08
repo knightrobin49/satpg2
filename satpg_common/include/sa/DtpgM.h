@@ -10,7 +10,7 @@
 /// All rights reserved.
 
 
-#include "DtpgBase.h"
+#include "sa/DtpgBase.h"
 #include "sa/StructSat.h"
 
 
@@ -125,6 +125,9 @@ private:
 
   // テスト生成用のCNFを生成するためのクラス
   StructSat mStructSat;
+
+  // FFR 用のデータ構造
+  const FoCone* mFoCone;
 
   // MFFC 用のデータ構造
   const MffcCone* mMffcCone;
