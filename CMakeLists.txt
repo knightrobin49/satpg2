@@ -106,6 +106,7 @@ add_subdirectory ( ym-tclpp )
 
 add_subdirectory ( tests/fsimtest )
 add_subdirectory ( tests/dtpgtest )
+add_subdirectory ( tests/tpgnetworktest )
 #add_subdirectory ( tests )
 add_subdirectory ( gtest )
 add_subdirectory ( satpg_common )

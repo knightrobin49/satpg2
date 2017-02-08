@@ -3,7 +3,7 @@
 /// @brief TpgNetworkTest の実装ファイル
 /// @author Yusuke Matsunaga (松永 裕介)
 ///
-/// Copyright (C) 2016 Yusuke Matsunaga
+/// Copyright (C) 2017 Yusuke Matsunaga
 /// All rights reserved.
 
 
@@ -17,14 +17,13 @@ void
 loop_test(ymuint loop_count,
 	  const string& filename)
 {
-  TpgNetwork network;
-  FaultMgr fmgr;
   for (ymuint i = 0; i < loop_count; ++ i) {
+    TpgNetwork network;
     if ( !network.read_iscas89(filename) ) {
       cerr << "Error in reading " << filename << endl;
       break;
     }
-    fmgr.set_faults(network);
+    //FaultMgr fmgr(network);
   }
 }
 
