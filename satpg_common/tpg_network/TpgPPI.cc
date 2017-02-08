@@ -20,10 +20,12 @@ BEGIN_NAMESPACE_YM_SATPG
 // @param[in] id ID番号
 // @param[in] input_id 入力番号
 // @param[in] fanout_num ファンアウト数
+// @param[in] fanout_list ファンアウトのリストを格納する配列
 TpgPPI::TpgPPI(ymuint id,
 	       ymuint input_id,
-	       ymuint fanout_num) :
-  TpgNode(id, vector<TpgNode*>(0), fanout_num),
+	       ymuint fanout_num,
+	       TpgNode** fanout_list) :
+  TpgNode(id, fanout_num, fanout_list),
   mInputId(input_id)
 {
 }
@@ -51,6 +53,22 @@ ymuint
 TpgPPI::input_id() const
 {
   return mInputId;
+}
+
+// @brief ファンイン数を得る．
+ymuint
+TpgPPI::fanin_num() const
+{
+  return 0;
+}
+
+// @brief ファンインを得る．
+// @param[in] pos 位置番号 ( 0 <= pos < fanin_num() )
+TpgNode*
+TpgPPI::fanin(ymuint pos) const
+{
+  ASSERT_NOT_REACHED;
+  return nullptr;
 }
 
 // @brief 入出力の関係を表す CNF 式を生成する．

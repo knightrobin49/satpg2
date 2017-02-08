@@ -66,12 +66,14 @@ public:
   // 情報を設定する関数
   //////////////////////////////////////////////////////////////////////
 
-  /// @brief 名前を設定する．
+  /// @brief 初期化する．
   /// @param[in] name 名前
+  /// @param[in] ni ファンイン数
   /// @param[in] alloc メモリアロケータ
   void
-  set_name(const string& name,
-	   Alloc& alloc);
+  init(const string& name,
+       ymuint ni,
+       Alloc& alloc);
 
   /// @brief 出力の故障を設定する．
   /// @param[in] val 故障値 ( 0 / 1 )
@@ -79,13 +81,6 @@ public:
   void
   set_output_fault(int val,
 		   TpgFault* f);
-
-  /// @brief 入力数を設定する．
-  /// @param[in] ni 入力数
-  /// @param[in] alloc メモリアロケータ
-  void
-  set_fanin_num(ymuint ni,
-		Alloc& alloc);
 
   /// @brief 入力の故障を設定する．
   /// @param[in] ipos 入力位置

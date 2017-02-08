@@ -21,11 +21,13 @@ BEGIN_NAMESPACE_YM_SATPG
 // @param[in] input_id 入力番号
 // @param[in] dff 接続しているDFF
 // @param[in] fanout_num ファンアウト数
+// @param[in] fanout_list ファンアウトのリストを格納する配列
 TpgDffOutput::TpgDffOutput(ymuint id,
 			   ymuint input_id,
 			   TpgDff* dff,
-			   ymuint fanout_num) :
-  TpgPPI(id, input_id, fanout_num),
+			   ymuint fanout_num,
+			   TpgNode** fanout_list) :
+  TpgPPI(id, input_id, fanout_num, fanout_list),
   mDff(dff)
 {
 }

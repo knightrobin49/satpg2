@@ -27,9 +27,11 @@ public:
   /// @param[in] id ID番号
   /// @param[in] input_id 入力番号
   /// @param[in] fanout_num ファンアウト数
+  /// @param[in] fanout_list ファンアウトのリストを格納する配列
   TpgPPI(ymuint id,
 	 ymuint input_id,
-	 ymuint fanout_num);
+	 ymuint fanout_num,
+	 TpgNode** fanout_list);
 
   /// @brief デストラクタ
   virtual
@@ -56,6 +58,17 @@ public:
   virtual
   ymuint
   input_id() const;
+
+  /// @brief ファンイン数を得る．
+  virtual
+  ymuint
+  fanin_num() const;
+
+  /// @brief ファンインを得る．
+  /// @param[in] pos 位置番号 ( 0 <= pos < fanin_num() )
+  virtual
+  TpgNode*
+  fanin(ymuint pos) const;
 
   /// @brief 入出力の関係を表す CNF 式を生成する．
   /// @param[in] solver SAT ソルバ

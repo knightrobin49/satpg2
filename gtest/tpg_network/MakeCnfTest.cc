@@ -68,14 +68,14 @@ MakeCnfTest::do_test(ymuint ni,
   mIvars.clear();
   mIvars.resize(ni);
   for (ymuint i = 0; i < ni; ++ i) {
-    TpgNode* node = TpgNode::make_input(i, i, 1);
+    TpgNode* node = TpgNode::make_input(i, i, 1, mAlloc);
     mInputs[i] = node;
     SatVarId var = mSolver.new_var();
     mIvars[i] = var;
   }
   mOvar = mSolver.new_var();
 
-  TpgNode* prim_node = TpgNode::make_logic(ni, gate_type, mInputs, 1);
+  TpgNode* prim_node = TpgNode::make_logic(ni, gate_type, mInputs, 1, mAlloc);
 
   VectLitMap lit_map(mIvars, mOvar);
 

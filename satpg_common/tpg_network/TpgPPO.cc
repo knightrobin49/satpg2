@@ -24,8 +24,9 @@ BEGIN_NAMESPACE_YM_SATPG
 TpgPPO::TpgPPO(ymuint id,
 	       ymuint output_id,
 	       TpgNode* fanin) :
-  TpgNode(id, vector<TpgNode*>(1, fanin), 0),
-  mOutputId(output_id)
+  TpgNode(id, 0, nullptr),
+  mOutputId(output_id),
+  mFanin(fanin)
 {
   mOutputId2 = 0;
 }
@@ -60,6 +61,23 @@ ymuint
 TpgPPO::output_id2() const
 {
   return mOutputId2;
+}
+
+// @brief ファンイン数を得る．
+ymuint
+TpgPPO::fanin_num() const
+{
+  return 1;
+}
+
+// @brief ファンインを得る．
+// @param[in] pos 位置番号 ( 0 <= pos < fanin_num() )
+TpgNode*
+TpgPPO::fanin(ymuint pos) const
+{
+  ASSERT_COND( pos == 0 );
+
+  return mFanin;
 }
 
 // @brief 入出力の関係を表す CNF 式を生成する．

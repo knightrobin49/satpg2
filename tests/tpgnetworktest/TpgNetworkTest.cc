@@ -17,14 +17,20 @@ void
 loop_test(ymuint loop_count,
 	  const string& filename)
 {
-  for (ymuint i = 0; i < loop_count; ++ i) {
+  for (ymuint i1 = 0; i1 < loop_count; ++ i1) {
     TpgNetwork network;
-    if ( !network.read_iscas89(filename) ) {
-      cerr << "Error in reading " << filename << endl;
-      break;
+    for (ymuint i2 = 0; i2 < loop_count; ++ i2) {
+      cout << "            "
+	   << "\r" << i1 << ": " << i2 << "\r";
+      cout.flush();
+      if ( !network.read_iscas89(filename) ) {
+	cerr << "Error in reading " << filename << endl;
+	break;
+      }
+      FaultMgr fmgr(network);
     }
-    //FaultMgr fmgr(network);
   }
+  cout << endl;
 }
 
 END_NAMESPACE_YM_SATPG
@@ -40,5 +46,5 @@ main(int argc,
     return 255;
   }
 
-  nsYm::nsSatpg::loop_test(1000, argv[1]);
+  nsYm::nsSatpg::loop_test(100, argv[1]);
 }

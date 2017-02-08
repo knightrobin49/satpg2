@@ -165,9 +165,11 @@ TpgNetwork::TpgNetwork() :
   mPPIArray = nullptr;
   mPPOArray = nullptr;
   mPPOArray2 = nullptr;
-  mFaultNum = 0;
   mMffcNum = 0;
   mFfrNum = 0;
+  mFaultNum = 0;
+  mRepFaultNum = 0;
+  mRepFaultArray = nullptr;
 }
 
 // @brief デストラクタ
@@ -313,17 +315,15 @@ END_NONAMESPACE
 void
 TpgNetwork::clear()
 {
-  for (ymuint i = 0; i < mNodeNum; ++ i) {
-    TpgNode* node = mNodeArray[i];
-    delete node;
-  }
-
+  // この配列以外は mAlloc で管理しているので
+  // 個別に delete する必要はない．
   delete [] mDffArray;
   delete [] mNodeArray;
   delete [] mAuxInfoArray;
   delete [] mPPIArray;
   delete [] mPPOArray;
   delete [] mPPOArray2;
+  delete [] mRepFaultArray;
 
   mAlloc.destroy();
 
@@ -721,10 +721,7 @@ TpgNetwork::set(const BnNetwork& network)
       TpgNode* node = input_list[rpos];
       mark[node->id()] = false;
     }
-#if 0
-    MffcInfo* mffc_info = new MffcInfo(node_list, input_list);
-    mMffcInfoList.push_back(mffc_info);
-#endif
+
     // node を根とする MFFC 内の FFR の根のノードのリストを作る．
     ymuint elem_num = 0;
     for (ymuint rpos = 0; rpos < node_list.size(); ++ rpos) {
@@ -801,11 +798,11 @@ TpgNetwork::make_input_node(ymuint iid,
 			    const string& name,
 			    ymuint fanout_num)
 {
-  TpgNode* node = TpgNode::make_input(mNodeNum, iid, fanout_num);
+  TpgNode* node = TpgNode::make_input(mNodeNum, iid, fanout_num, mAlloc);
   mNodeArray[mNodeNum] = node;
   ++ mNodeNum;
 
-  mAuxInfoArray[node->id()].set_name(name, mAlloc);
+  mAuxInfoArray[node->id()].init(name, 0, mAlloc);
 
   // 出力位置の故障を生成
   const char* c_name = node_name(node->id());
@@ -827,12 +824,11 @@ TpgNetwork::make_output_node(ymuint oid,
 			     const string& name,
 			     TpgNode* inode)
 {
-  TpgNode* node = TpgNode::make_output(mNodeNum, oid, inode);
+  TpgNode* node = TpgNode::make_output(mNodeNum, oid, inode, mAlloc);
   mNodeArray[mNodeNum] = node;
   ++ mNodeNum;
 
-  mAuxInfoArray[node->id()].set_name(name, mAlloc);
-  mAuxInfoArray[node->id()].set_fanin_num(1, mAlloc);
+  mAuxInfoArray[node->id()].init(name, 1, mAlloc);
 
   // 入力位置の故障を生成
   const char* c_name = node_name(node->id());
@@ -856,12 +852,11 @@ TpgNetwork::make_dff_input_node(ymuint oid,
 				const string& name,
 				TpgNode* inode)
 {
-  TpgNode* node = TpgNode::make_dff_input(mNodeNum, oid, dff, inode);
+  TpgNode* node = TpgNode::make_dff_input(mNodeNum, oid, dff, inode, mAlloc);
   mNodeArray[mNodeNum] = node;
   ++ mNodeNum;
 
-  mAuxInfoArray[node->id()].set_name(name, mAlloc);
-  mAuxInfoArray[node->id()].set_fanin_num(1, mAlloc);
+  mAuxInfoArray[node->id()].init(name, 1, mAlloc);
 
   // 入力位置の故障を生成
   const char* c_name = node_name(node->id());
@@ -885,11 +880,11 @@ TpgNetwork::make_dff_output_node(ymuint iid,
 				 const string& name,
 				 ymuint fanout_num)
 {
-  TpgNode* node = TpgNode::make_dff_output(mNodeNum, iid, dff, fanout_num);
+  TpgNode* node = TpgNode::make_dff_output(mNodeNum, iid, dff, fanout_num, mAlloc);
   mNodeArray[mNodeNum] = node;
   ++ mNodeNum;
 
-  mAuxInfoArray[node->id()].set_name(name, mAlloc);
+  mAuxInfoArray[node->id()].init(name, 0, mAlloc);
 
   // 出力位置の故障を生成
   const char* c_name = node_name(node->id());
@@ -910,12 +905,11 @@ TpgNetwork::make_dff_clock_node(TpgDff* dff,
 				const string& name,
 				TpgNode* inode)
 {
-  TpgNode* node = TpgNode::make_dff_clock(mNodeNum, dff, inode);
+  TpgNode* node = TpgNode::make_dff_clock(mNodeNum, dff, inode, mAlloc);
   mNodeArray[mNodeNum] = node;
   ++ mNodeNum;
 
-  mAuxInfoArray[node->id()].set_name(name, mAlloc);
-  mAuxInfoArray[node->id()].set_fanin_num(1, mAlloc);
+  mAuxInfoArray[node->id()].init(name, 1, mAlloc);
 
   // 入力位置の故障を生成
   const char* c_name = node_name(node->id());
@@ -937,12 +931,11 @@ TpgNetwork::make_dff_clear_node(TpgDff* dff,
 				const string& name,
 				TpgNode* inode)
 {
-  TpgNode* node = TpgNode::make_dff_clear(mNodeNum, dff, inode);
+  TpgNode* node = TpgNode::make_dff_clear(mNodeNum, dff, inode, mAlloc);
   mNodeArray[mNodeNum] = node;
   ++ mNodeNum;
 
-  mAuxInfoArray[node->id()].set_name(name, mAlloc);
-  mAuxInfoArray[node->id()].set_fanin_num(1, mAlloc);
+  mAuxInfoArray[node->id()].init(name, 1, mAlloc);
 
   // 入力位置の故障を生成
   const char* c_name = node_name(node->id());
@@ -964,12 +957,11 @@ TpgNetwork::make_dff_preset_node(TpgDff* dff,
 				 const string& name,
 				 TpgNode* inode)
 {
-  TpgNode* node = TpgNode::make_dff_preset(mNodeNum, dff, inode);
+  TpgNode* node = TpgNode::make_dff_preset(mNodeNum, dff, inode, mAlloc);
   mNodeArray[mNodeNum] = node;
   ++ mNodeNum;
 
-  mAuxInfoArray[node->id()].set_name(name, mAlloc);
-  mAuxInfoArray[node->id()].set_fanin_num(1, mAlloc);
+  mAuxInfoArray[node->id()].init(name, 1, mAlloc);
 
   // 入力位置の故障を生成
   const char* c_name = node_name(node->id());
@@ -1070,7 +1062,8 @@ TpgNetwork::make_logic_node(const string& src_name,
 	else {
 	  // 肯定のリテラルが2回以上現れている場合
 	  // ブランチの故障に対応するためにダミーのバッファをつくる．
-	  TpgNode* dummy_buff = make_prim_node(string(), kGateBUFF, vector<TpgNode*>(1, inode), p_num);
+	  TpgNode* dummy_buff = make_prim_node(string(), kGateBUFF,
+					       vector<TpgNode*>(1, inode), p_num);
 	  leaf_nodes[i * 2 + 0] = dummy_buff;
 	  // このバッファの入力が故障位置となる．
 	  inode_array[i].set(dummy_buff, 0);
@@ -1080,13 +1073,15 @@ TpgNetwork::make_logic_node(const string& src_name,
 	if ( p_num > 0 ) {
 	  // 肯定と否定のリテラルがともに現れる場合
 	  // ブランチの故障に対応するためにダミーのバッファを作る．
-	  TpgNode* dummy_buff = make_prim_node(string(), kGateBUFF, vector<TpgNode*>(1, inode), p_num + 1);
+	  TpgNode* dummy_buff = make_prim_node(string(), kGateBUFF,
+					       vector<TpgNode*>(1, inode), p_num + 1);
 	  inode = dummy_buff;
 	  leaf_nodes[i * 2 + 0] = dummy_buff;
 	}
 
 	// 否定のリテラルに対応するNOTゲートを作る．
-	TpgNode* not_gate = make_prim_node(string(), kGateNOT, vector<TpgNode*>(1, inode), n_num);
+	TpgNode* not_gate = make_prim_node(string(), kGateNOT,
+					   vector<TpgNode*>(1, inode), n_num);
 	leaf_nodes[i * 2 + 1] = not_gate;
 
 	if ( p_num > 0 ) {
@@ -1109,7 +1104,7 @@ TpgNetwork::make_logic_node(const string& src_name,
   }
 
   // 入力位置の故障を生成
-  mAuxInfoArray[node->id()].set_fanin_num(ni, mAlloc);
+  mAuxInfoArray[node->id()].init(string(), ni, mAlloc);
   for (ymuint i = 0; i < ni; ++ i) {
     Val3 oval0 = node_info->cval(i, kVal0);
     Val3 oval1 = node_info->cval(i, kVal1);
@@ -1217,15 +1212,14 @@ TpgNetwork::make_prim_node(const string& name,
 			   const vector<TpgNode*>& fanin_list,
 			   ymuint fanout_num)
 {
-  TpgNode* node = TpgNode::make_logic(mNodeNum, type, fanin_list, fanout_num);
+  TpgNode* node = TpgNode::make_logic(mNodeNum, type, fanin_list, fanout_num, mAlloc);
   mNodeArray[mNodeNum] = node;
   ++ mNodeNum;
 
   ymuint id = node->id();
   ymuint fanin_num = fanin_list.size();
 
-  mAuxInfoArray[id].set_name(name, mAlloc);
-  mAuxInfoArray[id].set_fanin_num(fanin_num, mAlloc);
+  mAuxInfoArray[id].init(name, fanin_num, mAlloc);
 
   return node;
 }
@@ -1239,7 +1233,8 @@ TpgNetwork::new_ofault(const char* name,
 		       int val,
 		       TpgNode* node)
 {
-  TpgFault* f = new TpgStemFault(mFaultNum, name, val, node, nullptr);
+  void* p = mAlloc.get_memory(sizeof(TpgStemFault));
+  TpgFault* f = new (p) TpgStemFault(mFaultNum, name, val, node, nullptr);
   mAuxInfoArray[node->id()].set_output_fault(val, f);
   ++ mFaultNum;
 }
@@ -1264,7 +1259,8 @@ TpgNetwork::new_ifault(const char* name,
   TpgNode* node = inode_info.mNode;
   ymuint inode_pos = inode_info.mPos;
   TpgNode* inode = node->fanin(inode_pos);
-  TpgFault* f = new TpgBranchFault(mFaultNum, name, val, ipos, node, inode, inode_pos, rep);
+  void* p = mAlloc.get_memory(sizeof(TpgBranchFault));
+  TpgFault* f = new (p) TpgBranchFault(mFaultNum, name, val, ipos, node, inode, inode_pos, rep);
   mAuxInfoArray[node->id()].set_input_fault(inode_pos, val, f);
   ++ mFaultNum;
 }
@@ -1458,22 +1454,19 @@ AuxNodeInfo::AuxNodeInfo()
 // @brief デストラクタ
 AuxNodeInfo::~AuxNodeInfo()
 {
-  for (int val = 0; val < 2; ++ val) {
-    delete mOutputFaults[val];
-  }
-  for (ymuint i = 0; i < mFaninNum; ++ i) {
-    for (int val = 0; val < 2; ++ val) {
-      delete mInputFaults[(i * 2) + val];
-    }
-  }
+  // このクラスに関係するメモリはすべて
+  // TpgNetwork::mAlloc が管理しているので
+  // ここではなにもする必要はない．
 }
 
-// @brief 名前を設定する．
+// @brief 初期化する．
 // @param[in] name 名前
+// @param[in] ni 入力数
 // @param[in] alloc メモリアロケータ
 void
-AuxNodeInfo::set_name(const string& name,
-		      Alloc& alloc)
+AuxNodeInfo::init(const string& name,
+		  ymuint ni,
+		  Alloc& alloc)
 {
   ymuint l = name.size();
   void* p = alloc.get_memory(sizeof(char) * (l + 1));
@@ -1482,6 +1475,15 @@ AuxNodeInfo::set_name(const string& name,
     mName[i] = name[i];
   }
   mName[l] = '\0';
+
+  mFaninNum = ni;
+
+  ymuint ni2 = ni * 2;
+  void* q = alloc.get_memory(sizeof(TpgFault*) * ni2);
+  mInputFaults = new (q) TpgFault*[ni2];
+  for (ymuint i = 0; i < ni2; ++ i) {
+    mInputFaults[i] = nullptr;
+  }
 }
 
 // @brief 出力の故障を設定する．
@@ -1493,22 +1495,6 @@ AuxNodeInfo::set_output_fault(int val,
 {
   ASSERT_COND( val == 0 || val == 1 );
   mOutputFaults[val] = f;
-}
-
-// @brief 入力数を設定する．
-// @param[in] ni 入力数
-void
-AuxNodeInfo::set_fanin_num(ymuint ni,
-			   Alloc& alloc)
-{
-  mFaninNum = ni;
-
-  ymuint ni2 = ni * 2;
-  void* p = alloc.get_memory(sizeof(TpgFault*) * ni2);
-  mInputFaults = new (p) TpgFault*[ni2];
-  for (ymuint i = 0; i < ni2; ++ i) {
-    mInputFaults[i] = nullptr;
-  }
 }
 
 // @brief 入力の故障を設定する．

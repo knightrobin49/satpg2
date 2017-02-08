@@ -61,6 +61,17 @@ public:
   ymuint
   output_id2() const;
 
+  /// @brief ファンイン数を得る．
+  virtual
+  ymuint
+  fanin_num() const;
+
+  /// @brief ファンインを得る．
+  /// @param[in] pos 位置番号 ( 0 <= pos < fanin_num() )
+  virtual
+  TpgNode*
+  fanin(ymuint pos) const;
+
   /// @brief 入出力の関係を表す CNF 式を生成する．
   /// @param[in] solver SAT ソルバ
   /// @param[in] lit_map 入出力とリテラルの対応マップ
@@ -109,6 +120,8 @@ private:
   // 出力番号2
   ymuint mOutputId2;
 
+  // ファンイン
+  TpgNode* mFanin;
 };
 
 END_NAMESPACE_YM_SATPG

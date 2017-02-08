@@ -19,17 +19,19 @@ BEGIN_NAMESPACE_YM_SATPG
 /// @brief buffer を表すクラス
 //////////////////////////////////////////////////////////////////////
 class TpgLogicBUFF :
-  public TpgLogic
+  public TpgLogic1
 {
 public:
 
   /// @brief コンストラクタ
   /// @param[in] id ID番号
-  /// @param[in] fanin_list ファンインのリスト
+  /// @param[in] fanin ファンイン
   /// @param[in] fanout_num ファンアウト数
+  /// @param[in] fanout_list ファンアウトのリストを格納する配列
   TpgLogicBUFF(ymuint id,
-	       const vector<TpgNode*>& fanin_list,
-	       ymuint fanout_num);
+	       TpgNode* fanin,
+	       ymuint fanout_num,
+	       TpgNode** fanout_list);
 
   /// @brief デストラクタ
   ~TpgLogicBUFF();

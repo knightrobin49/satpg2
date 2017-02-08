@@ -5,13 +5,14 @@
 /// @brief TpgNode のヘッダファイル
 /// @author Yusuke Matsunaga (松永 裕介)
 ///
-/// Copyright (C) 2005-2014, 2016 Yusuke Matsunaga
+/// Copyright (C) 2017 Yusuke Matsunaga
 /// All rights reserved.
 
 
 #include "satpg.h"
 #include "LitMap.h"
 #include "Val3.h"
+#include "ym/Alloc.h"
 #include "ym/ym_sat.h"
 
 
@@ -50,95 +51,111 @@ public:
   /// @param[in] id ノード番号
   /// @param[in] iid 入力番号
   /// @param[in] fanout_num ファンアウト数
+  /// @param[in] alloc メモリアロケータ
   /// @return 作成したノードを返す．
   static
   TpgNode*
   make_input(ymuint id,
 	     ymuint iid,
-	     ymuint fanout_num);
+	     ymuint fanout_num,
+	     Alloc& alloc);
 
   /// @brief 出力ノードを作る．
   /// @param[in] id ノード番号
   /// @param[in] oid 出力番号
   /// @param[in] inode 入力ノード
+  /// @param[in] alloc メモリアロケータ
   /// @return 作成したノードを返す．
   static
   TpgNode*
   make_output(ymuint id,
 	      ymuint oid,
-	      TpgNode* inode);
+	      TpgNode* inode,
+	      Alloc& alloc);
 
   /// @brief DFFの入力ノードを作る．
   /// @param[in] id ノード番号
   /// @param[in] oid 出力番号
   /// @param[in] dff 接続しているDFF
   /// @param[in] inode 入力ノード
+  /// @param[in] alloc メモリアロケータ
   /// @return 作成したノードを返す．
   static
   TpgNode*
   make_dff_input(ymuint id,
 		 ymuint oid,
 		 TpgDff* dff,
-		 TpgNode* inode);
+		 TpgNode* inode,
+		 Alloc& alloc);
 
   /// @brief DFFの出力ノードを作る．
   /// @param[in] id ノード番号
   /// @param[in] iid 入力番号
   /// @param[in] dff 接続しているDFF
   /// @param[in] fanout_num ファンアウト数
+  /// @param[in] alloc メモリアロケータ
   /// @return 作成したノードを返す．
   static
   TpgNode*
   make_dff_output(ymuint id,
 		  ymuint iid,
 		  TpgDff* dff,
-		  ymuint fanout_num);
+		  ymuint fanout_num,
+		  Alloc& alloc);
 
   /// @brief DFFのクロック端子を作る．
   /// @param[in] id ノード番号
   /// @param[in] dff 接続しているDFF
   /// @param[in] inode 入力ノード
+  /// @param[in] alloc メモリアロケータ
   /// @return 作成したノードを返す．
   static
   TpgNode*
   make_dff_clock(ymuint id,
 		 TpgDff* dff,
-		 TpgNode* inode);
+		 TpgNode* inode,
+		 Alloc& alloc);
 
   /// @brief DFFのクリア端子を作る．
   /// @param[in] id ノード番号
   /// @param[in] dff 接続しているDFF
   /// @param[in] inode 入力ノード
+  /// @param[in] alloc メモリアロケータ
   /// @return 作成したノードを返す．
   static
   TpgNode*
   make_dff_clear(ymuint id,
 		 TpgDff* dff,
-		 TpgNode* inode);
+		 TpgNode* inode,
+		 Alloc& alloc);
 
   /// @brief DFFのプリセット端子を作る．
   /// @param[in] id ノード番号
   /// @param[in] dff 接続しているDFF
   /// @param[in] inode 入力ノード
+  /// @param[in] alloc メモリアロケータ
   /// @return 作成したノードを返す．
   static
   TpgNode*
   make_dff_preset(ymuint id,
 		  TpgDff* dff,
-		  TpgNode* inode);
+		  TpgNode* inode,
+		  Alloc& alloc);
 
   /// @brief 論理ノードを作る．
   /// @param[in] id ノード番号
   /// @param[in] gate_type ゲートタイプ
   /// @param[in] inode_list 入力ノードのリスト
   /// @param[in] fanout_num ファンアウト数
+  /// @param[in] alloc メモリアロケータ
   /// @return 作成したノードを返す．
   static
   TpgNode*
   make_logic(ymuint id,
 	     GateType gate_type,
 	     const vector<TpgNode*>& inode_list,
-	     ymuint fanout_num);
+	     ymuint fanout_num,
+	     Alloc& alloc);
 
 
 public:
@@ -148,13 +165,14 @@ public:
 
   /// @brief コンストラクタ
   /// @param[in] id ID番号
-  /// @param[in] fanin_list ファンインのリスト
   /// @param[in] fanout_num ファンアウト数
+  /// @param[in] fanout_list ファンアウトのリストを格納する配列
   TpgNode(ymuint id,
-	  const vector<TpgNode*>& fanin_list,
-	  ymuint fanout_num);
+	  ymuint fanout_num,
+	  TpgNode** fanout_list);
 
   /// @brief デストラクタ
+  virtual
   ~TpgNode();
 
 
@@ -296,13 +314,15 @@ public:
   noval() const;
 
   /// @brief ファンイン数を得る．
+  virtual
   ymuint
-  fanin_num() const;
+  fanin_num() const = 0;
 
   /// @brief ファンインを得る．
   /// @param[in] pos 位置番号 ( 0 <= pos < fanin_num() )
+  virtual
   TpgNode*
-  fanin(ymuint pos) const;
+  fanin(ymuint pos) const = 0;
 
   /// @brief ファンアウト数を得る．
   ymuint
@@ -402,28 +422,22 @@ private:
   //////////////////////////////////////////////////////////////////////
 
   // ID 番号
-  ymuint32 mId;
-
-  // ファンイン数
-  ymuint32 mFaninNum;
+  ymuint mId;
 
   // ファンアウト数
-  ymuint32 mFanoutNum;
+  ymuint mFanoutNum;
 
-  // MFFC 内の根のノード数
-  ymuint32 mMffcElemNum;
+  // ファンアウトの配列
+  TpgNode** mFanoutList;
 
   // immediate dominator
   const TpgNode* mImmDom;
 
+  // MFFC 内の根のノード数
+  ymuint mMffcElemNum;
+
   // MFFC 内の根のノードのリスト
   TpgNode** mMffcElemList;
-
-  // ファンインの配列
-  TpgNode** mFaninList;
-
-  // ファンアウトの配列
-  TpgNode** mFanoutList;
 
 };
 
@@ -447,24 +461,6 @@ ymuint
 TpgNode::id() const
 {
   return mId;
-}
-
-// @brief ファンイン数を得る．
-inline
-ymuint
-TpgNode::fanin_num() const
-{
-  return mFaninNum;
-}
-
-// @brief ファンインを得る．
-// @param[in] pos 位置番号 ( 0 <= pos < fanin_num() )
-inline
-TpgNode*
-TpgNode::fanin(ymuint pos) const
-{
-  ASSERT_COND( pos < fanin_num() );
-  return mFaninList[pos];
 }
 
 // @brief ファンアウト数を得る．

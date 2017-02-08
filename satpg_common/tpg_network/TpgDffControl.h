@@ -40,6 +40,17 @@ public:
   // 外部インターフェイス
   //////////////////////////////////////////////////////////////////////
 
+  /// @brief ファンイン数を得る．
+  virtual
+  ymuint
+  fanin_num() const;
+
+  /// @brief ファンインを得る．
+  /// @param[in] pos 位置番号 ( 0 <= pos < fanin_num() )
+  virtual
+  TpgNode*
+  fanin(ymuint pos) const;
+
   /// @brief 接続している DFF を返す．
   ///
   /// is_dff_input() | is_dff_output() | is_dff_clock() | is_dff_clear() | is_dff_preset()
@@ -59,6 +70,9 @@ private:
   //////////////////////////////////////////////////////////////////////
   // データメンバ
   //////////////////////////////////////////////////////////////////////
+
+  // ファンイン
+  TpgNode* mFanin;
 
   // 対応する DFF
   TpgDff* mDff;

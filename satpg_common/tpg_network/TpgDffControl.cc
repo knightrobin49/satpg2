@@ -23,7 +23,8 @@ BEGIN_NAMESPACE_YM_SATPG
 TpgDffControl::TpgDffControl(ymuint id,
 			     TpgDff* dff,
 			     TpgNode* fanin) :
-  TpgNode(id, vector<TpgNode*>(1, fanin), 0),
+  TpgNode(id, 0, nullptr),
+  mFanin(fanin),
   mDff(dff)
 {
 }
@@ -31,6 +32,23 @@ TpgDffControl::TpgDffControl(ymuint id,
 // @brief デストラクタ
 TpgDffControl::~TpgDffControl()
 {
+}
+
+// @brief ファンイン数を得る．
+ymuint
+TpgDffControl::fanin_num() const
+{
+  return 1;
+}
+
+// @brief ファンインを得る．
+// @param[in] pos 位置番号 ( 0 <= pos < fanin_num() )
+TpgNode*
+TpgDffControl::fanin(ymuint pos) const
+{
+  ASSERT_COND( pos == 0 );
+
+  return mFanin;
 }
 
 // @brief 接続している DFF を返す．
