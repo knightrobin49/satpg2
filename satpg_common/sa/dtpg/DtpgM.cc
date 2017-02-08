@@ -37,7 +37,8 @@ DtpgM::DtpgM(const string& sat_type,
   mFaultInfoArray(mNetwork.max_fault_id()),
   mStructSat(mNetwork.node_num(), sat_type, sat_option, sat_outp),
   mFoCone(nullptr),
-  mMffcCone(nullptr)
+  mMffcCone(nullptr),
+  mFaultCone(nullptr)
 {
   ymuint ne = mMffcRoot->mffc_elem_num();
   for (ymuint i = 0; i < ne; ++ i) {
@@ -78,9 +79,11 @@ DtpgM::cnf_gen(DtpgStats& stats)
 
   if ( mMffcRoot->mffc_elem_num() == 1 ) {
     mFoCone = mStructSat.add_focone(mMffcRoot, kVal1);
+    mFaultCone = mFoCone;
   }
   else {
     mMffcCone = mStructSat.add_mffccone(mMffcRoot);
+    mFaultCone = mMffcCone;
   }
 
   cnf_end(stats);
@@ -96,6 +99,7 @@ DtpgM::dtpg(const TpgFault* fault,
 	    NodeValList& nodeval_list,
 	    DtpgStats& stats)
 {
+  vector<SatLiteral> assumption;
   if ( mMffcRoot->mffc_elem_num() == 1 ) {
     ASSERT_COND( mFoCone != nullptr );
 
@@ -104,19 +108,9 @@ DtpgM::dtpg(const TpgFault* fault,
     // FFR 内の故障活性化&伝搬条件を求める．
     NodeValList assignment;
     mStructSat.add_ffr_condition(mMffcRoot, fault, assignment);
-
-    vector<SatLiteral> assumption;
     mStructSat.conv_to_assumption(assignment, assumption);
 
     //timer.stop();
-
-    // 故障に対するテスト生成を行なう．
-    SatBool3 ans = solve(mStructSat.solver(), assumption, fault, mMffcRoot,
-			 mFoCone->output_list(),
-			 mFoCone->gvar_map(), mFoCone->fvar_map(),
-			 nodeval_list, stats);
-
-    return ans;
   }
   else {
     ASSERT_COND( mMffcCone != nullptr );
@@ -128,23 +122,21 @@ DtpgM::dtpg(const TpgFault* fault,
     // FFR 内の故障活性化&伝搬条件を求める．
     NodeValList assignment;
     mStructSat.add_ffr_condition(fi.mFfrRoot, fault, assignment);
-
-    vector<SatLiteral> assumption;
     mStructSat.conv_to_assumption(assignment, assumption);
 
     // FFR の根の出力に故障を挿入する．
     mMffcCone->select_fault_node(fi.mElemPos, assumption);
 
     //timer.stop();
-
-    // 故障に対するテスト生成を行なう．
-    SatBool3 ans = solve(mStructSat.solver(), assumption, fault, mMffcRoot,
-			 mMffcCone->output_list(),
-			 mMffcCone->gvar_map(), mMffcCone->fvar_map(),
-			 nodeval_list, stats);
-
-    return ans;
   }
+
+  // 故障に対するテスト生成を行なう．
+  SatBool3 ans = solve(mStructSat.solver(), assumption, fault, mMffcRoot,
+		       mFaultCone->output_list(),
+		       mFaultCone->gvar_map(), mFaultCone->fvar_map(),
+		       nodeval_list, stats);
+
+  return ans;
 }
 
 // @brief node と同じ FFR 内の故障を mFaultList に入れる．

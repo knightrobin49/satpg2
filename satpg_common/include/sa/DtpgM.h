@@ -132,6 +132,9 @@ private:
   // MFFC 用のデータ構造
   const MffcCone* mMffcCone;
 
+  // mFoCone か mMffcCone のどちらかが入る変数
+  const ConeBase* mFaultCone;
+
 };
 
 END_NAMESPACE_YM_SATPG_SA

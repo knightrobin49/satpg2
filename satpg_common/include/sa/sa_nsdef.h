@@ -35,6 +35,7 @@ BEGIN_NAMESPACE_YM_SATPG_SA
 // クラス名の宣言
 //////////////////////////////////////////////////////////////////////
 
+class ConeBase;
 class FoCone;
 class MffcCone;
 class StructSat;
@@ -43,10 +44,8 @@ class BackTracer;
 class DetectOp;
 class UntestOp;
 class TestVector;
-class TvDeck;
 class TvMgr;
 class Dtpg;
-class DtpgEngine;
 class DtpgStats;
 class ValMap;
 class Rtpg;
