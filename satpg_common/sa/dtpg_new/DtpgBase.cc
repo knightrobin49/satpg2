@@ -24,13 +24,7 @@
 BEGIN_NAMESPACE_YM_SATPG_SA
 
 // @brief コンストラクタ
-DtpgBase::DtpgBase(const string& sat_type,
-		   const string& sat_option,
-		   ostream* sat_outp,
-		   BackTracer& bt) :
-  mSatType(sat_type),
-  mSatOption(sat_option),
-  mSatOutP(sat_outp),
+DtpgBase::DtpgBase(BackTracer& bt) :
   mBackTracer(bt)
 {
   mTimerEnable = false;

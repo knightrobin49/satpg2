@@ -82,7 +82,10 @@ DtpgS::DtpgS(const string& sat_type,
 	     ostream* sat_outp,
 	     BackTracer& bt,
 	     const TpgNetwork& network) :
-  DtpgBase(sat_type, sat_option, sat_outp, bt),
+  DtpgBase(bt),
+  mSatType(sat_type),
+  mSatOption(sat_option),
+  mSatOutP(sat_outp),
   mMaxNodeId(network.node_num())
 {
 }
@@ -141,7 +144,7 @@ DtpgS::dtpg(const TpgFault* fault,
   }
   ymuint tfi_num = mNodeList.size();
 
-  SatSolver solver(sat_type(), sat_option());
+  SatSolver solver(mSatType, mSatOption, mSatOutP);
 
   // TFO の部分に変数を割り当てる．
   GenVidMap gvar_map(mMaxNodeId);

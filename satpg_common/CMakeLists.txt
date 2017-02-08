@@ -60,9 +60,9 @@ set (sa_SOURCES
   sa/dop/DopTvList.cc
   sa/dop/DopVerify.cc
 
-  sa/dtpg/DtpgSat.cc
-  sa/dtpg/DtpgSatS.cc
-  sa/dtpg/DtpgSatH.cc
+#  sa/dtpg/DtpgSat.cc
+#  sa/dtpg/DtpgSatS.cc
+#  sa/dtpg/DtpgSatH.cc
 
   sa/dtpg_new/DtpgBase.cc
   sa/dtpg_new/DtpgS.cc

@@ -31,11 +31,11 @@ DtpgM::DtpgM(const string& sat_type,
 	     BackTracer& bt,
 	     const TpgNetwork& network,
 	     const TpgNode* mffc_root) :
-  DtpgBase(sat_type, sat_option, sat_outp, bt),
+  DtpgBase(bt),
   mNetwork(network),
   mMffcRoot(mffc_root),
   mFaultInfoArray(mNetwork.max_fault_id()),
-  mStructSat(mNetwork.node_num(), sat_type, sat_option),
+  mStructSat(mNetwork.node_num(), sat_type, sat_option, sat_outp),
   mFoCone(nullptr),
   mMffcCone(nullptr)
 {
@@ -50,7 +50,7 @@ DtpgM::DtpgM(const string& sat_type,
 // @brief デストラクタ
 DtpgM::~DtpgM()
 {
-  // mMffcCone は StructSat のデストラクタで解放される．
+  // mFoCone, mMffcCone は StructSat のデストラクタで解放される．
 }
 
 // @brief 対象の故障数を返す．

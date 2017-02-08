@@ -32,14 +32,8 @@ class DtpgBase
 public:
 
   /// @brief コンストラクタ
-  /// @param[in] sat_type SATソルバの種類を表す文字列
-  /// @param[in] sat_option SATソルバに渡すオプション文字列
-  /// @param[in] sat_outp SATソルバ用の出力ストリーム
   /// @param[in] bt バックトレーサー
-  DtpgBase(const string& sat_type,
-	  const string& sat_option,
-	  ostream* sat_outp,
-	  BackTracer& bt);
+  DtpgBase(BackTracer& bt);
 
   /// @brief デストラクタ
   ~DtpgBase();
@@ -61,18 +55,6 @@ protected:
   // 継承クラスから用いられる関数
   //////////////////////////////////////////////////////////////////////
 
-  /// @brief SATソルバのタイプを得る．
-  string
-  sat_type() const;
-
-  /// @brief SATソルバのオプションを得る．
-  string
-  sat_option() const;
-
-  /// @brief SATソルバのログ出力を得る．
-  ostream*
-  sat_outp() const;
-
   /// @brief CNF 作成を開始する．
   void
   cnf_begin();
@@ -80,10 +62,6 @@ protected:
   /// @brief CNF 作成を終了する．
   void
   cnf_end(DtpgStats& stats);
-
-  /// @brief 最後に生成された値割当リストを得る．
-  const NodeValList&
-  last_assign();
 
   /// @brief 時間計測を開始する．
   void
@@ -121,15 +99,6 @@ private:
   // データメンバ
   //////////////////////////////////////////////////////////////////////
 
-  // SAT solver のタイプ
-  string mSatType;
-
-  // SAT solver のオプション
-  string mSatOption;
-
-  // SAT solver の記録用ストリーム
-  ostream* mSatOutP;
-
   // バックトレーサー
   BackTracer& mBackTracer;
 
@@ -145,30 +114,6 @@ private:
 //////////////////////////////////////////////////////////////////////
 // インライン関数の定義
 //////////////////////////////////////////////////////////////////////
-
-// @brief SATソルバのタイプを得る．
-inline
-string
-DtpgBase::sat_type() const
-{
-  return mSatType;
-}
-
-// @brief SATソルバのオプションを得る．
-inline
-string
-DtpgBase::sat_option() const
-{
-  return mSatOption;
-}
-
-// @brief SATソルバのログ出力を得る．
-inline
-ostream*
-DtpgBase::sat_outp() const
-{
-  return mSatOutP;
-}
 
 END_NAMESPACE_YM_SATPG_SA
 

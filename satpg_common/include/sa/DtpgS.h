@@ -88,6 +88,15 @@ private:
   // データメンバ
   //////////////////////////////////////////////////////////////////////
 
+  // SAT solver のタイプ
+  string mSatType;
+
+  // SAT solver のオプション
+  string mSatOption;
+
+  // SAT solver の記録用ストリーム
+  ostream* mSatOutP;
+
   ymuint mMaxNodeId;
 
   vector<const TpgNode*> mNodeList;

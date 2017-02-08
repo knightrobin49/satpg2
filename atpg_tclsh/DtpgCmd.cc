@@ -13,7 +13,8 @@
 #include "TpgNetwork.h"
 #include "FaultMgr.h"
 #include "sa/DtpgStats.h"
-#include "sa/Dtpg.h"
+#include "sa/DtpgS.h"
+#include "sa/DtpgM.h"
 #include "sa/Fsim.h"
 #include "sa/BackTracer.h"
 #include "sa/DetectOp.h"
@@ -23,6 +24,88 @@
 
 
 BEGIN_NAMESPACE_YM_SATPG
+
+void
+run_single(const string& sat_type,
+	   const string& sat_option,
+	   ostream* sat_outp,
+	   const TpgNetwork& network,
+	   FaultMgr& fmgr,
+	   nsSa::BackTracer& bt,
+	   nsSa::DetectOp& dop,
+	   nsSa::UntestOp& uop,
+	   nsSa::DtpgStats& stats)
+{
+  nsSa::DtpgS dtpg_s(sat_type, sat_option, sat_outp, bt, network);
+
+  ymuint nf = network.rep_fault_num();
+  for (ymuint i = 0; i < nf; ++ i) {
+    const TpgFault* fault = network.rep_fault(i);
+    if ( fmgr.status(fault) == kFsUndetected ) {
+      nsSa::NodeValList nodeval_list;
+      SatBool3 ans = dtpg_s.dtpg(fault, nodeval_list, stats);
+      if ( ans == kB3True ) {
+	dop(fault, nodeval_list);
+      }
+      else if ( ans == kB3False ) {
+	uop(fault);
+      }
+    }
+  }
+}
+
+void
+run_mffc(const string& sat_type,
+	 const string& sat_option,
+	 ostream* sat_outp,
+	 const TpgNetwork& network,
+	 FaultMgr& fmgr,
+	 nsSa::BackTracer& bt,
+	 nsSa::DetectOp& dop,
+	 nsSa::UntestOp& uop,
+	 nsSa::DtpgStats& stats)
+{
+  ymuint nn = network.node_num();
+  for (ymuint i = 0; i < nn; ++ i) {
+    const TpgNode* node = network.node(i);
+    if ( node->imm_dom() != nullptr ) {
+      continue;
+    }
+
+    nsSa::DtpgM dtpg_m(sat_type, sat_option, sat_outp, bt, network, node);
+
+    // node を根とする MFFC に含まれる故障のうち fault_list に入っていたものを求める．
+    vector<const TpgFault*> f_list;
+    ymuint nf = dtpg_m.fault_num();
+    for (ymuint j = 0; j < nf; ++ j) {
+      const TpgFault* f = dtpg_m.fault(j);
+      if ( fmgr.status(f) == kFsUndetected ) {
+	f_list.push_back(f);
+      }
+    }
+    if ( f_list.empty() ) {
+      // 故障が残っていないのでパス
+      continue;
+    }
+
+    dtpg_m.cnf_gen(stats);
+
+    for (ymuint j = 0; j < nf; ++ j) {
+      const TpgFault* fault = f_list[j];
+      if ( fmgr.status(fault) == kFsUndetected ) {
+	// 故障に対するテスト生成を行なう．
+	nsSa::NodeValList nodeval_list;
+	SatBool3 ans = dtpg_m.dtpg(fault, nodeval_list, stats);
+	if ( ans == kB3True ) {
+	  dop(fault, nodeval_list);
+	}
+	else if ( ans == kB3False ) {
+	  uop(fault);
+	}
+      }
+    }
+  }
+}
 
 //////////////////////////////////////////////////////////////////////
 // テストパタン生成を行うコマンド
@@ -166,36 +249,24 @@ DtpgCmd::cmd_proc(TclObjVector& objv)
     timer_enable = false;
   }
 
-  nsSa::Dtpg* engine = nullptr;
-  if ( engine_type == "single" ) {
-    engine = nsSa::new_DtpgSatS(sat_type, sat_option, outp, bt, dop_list, uop_list);
-  }
-  else if ( engine_type == "mffc" ) {
-    engine = nsSa::new_DtpgSatH(sat_type, sat_option, outp, bt, dop_list, uop_list);
-  }
-  else {
-    // デフォルトフォールバック
-    engine = nsSa::new_DtpgSatS(sat_type, sat_option, outp, bt, dop_list, uop_list);
-  }
-
-  engine->set_option(option_str);
-  engine->timer_enable(timer_enable);
-
-  vector<const TpgFault*> fault_list;
-
   _sa_fsim3().set_skip_all();
   for (ymuint i = 0; i < _fault_mgr().max_fault_id(); ++ i) {
     const TpgFault* f = _fault_mgr().fault(i);
     if ( f != nullptr && _fault_mgr().status(f) == kFsUndetected ) {
       _sa_fsim3().clear_skip(f);
-      fault_list.push_back(f);
     }
   }
 
   nsSa::DtpgStats stats;
-  engine->run(_network(), fault_list, _fault_mgr(), stats);
-
-  delete engine;
+  if ( engine_type == "single" ) {
+    run_single(sat_type, sat_option, outp, _network(), _fault_mgr(), bt, dop_list, uop_list, stats);
+  }
+  else if ( engine_type == "mffc" ) {
+    run_mffc(sat_type, sat_option, outp, _network(), _fault_mgr(), bt, dop_list, uop_list, stats);
+  }
+  else {
+    run_single(sat_type, sat_option, outp, _network(), _fault_mgr(), bt, dop_list, uop_list, stats);
+  }
 
   after_update_faults();
 
