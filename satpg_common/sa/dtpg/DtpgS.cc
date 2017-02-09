@@ -60,11 +60,12 @@ make_dchain_cnf(SatSolver& solver,
       }
       tmp_lits[nfo] = ~dlit;
       solver.add_clause(tmp_lits);
-    }
-    const TpgNode* imm_dom = node->imm_dom();
-    if ( imm_dom != nullptr ) {
-      SatLiteral odlit(dvar_map(imm_dom));
-      solver.add_clause(~dlit, odlit);
+
+      const TpgNode* imm_dom = node->imm_dom();
+      if ( imm_dom != nullptr ) {
+	SatLiteral odlit(dvar_map(imm_dom));
+	solver.add_clause(~dlit, odlit);
+      }
     }
   }
 }
