@@ -26,6 +26,7 @@ BEGIN_NAMESPACE_YM_SATPG
 TpgFault::TpgFault(ymuint id,
 		   int val,
 		   const TpgFault* rep_fault) :
+  mFfrRoot(nullptr),
   mRepFault(rep_fault)
 {
   // val は 0 か 1 のはずだが念の為マスクしておく
@@ -35,6 +36,13 @@ TpgFault::TpgFault(ymuint id,
 // @brief デストラクタ
 TpgFault::~TpgFault()
 {
+}
+
+// @brief 故障の属するFFRの根のノードを返す．
+const TpgNode*
+TpgFault::ffr_root() const
+{
+  return tpg_onode()->ffr_root();
 }
 
 // @brief ストリーム出力演算子

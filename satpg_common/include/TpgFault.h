@@ -82,6 +82,10 @@ public:
   ymuint
   tpg_pos() const = 0;
 
+  /// @brief 故障の属するFFRの根のノードを返す．
+  const TpgNode*
+  ffr_root() const;
+
   /// @brief 故障値を返す．
   /// @note 返す値は 0 か 1
   int
@@ -124,6 +128,9 @@ private:
 
   // ID番号 + 故障値(最下位ビット)
   ymuint mIdVal;
+
+  // FFR の根のノード
+  const TpgNode* mFfrRoot;
 
   // 代表故障
   const TpgFault* mRepFault;

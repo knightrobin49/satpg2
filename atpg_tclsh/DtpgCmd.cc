@@ -36,12 +36,13 @@ run_single(const string& sat_type,
 	   nsSa::UntestOp& uop,
 	   nsSa::DtpgStats& stats)
 {
-  nsSa::DtpgS dtpg_s(sat_type, sat_option, sat_outp, bt, network);
 
   ymuint nf = network.rep_fault_num();
   for (ymuint i = 0; i < nf; ++ i) {
     const TpgFault* fault = network.rep_fault(i);
     if ( fmgr.status(fault) == kFsUndetected ) {
+      const TpgNode* ffr_root = fault->ffr_root();
+      nsSa::DtpgS dtpg_s(sat_type, sat_option, sat_outp, bt, network, ffr_root);
       nsSa::NodeValList nodeval_list;
       SatBool3 ans = dtpg_s.dtpg(fault, nodeval_list, stats);
       if ( ans == kB3True ) {

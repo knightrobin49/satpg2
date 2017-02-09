@@ -29,7 +29,6 @@ single_test(const string& sat_type,
 	    BackTracer& bt,
 	    DtpgStats& stats)
 {
-  DtpgS dtpg_s(sat_type, sat_option, sat_outp, bt, network);
 
   ymuint detect_num = 0;
   ymuint untest_num = 0;
@@ -37,6 +36,10 @@ single_test(const string& sat_type,
   for (ymuint i = 0; i < nf; ++ i) {
     const TpgFault* fault = network.rep_fault(i);
     if ( fmgr.status(fault) == kFsUndetected ) {
+      const TpgNode* ffr_root = fault->ffr_root();
+      DtpgS dtpg_s(sat_type, sat_option, sat_outp, bt, network, ffr_root);
+
+      dtpg_s.gen_cnf(stats);
       NodeValList nodeval_list;
       SatBool3 ans = dtpg_s.dtpg(fault, nodeval_list, stats);
       if ( ans == kB3True ) {
