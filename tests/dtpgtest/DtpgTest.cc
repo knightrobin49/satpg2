@@ -55,6 +55,45 @@ single_test(const string& sat_type,
 }
 
 pair<ymuint, ymuint>
+ffr_test(const string& sat_type,
+	 const string& sat_option,
+	 ostream* sat_outp,
+	 const TpgNetwork& network,
+	 FaultMgr& fmgr,
+	 BackTracer& bt,
+	 DtpgStats& stats)
+{
+
+  ymuint detect_num = 0;
+  ymuint untest_num = 0;
+  for (ymuint i = 0; i < network.node_num(); ++ i) {
+    const TpgNode* node = network.node(i);
+    if ( node->ffr_root() != node ) {
+      continue;
+    }
+
+    DtpgS dtpg_s(sat_type, sat_option, sat_outp, bt, network, node);
+    dtpg_s.gen_cnf(stats);
+    ymuint nf = network.ffr_fault_num(node->id());
+    for (ymuint j = 0; j < nf; ++ j) {
+      const TpgFault* fault = network.ffr_fault(node->id(), j);
+      if ( fmgr.status(fault) == kFsUndetected ) {
+	NodeValList nodeval_list;
+	SatBool3 ans = dtpg_s.dtpg(fault, nodeval_list, stats);
+	if ( ans == kB3True ) {
+	  ++ detect_num;
+	}
+	else if ( ans == kB3False ) {
+	  ++ untest_num;
+	}
+      }
+    }
+  }
+
+  return make_pair(detect_num, untest_num);
+}
+
+pair<ymuint, ymuint>
 mffc_test(const string& sat_type,
 	  const string& sat_option,
 	  ostream* sat_outp,
@@ -128,6 +167,7 @@ dtpg_test(int argc,
   bool iscas89 = false;
 
   bool single = false;
+  bool ffr = false;
   bool mffc = false;
 
   argv0 = argv[0];
@@ -136,15 +176,22 @@ dtpg_test(int argc,
   for ( ; pos < argc; ++ pos) {
     if ( argv[pos][0] == '-' ) {
       if ( strcmp(argv[pos], "--single") == 0 ) {
-	if ( mffc ) {
-	  cerr << "--single and --mffc are mutually exclusive" << endl;
+	if ( ffr || mffc ) {
+	  cerr << "--single, --ffr and --mffc are mutually exclusive" << endl;
 	  return -1;
 	}
 	single = true;
       }
+      else if ( strcmp(argv[pos], "--ffr") == 0 ) {
+	if ( single || mffc ) {
+	  cerr << "--single, --ffr  and --mffc are mutually exclusive" << endl;
+	  return -1;
+	}
+	ffr = true;
+      }
       else if ( strcmp(argv[pos], "--mffc") == 0 ) {
-	if ( single ) {
-	  cerr << "--single and --mffc are mutually exclusive" << endl;
+	if ( single || ffr ) {
+	  cerr << "--single, --ffr and --mffc are mutually exclusive" << endl;
 	  return -1;
 	}
 	mffc = true;
@@ -179,7 +226,7 @@ dtpg_test(int argc,
     return -1;
   }
 
-  if ( !single && !mffc ) {
+  if ( !single && !ffr && !mffc ) {
     // mffc をデフォルトにする．
     mffc = true;
   }
@@ -219,6 +266,9 @@ dtpg_test(int argc,
   pair<ymuint, ymuint> num_pair;
   if ( single ) {
     num_pair = single_test(sat_type, sat_option, sat_outp, network, fmgr, bt, stats);
+  }
+  else if ( ffr ) {
+    num_pair = ffr_test(sat_type, sat_option, sat_outp, network, fmgr, bt, stats);
   }
   else if ( mffc ) {
     num_pair = mffc_test(sat_type, sat_option, sat_outp, network, fmgr, bt, stats);

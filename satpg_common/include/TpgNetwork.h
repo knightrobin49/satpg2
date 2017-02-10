@@ -184,10 +184,22 @@ public:
 
   /// @brief このノードに関係する代表故障を返す．
   /// @param[in] id ノードID ( 0 <= id < node_num() )
-  /// @param[in] pos 位置番号 ( 0 <= pos < fault_num() )
+  /// @param[in] pos 位置番号 ( 0 <= pos < node_fault_num(id) )
   const TpgFault*
   node_fault(ymuint id,
 	     ymuint pos) const;
+
+  /// @brief FFR に属する代表故障数を返す．
+  /// @param[in] id FFRの根のノードID ( 0 <= id < node_num() )
+  ymuint
+  ffr_fault_num(ymuint id) const;
+
+  /// @brief FFR に属する代表故障を返す．
+  /// @param[in] id FFRの根のノードID ( 0 <= id < node_num() )
+  /// @param[in] pos 位置番号 ( 0 <= pos < ffr_fault_num(id) )
+  const TpgFault*
+  ffr_fault(ymuint id,
+	    ymuint pos) const;
 
 
 public:

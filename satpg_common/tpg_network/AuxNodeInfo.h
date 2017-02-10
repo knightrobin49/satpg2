@@ -60,6 +60,19 @@ public:
   input_fault(ymuint pos,
 	      int val) const;
 
+  /// @brief FFRに属する代表故障数を返す．
+  ///
+  /// FFRの根のノードの時のみ意味を持つ．
+  ymuint
+  ffr_fault_num() const;
+
+  /// @brief FFRに属する代表故障を返す．
+  /// @param[in] pos 位置番号 ( 0 <= pos < ffr_fault_num() )
+  ///
+  /// FFRの根のノードの時のみ意味を持つ．
+  const TpgFault*
+  ffr_fault(ymuint pos) const;
+
 
 public:
   //////////////////////////////////////////////////////////////////////
@@ -98,6 +111,13 @@ public:
   set_fault_list(const vector<const TpgFault*>& fault_list,
 		 Alloc& alloc);
 
+  /// @brief FFR内の故障リストを設定する．
+  /// @param[in] fault_list 故障リスト
+  /// @param[in] alloc メモリアロケータ
+  void
+  set_ffr_fault_list(const vector<const TpgFault*>& fault_list,
+		     Alloc& alloc);
+
 
 private:
   //////////////////////////////////////////////////////////////////////
@@ -130,6 +150,14 @@ private:
   /// サイズは mFaninNum * 2
   TpgFault** mInputFaults;
 
+  /// @brief FFR内の故障数
+  ymuint mFfrFaultNum;
+
+  /// @brief FFR内の故障の配列
+  ///
+  /// サイズは mFfrFaultNum
+  const TpgFault** mFfrFaultList;
+
 };
 
 
@@ -160,6 +188,7 @@ const TpgFault*
 AuxNodeInfo::fault(ymuint pos) const
 {
   ASSERT_COND( pos < fault_num() );
+
   return mFaultList[pos];
 }
 
@@ -170,6 +199,7 @@ TpgFault*
 AuxNodeInfo::output_fault(int val) const
 {
   ASSERT_COND( val == 0 || val == 1 );
+
   return mOutputFaults[val];
 }
 
@@ -183,7 +213,31 @@ AuxNodeInfo::input_fault(ymuint pos,
 {
   ASSERT_COND( val == 0 || val == 1 );
   ASSERT_COND( pos < mFaninNum );
+
   return mInputFaults[(pos * 2) + val];
+}
+
+// @brief FFRに属する代表故障数を返す．
+//
+// FFRの根のノードの時のみ意味を持つ．
+inline
+ymuint
+AuxNodeInfo::ffr_fault_num() const
+{
+  return mFfrFaultNum;
+}
+
+// @brief FFRに属する代表故障を返す．
+// @param[in] pos 位置番号 ( 0 <= pos < ffr_fault_num() )
+//
+// FFRの根のノードの時のみ意味を持つ．
+inline
+const TpgFault*
+AuxNodeInfo::ffr_fault(ymuint pos) const
+{
+  ASSERT_COND( pos < ffr_fault_num() );
+
+  return mFfrFaultList[pos];
 }
 
 END_NAMESPACE_YM_SATPG

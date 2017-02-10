@@ -43,6 +43,7 @@ run_single(const string& sat_type,
     if ( fmgr.status(fault) == kFsUndetected ) {
       const TpgNode* ffr_root = fault->ffr_root();
       nsSa::DtpgS dtpg_s(sat_type, sat_option, sat_outp, bt, network, ffr_root);
+      dtpg_s.gen_cnf(stats);
       nsSa::NodeValList nodeval_list;
       SatBool3 ans = dtpg_s.dtpg(fault, nodeval_list, stats);
       if ( ans == kB3True ) {
