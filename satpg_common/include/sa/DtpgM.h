@@ -126,14 +126,8 @@ private:
   // テスト生成用のCNFを生成するためのクラス
   StructSat mStructSat;
 
-  // FFR 用のデータ構造
-  const FoCone* mFoCone;
-
   // MFFC 用のデータ構造
   const MffcCone* mMffcCone;
-
-  // mFoCone か mMffcCone のどちらかが入る変数
-  const ConeBase* mFaultCone;
 
 };
 
