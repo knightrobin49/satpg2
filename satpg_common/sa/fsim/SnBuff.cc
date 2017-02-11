@@ -47,7 +47,6 @@ SnBuff::_calc_val()
 PackedVal
 SnBuff::_calc_gobs(ymuint ipos)
 {
-  ASSERT_NOT_REACHED;
   return kPvAll1;
 }
 

@@ -24,7 +24,6 @@
 #include "ym/BnNode.h"
 #include "ym/Expr.h"
 
-#define USE_MYALLOC 1
 
 BEGIN_NAMESPACE_YM_SATPG
 

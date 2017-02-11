@@ -74,75 +74,11 @@ private:
   // 内部で用いられる関数
   //////////////////////////////////////////////////////////////////////
 
-  /// @brief TFO マークを調べる．
-  /// @param[in] node 対象のノード
-  bool
-  tfo_mark(const TpgNode* node) const;
-
-  /// @brief TFO マークをつける．
-  /// @param[in] node 対象のノード
-  ///
-  /// と同時に mNodeList に入れる．<br>
-  /// 出力ノードの場合は mOutputList にも入れる．<br>
-  /// すでにマークされていたら何もしない．
-  void
-  set_tfo_mark(const TpgNode* node);
-
-  /// @brief TFI マークを調べる．
-  /// @param[in] node 対象のノード
-  bool
-  tfi_mark(const TpgNode* node) const;
-
-  /// @brief TFI マークをつける．
-  /// @param[in] node 対象のノード
-  ///
-  /// と同時に mNodeList に入れる．
-  void
-  set_tfi_mark(const TpgNode* node);
-
-  /// @brief TFO マークと TFI マークのいづれかがついていたら true を返す．
-  /// @param[in] node 対象のノード
-  bool
-  mark(const TpgNode* node);
-
-  /// @brief 故障伝搬条件を表すCNF式を生成する．
-  /// @param[in] node 対象のノード
-  void
-  make_dchain_cnf(const TpgNode* node);
-
 
 private:
   //////////////////////////////////////////////////////////////////////
   // データメンバ
   //////////////////////////////////////////////////////////////////////
-
-  // SATソルバ
-  SatSolver mSolver;
-
-  // ノード番号の最大値
-  ymuint mMaxNodeId;
-
-  // 関係するノードを入れておくリスト
-  vector<const TpgNode*> mNodeList;
-
-  // 関係する出力ノードを入れておくリスト
-  vector<const TpgNode*> mOutputList;
-
-  // 作業用のマークを入れておく配列
-  // サイズは mMaxNodeId
-  vector<ymuint8> mMarkArray;
-
-  // 対象のFFRの根のノード
-  const TpgNode* mFfrRoot;
-
-  // 正常値を表す変数のマップ
-  GenVidMap mGvarMap;
-
-  // 故障値を表す変数のマップ
-  GenVidMap mFvarMap;
-
-  // 故障伝搬条件を表す変数のマップ
-  GenVidMap mDvarMap;
 
   // CNF が生成されている時 true となるフラグ
   bool mHasCnf;
@@ -153,60 +89,6 @@ private:
 //////////////////////////////////////////////////////////////////////
 // インライン関数の定義
 //////////////////////////////////////////////////////////////////////
-
-// @brief TFO マークを調べる．
-inline
-bool
-DtpgS::tfo_mark(const TpgNode* node) const
-{
-  return static_cast<bool>((mMarkArray[node->id()] >> 0) & 1U);
-}
-
-// @brief TFO マークをつける．
-inline
-void
-DtpgS::set_tfo_mark(const TpgNode* node)
-{
-  ymuint id = node->id();
-  if ( ((mMarkArray[id] >> 0) & 1U) == 0U ) {
-    mMarkArray[id] = 1U;
-    mNodeList.push_back(node);
-    if ( node->is_ppo() ) {
-      mOutputList.push_back(node);
-    }
-  }
-}
-
-// @brief TFI マークを調べる．
-inline
-bool
-DtpgS::tfi_mark(const TpgNode* node) const
-{
-  return static_cast<bool>((mMarkArray[node->id()] >> 1) & 1U);
-}
-
-// @brief TFI マークをつける．
-inline
-void
-DtpgS::set_tfi_mark(const TpgNode* node)
-{
-  ymuint id = node->id();
-  if ( mMarkArray[id] == 0U ) {
-    mMarkArray[node->id()] = 2U;
-    mNodeList.push_back(node);
-  }
-}
-
-// @brief TFO マークと TFI マークのいづれかがついていたら true を返す．
-inline
-bool
-DtpgS::mark(const TpgNode* node)
-{
-  if ( mMarkArray[node->id()] ) {
-    return true;
-  }
-  return false;
-}
 
 END_NAMESPACE_YM_SATPG_SA
 

@@ -76,33 +76,24 @@ run_mffc(const string& sat_type,
 
     nsSa::DtpgM dtpg_m(sat_type, sat_option, sat_outp, bt, network, node);
 
-    // node を根とする MFFC に含まれる故障のうち fault_list に入っていたものを求める．
-    vector<const TpgFault*> f_list;
-    ymuint nf = dtpg_m.fault_num();
-    for (ymuint j = 0; j < nf; ++ j) {
-      const TpgFault* f = dtpg_m.fault(j);
-      if ( fmgr.status(f) == kFsUndetected ) {
-	f_list.push_back(f);
-      }
-    }
-    if ( f_list.empty() ) {
-      // 故障が残っていないのでパス
-      continue;
-    }
-
     dtpg_m.cnf_gen(stats);
 
-    for (ymuint j = 0; j < nf; ++ j) {
-      const TpgFault* fault = f_list[j];
-      if ( fmgr.status(fault) == kFsUndetected ) {
-	// 故障に対するテスト生成を行なう．
-	nsSa::NodeValList nodeval_list;
-	SatBool3 ans = dtpg_m.dtpg(fault, nodeval_list, stats);
-	if ( ans == kB3True ) {
-	  dop(fault, nodeval_list);
-	}
-	else if ( ans == kB3False ) {
-	  uop(fault);
+    ymuint ne = node->mffc_elem_num();
+    for (ymuint j = 0; j < ne; ++ j) {
+      const TpgNode* node1 = node->mffc_elem(j);
+      ymuint nf = network.ffr_fault_num(node1->id());
+      for (ymuint k = 0; k < nf; ++ k) {
+	const TpgFault* fault = network.ffr_fault(node1->id(), k);
+	if ( fmgr.status(fault) == kFsUndetected ) {
+	  // 故障に対するテスト生成を行なう．
+	  nsSa::NodeValList nodeval_list;
+	  SatBool3 ans = dtpg_m.dtpg(fault, nodeval_list, stats);
+	  if ( ans == kB3True ) {
+	    dop(fault, nodeval_list);
+	  }
+	  else if ( ans == kB3False ) {
+	    uop(fault);
+	  }
 	}
       }
     }

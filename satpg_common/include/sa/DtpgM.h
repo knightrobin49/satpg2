@@ -78,32 +78,18 @@ private:
   // 内部で用いられる関数
   //////////////////////////////////////////////////////////////////////
 
-  /// @brief node と同じ FFR 内の故障を mFaultList に入れる．
-  /// @param[in] node 対象のノード
-  /// @param[in] elem_pos MFFC 内の要素番号
+  /// @brief MFFC 内部の故障伝搬条件を表すCNFを作る．
   void
-  get_ffr_faults(const TpgNode* node,
-		 ymuint elem_pos);
+  make_mffc_condition();
 
-
-private:
-  //////////////////////////////////////////////////////////////////////
-  // 内部で用いられるデータ構造
-  //////////////////////////////////////////////////////////////////////
-
-  // 故障に関する情報を表す構造体
-  struct FaultInfo
-  {
-    // 空のコンストラクタ
-    FaultInfo() { }
-
-    // FFR の根のノード
-    const TpgNode* mFfrRoot;
-
-    // MFFC 内の要素番号
-    ymuint mElemPos;
-
-  };
+  /// @brief 故障挿入回路のCNFを作る．
+  /// @param[in] elem_pos 要素番号
+  /// @param[in] ovar ゲートの出力の変数
+  /// @param[in] fvar_map 故障回路の変数マップ
+  void
+  inject_fault(ymuint elem_pos,
+	       SatVarId ovar,
+	       const vector<SatVarId>& fvar_map);
 
 
 private:
@@ -111,23 +97,16 @@ private:
   // データメンバ
   //////////////////////////////////////////////////////////////////////
 
-  // 対象のネットワーク
-  const TpgNetwork& mNetwork;
+  // FFR の根のリスト
+  // [0] は MFFC の根でもある．
+  vector<const TpgNode*> mElemArray;
 
-  // MFFC の根のノード
-  const TpgNode* mMffcRoot;
+  // 故障番号をキーにしてFFR番号を入れる配列
+  vector<ymuint> mElemPosMap;
 
-  // 対象の故障リスト
-  vector<const TpgFault*> mFaultList;
-
-  // 故障番号をキーにして FaultInfo を保持する配列
-  vector<FaultInfo> mFaultInfoArray;
-
-  // テスト生成用のCNFを生成するためのクラス
-  StructSat mStructSat;
-
-  // MFFC 用のデータ構造
-  const MffcCone* mMffcCone;
+  // 各FFRの根に反転イベントを挿入するための変数
+  // サイズは mElemNum
+  vector<SatVarId> mElemVarArray;
 
 };
 

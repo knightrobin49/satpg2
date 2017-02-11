@@ -8,12 +8,9 @@
 
 
 #include "sa/DtpgM.h"
-#include "sa/DtpgStats.h"
-#include "sa/StructSat.h"
-#include "sa/FoCone.h"
-#include "sa/MffcCone.h"
 #include "TpgFault.h"
 #include "TpgNetwork.h"
+#include "VectLitMap.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG_SA
@@ -31,42 +28,27 @@ DtpgM::DtpgM(const string& sat_type,
 	     BackTracer& bt,
 	     const TpgNetwork& network,
 	     const TpgNode* mffc_root) :
-  DtpgBase(bt),
-  mNetwork(network),
-  mMffcRoot(mffc_root),
-  mFaultInfoArray(mNetwork.max_fault_id()),
-  mStructSat(mNetwork.node_num(), sat_type, sat_option, sat_outp),
-  mMffcCone(nullptr)
+  DtpgBase(sat_type, sat_option, sat_outp, bt, network, mffc_root),
+  mElemArray(mffc_root->mffc_elem_num()),
+  mElemPosMap(network.max_fault_id()),
+  mElemVarArray(mffc_root->mffc_elem_num())
 {
-  ymuint ne = mMffcRoot->mffc_elem_num();
+  ymuint ne = mffc_root->mffc_elem_num();
   for (ymuint i = 0; i < ne; ++ i) {
-    const TpgNode* node1 = mMffcRoot->mffc_elem(i);
+    const TpgNode* node1 = mffc_root->mffc_elem(i);
+    mElemArray[i] = node1;
     // node1 を根とする FFR に含まれる故障を求める．
-    get_ffr_faults(node1, i);
+    ymuint nf = network.ffr_fault_num(node1->id());
+    for (ymuint j = 0; j < nf; ++ j) {
+      const TpgFault* f = network.ffr_fault(node1->id(), j);
+      mElemPosMap[f->id()] = i;
+    }
   }
 }
 
 // @brief デストラクタ
 DtpgM::~DtpgM()
 {
-  // mMffcCone は StructSat のデストラクタで解放される．
-}
-
-// @brief 対象の故障数を返す．
-ymuint
-DtpgM::fault_num() const
-{
-  return mFaultList.size();
-}
-
-// @brief 対象の故障を返す．
-// @param[in] pos 位置番号 ( 0 <= pos < fault_num() )
-const TpgFault*
-DtpgM::fault(ymuint pos) const
-{
-  ASSERT_COND( pos < fault_num() );
-
-  return mFaultList[pos];
 }
 
 // @brief CNF 式を作る．
@@ -75,7 +57,12 @@ DtpgM::cnf_gen(DtpgStats& stats)
 {
   cnf_begin();
 
-  mMffcCone = mStructSat.add_mffccone(mMffcRoot);
+  // root 以降の伝搬条件を作る．
+  gen_cnf_base();
+
+  if ( mElemArray.size() > 1 ) {
+    make_mffc_condition();
+  }
 
   cnf_end(stats);
 }
@@ -90,59 +77,147 @@ DtpgM::dtpg(const TpgFault* fault,
 	    NodeValList& nodeval_list,
 	    DtpgStats& stats)
 {
-  vector<SatLiteral> assumption;
-
-  ASSERT_COND( mMffcCone != nullptr );
+  vector<SatLiteral> assumptions;
 
   //timer.start();
 
-  const FaultInfo& fi = mFaultInfoArray[fault->id()];
-
   // FFR 内の故障活性化&伝搬条件を求める．
-  NodeValList assignment;
-  mStructSat.add_ffr_condition(fi.mFfrRoot, fault, assignment);
-  mStructSat.conv_to_assumption(assignment, assumption);
+  make_ffr_condition(fault, assumptions);
 
-  // FFR の根の出力に故障を挿入する．
-  mMffcCone->select_fault_node(fi.mElemPos, assumption);
+  if ( mElemArray.size() > 1 ) {
+    // FFR の根の出力に故障を挿入する．
+    ymuint elem_pos = mElemPosMap[fault->id()];
+    for (ymuint i = 0; i < mElemVarArray.size(); ++ i) {
+      SatVarId evar = mElemVarArray[i];
+      bool inv = (i != elem_pos);
+      assumptions.push_back(SatLiteral(evar, inv));
+    }
+  }
 
   //timer.stop();
 
   // 故障に対するテスト生成を行なう．
-  SatBool3 ans = solve(mStructSat.solver(), assumption, fault, mMffcRoot,
-		       mMffcCone->output_list(),
-		       mMffcCone->gvar_map(), mMffcCone->fvar_map(),
-		       nodeval_list, stats);
+  SatBool3 ans = solve(assumptions, fault, nodeval_list, stats);
 
   return ans;
 }
 
-// @brief node と同じ FFR 内の故障を mFaultList に入れる．
-// @param[in] node 対象のノード
-// @param[in] elem_pos MFFC 内の要素番号
+// @brief MFFC 内部の故障伝搬条件を表すCNFを作る．
 void
-DtpgM::get_ffr_faults(const TpgNode* node,
-		      ymuint elem_pos)
+DtpgM::make_mffc_condition()
 {
-  // node 上の故障を mFaultList に入れる．
-  ymuint nf = mNetwork.node_fault_num(node->id());
-  for (ymuint i = 0; i < nf; ++ i) {
-    const TpgFault* f = mNetwork.node_fault(node->id(), i);
-    mFaultList.push_back(f);
-    // と同時に mFaultInfoArray に必要な情報をセットする．
-    FaultInfo& fi = mFaultInfoArray[f->id()];
-    fi.mFfrRoot = node->ffr_root();
-    fi.mElemPos = elem_pos;
+  // 各FFRの根にXORゲートを挿入した故障回路を作る．
+  // そのXORをコントロールする入力変数を作る．
+  for (ymuint i = 0; i < mElemArray.size(); ++ i) {
+    mElemVarArray[i] = solver().new_var();
   }
 
-  // ファンインが同じ FFR のノードなら再帰する．
-  ymuint ni = node->fanin_num();
-  for (ymuint i = 0; i < ni; ++ i) {
-    const TpgNode* inode = node->fanin(i);
-    if ( inode->ffr_root() == node->ffr_root() ) {
-      get_ffr_faults(inode, elem_pos);
+  // mElemArray[] に含まれるノードと root の間にあるノードを
+  // 求め，同時に変数を割り当てる．
+  vector<const TpgNode*> node_list;
+  vector<SatVarId> fvar_map(max_node_id(), kSatVarIdIllegal);
+  vector<int> elem_map(max_node_id(), -1);
+  for (ymuint i = 0; i < mElemArray.size(); ++ i) {
+    const TpgNode* node = mElemArray[i];
+    elem_map[node->id()] = i;
+    if ( node == root_node() ) {
+      continue;
+    }
+    ymuint nfo = node->fanout_num();
+    for (ymuint i = 0; i < nfo; ++ i) {
+      const TpgNode* onode = node->fanout(i);
+      if ( fvar_map[onode->id()] == kSatVarIdIllegal ) {
+	SatVarId var = solver().new_var();
+	fvar_map[onode->id()] = var;
+	node_list.push_back(onode);
+      }
     }
   }
+  for (ymuint rpos = 0; rpos < node_list.size(); ++ rpos) {
+    const TpgNode* node = node_list[rpos];
+    if ( node == root_node() ) {
+      continue;
+    }
+    ymuint nfo = node->fanout_num();
+    for (ymuint i = 0; i < nfo; ++ i) {
+      const TpgNode* onode = node->fanout(i);
+      if ( fvar_map[onode->id()] == kSatVarIdIllegal ) {
+	SatVarId var = solver().new_var();
+	fvar_map[onode->id()] = var;
+	node_list.push_back(onode);
+      }
+    }
+  }
+
+  // 最も入力よりにある FFR の根のノードの場合
+  // 正常回路と制御変数のXORをとったものを故障値とする．
+  for (ymuint i = 0; i < mElemArray.size(); ++ i) {
+    const TpgNode* node = mElemArray[i];
+    if ( fvar_map[node->id()] != kSatVarIdIllegal ) {
+      // このノードは入力側ではない．
+      continue;
+    }
+
+    SatVarId fvar = solver().new_var();
+    fvar_map[node->id()] = fvar;
+
+    inject_fault(i, gvar(node), fvar_map);
+  }
+
+  // node_list に含まれるノードの入出力の関係を表すCNF式を作る．
+  // 基本的には fvar_map の変数を使うが未登録の場合には gvar()
+  // を使う．
+  for (ymuint rpos = 0; rpos < node_list.size(); ++ rpos) {
+    const TpgNode* node = node_list[rpos];
+    ymuint ni = node->fanin_num();
+    vector<SatVarId> ivars(ni);
+    bool has_fvar = false;
+    for (ymuint i = 0; i < ni; ++ i) {
+      const TpgNode* inode = node->fanin(i);
+      SatVarId ivar = fvar_map[inode->id()];
+      if ( ivar == kSatVarIdIllegal ) {
+	ivar = gvar(inode);
+      }
+      else {
+	has_fvar = true;
+      }
+      ivars[i] = ivar;
+    }
+    SatVarId ovar = fvar_map[node->id()];
+    ymuint elem_pos = elem_map[node->id()];
+    if ( elem_pos != -1 ) {
+      // 実際のゲートの出力と ovar の間に XOR ゲートを挿入する．
+      // XORの一方の入力は mElemVarArray[elem_pos]
+      ovar = solver().new_var();
+      inject_fault(elem_pos, ovar, fvar_map);
+    }
+    node->make_cnf(solver(), VectLitMap(ivars, ovar));
+  }
+
+  // root において故障差が伝搬しているという条件を作る．
+  SatLiteral lit1(gvar(root_node()));
+  SatLiteral lit2(fvar_map[root_node()->id()]);
+  solver().add_clause( lit1,  lit2);
+  solver().add_clause(~lit1, ~lit2);
+}
+
+// @brief 故障挿入回路のCNFを作る．
+// @param[in] elem_pos 要素番号
+// @param[in] ovar ゲートの出力の変数
+// @param[in] fvar_map 故障回路の変数マップ
+void
+DtpgM::inject_fault(ymuint elem_pos,
+		    SatVarId ovar,
+		    const vector<SatVarId>& fvar_map)
+{
+  const TpgNode* node = mElemArray[elem_pos];
+  SatLiteral lit1(ovar);
+  SatLiteral lit2(mElemVarArray[elem_pos]);
+  SatLiteral olit(fvar_map[node->id()]);
+  solver().add_clause( lit1,  lit2, ~olit);
+  solver().add_clause(~lit1, ~lit2, ~olit);
+  solver().add_clause(~lit1,  lit2,  olit);
+  solver().add_clause( lit1, ~lit2,  olit);
 }
 
 END_NAMESPACE_YM_SATPG_SA

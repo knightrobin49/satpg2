@@ -13,6 +13,9 @@
 #include "sa/DtpgS.h"
 #include "sa/DtpgM.h"
 #include "sa/BackTracer.h"
+#include "sa/Fsim.h"
+#include "sa/DetectOp.h"
+#include "sa/DopList.h"
 #include "ym/StopWatch.h"
 
 
@@ -27,9 +30,9 @@ single_test(const string& sat_type,
 	    const TpgNetwork& network,
 	    FaultMgr& fmgr,
 	    BackTracer& bt,
+	    DetectOp& dop,
 	    DtpgStats& stats)
 {
-
   ymuint detect_num = 0;
   ymuint untest_num = 0;
   ymuint nf = network.rep_fault_num();
@@ -44,6 +47,7 @@ single_test(const string& sat_type,
       SatBool3 ans = dtpg_s.dtpg(fault, nodeval_list, stats);
       if ( ans == kB3True ) {
 	++ detect_num;
+	dop(fault, nodeval_list);
       }
       else if ( ans == kB3False ) {
 	++ untest_num;
@@ -61,9 +65,9 @@ ffr_test(const string& sat_type,
 	 const TpgNetwork& network,
 	 FaultMgr& fmgr,
 	 BackTracer& bt,
+	 DetectOp& dop,
 	 DtpgStats& stats)
 {
-
   ymuint detect_num = 0;
   ymuint untest_num = 0;
   for (ymuint i = 0; i < network.node_num(); ++ i) {
@@ -73,6 +77,7 @@ ffr_test(const string& sat_type,
     }
 
     DtpgS dtpg_s(sat_type, sat_option, sat_outp, bt, network, node);
+
     dtpg_s.gen_cnf(stats);
     ymuint nf = network.ffr_fault_num(node->id());
     for (ymuint j = 0; j < nf; ++ j) {
@@ -82,6 +87,7 @@ ffr_test(const string& sat_type,
 	SatBool3 ans = dtpg_s.dtpg(fault, nodeval_list, stats);
 	if ( ans == kB3True ) {
 	  ++ detect_num;
+	  dop(fault, nodeval_list);
 	}
 	else if ( ans == kB3False ) {
 	  ++ untest_num;
@@ -100,6 +106,7 @@ mffc_test(const string& sat_type,
 	  const TpgNetwork& network,
 	  FaultMgr& fmgr,
 	  BackTracer& bt,
+	  DetectOp& dop,
 	  DtpgStats& stats)
 {
   ymuint detect_num = 0;
@@ -112,51 +119,23 @@ mffc_test(const string& sat_type,
       continue;
     }
 
-    if ( node->mffc_elem_num() == 1 ) {
-      DtpgS dtpg_s(sat_type, sat_option, sat_outp, bt, network, node);
-      dtpg_s.gen_cnf(stats);
-      ymuint nf = network.ffr_fault_num(node->id());
-      for (ymuint j = 0; j < nf; ++ j) {
-	const TpgFault* fault = network.ffr_fault(node->id(), j);
-	if ( fmgr.status(fault) == kFsUndetected ) {
-	  NodeValList nodeval_list;
-	  SatBool3 ans = dtpg_s.dtpg(fault, nodeval_list, stats);
-	  if ( ans == kB3True ) {
-	    ++ detect_num;
-	  }
-	  else if ( ans == kB3False ) {
-	    ++ untest_num;
-	  }
-	}
-      }
-    }
-    else {
-      DtpgM dtpg_m(sat_type, sat_option, sat_outp, bt, network, node);
+    DtpgM dtpg_m(sat_type, sat_option, sat_outp, bt, network, node);
 
-      // node を根とする MFFC に含まれる故障のうち fault_list に入っていたものを求める．
-      vector<const TpgFault*> f_list;
-      ymuint nf = dtpg_m.fault_num();
-      for (ymuint j = 0; j < nf; ++ j) {
-	const TpgFault* f = dtpg_m.fault(j);
-	if ( fmgr.status(f) == kFsUndetected ) {
-	  f_list.push_back(f);
-	}
-      }
-      if ( f_list.empty() ) {
-	// 故障が残っていないのでパス
-	continue;
-      }
+    dtpg_m.cnf_gen(stats);
 
-      dtpg_m.cnf_gen(stats);
-
-      for (ymuint j = 0; j < nf; ++ j) {
-	const TpgFault* fault = f_list[j];
+    ymuint ne = node->mffc_elem_num();
+    for (ymuint j = 0; j < ne; ++ j) {
+      const TpgNode* node1 = node->mffc_elem(j);
+      ymuint nf = network.ffr_fault_num(node1->id());
+      for (ymuint k = 0; k < nf; ++ k) {
+	const TpgFault* fault = network.ffr_fault(node1->id(), k);
 	if ( fmgr.status(fault) == kFsUndetected ) {
 	  // 故障に対するテスト生成を行なう．
 	  NodeValList nodeval_list;
 	  SatBool3 ans = dtpg_m.dtpg(fault, nodeval_list, stats);
 	  if ( ans == kB3True ) {
 	    ++ detect_num;
+	    dop(fault, nodeval_list);
 	  }
 	  else if ( ans == kB3False ) {
 	    ++ untest_num;
@@ -189,6 +168,8 @@ dtpg_test(int argc,
   bool single = false;
   bool ffr = false;
   bool mffc = false;
+
+  bool verify = false;
 
   argv0 = argv[0];
 
@@ -229,6 +210,9 @@ dtpg_test(int argc,
 	  return -1;
 	}
 	iscas89 = true;
+      }
+      else if ( strcmp(argv[pos], "--verify") == 0 ) {
+	verify = true;
       }
       else {
 	cerr << argv[pos] << ": illegal option" << endl;
@@ -274,6 +258,14 @@ dtpg_test(int argc,
     ASSERT_NOT_REACHED;
   }
 
+  Fsim* fsim = nullptr;
+  DopList dop_list;
+  if ( verify ) {
+    fsim = new_Fsim3();
+    fsim->set_network(network);
+    dop_list.add(new_DopVerify(*fsim));
+  }
+
   FaultMgr fmgr(network);
 
   ymuint xmode = 0;
@@ -285,17 +277,19 @@ dtpg_test(int argc,
   DtpgStats stats;
   pair<ymuint, ymuint> num_pair;
   if ( single ) {
-    num_pair = single_test(sat_type, sat_option, sat_outp, network, fmgr, bt, stats);
+    num_pair = single_test(sat_type, sat_option, sat_outp, network, fmgr, bt, dop_list, stats);
   }
   else if ( ffr ) {
-    num_pair = ffr_test(sat_type, sat_option, sat_outp, network, fmgr, bt, stats);
+    num_pair = ffr_test(sat_type, sat_option, sat_outp, network, fmgr, bt, dop_list, stats);
   }
   else if ( mffc ) {
-    num_pair = mffc_test(sat_type, sat_option, sat_outp, network, fmgr, bt, stats);
+    num_pair = mffc_test(sat_type, sat_option, sat_outp, network, fmgr, bt, dop_list, stats);
   }
   else {
     ASSERT_NOT_REACHED;
   }
+
+  delete fsim;
 
   timer.stop();
   USTime time = timer.time();

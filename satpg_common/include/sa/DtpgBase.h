@@ -17,8 +17,10 @@
 #include "ym/ym_sat.h"
 #include "ym/SatBool3.h"
 #include "ym/SatLiteral.h"
+#include "ym/SatSolver.h"
 #include "ym/SatStats.h"
 #include "ym/StopWatch.h"
+#include "GenVidMap.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG_SA
@@ -32,8 +34,18 @@ class DtpgBase
 public:
 
   /// @brief コンストラクタ
+  /// @param[in] sat_type SATソルバの種類を表す文字列
+  /// @param[in] sat_option SATソルバに渡すオプション文字列
+  /// @param[in] sat_outp SATソルバ用の出力ストリーム
   /// @param[in] bt バックトレーサー
-  DtpgBase(BackTracer& bt);
+  /// @param[in] network 対象のネットワーク
+  /// @param[in] root 故障伝搬の起点となるノード
+  DtpgBase(const string& sat_type,
+	   const string& sat_option,
+	   ostream* sat_outp,
+	   BackTracer& bt,
+	   const TpgNetwork& network,
+	   const TpgNode* root);
 
   /// @brief デストラクタ
   ~DtpgBase();
@@ -55,6 +67,10 @@ protected:
   // 継承クラスから用いられる関数
   //////////////////////////////////////////////////////////////////////
 
+  /// @brief ノード番号の最大値を返す．
+  ymuint
+  max_node_id() const;
+
   /// @brief CNF 作成を開始する．
   void
   cnf_begin();
@@ -71,33 +87,127 @@ protected:
   USTime
   timer_stop();
 
+  /// @brief SATソルバを返す．
+  SatSolver&
+  solver();
+
+  /// @brief 正常値の変数を返す．
+  /// @param[in] node 対象のノード
+  SatVarId
+  gvar(const TpgNode* node);
+
+  /// @brief 故障値の変数を返す．
+  /// @param[in] node 対象のノード
+  SatVarId
+  fvar(const TpgNode* node);
+
+  /// @brief 伝搬条件の変数を返す．
+  /// @param[in] node 対象のノード
+  SatVarId
+  dvar(const TpgNode* node);
+
+  /// @brief 起点となるノードを返す．
+  const TpgNode*
+  root_node() const;
+
+  /// @brief root の影響が外部出力まで伝搬する条件のCNF式を作る．
+  void
+  gen_cnf_base();
+
+  /// @brief 故障伝搬条件を表すCNF式を生成する．
+  /// @param[in] node 対象のノード
+  void
+  make_dchain_cnf(const TpgNode* node);
+
+  /// @brief 故障の影響がFFRの根のノードまで伝搬する条件を作る．
+  /// @param[in] fault 対象の故障
+  /// @param[out] assumptions 結果の仮定リスト
+  void
+  make_ffr_condition(const TpgFault* fault,
+		     vector<SatLiteral>& assumptions);
+
   /// @brief 一つの SAT問題を解く．
-  /// @param[in] solver SATソルバ
   /// @param[in] assumption 仮定(値割り当て)のリスト
   /// @param[in] fault 対象の故障
-  /// @param[in] root 故障位置のノード
-  /// @param[in] output_list 故障に関係のある外部出力のリスト
-  /// @param[in] gvar_map 正常値の変数番号マップ
-  /// @param[in] fvar_map 故障値の変数番号マップ
   /// @param[out] nodeval_list 結果の値割り当てリスト
   /// @param[inout] stats DTPGの統計情報
   /// @return 結果を返す．
   SatBool3
-  solve(SatSolver& solver,
-	const vector<SatLiteral>& assumptions,
+  solve(const vector<SatLiteral>& assumptions,
 	const TpgFault* fault,
-	const TpgNode* root,
-	const vector<const TpgNode*>& output_list,
-	const VidMap& gvar_map,
-	const VidMap& fvar_map,
 	NodeValList& nodeval_list,
 	DtpgStats& stats);
 
 
 private:
   //////////////////////////////////////////////////////////////////////
+  // 内部で用いられる関数
+  //////////////////////////////////////////////////////////////////////
+
+  /// @brief TFO マークを調べる．
+  /// @param[in] node 対象のノード
+  bool
+  tfo_mark(const TpgNode* node) const;
+
+  /// @brief TFO マークをつける．
+  /// @param[in] node 対象のノード
+  ///
+  /// と同時に mNodeList に入れる．<br>
+  /// 出力ノードの場合は mOutputList にも入れる．<br>
+  /// すでにマークされていたら何もしない．
+  void
+  set_tfo_mark(const TpgNode* node);
+
+  /// @brief TFI マークを調べる．
+  /// @param[in] node 対象のノード
+  bool
+  tfi_mark(const TpgNode* node) const;
+
+  /// @brief TFI マークをつける．
+  /// @param[in] node 対象のノード
+  ///
+  /// と同時に mNodeList に入れる．
+  void
+  set_tfi_mark(const TpgNode* node);
+
+  /// @brief TFO マークと TFI マークのいづれかがついていたら true を返す．
+  /// @param[in] node 対象のノード
+  bool
+  mark(const TpgNode* node);
+
+
+private:
+  //////////////////////////////////////////////////////////////////////
   // データメンバ
   //////////////////////////////////////////////////////////////////////
+
+  // SATソルバ
+  SatSolver mSolver;
+
+  // ノード番号の最大値
+  ymuint mMaxNodeId;
+
+  // 故障伝搬の起点となるノード
+  const TpgNode* mRoot;
+
+  // 関係するノードを入れておくリスト
+  vector<const TpgNode*> mNodeList;
+
+  // 関係する出力ノードを入れておくリスト
+  vector<const TpgNode*> mOutputList;
+
+  // 作業用のマークを入れておく配列
+  // サイズは mMaxNodeId
+  vector<ymuint8> mMarkArray;
+
+  // 正常値を表す変数のマップ
+  GenVidMap mGvarMap;
+
+  // 故障値を表す変数のマップ
+  GenVidMap mFvarMap;
+
+  // 故障伝搬条件を表す変数のマップ
+  GenVidMap mDvarMap;
 
   // バックトレーサー
   BackTracer& mBackTracer;
@@ -114,6 +224,111 @@ private:
 //////////////////////////////////////////////////////////////////////
 // インライン関数の定義
 //////////////////////////////////////////////////////////////////////
+
+// @brief SATソルバを返す．
+inline
+SatSolver&
+DtpgBase::solver()
+{
+  return mSolver;
+}
+
+// @brief ノード番号の最大値を返す．
+inline
+ymuint
+DtpgBase::max_node_id() const
+{
+  return mMaxNodeId;
+}
+
+// @brief 起点となるノードを返す．
+inline
+const TpgNode*
+DtpgBase::root_node() const
+{
+  return mRoot;
+}
+
+// @brief 正常値の変数を返す．
+// @param[in] node 対象のノード
+inline
+SatVarId
+DtpgBase::gvar(const TpgNode* node)
+{
+  return mGvarMap(node);
+}
+
+// @brief 故障値の変数を返す．
+// @param[in] node 対象のノード
+inline
+SatVarId
+DtpgBase::fvar(const TpgNode* node)
+{
+  return mFvarMap(node);
+}
+
+// @brief 伝搬条件の変数を返す．
+// @param[in] node 対象のノード
+inline
+SatVarId
+DtpgBase::dvar(const TpgNode* node)
+{
+  return mDvarMap(node);
+}
+
+// @brief TFO マークを調べる．
+inline
+bool
+DtpgBase::tfo_mark(const TpgNode* node) const
+{
+  return static_cast<bool>((mMarkArray[node->id()] >> 0) & 1U);
+}
+
+// @brief TFO マークをつける．
+inline
+void
+DtpgBase::set_tfo_mark(const TpgNode* node)
+{
+  ymuint id = node->id();
+  if ( ((mMarkArray[id] >> 0) & 1U) == 0U ) {
+    mMarkArray[id] = 1U;
+    mNodeList.push_back(node);
+    if ( node->is_ppo() ) {
+      mOutputList.push_back(node);
+    }
+  }
+}
+
+// @brief TFI マークを調べる．
+inline
+bool
+DtpgBase::tfi_mark(const TpgNode* node) const
+{
+  return static_cast<bool>((mMarkArray[node->id()] >> 1) & 1U);
+}
+
+// @brief TFI マークをつける．
+inline
+void
+DtpgBase::set_tfi_mark(const TpgNode* node)
+{
+  ymuint id = node->id();
+  if ( mMarkArray[id] == 0U ) {
+    mMarkArray[node->id()] = 2U;
+    mNodeList.push_back(node);
+  }
+}
+
+// @brief TFO マークと TFI マークのいづれかがついていたら true を返す．
+inline
+bool
+DtpgBase::mark(const TpgNode* node)
+{
+  if ( mMarkArray[node->id()] ) {
+    return true;
+  }
+  return false;
+}
 
 END_NAMESPACE_YM_SATPG_SA
 
