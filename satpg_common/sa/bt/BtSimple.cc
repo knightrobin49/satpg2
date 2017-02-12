@@ -33,16 +33,18 @@ BtSimple::set_max_id(ymuint max_id)
 
 // @brief バックトレースを行なう．
 // @param[in] fnode 故障のあるノード
+// @param[in] assign_list 値の割り当てリスト
 // @param[in] output_list 故障に関係する出力ノードのリスト
 // @param[in] val_map ノードの値の割当を保持するクラス
-// @param[out] assign_list 値の割当リスト
+// @param[out] pi_assign_list 外部入力上の値の割当リスト
 void
 BtSimple::run(const TpgNode* fnode,
+	      const NodeValList& assign_list,
 	      const vector<const TpgNode*>& output_list,
 	      const ValMap& val_map,
-	      NodeValList& assign_list)
+	      NodeValList& pi_assign_list)
 {
-  assign_list.clear();
+  pi_assign_list.clear();
 
   // output_list のファンインに含まれる入力ノードに印をつける．
   mMark.clear();
@@ -50,7 +52,7 @@ BtSimple::run(const TpgNode* fnode,
   for (vector<const TpgNode*>::const_iterator p = output_list.begin();
        p != output_list.end(); ++ p) {
     const TpgNode* node = *p;
-    tfi_recur(node, val_map, assign_list);
+    tfi_recur(node, val_map, pi_assign_list);
   }
 }
 

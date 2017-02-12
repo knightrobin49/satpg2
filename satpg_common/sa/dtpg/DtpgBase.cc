@@ -433,7 +433,8 @@ DtpgBase::solve(const vector<SatLiteral>& assumptions,
     ModelValMap val_map(mGvarMap, mFvarMap, model);
 
     // バックトレースを行う．
-    mBackTracer(fault->tpg_onode()->ffr_root(), mOutputList, val_map, nodeval_list);
+    const TpgNode* start_node = fault->tpg_onode()->ffr_root();
+    mBackTracer(start_node, assign_list, mOutputList, val_map, nodeval_list);
 
     timer.stop();
     stats.mBackTraceTime += timer.time();

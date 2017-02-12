@@ -28,18 +28,29 @@ BtJust1::~BtJust1()
 
 // @brief バックトレースを行なう．
 // @param[in] fnode 故障のあるノード
+// @param[in] assign_list 値の割り当てリスト
 // @param[in] output_list 故障に関係する出力ノードのリスト
 // @param[in] val_map ノードの値の割当を保持するクラス
-// @param[out] assign_list 値の割当リスト
+// @param[out] pi_assign_list 外部入力上の値の割当リスト
 void
 BtJust1::run(const TpgNode* fnode,
+	     const NodeValList& assign_list,
 	     const vector<const TpgNode*>& output_list,
 	     const ValMap& val_map,
-	     NodeValList& assign_list)
+	     NodeValList& pi_assign_list)
 {
-  assign_list.clear();
+  pi_assign_list.clear();
+
+  // assign_list の値を正当化する．
+  for (ymuint i = 0; i < assign_list.size(); ++ i) {
+    NodeVal nv = assign_list[i];
+    const TpgNode* node = nv.node();
+    // 絶対，要求された値になっているので nv.val() は使わない．
+    justify(node, val_map, pi_assign_list);
+  }
 
   // 故障差の伝搬している外部出力を選ぶ．
+  // 最初に見つかったものを選ぶ．
   const TpgNode* onode = nullptr;
   for (vector<const TpgNode*>::const_iterator p = output_list.begin();
        p != output_list.end(); ++ p) {
@@ -52,7 +63,7 @@ BtJust1::run(const TpgNode* fnode,
   ASSERT_COND( onode != nullptr );
 
   // 正当化を行う．
-  justify(onode, val_map, assign_list);
+  justify(onode, val_map, pi_assign_list);
 
   // 一連の処理でつけたマークを消す．
   clear_justified();

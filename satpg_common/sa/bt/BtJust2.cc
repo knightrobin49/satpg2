@@ -39,18 +39,30 @@ BtJust2::set_max_id(ymuint max_id)
 
 // @brief バックトレースを行なう．
 // @param[in] fnode 故障のあるノード
+// @param[in] assign_list 値の割り当てリスト
 // @param[in] output_list 故障に関係する出力ノードのリスト
 // @param[in] val_map ノードの値の割当を保持するクラス
-// @param[out] assign_list 値の割当リスト
+// @param[out] pi_assign_list 外部入力上の値の割当リスト
 void
 BtJust2::run(const TpgNode* fnode,
+	     const NodeValList& assign_list,
 	     const vector<const TpgNode*>& output_list,
 	     const ValMap& val_map,
-	     NodeValList& assign_list)
+	     NodeValList& pi_assign_list)
 {
   mTfoMark.clear();
   mTfoMark.resize(mMaxId, false);
   mark_tfo(fnode);
+
+  // assign_list の値を正当化する．
+  NodeList* node_list0 = nullptr;
+  for (ymuint i = 0; i < assign_list.size(); ++ i) {
+    NodeVal nv = assign_list[i];
+    const TpgNode* node = nv.node();
+    // 絶対，要求された値になっているので nv.val() は使わない．
+    NodeList* node_list1 = justify(node, val_map);
+    list_merge(node_list0, node_list1);
+  }
 
   // 故障差の伝搬している外部出力を選ぶ．
   ymuint nmin = 0;
@@ -70,10 +82,14 @@ BtJust2::run(const TpgNode* fnode,
   }
   ASSERT_COND( nmin > 0 );
 
-  assign_list.clear();
+  pi_assign_list.clear();
+  for (NodeList* tmp = node_list0; tmp; tmp = tmp->mLink) {
+    const TpgNode* node = tmp->mNode;
+    record_value(node, val_map, pi_assign_list);
+  }
   for (NodeList* tmp = best_list; tmp; tmp = tmp->mLink) {
     const TpgNode* node = tmp->mNode;
-    record_value(node, val_map, assign_list);
+    record_value(node, val_map, pi_assign_list);
   }
 
   // 一連の処理でつけたマークを消す．

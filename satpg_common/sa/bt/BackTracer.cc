@@ -41,16 +41,18 @@ BackTracer::~BackTracer()
 
 // @brief バックトレースを行なう．
 // @param[in] fnode 故障のあるノード
+// @param[in] assign_list 値の割り当てリスト
 // @param[in] output_list 故障に関係する出力ノードのリスト
-// @param[in] val_map ノードの値を保持するクラス
-// @param[out] assign_list 値の割当リスト
+// @param[in] val_map ノードの値の割当を保持するクラス
+// @param[out] pi_assign_list 外部入力上の値の割当リスト
 void
 BackTracer::operator()(const TpgNode* fnode,
+		       const NodeValList& assign_list,
 		       const vector<const TpgNode*>& output_list,
 		       const ValMap& val_map,
-		       NodeValList& assign_list)
+		       NodeValList& pi_assign_list)
 {
-  mImpl->run(fnode, output_list, val_map, assign_list);
+  mImpl->run(fnode, assign_list, output_list, val_map, pi_assign_list);
 }
 
 END_NAMESPACE_YM_SATPG_SA
