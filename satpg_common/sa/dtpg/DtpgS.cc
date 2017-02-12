@@ -86,11 +86,11 @@ DtpgS::dtpg(const TpgFault* fault,
     return kB3False;
   }
 
-  vector<SatLiteral> assumptions;
+  NodeValList assign_list;
 
-  make_ffr_condition(fault, assumptions);
+  make_ffr_condition(fault, assign_list);
 
-  SatBool3 ans = solve(assumptions, fault, nodeval_list, stats);
+  SatBool3 ans = solve(vector<SatLiteral>(), assign_list, fault, nodeval_list, stats);
 
   return ans;
 }

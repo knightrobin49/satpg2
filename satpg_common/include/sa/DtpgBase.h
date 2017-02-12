@@ -106,6 +106,27 @@ protected:
   SatVarId
   dvar(const TpgNode* node);
 
+  /// @brief 正常値の変数を設定する．
+  /// @param[in] node 対象のノード
+  /// @param[in] var 設定する変数
+  void
+  set_gvar(const TpgNode* node,
+	   SatVarId var);
+
+  /// @brief 故障値値の変数を設定する．
+  /// @param[in] node 対象のノード
+  /// @param[in] var 設定する変数
+  void
+  set_fvar(const TpgNode* node,
+	   SatVarId var);
+
+  /// @brief 故障伝搬条件の変数を設定する．
+  /// @param[in] node 対象のノード
+  /// @param[in] var 設定する変数
+  void
+  set_dvar(const TpgNode* node,
+	   SatVarId var);
+
   /// @brief 起点となるノードを返す．
   const TpgNode*
   root_node() const;
@@ -121,19 +142,21 @@ protected:
 
   /// @brief 故障の影響がFFRの根のノードまで伝搬する条件を作る．
   /// @param[in] fault 対象の故障
-  /// @param[out] assumptions 結果の仮定リスト
+  /// @param[out] assign_list 結果の値割り当てリスト
   void
   make_ffr_condition(const TpgFault* fault,
-		     vector<SatLiteral>& assumptions);
+		     NodeValList& assign_list);
 
   /// @brief 一つの SAT問題を解く．
-  /// @param[in] assumption 仮定(値割り当て)のリスト
+  /// @param[in] assumptions 値の決まっている変数のリスト
+  /// @param[in] assign_list 仮定(値割り当て)のリスト
   /// @param[in] fault 対象の故障
   /// @param[out] nodeval_list 結果の値割り当てリスト
   /// @param[inout] stats DTPGの統計情報
   /// @return 結果を返す．
   SatBool3
   solve(const vector<SatLiteral>& assumptions,
+	const NodeValList& assign_list,
 	const TpgFault* fault,
 	NodeValList& nodeval_list,
 	DtpgStats& stats);
@@ -274,6 +297,39 @@ SatVarId
 DtpgBase::dvar(const TpgNode* node)
 {
   return mDvarMap(node);
+}
+
+// @brief 正常値の変数を設定する．
+// @param[in] node 対象のノード
+// @param[in] var 設定する変数
+inline
+void
+DtpgBase::set_gvar(const TpgNode* node,
+		   SatVarId var)
+{
+  mGvarMap.set_vid(node, var);
+}
+
+// @brief 故障値値の変数を設定する．
+// @param[in] node 対象のノード
+// @param[in] var 設定する変数
+inline
+void
+DtpgBase::set_fvar(const TpgNode* node,
+		   SatVarId var)
+{
+  mFvarMap.set_vid(node, var);
+}
+
+// @brief 故障伝搬条件の変数を設定する．
+// @param[in] node 対象のノード
+// @param[in] var 設定する変数
+inline
+void
+DtpgBase::set_dvar(const TpgNode* node,
+		   SatVarId var)
+{
+  mDvarMap.set_vid(node, var);
 }
 
 // @brief TFO マークを調べる．

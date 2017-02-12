@@ -6,6 +6,7 @@
 /// Copyright (C) 2017 Yusuke Matsunaga
 /// All rights reserved.
 
+#define DEBUG_DTPG 0
 
 #include "sa/DtpgBase.h"
 
@@ -140,6 +141,12 @@ DtpgBase::gen_cnf_base()
     mGvarMap.set_vid(node, gvar);
     mFvarMap.set_vid(node, fvar);
     mDvarMap.set_vid(node, dvar);
+
+#if DEBUG_DTPG
+    cout << "gvar(Node#" << node->id() << ") = " << gvar << endl
+	 << "fvar(Node#" << node->id() << ") = " << fvar << endl
+	 << "dvar(Node#" << node->id() << ") = " << dvar << endl;
+#endif
   }
 
   // TFI の部分に変数を割り当てる．
@@ -149,6 +156,11 @@ DtpgBase::gen_cnf_base()
 
     mGvarMap.set_vid(node, gvar);
     mFvarMap.set_vid(node, gvar);
+
+#if DEBUG_DTPG
+    cout << "gvar(Node#" << node->id() << ") = " << gvar << endl
+	 << "fvar(Node#" << node->id() << ") = " << gvar << endl;
+#endif
   }
 
 
@@ -158,6 +170,17 @@ DtpgBase::gen_cnf_base()
   for (ymuint i = 0; i < tfi_num; ++ i) {
     const TpgNode* node = mNodeList[i];
     node->make_cnf(mSolver, VidLitMap(node, mGvarMap));
+
+#if DEBUG_DTPG
+    cout << "Node#" << node->id() << ": gvar("
+	 << gvar(node) << ") := " << node->gate_type()
+	 << "(";
+    for (ymuint j = 0; j < node->fanin_num(); ++ j) {
+      const TpgNode* inode = node->fanin(j);
+      cout << " " << gvar(inode);
+    }
+    cout << ")" << endl;
+#endif
   }
 
 
@@ -168,6 +191,17 @@ DtpgBase::gen_cnf_base()
     const TpgNode* node = mNodeList[i];
     if ( node != mRoot ) {
       node->make_cnf(mSolver, VidLitMap(node, mFvarMap));
+
+#if DEBUG_DTPG
+    cout << "Node#" << node->id() << ": fvar("
+	 << fvar(node) << ") := " << node->gate_type()
+	 << "(";
+    for (ymuint j = 0; j < node->fanin_num(); ++ j) {
+      const TpgNode* inode = node->fanin(j);
+      cout << " " << fvar(inode);
+    }
+    cout << ")" << endl;
+#endif
     }
     make_dchain_cnf(node);
   }
@@ -205,23 +239,49 @@ DtpgBase::make_dchain_cnf(const TpgNode* node)
   mSolver.add_clause(~glit, ~flit, ~dlit);
   mSolver.add_clause( glit,  flit, ~dlit);
 
+#if DEBUG_DTPG
+  cout << "dvar(Node#" << node->id() << ") -> "
+       << glit << " XOR " << flit << endl;
+#endif
+
   if ( node->is_ppo() ) {
     mSolver.add_clause(~glit,  flit,  dlit);
     mSolver.add_clause( glit, ~flit,  dlit);
+
+#if DEBUG_DTPG
+    cout << "!dvar(Node#" << node->id() << ") -> "
+	 << glit << " = " << flit << endl;
+#endif
   }
   else {
     // dlit -> ファンアウト先のノードの dlit の一つが 1
+
+#if DEBUG_DTPG
+    cout << "dvar(Node#" << node->id() << ") -> ";
+#endif
     ymuint nfo = node->fanout_num();
     if ( nfo == 1 ) {
       SatLiteral odlit(mDvarMap(node->fanout(0)));
       mSolver.add_clause(~dlit, odlit);
+
+#if DEBUG_DTPG
+      cout << odlit << endl;
+#endif
     }
     else {
       vector<SatLiteral> tmp_lits(nfo + 1);
       for (ymuint i = 0; i < nfo; ++ i) {
 	const TpgNode* onode = node->fanout(i);
 	tmp_lits[i] = SatLiteral(mDvarMap(onode));
+
+#if DEBUG_DTPG
+	cout << " " << mDvarMap(onode);
+#endif
       }
+
+#if DEBUG_DTPG
+      cout << endl;
+#endif
       tmp_lits[nfo] = ~dlit;
       mSolver.add_clause(tmp_lits);
 
@@ -229,6 +289,11 @@ DtpgBase::make_dchain_cnf(const TpgNode* node)
       if ( imm_dom != nullptr ) {
 	SatLiteral odlit(mDvarMap(imm_dom));
 	mSolver.add_clause(~dlit, odlit);
+
+#if DEBUG_DTPG
+	cout << "dvar(Node#" << node->id() << ") -> "
+	     << odlit << endl;
+#endif
       }
     }
   }
@@ -236,16 +301,20 @@ DtpgBase::make_dchain_cnf(const TpgNode* node)
 
 // @brief 故障の影響がFFRの根のノードまで伝搬する条件を作る．
 // @param[in] fault 対象の故障
-// @param[out] assumptions 結果の仮定リスト
+// @param[out] assign_list 結果の値割り当てリスト
 void
 DtpgBase::make_ffr_condition(const TpgFault* fault,
-			     vector<SatLiteral>& assumptions)
+			     NodeValList& assign_list)
 {
+#if DEBUG_DTPG
+  cout << "make_ffr_condition" << endl;
+#endif
+
   // 故障の活性化条件を作る．
   const TpgNode* inode = fault->tpg_inode();
   // 0 縮退故障の時に 1 にする．
-  bool inv = (fault->val() == 1);
-  assumptions.push_back(SatLiteral(gvar(inode), inv));
+  bool val = (fault->val() == 0);
+  assign_list.add(inode, val);
 
   // ブランチの故障の場合，ゲートの出力までの伝搬条件を作る．
   if ( fault->is_branch_fault() ) {
@@ -253,11 +322,21 @@ DtpgBase::make_ffr_condition(const TpgFault* fault,
     Val3 nval = onode->nval();
     if ( nval != kValX ) {
       ymuint ni = onode->fanin_num();
-      bool inv = (nval == kVal0);
+      bool val = (nval == kVal1);
       for (ymuint i = 0; i < ni; ++ i) {
 	const TpgNode* inode1 = onode->fanin(i);
 	if ( inode1 != inode ) {
-	  assumptions.push_back(SatLiteral(gvar(inode1), inv));
+	  assign_list.add(inode1, val);
+
+#if DEBUG_DTPG
+	  cout << "  Node#" << inode1->id() << ": ";
+	  if ( val ) {
+	    cout << "1" << endl;
+	  }
+	  else {
+	    cout << "0" << endl;
+	  }
+#endif
 	}
       }
     }
@@ -275,18 +354,33 @@ DtpgBase::make_ffr_condition(const TpgFault* fault,
     if ( nval == kValX ) {
       continue;
     }
-    bool inv = (nval == kVal0);
+    bool val = (nval == kVal1);
     for (ymuint i = 0; i < ni; ++ i) {
       const TpgNode* inode1 = fonode->fanin(i);
       if ( inode1 != node ) {
-	assumptions.push_back(SatLiteral(gvar(inode1), inv));
+	assign_list.add(inode1, val);
+
+#if DEBUG_DTPG
+	cout << "  Node#" << inode1->id() << ": ";
+	if ( val ) {
+	  cout << "1" << endl;
+	}
+	else {
+	  cout << "0" << endl;
+	}
+#endif
       }
     }
   }
+
+#if DEBUG_DTPG
+  cout << endl;
+#endif
 }
 
 // @brief 一つの SAT問題を解く．
-// @param[in] assumption 仮定(値割り当て)のリスト
+// @param[in] assumptions 値の決まっている変数のリスト
+// @param[in] assign_list 仮定(値割り当て)のリスト
 // @param[in] fault 対象の故障
 // @param[in] root 故障位置のノード
 // @param[in] output_list 故障に関係のある外部出力のリスト
@@ -295,6 +389,7 @@ DtpgBase::make_ffr_condition(const TpgFault* fault,
 // @return 結果を返す．
 SatBool3
 DtpgBase::solve(const vector<SatLiteral>& assumptions,
+		const NodeValList& assign_list,
 		const TpgFault* fault,
 		NodeValList& nodeval_list,
 		DtpgStats& stats)
@@ -307,8 +402,21 @@ DtpgBase::solve(const vector<SatLiteral>& assumptions,
   timer.reset();
   timer.start();
 
+  ymuint n0 = assumptions.size();
+  ymuint n = assign_list.size();
+  vector<SatLiteral> assumptions1(n + n0);
+  for (ymuint i = 0; i < n; ++ i) {
+    NodeVal nv = assign_list[i];
+    const TpgNode* node = nv.node();
+    bool inv = !nv.val();
+    assumptions1[i] = SatLiteral(gvar(node), inv);
+  }
+  for (ymuint i = 0; i < n0; ++ i) {
+    assumptions1[i + n] = assumptions[i];
+  }
+
   vector<SatBool3> model;
-  SatBool3 ans = mSolver.solve(assumptions, model);
+  SatBool3 ans = mSolver.solve(assumptions1, model);
 
   timer.stop();
   USTime time = timer.time();
@@ -325,7 +433,7 @@ DtpgBase::solve(const vector<SatLiteral>& assumptions,
     ModelValMap val_map(mGvarMap, mFvarMap, model);
 
     // バックトレースを行う．
-    mBackTracer(mRoot, mOutputList, val_map, nodeval_list);
+    mBackTracer(fault->tpg_onode()->ffr_root(), mOutputList, val_map, nodeval_list);
 
     timer.stop();
     stats.mBackTraceTime += timer.time();

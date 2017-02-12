@@ -85,11 +85,9 @@ private:
   /// @brief 故障挿入回路のCNFを作る．
   /// @param[in] elem_pos 要素番号
   /// @param[in] ovar ゲートの出力の変数
-  /// @param[in] fvar_map 故障回路の変数マップ
   void
   inject_fault(ymuint elem_pos,
-	       SatVarId ovar,
-	       const vector<SatVarId>& fvar_map);
+	       SatVarId ovar);
 
 
 private:

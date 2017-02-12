@@ -169,7 +169,10 @@ dtpg_test(int argc,
   bool ffr = false;
   bool mffc = false;
 
+  bool dump = false;
   bool verify = false;
+
+  int bt_mode = -1;
 
   argv0 = argv[0];
 
@@ -211,8 +214,32 @@ dtpg_test(int argc,
 	}
 	iscas89 = true;
       }
+      else if ( strcmp(argv[pos], "--bt0") == 0 ) {
+	if ( bt_mode != -1 ) {
+	  cerr << "--bt0, --bt1, and --bt2 are mutually exclusive" << endl;
+	  return -1;
+	}
+	bt_mode = 0;
+      }
+      else if ( strcmp(argv[pos], "--bt1") == 0 ) {
+	if ( bt_mode != -1 ) {
+	  cerr << "--bt0, --bt1, and --bt2 are mutually exclusive" << endl;
+	  return -1;
+	}
+	bt_mode = 1;
+      }
+      else if ( strcmp(argv[pos], "--bt2") == 0 ) {
+	if ( bt_mode != -1 ) {
+	  cerr << "--bt0, --bt1, and --bt2 are mutually exclusive" << endl;
+	  return -1;
+	}
+	bt_mode = 2;
+      }
       else if ( strcmp(argv[pos], "--verify") == 0 ) {
 	verify = true;
+      }
+      else if ( strcmp(argv[pos], "--dump") == 0 ) {
+	dump = true;
       }
       else {
 	cerr << argv[pos] << ": illegal option" << endl;
@@ -240,6 +267,11 @@ dtpg_test(int argc,
     blif = true;
   }
 
+  if ( bt_mode == -1 ) {
+    // bt0 をデフォルトにする．
+    bt_mode = 0;
+  }
+
   string filename = argv[pos];
   TpgNetwork network;
   if ( blif ) {
@@ -258,6 +290,10 @@ dtpg_test(int argc,
     ASSERT_NOT_REACHED;
   }
 
+  if ( dump ) {
+    print_network(cout, network);
+  }
+
   Fsim* fsim = nullptr;
   DopList dop_list;
   if ( verify ) {
@@ -268,8 +304,7 @@ dtpg_test(int argc,
 
   FaultMgr fmgr(network);
 
-  ymuint xmode = 0;
-  BackTracer bt(xmode, network.node_num());
+  BackTracer bt(bt_mode, network.node_num());
 
   StopWatch timer;
   timer.start();
