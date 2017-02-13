@@ -1,6 +1,6 @@
 ﻿
-/// @file DtpgBase.cc
-/// @brief DtpgBase の実装ファイル
+/// @file DtpgImpl.cc
+/// @brief DtpgImpl の実装ファイル
 /// @author Yusuke Matsunaga (松永 裕介)
 ///
 /// Copyright (C) 2017 Yusuke Matsunaga
@@ -8,7 +8,7 @@
 
 #define DEBUG_DTPG 0
 
-#include "sa/DtpgBase.h"
+#include "DtpgImpl.h"
 
 #include "TpgNetwork.h"
 #include "TpgFault.h"
@@ -34,7 +34,7 @@ BEGIN_NAMESPACE_YM_SATPG_SA
 // @param[in] bt バックトレーサー
 // @param[in] network 対象のネットワーク
 // @param[in] root 故障伝搬の起点となるノード
-DtpgBase::DtpgBase(const string& sat_type,
+DtpgImpl::DtpgImpl(const string& sat_type,
 		   const string& sat_option,
 		   ostream* sat_outp,
 		   BackTracer& bt,
@@ -55,27 +55,55 @@ DtpgBase::DtpgBase(const string& sat_type,
 }
 
 // @brief デストラクタ
-DtpgBase::~DtpgBase()
+DtpgImpl::~DtpgImpl()
 {
 }
 
-// @breif 時間計測を制御する．
+// @brief 回路の構造を表すCNF式を作る．
+// @param[out] stats DTPGの統計情報
+//
+// このオブジェクトに対しては1回行えばよい．
+// というか1回しか行えない．
 void
-DtpgBase::timer_enable(bool enable)
+DtpgImpl::gen_cnf(DtpgStats& stats)
 {
-  mTimerEnable = enable;
+  cnf_begin();
+
+  gen_cnf_base();
+
+  cnf_end(stats);
+}
+
+/// @brief テスト生成を行なう．
+/// @param[in] fault 対象の故障
+/// @param[out] nodeval_list テストパタンの値割り当てを格納するリスト
+/// @param[inout] stats DTPGの統計情報
+/// @return 結果を返す．
+SatBool3
+DtpgImpl::dtpg(const TpgFault* fault,
+	       NodeValList& nodeval_list,
+	       DtpgStats& stats)
+{
+  if ( fault->ffr_root() != root_node() ) {
+    cerr << "Error[DtpgImpl::dtpg()]: fault is not within mFfrRoot's FFR" << endl;
+    return kB3X;
+  }
+
+  SatBool3 ans = solve(fault, vector<SatLiteral>(), nodeval_list, stats);
+
+  return ans;
 }
 
 // @brief タイマーをスタートする．
 void
-DtpgBase::cnf_begin()
+DtpgImpl::cnf_begin()
 {
   timer_start();
 }
 
 // @brief タイマーを止めて CNF 作成時間に加える．
 void
-DtpgBase::cnf_end(DtpgStats& stats)
+DtpgImpl::cnf_end(DtpgStats& stats)
 {
   USTime time = timer_stop();
   stats.mCnfGenTime += time;
@@ -84,7 +112,7 @@ DtpgBase::cnf_end(DtpgStats& stats)
 
 // @brief 時間計測を開始する．
 void
-DtpgBase::timer_start()
+DtpgImpl::timer_start()
 {
   if ( mTimerEnable ) {
     mTimer.reset();
@@ -94,7 +122,7 @@ DtpgBase::timer_start()
 
 /// @brief 時間計測を終了する．
 USTime
-DtpgBase::timer_stop()
+DtpgImpl::timer_stop()
 {
   USTime time(0, 0, 0);
   if ( mTimerEnable ) {
@@ -106,7 +134,7 @@ DtpgBase::timer_stop()
 
 // @brief root の影響が外部出力まで伝搬する条件のCNF式を作る．
 void
-DtpgBase::gen_cnf_base()
+DtpgImpl::gen_cnf_base()
 {
   // root の TFO を mNodeList に入れる．
   set_tfo_mark(mRoot);
@@ -228,7 +256,7 @@ DtpgBase::gen_cnf_base()
 // @brief 故障伝搬条件を表すCNF式を生成する．
 // @param[in] node 対象のノード
 void
-DtpgBase::make_dchain_cnf(const TpgNode* node)
+DtpgImpl::make_dchain_cnf(const TpgNode* node)
 {
   SatLiteral glit(mGvarMap(node));
   SatLiteral flit(mFvarMap(node));
@@ -303,7 +331,7 @@ DtpgBase::make_dchain_cnf(const TpgNode* node)
 // @param[in] fault 対象の故障
 // @param[out] assign_list 結果の値割り当てリスト
 void
-DtpgBase::make_ffr_condition(const TpgFault* fault,
+DtpgImpl::make_ffr_condition(const TpgFault* fault,
 			     NodeValList& assign_list)
 {
 #if DEBUG_DTPG
@@ -379,28 +407,27 @@ DtpgBase::make_ffr_condition(const TpgFault* fault,
 }
 
 // @brief 一つの SAT問題を解く．
-// @param[in] assumptions 値の決まっている変数のリスト
-// @param[in] assign_list 仮定(値割り当て)のリスト
 // @param[in] fault 対象の故障
+// @param[in] assumptions 値の決まっている変数のリスト
 // @param[in] root 故障位置のノード
 // @param[in] output_list 故障に関係のある外部出力のリスト
 // @param[out] nodeval_list 結果の値割り当てリスト
 // @param[inout] stats DTPGの統計情報
 // @return 結果を返す．
 SatBool3
-DtpgBase::solve(const vector<SatLiteral>& assumptions,
-		const NodeValList& assign_list,
-		const TpgFault* fault,
+DtpgImpl::solve(const TpgFault* fault,
+		const vector<SatLiteral>& assumptions,
 		NodeValList& nodeval_list,
 		DtpgStats& stats)
 {
   StopWatch timer;
+  timer.start();
 
   SatStats prev_stats;
   mSolver.get_stats(prev_stats);
 
-  timer.reset();
-  timer.start();
+  NodeValList assign_list;
+  make_ffr_condition(fault, assign_list);
 
   ymuint n0 = assumptions.size();
   ymuint n = assign_list.size();

@@ -10,8 +10,8 @@
 #include "TpgNetwork.h"
 #include "TpgFault.h"
 #include "FaultMgr.h"
-#include "sa/DtpgS.h"
-#include "sa/DtpgM.h"
+#include "sa/Dtpg.h"
+#include "sa/NodeValList.h"
 #include "sa/BackTracer.h"
 #include "sa/Fsim.h"
 #include "sa/DetectOp.h"
@@ -24,12 +24,9 @@ BEGIN_NAMESPACE_YM_SATPG_SA
 const char* argv0 = "";
 
 pair<ymuint, ymuint>
-single_test(const string& sat_type,
-	    const string& sat_option,
-	    ostream* sat_outp,
+single_test(Dtpg& dtpg,
 	    const TpgNetwork& network,
 	    FaultMgr& fmgr,
-	    BackTracer& bt,
 	    DetectOp& dop,
 	    DtpgStats& stats)
 {
@@ -40,11 +37,10 @@ single_test(const string& sat_type,
     const TpgFault* fault = network.rep_fault(i);
     if ( fmgr.status(fault) == kFsUndetected ) {
       const TpgNode* ffr_root = fault->ffr_root();
-      DtpgS dtpg_s(sat_type, sat_option, sat_outp, bt, network, ffr_root);
 
-      dtpg_s.gen_cnf(stats);
+      dtpg.gen_ffr_cnf(network, ffr_root, stats);
       NodeValList nodeval_list;
-      SatBool3 ans = dtpg_s.dtpg(fault, nodeval_list, stats);
+      SatBool3 ans = dtpg.dtpg(fault, nodeval_list, stats);
       if ( ans == kB3True ) {
 	++ detect_num;
 	dop(fault, nodeval_list);
@@ -59,12 +55,9 @@ single_test(const string& sat_type,
 }
 
 pair<ymuint, ymuint>
-ffr_test(const string& sat_type,
-	 const string& sat_option,
-	 ostream* sat_outp,
+ffr_test(Dtpg& dtpg,
 	 const TpgNetwork& network,
 	 FaultMgr& fmgr,
-	 BackTracer& bt,
 	 DetectOp& dop,
 	 DtpgStats& stats)
 {
@@ -76,15 +69,13 @@ ffr_test(const string& sat_type,
       continue;
     }
 
-    DtpgS dtpg_s(sat_type, sat_option, sat_outp, bt, network, node);
-
-    dtpg_s.gen_cnf(stats);
+    dtpg.gen_ffr_cnf(network, node, stats);
     ymuint nf = network.ffr_fault_num(node->id());
     for (ymuint j = 0; j < nf; ++ j) {
       const TpgFault* fault = network.ffr_fault(node->id(), j);
       if ( fmgr.status(fault) == kFsUndetected ) {
 	NodeValList nodeval_list;
-	SatBool3 ans = dtpg_s.dtpg(fault, nodeval_list, stats);
+	SatBool3 ans = dtpg.dtpg(fault, nodeval_list, stats);
 	if ( ans == kB3True ) {
 	  ++ detect_num;
 	  dop(fault, nodeval_list);
@@ -100,12 +91,9 @@ ffr_test(const string& sat_type,
 }
 
 pair<ymuint, ymuint>
-mffc_test(const string& sat_type,
-	  const string& sat_option,
-	  ostream* sat_outp,
+mffc_test(Dtpg& dtpg,
 	  const TpgNetwork& network,
 	  FaultMgr& fmgr,
-	  BackTracer& bt,
 	  DetectOp& dop,
 	  DtpgStats& stats)
 {
@@ -119,9 +107,7 @@ mffc_test(const string& sat_type,
       continue;
     }
 
-    DtpgM dtpg_m(sat_type, sat_option, sat_outp, bt, network, node);
-
-    dtpg_m.cnf_gen(stats);
+    dtpg.gen_mffc_cnf(network, node, stats);
 
     ymuint ne = node->mffc_elem_num();
     for (ymuint j = 0; j < ne; ++ j) {
@@ -132,7 +118,7 @@ mffc_test(const string& sat_type,
 	if ( fmgr.status(fault) == kFsUndetected ) {
 	  // 故障に対するテスト生成を行なう．
 	  NodeValList nodeval_list;
-	  SatBool3 ans = dtpg_m.dtpg(fault, nodeval_list, stats);
+	  SatBool3 ans = dtpg.dtpg(fault, nodeval_list, stats);
 	  if ( ans == kB3True ) {
 	    ++ detect_num;
 	    dop(fault, nodeval_list);
@@ -306,19 +292,21 @@ dtpg_test(int argc,
 
   BackTracer bt(bt_mode, network.node_num());
 
+  Dtpg dtpg(sat_type, sat_option, sat_outp, bt);
+
   StopWatch timer;
   timer.start();
 
   DtpgStats stats;
   pair<ymuint, ymuint> num_pair;
   if ( single ) {
-    num_pair = single_test(sat_type, sat_option, sat_outp, network, fmgr, bt, dop_list, stats);
+    num_pair = single_test(dtpg, network, fmgr, dop_list, stats);
   }
   else if ( ffr ) {
-    num_pair = ffr_test(sat_type, sat_option, sat_outp, network, fmgr, bt, dop_list, stats);
+    num_pair = ffr_test(dtpg, network, fmgr, dop_list, stats);
   }
   else if ( mffc ) {
-    num_pair = mffc_test(sat_type, sat_option, sat_outp, network, fmgr, bt, dop_list, stats);
+    num_pair = mffc_test(dtpg, network, fmgr, dop_list, stats);
   }
   else {
     ASSERT_NOT_REACHED;

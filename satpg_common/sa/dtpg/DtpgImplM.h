@@ -1,8 +1,8 @@
-﻿#ifndef DTPGM_H
-#define DTPGM_H
+﻿#ifndef DTPGIMPLM_H
+#define DTPGIMPLM_H
 
-/// @file DtpgM.h
-/// @brief DtpgM のヘッダファイル
+/// @file DtpgImplM.h
+/// @brief DtpgImplM のヘッダファイル
 ///
 /// @author Yusuke Matsunaga (松永 裕介)
 ///
@@ -10,18 +10,17 @@
 /// All rights reserved.
 
 
-#include "sa/DtpgBase.h"
-#include "sa/StructSat.h"
+#include "DtpgImpl.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG_SA
 
 //////////////////////////////////////////////////////////////////////
-/// @class DtpgM DtpgM.h "DtpgM.h"
-/// @brief MFFC と FFR の構造を考慮した階層的な DtpgBase
+/// @class DtpgImplM DtpgImplM.h "DtpgImplM.h"
+/// @brief MFFC と FFR の構造を考慮した階層的な DtpgImpl
 //////////////////////////////////////////////////////////////////////
-class DtpgM :
-  public DtpgBase
+class DtpgImplM :
+  public DtpgImpl
 {
 public:
 
@@ -32,16 +31,16 @@ public:
   /// @param[in] bt バックトレーサー
   /// @param[in] network 対象のネットワーク
   /// @param[in] mffc_root MFFC の根のノード
-  DtpgM(const string& sat_type,
-	const string& sat_option,
-	ostream* sat_outp,
-	BackTracer& bt,
-	const TpgNetwork& network,
-	const TpgNode* mffc_root);
+  DtpgImplM(const string& sat_type,
+	    const string& sat_option,
+	    ostream* sat_outp,
+	    BackTracer& bt,
+	    const TpgNetwork& network,
+	    const TpgNode* mffc_root);
 
   /// @brief デストラクタ
   virtual
-  ~DtpgM();
+  ~DtpgImplM();
 
 
 public:
@@ -49,24 +48,18 @@ public:
   // 外部インターフェイス
   //////////////////////////////////////////////////////////////////////
 
-  /// @brief 対象の故障数を返す．
-  ymuint
-  fault_num() const;
-
-  /// @brief 対象の故障を返す．
-  /// @param[in] pos 位置番号 ( 0 <= pos < fault_num() )
-  const TpgFault*
-  fault(ymuint pos) const;
-
   /// @brief CNF 式を作る．
+  /// @param[out] stats DTPGの統計情報
+  virtual
   void
-  cnf_gen(DtpgStats& stats);
+  gen_cnf(DtpgStats& stats);
 
   /// @briefテスト生成を行う．
   /// @param[in] fault 対象の故障
   /// @param[out] nodeval_list テストパタンの値割り当てを格納するリスト
   /// @param[inout] stats DTPGの統計情報
   /// @return 結果を返す．
+  virtual
   SatBool3
   dtpg(const TpgFault* fault,
        NodeValList& nodeval_list,
@@ -110,4 +103,4 @@ private:
 
 END_NAMESPACE_YM_SATPG_SA
 
-#endif // DTPGM_H
+#endif // DTPGIMPLM_H

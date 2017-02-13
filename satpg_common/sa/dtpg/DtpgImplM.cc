@@ -1,6 +1,6 @@
 ﻿
-/// @file DtpgM.cc
-/// @brief DtpgM の実装ファイル
+/// @file DtpgImplM.cc
+/// @brief DtpgImplM の実装ファイル
 /// @author Yusuke Matsunaga (松永 裕介)
 ///
 /// Copyright (C) 2017 Yusuke Matsunaga
@@ -8,7 +8,8 @@
 
 #define DEBUG_DTPGM 0
 
-#include "sa/DtpgM.h"
+#include "DtpgImplM.h"
+
 #include "TpgFault.h"
 #include "TpgNetwork.h"
 #include "VectLitMap.h"
@@ -23,18 +24,19 @@ BEGIN_NAMESPACE_YM_SATPG_SA
 // @param[in] bt バックトレーサー
 // @param[in] network 対象のネットワーク
 // @param[in] mffc_root MFFC の根のノード
-DtpgM::DtpgM(const string& sat_type,
-	     const string& sat_option,
-	     ostream* sat_outp,
-	     BackTracer& bt,
-	     const TpgNetwork& network,
-	     const TpgNode* mffc_root) :
-  DtpgBase(sat_type, sat_option, sat_outp, bt, network, mffc_root),
+DtpgImplM::DtpgImplM(const string& sat_type,
+		     const string& sat_option,
+		     ostream* sat_outp,
+		     BackTracer& bt,
+		     const TpgNetwork& network,
+		     const TpgNode* mffc_root) :
+  DtpgImpl(sat_type, sat_option, sat_outp, bt, network, mffc_root),
   mElemArray(mffc_root->mffc_elem_num()),
-  mElemPosMap(network.max_fault_id()),
+  mElemPosMap(network.max_fault_id(), -1),
   mElemVarArray(mffc_root->mffc_elem_num())
 {
   ymuint ne = mffc_root->mffc_elem_num();
+  ASSERT_COND( ne > 1 );
   for (ymuint i = 0; i < ne; ++ i) {
     const TpgNode* node1 = mffc_root->mffc_elem(i);
     mElemArray[i] = node1;
@@ -48,22 +50,20 @@ DtpgM::DtpgM(const string& sat_type,
 }
 
 // @brief デストラクタ
-DtpgM::~DtpgM()
+DtpgImplM::~DtpgImplM()
 {
 }
 
 // @brief CNF 式を作る．
 void
-DtpgM::cnf_gen(DtpgStats& stats)
+DtpgImplM::gen_cnf(DtpgStats& stats)
 {
   cnf_begin();
 
   // root 以降の伝搬条件を作る．
   gen_cnf_base();
 
-  if ( mElemArray.size() > 1 ) {
-    make_mffc_condition();
-  }
+  make_mffc_condition();
 
   cnf_end(stats);
 }
@@ -74,19 +74,16 @@ DtpgM::cnf_gen(DtpgStats& stats)
 // @param[inout] stats DTPGの統計情報
 // @return 結果を返す．
 SatBool3
-DtpgM::dtpg(const TpgFault* fault,
-	    NodeValList& nodeval_list,
-	    DtpgStats& stats)
+DtpgImplM::dtpg(const TpgFault* fault,
+		NodeValList& nodeval_list,
+		DtpgStats& stats)
 {
-  NodeValList assign_list;
-
-  //timer.start();
-
-  // FFR 内の故障活性化&伝搬条件を求める．
-  make_ffr_condition(fault, assign_list);
+  if ( mElemPosMap[fault->id()] == -1 ) {
+    cerr << "Error[DtpgImplM::dtpg()]: fault is not within the MFFC" << endl;
+    return kB3X;
+  }
 
   vector<SatLiteral> assumptions;
-
   if ( mElemArray.size() > 1 ) {
     // FFR の根の出力に故障を挿入する．
     assumptions.reserve(mElemArray.size());
@@ -98,17 +95,15 @@ DtpgM::dtpg(const TpgFault* fault,
     }
   }
 
-  //timer.stop();
-
   // 故障に対するテスト生成を行なう．
-  SatBool3 ans = solve(assumptions, assign_list, fault, nodeval_list, stats);
+  SatBool3 ans = solve(fault, assumptions, nodeval_list, stats);
 
   return ans;
 }
 
 // @brief MFFC 内部の故障伝搬条件を表すCNFを作る．
 void
-DtpgM::make_mffc_condition()
+DtpgImplM::make_mffc_condition()
 {
   // 各FFRの根にXORゲートを挿入した故障回路を作る．
   // そのXORをコントロールする入力変数を作る．
@@ -215,7 +210,7 @@ DtpgM::make_mffc_condition()
 // @param[in] elem_pos 要素番号
 // @param[in] ovar ゲートの出力の変数
 void
-DtpgM::inject_fault(ymuint elem_pos,
+DtpgImplM::inject_fault(ymuint elem_pos,
 		    SatVarId ovar)
 {
   SatLiteral lit1(ovar);

@@ -13,9 +13,9 @@
 #include "TpgNetwork.h"
 #include "FaultMgr.h"
 #include "sa/DtpgStats.h"
-#include "sa/DtpgS.h"
-#include "sa/DtpgM.h"
+#include "sa/Dtpg.h"
 #include "sa/Fsim.h"
+#include "sa/NodeValList.h"
 #include "sa/BackTracer.h"
 #include "sa/DetectOp.h"
 #include "sa/DopList.h"
@@ -26,26 +26,21 @@
 BEGIN_NAMESPACE_YM_SATPG
 
 void
-run_single(const string& sat_type,
-	   const string& sat_option,
-	   ostream* sat_outp,
+run_single(nsSa::Dtpg& dtpg,
 	   const TpgNetwork& network,
 	   FaultMgr& fmgr,
-	   nsSa::BackTracer& bt,
 	   nsSa::DetectOp& dop,
 	   nsSa::UntestOp& uop,
 	   nsSa::DtpgStats& stats)
 {
-
   ymuint nf = network.rep_fault_num();
   for (ymuint i = 0; i < nf; ++ i) {
     const TpgFault* fault = network.rep_fault(i);
     if ( fmgr.status(fault) == kFsUndetected ) {
       const TpgNode* ffr_root = fault->ffr_root();
-      nsSa::DtpgS dtpg_s(sat_type, sat_option, sat_outp, bt, network, ffr_root);
-      dtpg_s.gen_cnf(stats);
+      dtpg.gen_ffr_cnf(network, ffr_root, stats);
       nsSa::NodeValList nodeval_list;
-      SatBool3 ans = dtpg_s.dtpg(fault, nodeval_list, stats);
+      SatBool3 ans = dtpg.dtpg(fault, nodeval_list, stats);
       if ( ans == kB3True ) {
 	dop(fault, nodeval_list);
       }
@@ -57,12 +52,9 @@ run_single(const string& sat_type,
 }
 
 void
-run_mffc(const string& sat_type,
-	 const string& sat_option,
-	 ostream* sat_outp,
+run_mffc(nsSa::Dtpg& dtpg,
 	 const TpgNetwork& network,
 	 FaultMgr& fmgr,
-	 nsSa::BackTracer& bt,
 	 nsSa::DetectOp& dop,
 	 nsSa::UntestOp& uop,
 	 nsSa::DtpgStats& stats)
@@ -74,10 +66,7 @@ run_mffc(const string& sat_type,
       continue;
     }
 
-    nsSa::DtpgM dtpg_m(sat_type, sat_option, sat_outp, bt, network, node);
-
-    dtpg_m.cnf_gen(stats);
-
+    dtpg.gen_mffc_cnf(network, node, stats);
     ymuint ne = node->mffc_elem_num();
     for (ymuint j = 0; j < ne; ++ j) {
       const TpgNode* node1 = node->mffc_elem(j);
@@ -87,7 +76,7 @@ run_mffc(const string& sat_type,
 	if ( fmgr.status(fault) == kFsUndetected ) {
 	  // 故障に対するテスト生成を行なう．
 	  nsSa::NodeValList nodeval_list;
-	  SatBool3 ans = dtpg_m.dtpg(fault, nodeval_list, stats);
+	  SatBool3 ans = dtpg.dtpg(fault, nodeval_list, stats);
 	  if ( ans == kB3True ) {
 	    dop(fault, nodeval_list);
 	  }
@@ -250,15 +239,17 @@ DtpgCmd::cmd_proc(TclObjVector& objv)
     }
   }
 
+  nsSa::Dtpg dtpg(sat_type, sat_option, outp, bt);
+
   nsSa::DtpgStats stats;
   if ( engine_type == "single" ) {
-    run_single(sat_type, sat_option, outp, _network(), _fault_mgr(), bt, dop_list, uop_list, stats);
+    run_single(dtpg, _network(), _fault_mgr(), dop_list, uop_list, stats);
   }
   else if ( engine_type == "mffc" ) {
-    run_mffc(sat_type, sat_option, outp, _network(), _fault_mgr(), bt, dop_list, uop_list, stats);
+    run_mffc(dtpg, _network(), _fault_mgr(), dop_list, uop_list, stats);
   }
   else {
-    run_single(sat_type, sat_option, outp, _network(), _fault_mgr(), bt, dop_list, uop_list, stats);
+    run_single(dtpg, _network(), _fault_mgr(), dop_list, uop_list, stats);
   }
 
   after_update_faults();

@@ -1,8 +1,8 @@
-﻿#ifndef DTPGBASE_H
-#define DTPGBASE_H
+﻿#ifndef DTPGIMPL_H
+#define DTPGIMPL_H
 
-/// @file DtpgBase.h
-/// @brief DtpgBase のヘッダファイル
+/// @file DtpgImpl.h
+/// @brief DtpgImpl のヘッダファイル
 ///
 /// @author Yusuke Matsunaga (松永 裕介)
 ///
@@ -10,26 +10,28 @@
 /// All rights reserved.
 
 
-#include "sa/Dtpg.h"
+#include "sa/sa_nsdef.h"
 #include "TpgNode.h"
 #include "sa/DtpgStats.h"
 #include "sa/NodeValList.h"
+
 #include "ym/ym_sat.h"
 #include "ym/SatBool3.h"
 #include "ym/SatLiteral.h"
 #include "ym/SatSolver.h"
 #include "ym/SatStats.h"
 #include "ym/StopWatch.h"
+
 #include "GenVidMap.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG_SA
 
 //////////////////////////////////////////////////////////////////////
-/// @class DtpgBase DtpgBase.h "DtpgBase.h"
-/// @brief DtpgBase の実装用の基底クラス
+/// @class DtpgImpl DtpgImpl.h "DtpgImpl.h"
+/// @brief Dtpg の実装用のクラス
 //////////////////////////////////////////////////////////////////////
-class DtpgBase
+class DtpgImpl
 {
 public:
 
@@ -40,7 +42,7 @@ public:
   /// @param[in] bt バックトレーサー
   /// @param[in] network 対象のネットワーク
   /// @param[in] root 故障伝搬の起点となるノード
-  DtpgBase(const string& sat_type,
+  DtpgImpl(const string& sat_type,
 	   const string& sat_option,
 	   ostream* sat_outp,
 	   BackTracer& bt,
@@ -48,7 +50,8 @@ public:
 	   const TpgNode* root);
 
   /// @brief デストラクタ
-  ~DtpgBase();
+  virtual
+  ~DtpgImpl();
 
 
 public:
@@ -56,10 +59,25 @@ public:
   // 外部インターフェイス
   //////////////////////////////////////////////////////////////////////
 
-  /// @breif 時間計測を制御する．
+  /// @brief 回路の構造を表すCNF式を作る．
+  /// @param[out] stats DTPGの統計情報
+  ///
+  /// このオブジェクトに対しては1回行えばよい．
+  /// というか1回しか行えない．
   virtual
   void
-  timer_enable(bool enable);
+  gen_cnf(DtpgStats& stats);
+
+  /// @brief テスト生成を行なう．
+  /// @param[in] fault 対象の故障
+  /// @param[out] nodeval_list テストパタンの値割り当てを格納するリスト
+  /// @param[inout] stats DTPGの統計情報
+  /// @return 結果を返す．
+  virtual
+  SatBool3
+  dtpg(const TpgFault* fault,
+       NodeValList& nodeval_list,
+       DtpgStats& stats);
 
 
 protected:
@@ -148,16 +166,14 @@ protected:
 		     NodeValList& assign_list);
 
   /// @brief 一つの SAT問題を解く．
-  /// @param[in] assumptions 値の決まっている変数のリスト
-  /// @param[in] assign_list 仮定(値割り当て)のリスト
   /// @param[in] fault 対象の故障
+  /// @param[in] assumptions 値の決まっている変数のリスト
   /// @param[out] nodeval_list 結果の値割り当てリスト
   /// @param[inout] stats DTPGの統計情報
   /// @return 結果を返す．
   SatBool3
-  solve(const vector<SatLiteral>& assumptions,
-	const NodeValList& assign_list,
-	const TpgFault* fault,
+  solve(const TpgFault* fault,
+	const vector<SatLiteral>& assumptions,
 	NodeValList& nodeval_list,
 	DtpgStats& stats);
 
@@ -213,6 +229,17 @@ private:
   // 故障伝搬の起点となるノード
   const TpgNode* mRoot;
 
+  // FFR の根のリスト
+  // [0] は MFFC の根でもある．
+  vector<const TpgNode*> mElemArray;
+
+  // 故障番号をキーにしてFFR番号を入れる配列
+  vector<ymuint> mElemPosMap;
+
+  // 各FFRの根に反転イベントを挿入するための変数
+  // サイズは mElemNum
+  vector<SatVarId> mElemVarArray;
+
   // 関係するノードを入れておくリスト
   vector<const TpgNode*> mNodeList;
 
@@ -251,7 +278,7 @@ private:
 // @brief SATソルバを返す．
 inline
 SatSolver&
-DtpgBase::solver()
+DtpgImpl::solver()
 {
   return mSolver;
 }
@@ -259,7 +286,7 @@ DtpgBase::solver()
 // @brief ノード番号の最大値を返す．
 inline
 ymuint
-DtpgBase::max_node_id() const
+DtpgImpl::max_node_id() const
 {
   return mMaxNodeId;
 }
@@ -267,7 +294,7 @@ DtpgBase::max_node_id() const
 // @brief 起点となるノードを返す．
 inline
 const TpgNode*
-DtpgBase::root_node() const
+DtpgImpl::root_node() const
 {
   return mRoot;
 }
@@ -276,7 +303,7 @@ DtpgBase::root_node() const
 // @param[in] node 対象のノード
 inline
 SatVarId
-DtpgBase::gvar(const TpgNode* node)
+DtpgImpl::gvar(const TpgNode* node)
 {
   return mGvarMap(node);
 }
@@ -285,7 +312,7 @@ DtpgBase::gvar(const TpgNode* node)
 // @param[in] node 対象のノード
 inline
 SatVarId
-DtpgBase::fvar(const TpgNode* node)
+DtpgImpl::fvar(const TpgNode* node)
 {
   return mFvarMap(node);
 }
@@ -294,7 +321,7 @@ DtpgBase::fvar(const TpgNode* node)
 // @param[in] node 対象のノード
 inline
 SatVarId
-DtpgBase::dvar(const TpgNode* node)
+DtpgImpl::dvar(const TpgNode* node)
 {
   return mDvarMap(node);
 }
@@ -304,7 +331,7 @@ DtpgBase::dvar(const TpgNode* node)
 // @param[in] var 設定する変数
 inline
 void
-DtpgBase::set_gvar(const TpgNode* node,
+DtpgImpl::set_gvar(const TpgNode* node,
 		   SatVarId var)
 {
   mGvarMap.set_vid(node, var);
@@ -315,7 +342,7 @@ DtpgBase::set_gvar(const TpgNode* node,
 // @param[in] var 設定する変数
 inline
 void
-DtpgBase::set_fvar(const TpgNode* node,
+DtpgImpl::set_fvar(const TpgNode* node,
 		   SatVarId var)
 {
   mFvarMap.set_vid(node, var);
@@ -326,7 +353,7 @@ DtpgBase::set_fvar(const TpgNode* node,
 // @param[in] var 設定する変数
 inline
 void
-DtpgBase::set_dvar(const TpgNode* node,
+DtpgImpl::set_dvar(const TpgNode* node,
 		   SatVarId var)
 {
   mDvarMap.set_vid(node, var);
@@ -335,7 +362,7 @@ DtpgBase::set_dvar(const TpgNode* node,
 // @brief TFO マークを調べる．
 inline
 bool
-DtpgBase::tfo_mark(const TpgNode* node) const
+DtpgImpl::tfo_mark(const TpgNode* node) const
 {
   return static_cast<bool>((mMarkArray[node->id()] >> 0) & 1U);
 }
@@ -343,7 +370,7 @@ DtpgBase::tfo_mark(const TpgNode* node) const
 // @brief TFO マークをつける．
 inline
 void
-DtpgBase::set_tfo_mark(const TpgNode* node)
+DtpgImpl::set_tfo_mark(const TpgNode* node)
 {
   ymuint id = node->id();
   if ( ((mMarkArray[id] >> 0) & 1U) == 0U ) {
@@ -358,7 +385,7 @@ DtpgBase::set_tfo_mark(const TpgNode* node)
 // @brief TFI マークを調べる．
 inline
 bool
-DtpgBase::tfi_mark(const TpgNode* node) const
+DtpgImpl::tfi_mark(const TpgNode* node) const
 {
   return static_cast<bool>((mMarkArray[node->id()] >> 1) & 1U);
 }
@@ -366,7 +393,7 @@ DtpgBase::tfi_mark(const TpgNode* node) const
 // @brief TFI マークをつける．
 inline
 void
-DtpgBase::set_tfi_mark(const TpgNode* node)
+DtpgImpl::set_tfi_mark(const TpgNode* node)
 {
   ymuint id = node->id();
   if ( mMarkArray[id] == 0U ) {
@@ -378,7 +405,7 @@ DtpgBase::set_tfi_mark(const TpgNode* node)
 // @brief TFO マークと TFI マークのいづれかがついていたら true を返す．
 inline
 bool
-DtpgBase::mark(const TpgNode* node)
+DtpgImpl::mark(const TpgNode* node)
 {
   if ( mMarkArray[node->id()] ) {
     return true;
@@ -388,4 +415,4 @@ DtpgBase::mark(const TpgNode* node)
 
 END_NAMESPACE_YM_SATPG_SA
 
-#endif // DTPGBASE_H
+#endif // DTPGIMPL_H
