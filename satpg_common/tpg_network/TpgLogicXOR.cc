@@ -94,10 +94,8 @@ TpgLogicXOR2::make_cnf(SatSolver& solver,
   SatLiteral ilit0 = lit_map.input(0);
   SatLiteral ilit1 = lit_map.input(1);
   SatLiteral olit  = lit_map.output();
-  solver.add_clause(~ilit0, ~ilit1, ~olit);
-  solver.add_clause(~ilit0,  ilit1,  olit);
-  solver.add_clause( ilit0, ~ilit1,  olit);
-  solver.add_clause( ilit0,  ilit1, ~olit);
+
+  solver.add_xorgate_rel(olit, ilit0, ilit1);
 }
 
 // @brief 入出力の関係を表す CNF 式を生成する(故障あり)．
@@ -117,12 +115,10 @@ TpgLogicXOR2::make_faulty_cnf(SatSolver& solver,
   SatLiteral ilit0 = lit_map.input(pos);
   SatLiteral olit  = lit_map.output();
   if ( fval == 0 ) {
-    solver.add_clause(~ilit0,  olit);
-    solver.add_clause( ilit0, ~olit);
+    solver.add_eq_rel(olit, ilit0);
   }
   else {
-    solver.add_clause(~ilit0, ~olit);
-    solver.add_clause( ilit0,  olit);
+    solver.add_neq_rel(olit, ilit0);
   }
 }
 

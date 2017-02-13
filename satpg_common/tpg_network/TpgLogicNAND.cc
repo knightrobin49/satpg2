@@ -91,14 +91,11 @@ void
 TpgLogicNAND2::make_cnf(SatSolver& solver,
 			const LitMap& lit_map) const
 {
-  SatLiteral olit  = ~lit_map.output();
+  SatLiteral olit  = lit_map.output();
   SatLiteral ilit0 = lit_map.input(0);
   SatLiteral ilit1 = lit_map.input(1);
 
-  solver.add_clause( ilit0,         ~olit);
-  solver.add_clause(         ilit1, ~olit);
-
-  solver.add_clause(~ilit0, ~ilit1,  olit);
+  solver.add_nandgate_rel(olit, ilit0, ilit1);
 }
 
 // @brief 入出力の関係を表す CNF 式を生成する(故障あり)．
@@ -116,7 +113,7 @@ TpgLogicNAND2::make_faulty_cnf(SatSolver& solver,
 {
   ASSERT_COND( fval == 1 );
 
-  SatLiteral olit  = ~lit_map.output();
+  SatLiteral olit  = lit_map.output();
   SatLiteral ilit0;
 
   switch ( fpos ) {
@@ -124,9 +121,7 @@ TpgLogicNAND2::make_faulty_cnf(SatSolver& solver,
   case 1: ilit0 = lit_map.input(0); break;
   }
 
-  solver.add_clause( ilit0, ~olit);
-
-  solver.add_clause(~ilit0,  olit);
+  solver.add_neq_rel(olit, ilit0);
 }
 
 
@@ -208,16 +203,12 @@ void
 TpgLogicNAND3::make_cnf(SatSolver& solver,
 		       const LitMap& lit_map) const
 {
-  SatLiteral olit  = ~lit_map.output();
+  SatLiteral olit  = lit_map.output();
   SatLiteral ilit0 = lit_map.input(0);
   SatLiteral ilit1 = lit_map.input(1);
   SatLiteral ilit2 = lit_map.input(2);
 
-  solver.add_clause( ilit0,                 ~olit);
-  solver.add_clause(         ilit1,         ~olit);
-  solver.add_clause(                 ilit2, ~olit);
-
-  solver.add_clause(~ilit0, ~ilit1, ~ilit2,  olit);
+  solver.add_nandgate_rel(olit, ilit0, ilit1, ilit2);
 }
 
 // @brief 入出力の関係を表す CNF 式を生成する(故障あり)．
@@ -235,7 +226,7 @@ TpgLogicNAND3::make_faulty_cnf(SatSolver& solver,
 {
   ASSERT_COND( fval == 1 );
 
-  SatLiteral olit  = ~lit_map.output();
+  SatLiteral olit  = lit_map.output();
   SatLiteral ilit0;
   SatLiteral ilit1;
 
@@ -256,10 +247,7 @@ TpgLogicNAND3::make_faulty_cnf(SatSolver& solver,
     break;
   }
 
-  solver.add_clause( ilit0,         ~olit);
-  solver.add_clause(         ilit1, ~olit);
-
-  solver.add_clause(~ilit0, ~ilit1,  olit);
+  solver.add_nandgate_rel(olit, ilit0, ilit1);
 }
 
 
@@ -341,18 +329,13 @@ void
 TpgLogicNAND4::make_cnf(SatSolver& solver,
 			const LitMap& lit_map) const
 {
-  SatLiteral olit  = ~lit_map.output();
+  SatLiteral olit  = lit_map.output();
   SatLiteral ilit0 = lit_map.input(0);
   SatLiteral ilit1 = lit_map.input(1);
   SatLiteral ilit2 = lit_map.input(2);
   SatLiteral ilit3 = lit_map.input(3);
 
-  solver.add_clause( ilit0,                         ~olit);
-  solver.add_clause(         ilit1,                 ~olit);
-  solver.add_clause(                 ilit2,         ~olit);
-  solver.add_clause(                         ilit3, ~olit);
-
-  solver.add_clause(~ilit0, ~ilit1, ~ilit2, ~ilit3,  olit);
+  solver.add_nandgate_rel(olit, ilit0, ilit1, ilit2, ilit3);
 }
 
 // @brief 入出力の関係を表す CNF 式を生成する(故障あり)．
@@ -370,7 +353,7 @@ TpgLogicNAND4::make_faulty_cnf(SatSolver& solver,
 {
   ASSERT_COND( fval == 1 );
 
-  SatLiteral olit  = ~lit_map.output();
+  SatLiteral olit  = lit_map.output();
   SatLiteral ilit0;
   SatLiteral ilit1;
   SatLiteral ilit2;
@@ -401,11 +384,7 @@ TpgLogicNAND4::make_faulty_cnf(SatSolver& solver,
     break;
   }
 
-  solver.add_clause( ilit0,                 ~olit);
-  solver.add_clause(         ilit1,         ~olit);
-  solver.add_clause(                 ilit2, ~olit);
-
-  solver.add_clause(~ilit0, ~ilit1, ~ilit2,  olit);
+  solver.add_nandgate_rel(olit, ilit0, ilit1, ilit2);
 }
 
 
@@ -491,14 +470,13 @@ TpgLogicNANDN::make_cnf(SatSolver& solver,
 {
   SatLiteral olit  = lit_map.output();
   ymuint ni = fanin_num();
-  vector<SatLiteral> tmp_lits(ni + 1);
+  vector<SatLiteral> ilits(ni);
   for (ymuint i = 0; i < ni; ++ i) {
     SatLiteral ilit = lit_map.input(i);
-    solver.add_clause(ilit, olit);
-    tmp_lits[i] = ~ilit;
+    ilits[i] = ilit;
   }
-  tmp_lits[ni] = ~olit;
-  solver.add_clause(tmp_lits);
+
+  solver.add_nandgate_rel(olit, ilits);
 }
 
 // @brief 入出力の関係を表す CNF 式を生成する(故障あり)．
@@ -515,20 +493,20 @@ TpgLogicNANDN::make_faulty_cnf(SatSolver& solver,
 			       const LitMap& lit_map) const
 {
   ASSERT_COND( fval == 1 );
+
   SatLiteral olit  = lit_map.output();
   ymuint ni = fanin_num();
-  vector<SatLiteral> tmp_lits;
-  tmp_lits.reserve(ni);
+  vector<SatLiteral> ilits;
+  ilits.reserve(ni - 1);
   for (ymuint i = 0; i < ni; ++ i) {
     if ( i == fpos ) {
       continue;
     }
     SatLiteral ilit = lit_map.input(i);
-    solver.add_clause(ilit, olit);
-    tmp_lits.push_back(~ilit);
+    ilits.push_back(ilit);
   }
-  tmp_lits.push_back(~olit);
-  solver.add_clause(tmp_lits);
+
+  solver.add_nandgate_rel(olit, ilits);
 }
 
 END_NAMESPACE_YM_SATPG

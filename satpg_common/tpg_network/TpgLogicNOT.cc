@@ -93,8 +93,7 @@ TpgLogicNOT::make_cnf(SatSolver& solver,
 {
   SatLiteral ilit = lit_map.input(0);
   SatLiteral olit = lit_map.output();
-  solver.add_clause(~ilit, ~olit);
-  solver.add_clause( ilit,  olit);
+  solver.add_neq_rel(ilit, olit);
 }
 
 // @brief 入出力の関係を表す CNF 式を生成する(故障あり)．
