@@ -76,7 +76,7 @@ TpgPPI::fanin(ymuint pos) const
 // @param[in] lit_map 入出力とリテラルの対応マップ
 void
 TpgPPI::make_cnf(SatSolver& solver,
-			 const LitMap& lit_map) const
+		 const GateLitMap& lit_map) const
 {
   // なにもしない．
 }
