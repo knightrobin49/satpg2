@@ -56,7 +56,7 @@ public:
   /// @param[out] stats 実行結果の情報を格納する変数
   virtual
   void
-  run(FaultMgr& fmgr,
+  run(TpgFaultMgr& fmgr,
       TvMgr& tvmgr,
       Fsim& fsim,
       ymuint min_f,

@@ -9,7 +9,7 @@
 
 #include "PrintStatsCmd.h"
 #include "TpgNetwork.h"
-#include "FaultMgr.h"
+#include "TpgFaultMgr.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG
@@ -68,7 +68,7 @@ PrintStatsCmd::cmd_proc(TclObjVector& objv)
   USTime s_time = sat_time();
   USTime m_time = misc_time();
 
-  FaultMgr& fmgr = _fault_mgr();
+  TpgFaultMgr& fmgr = _fault_mgr();
 
   ymuint n_all = _network().max_fault_id();
   ymuint n_rep = _network().rep_fault_num();

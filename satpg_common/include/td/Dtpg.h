@@ -64,7 +64,7 @@ public:
   virtual
   void
   run(TpgNetwork& tgnetwork,
-      FaultMgr& fmgr,
+      TpgFaultMgr& fmgr,
       Fsim& fsim,
       const vector<const TpgFault*>& fault_list,
       DtpgStats& stats) = 0;

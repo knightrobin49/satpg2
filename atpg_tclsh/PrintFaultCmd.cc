@@ -10,7 +10,7 @@
 #include "PrintFaultCmd.h"
 #include "AtpgMgr.h"
 #include "TpgFault.h"
-#include "FaultMgr.h"
+#include "TpgFaultMgr.h"
 #include "ym/TclPopt.h"
 
 
@@ -79,7 +79,7 @@ PrintFaultCmd::cmd_proc(TclObjVector& objv)
     }
   }
 
-  FaultMgr& fmgr = _fault_mgr();
+  TpgFaultMgr& fmgr = _fault_mgr();
 
   const TpgNetwork& network = _network();
   ymuint n = network.rep_fault_num();

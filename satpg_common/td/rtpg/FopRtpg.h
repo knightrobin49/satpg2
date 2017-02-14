@@ -27,7 +27,7 @@ public:
   /// @param[in] fsim 故障シミュレータ
   /// @param[in] fmgr 故障マネージャ
   FopRtpg(Fsim& fsim,
-	  FaultMgr& fmgr);
+	  TpgFaultMgr& fmgr);
 
   /// @brief デストラクタ
   virtual
@@ -70,7 +70,7 @@ private:
   Fsim& mFsim;
 
   // 故障マネージャ
-  FaultMgr& mFaultMgr;
+  TpgFaultMgr& mFaultMgr;
 
   // 検出回数
   ymuint32 mCount[kPvBitLen];

@@ -9,7 +9,7 @@
 
 #include "AtpgCmd.h"
 #include "AtpgMgr.h"
-#include "FaultMgr.h"
+#include "TpgFaultMgr.h"
 #include "TpgNetwork.h"
 #include "TpgNode.h"
 #include "TpgFault.h"
@@ -241,7 +241,7 @@ AtpgCmd::_network()
 }
 
 // @brief FaultMgr を取り出す．
-FaultMgr&
+TpgFaultMgr&
 AtpgCmd::_fault_mgr()
 {
   return mMgr->_fault_mgr();

@@ -9,7 +9,6 @@
 
 #include "MinPatDsatur.h"
 #include "TpgNetwork.h"
-#include "FaultMgr.h"
 #include "FaultAnalyzer.h"
 #include "EqChecker.h"
 #include "DomChecker.h"

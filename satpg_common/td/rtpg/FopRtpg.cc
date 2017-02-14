@@ -9,7 +9,7 @@
 
 #include "FopRtpg.h"
 #include "td/Fsim.h"
-#include "FaultMgr.h"
+#include "TpgFaultMgr.h"
 #include "TpgFault.h"
 
 
@@ -23,7 +23,7 @@ BEGIN_NAMESPACE_YM_SATPG_TD
 // @param[in] fsim 故障シミュレータ
 // @param[in] fmgr 故障マネージャ
 FopRtpg::FopRtpg(Fsim& fsim,
-		 FaultMgr& fmgr) :
+		 TpgFaultMgr& fmgr) :
   mFsim(fsim),
   mFaultMgr(fmgr)
 {

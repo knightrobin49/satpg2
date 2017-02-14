@@ -145,6 +145,14 @@ protected:
   set_dvar(const TpgNode* node,
 	   SatVarId var);
 
+  /// @brief 正常値の変数マップを返す．
+  const VidMap&
+  gvar_map() const;
+
+  /// @brief 故障値の変数マップを返す．
+  const VidMap&
+  fvar_map() const;
+
   /// @brief 起点となるノードを返す．
   const TpgNode*
   root_node() const;
@@ -357,6 +365,22 @@ DtpgImpl::set_dvar(const TpgNode* node,
 		   SatVarId var)
 {
   mDvarMap.set_vid(node, var);
+}
+
+// @brief 正常値の変数マップを返す．
+inline
+const VidMap&
+DtpgImpl::gvar_map() const
+{
+  return mGvarMap;
+}
+
+// @brief 故障値の変数マップを返す．
+inline
+const VidMap&
+DtpgImpl::fvar_map() const
+{
+  return mFvarMap;
 }
 
 // @brief TFO マークを調べる．

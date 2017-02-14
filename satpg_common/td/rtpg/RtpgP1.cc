@@ -8,7 +8,7 @@
 
 
 #include "RtpgP1.h"
-#include "FaultMgr.h"
+#include "TpgFaultMgr.h"
 #include "td/TvMgr.h"
 #include "td/TestVector.h"
 #include "td/Fsim.h"
@@ -60,7 +60,7 @@ RtpgP1::init(ymuint32 seed)
 // @param[out] tvlist テストベクタのリスト
 // @param[out] stats 実行結果の情報を格納する変数
 void
-RtpgP1::run(FaultMgr& fmgr,
+RtpgP1::run(TpgFaultMgr& fmgr,
 	    TvMgr& tvmgr,
 	    Fsim& fsim,
 	    ymuint min_f,

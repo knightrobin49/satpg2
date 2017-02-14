@@ -9,7 +9,7 @@
 
 #include "TpgNetwork.h"
 #include "TpgFault.h"
-#include "FaultMgr.h"
+#include "TpgFaultMgr.h"
 #include "sa/Dtpg.h"
 #include "sa/NodeValList.h"
 #include "sa/BackTracer.h"
@@ -26,7 +26,7 @@ const char* argv0 = "";
 pair<ymuint, ymuint>
 single_test(Dtpg& dtpg,
 	    const TpgNetwork& network,
-	    FaultMgr& fmgr,
+	    TpgFaultMgr& fmgr,
 	    DetectOp& dop,
 	    DtpgStats& stats)
 {
@@ -57,7 +57,7 @@ single_test(Dtpg& dtpg,
 pair<ymuint, ymuint>
 ffr_test(Dtpg& dtpg,
 	 const TpgNetwork& network,
-	 FaultMgr& fmgr,
+	 TpgFaultMgr& fmgr,
 	 DetectOp& dop,
 	 DtpgStats& stats)
 {
@@ -93,7 +93,7 @@ ffr_test(Dtpg& dtpg,
 pair<ymuint, ymuint>
 mffc_test(Dtpg& dtpg,
 	  const TpgNetwork& network,
-	  FaultMgr& fmgr,
+	  TpgFaultMgr& fmgr,
 	  DetectOp& dop,
 	  DtpgStats& stats)
 {
@@ -288,7 +288,7 @@ dtpg_test(int argc,
     dop_list.add(new_DopVerify(*fsim));
   }
 
-  FaultMgr fmgr(network);
+  TpgFaultMgr fmgr(network);
 
   BackTracer bt(bt_mode, network.node_num());
 

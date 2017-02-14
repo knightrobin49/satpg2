@@ -1,11 +1,11 @@
-﻿#ifndef FAULTMGR_H
-#define FAULTMGR_H
+﻿#ifndef TPGFAULTMGR_H
+#define TPGFAULTMGR_H
 
-/// @file FaultMgr.h
-/// @brief FaultMgr のヘッダファイル
+/// @file TpgFaultMgr.h
+/// @brief TpgFaultMgr のヘッダファイル
 /// @author Yusuke Matsunaga (松永 裕介)
 ///
-/// Copyright (C) 2005-2009, 2012, 2014 Yusuke Matsunaga
+/// Copyright (C) 2017 Yusuke Matsunaga
 /// All rights reserved.
 
 #include "satpg.h"
@@ -16,25 +16,25 @@
 BEGIN_NAMESPACE_YM_SATPG
 
 //////////////////////////////////////////////////////////////////////
-/// @class FaultMgr FaultMgr.h "FaultMgr.h"
+/// @class TpgFaultMgr TpgFaultMgr.h "TpgFaultMgr.h"
 /// @brief 故障管理するすクラス
 ///
 /// 故障には以下の状態がある．
 /// - 未検出
 /// - 検出済み
 /// - 検出不能
-/// FaultMgr は個々の故障に対する状態を持つ．
+/// TpgFaultMgr は個々の故障に対する状態を持つ．
 //////////////////////////////////////////////////////////////////////
-class FaultMgr
+class TpgFaultMgr
 {
 public:
 
   /// @brief コンストラクタ
   /// @param[in] network 対象のネットワーク
-  FaultMgr(const TpgNetwork& network);
+  TpgFaultMgr(const TpgNetwork& network);
 
   /// @brief デストラクタ
-  ~FaultMgr();
+  ~TpgFaultMgr();
 
 
 public:
@@ -95,4 +95,4 @@ private:
 
 END_NAMESPACE_YM_SATPG
 
-#endif // FAULTMGR_H
+#endif // TPGFAULTMGR_H

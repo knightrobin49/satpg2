@@ -9,7 +9,7 @@
 
 #include "RtpgCmd.h"
 #include "TpgNetwork.h"
-#include "FaultMgr.h"
+#include "TpgFaultMgr.h"
 #include "sa/Rtpg.h"
 #include "sa/RtpgStats.h"
 #include "sa/Fsim.h"
@@ -90,7 +90,7 @@ RtpgCmd::cmd_proc(TclObjVector& objv)
     max_i = 0;
   }
 
-  FaultMgr& fmgr = _fault_mgr();
+  TpgFaultMgr& fmgr = _fault_mgr();
   SaFsim& fsim = _sa_fsim();
   SaTvMgr& tvmgr = _sa_tv_mgr();
 

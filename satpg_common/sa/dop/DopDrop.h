@@ -26,7 +26,7 @@ public:
   /// @brief コンストラクタ
   /// @param[in] fmgr 故障マネージャ
   /// @param[in] fsim 故障シミュレータ
-  DopDrop(FaultMgr& fmgr,
+  DopDrop(TpgFaultMgr& fmgr,
 	  Fsim& fsim);
 
   /// @brief デストラクタ
@@ -54,7 +54,7 @@ private:
   //////////////////////////////////////////////////////////////////////
 
   // 故障マネージャ
-  FaultMgr& mMgr;
+  TpgFaultMgr& mMgr;
 
   // 故障シミュレータ
   Fsim& mFsim;

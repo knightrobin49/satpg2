@@ -59,7 +59,7 @@ protected:
   _network();
 
   /// @brief FaultMgr を取り出す．
-  FaultMgr&
+  TpgFaultMgr&
   _fault_mgr();
 
   /// @brief TvMgr を取り出す．

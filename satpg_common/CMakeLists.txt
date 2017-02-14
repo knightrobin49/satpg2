@@ -11,8 +11,8 @@ add_subdirectory ( sa/fsim )
 # ===================================================================
 
 set (tpg_network_SOURCES
-  tpg_network/FaultMgr.cc
   tpg_network/TpgFault.cc
+  tpg_network/TpgFaultMgr.cc
   tpg_network/TpgNetwork.cc
   tpg_network/TpgDff.cc
   tpg_network/TpgGateInfo.cc

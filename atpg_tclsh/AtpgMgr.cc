@@ -10,7 +10,7 @@
 #include "AtpgMgr.h"
 #include "TpgNetwork.h"
 #include "TpgFault.h"
-#include "FaultMgr.h"
+#include "TpgFaultMgr.h"
 
 #include "sa/TvMgr.h"
 #include "sa/Fsim.h"
@@ -94,7 +94,7 @@ void
 AtpgMgr::after_set_network()
 {
   delete mFaultMgr;
-  mFaultMgr = new FaultMgr(_network());
+  mFaultMgr = new TpgFaultMgr(_network());
 
   mSaTvMgr->clear();
   mSaTvMgr->init(mNetwork.ppi_num());

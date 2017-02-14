@@ -47,8 +47,8 @@ public:
   TpgNetwork&
   _network();
 
-  /// @brief FaultMgr を取り出す．
-  FaultMgr&
+  /// @brief TpgFaultMgr を取り出す．
+  TpgFaultMgr&
   _fault_mgr();
 
   /// @brief TvMgr を取り出す．
@@ -141,7 +141,7 @@ private:
   TpgNetwork mNetwork;
 
   // 故障マネージャ
-  FaultMgr* mFaultMgr;
+  TpgFaultMgr* mFaultMgr;
 
   // テストベクタを管理するオブジェクト
   nsSa::TvMgr* mSaTvMgr;
@@ -187,7 +187,7 @@ AtpgMgr::_network()
 
 // @brief FaultMgr を取り出す．
 inline
-FaultMgr&
+TpgFaultMgr&
 AtpgMgr::_fault_mgr()
 {
   return *mFaultMgr;

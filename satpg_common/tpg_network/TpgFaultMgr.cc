@@ -1,13 +1,13 @@
 ﻿
-/// @file FaultMgr.cc
-/// @brief FaultMgr の実装ファイル
+/// @file TpgFaultMgr.cc
+/// @brief TpgFaultMgr の実装ファイル
 /// @author Yusuke Matsunaga (松永 裕介)
 ///
-/// Copyright (C) 2005-2009, 2012-2013, 2014 Yusuke Matsunaga
+/// Copyright (C) 2017 Yusuke Matsunaga
 /// All rights reserved.
 
 
-#include "FaultMgr.h"
+#include "TpgFaultMgr.h"
 #include "TpgFault.h"
 #include "TpgNetwork.h"
 #include "TpgNode.h"
@@ -17,7 +17,7 @@ BEGIN_NAMESPACE_YM_SATPG
 
 // @brief コンストラクタ
 // @param[in] network 対象のネットワーク
-FaultMgr::FaultMgr(const TpgNetwork& network) :
+TpgFaultMgr::TpgFaultMgr(const TpgNetwork& network) :
   mMaxFaultId(network.max_fault_id()),
   mFaultArray(mMaxFaultId, nullptr),
   mStatusArray(mMaxFaultId, kFsUndetected)
@@ -30,13 +30,13 @@ FaultMgr::FaultMgr(const TpgNetwork& network) :
 }
 
 // @brief デストラクタ
-FaultMgr::~FaultMgr()
+TpgFaultMgr::~TpgFaultMgr()
 {
 }
 
 // @brief クリアする．
 void
-FaultMgr::clear_status()
+TpgFaultMgr::clear_status()
 {
   for (ymuint i = 0; i < mStatusArray.size(); ++ i) {
     mStatusArray[i] = kFsUndetected;
@@ -45,7 +45,7 @@ FaultMgr::clear_status()
 
 // @brief 故障IDの最大値+1を返す．
 ymuint
-FaultMgr::max_fault_id() const
+TpgFaultMgr::max_fault_id() const
 {
   return mMaxFaultId;
 }
@@ -53,7 +53,7 @@ FaultMgr::max_fault_id() const
 // @brief 故障IDから故障を返す．
 // @param[in] id 故障ID
 const TpgFault*
-FaultMgr::fault(ymuint id) const
+TpgFaultMgr::fault(ymuint id) const
 {
   ASSERT_COND( id < mMaxFaultId );
   return mFaultArray[id];
@@ -61,7 +61,7 @@ FaultMgr::fault(ymuint id) const
 
 // @brief 故障の状態を得る．
 FaultStatus
-FaultMgr::status(const TpgFault* fault) const
+TpgFaultMgr::status(const TpgFault* fault) const
 {
   ASSERT_COND( fault->id() < mMaxFaultId );
   return mStatusArray[fault->id()];
@@ -69,8 +69,8 @@ FaultMgr::status(const TpgFault* fault) const
 
 // @brief fault の状態を変更する．
 void
-FaultMgr::set_status(const TpgFault* fault,
-		     FaultStatus stat)
+TpgFaultMgr::set_status(const TpgFault* fault,
+			FaultStatus stat)
 {
   ASSERT_COND( fault->id() < mStatusArray.size() );
   mStatusArray[fault->id()] = stat;

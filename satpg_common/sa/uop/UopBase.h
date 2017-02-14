@@ -25,7 +25,7 @@ public:
 
   /// @brief コンストラクタ
   /// @param[in] fmgr 故障マネージャ
-  UopBase(FaultMgr& fmgr);
+  UopBase(TpgFaultMgr& fmgr);
 
   /// @brief デストラクタ
   virtual
@@ -49,8 +49,8 @@ private:
   // データメンバ
   //////////////////////////////////////////////////////////////////////
 
-  // FaultMgr
-  FaultMgr& mMgr;
+  // TpgFaultMgr
+  TpgFaultMgr& mMgr;
 
 };
 

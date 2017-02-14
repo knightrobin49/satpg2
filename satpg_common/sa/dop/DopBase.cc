@@ -8,7 +8,7 @@
 
 
 #include "DopBase.h"
-#include "FaultMgr.h"
+#include "TpgFaultMgr.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG_SA
@@ -16,7 +16,7 @@ BEGIN_NAMESPACE_YM_SATPG_SA
 // @brief 'base' タイプを生成する．
 // @param[in] fmgr FaultMgr
 DetectOp*
-new_DopBase(FaultMgr& fmgr)
+new_DopBase(TpgFaultMgr& fmgr)
 {
   return new DopBase(fmgr);
 }
@@ -28,7 +28,7 @@ new_DopBase(FaultMgr& fmgr)
 
 // @brief コンストラクタ
 // @param[in] fmgr FaultMgr
-DopBase::DopBase(FaultMgr& fmgr) :
+DopBase::DopBase(TpgFaultMgr& fmgr) :
   mMgr(fmgr)
 {
 }

@@ -11,7 +11,7 @@
 #include "ym/TclPopt.h"
 #include "AtpgMgr.h"
 #include "TpgNetwork.h"
-#include "FaultMgr.h"
+#include "TpgFaultMgr.h"
 #include "sa/DtpgStats.h"
 #include "sa/Dtpg.h"
 #include "sa/Fsim.h"
@@ -28,7 +28,7 @@ BEGIN_NAMESPACE_YM_SATPG
 void
 run_single(nsSa::Dtpg& dtpg,
 	   const TpgNetwork& network,
-	   FaultMgr& fmgr,
+	   TpgFaultMgr& fmgr,
 	   nsSa::DetectOp& dop,
 	   nsSa::UntestOp& uop,
 	   nsSa::DtpgStats& stats)
@@ -54,7 +54,7 @@ run_single(nsSa::Dtpg& dtpg,
 void
 run_mffc(nsSa::Dtpg& dtpg,
 	 const TpgNetwork& network,
-	 FaultMgr& fmgr,
+	 TpgFaultMgr& fmgr,
 	 nsSa::DetectOp& dop,
 	 nsSa::UntestOp& uop,
 	 nsSa::DtpgStats& stats)

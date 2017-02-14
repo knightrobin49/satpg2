@@ -8,7 +8,7 @@
 
 
 #include "DopDrop.h"
-#include "FaultMgr.h"
+#include "TpgFaultMgr.h"
 #include "sa/Fsim.h"
 
 
@@ -18,7 +18,7 @@ BEGIN_NAMESPACE_YM_SATPG_SA
 // @param[in] fmgr 故障マネージャ
 // @param[in] fsim 故障シミュレータ
 DetectOp*
-new_DopDrop(FaultMgr& fmgr,
+new_DopDrop(TpgFaultMgr& fmgr,
 	    Fsim& fsim)
 {
   return new DopDrop(fmgr, fsim);
@@ -32,7 +32,7 @@ new_DopDrop(FaultMgr& fmgr,
 // @brief コンストラクタ
 // @param[in] fmgr 故障マネージャ
 // @param[in] fsim 故障シミュレータ
-DopDrop::DopDrop(FaultMgr& fmgr,
+DopDrop::DopDrop(TpgFaultMgr& fmgr,
 		 Fsim& fsim) :
   mMgr(fmgr),
   mFsim(fsim)

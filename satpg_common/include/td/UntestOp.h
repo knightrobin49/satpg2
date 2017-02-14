@@ -43,7 +43,7 @@ public:
 /// @brief 'base' タイプを生成する．
 // @param[in] fmgr 故障マネージャ
 UntestOp*
-new_UopBase(FaultMgr& fmgr);
+new_UopBase(TpgFaultMgr& fmgr);
 
 /// @brief 'skip' タイプを生成する．
 /// @param[in] threshold しきい値

@@ -45,13 +45,13 @@ public:
 /// @brief 'base' タイプを生成する．
 /// @param[in] fmgr 故障マネージャ
 DetectOp*
-new_DopBase(FaultMgr& fmgr);
+new_DopBase(TpgFaultMgr& fmgr);
 
 /// @brief 'drop' タイプを生成する．
 /// @param[in] fmgr 故障マネージャ
 /// @param[in] fsim 故障シミュレータ
 DetectOp*
-new_DopDrop(FaultMgr& fmgr,
+new_DopDrop(TpgFaultMgr& fmgr,
 	    Fsim& fsim);
 
 /// @brief 'tvlist' タイプを生成する．

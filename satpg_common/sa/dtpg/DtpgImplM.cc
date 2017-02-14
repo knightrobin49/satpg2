@@ -192,6 +192,8 @@ DtpgImplM::make_mffc_condition()
       ovar = solver().new_var();
       inject_fault(elem_pos, ovar);
     }
+    // ほとんど GateLitMap_vid(node, fvar_map()) を使いたいのだが
+    // ovar が fvar(node) ではない！
     node->make_cnf(solver(), GateLitMap_vect(ivars, ovar));
 
 #if DEBUG_DTPGM

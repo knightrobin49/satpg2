@@ -49,7 +49,7 @@ public:
   virtual
   void
   run(TpgNetwork& network,
-      FaultMgr& fmgr,
+      TpgFaultMgr& fmgr,
       TvMgr& tvmgr,
       Fsim& fsim2,
       Fsim& fsim3,

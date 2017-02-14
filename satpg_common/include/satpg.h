@@ -102,7 +102,7 @@ enum {
 //////////////////////////////////////////////////////////////////////
 
 class TpgFault;
-class FaultMgr;
+class TpgFaultMgr;
 class TpgNetwork;
 class TpgDff;
 class TpgGateInfo;

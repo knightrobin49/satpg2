@@ -8,7 +8,7 @@
 
 
 #include "TpgNetwork.h"
-#include "FaultMgr.h"
+#include "TpgFaultMgr.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG
@@ -27,7 +27,7 @@ loop_test(ymuint loop_count,
 	cerr << "Error in reading " << filename << endl;
 	break;
       }
-      FaultMgr fmgr(network);
+      TpgFaultMgr fmgr(network);
     }
   }
   cout << endl;

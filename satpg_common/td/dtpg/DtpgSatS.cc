@@ -14,7 +14,7 @@
 #include "TpgFault.h"
 #include "TpgNetwork.h"
 #include "TpgDff.h"
-#include "FaultMgr.h"
+#include "TpgFaultMgr.h"
 
 #include "GateLitMap.h"
 #include "GateLitMap_vect.h"
@@ -117,7 +117,7 @@ DtpgSatS::~DtpgSatS()
 // @param[out] stats 結果を格納する構造体
 void
 DtpgSatS::run(TpgNetwork& network,
-	      FaultMgr& fmgr,
+	      TpgFaultMgr& fmgr,
 	      Fsim& fsim,
 	      const vector<const TpgFault*>& fault_list,
 	      DtpgStats& stats)

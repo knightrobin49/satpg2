@@ -8,7 +8,7 @@
 
 
 #include "Rtpg1Cmd.h"
-#include "FaultMgr.h"
+#include "TpgFaultMgr.h"
 #include "td/Rtpg.h"
 #include "td/RtpgStats.h"
 #include "td/Fsim.h"
@@ -138,7 +138,7 @@ Rtpg1Cmd::cmd_proc(TclObjVector& objv)
     max_i = 0;
   }
 
-  FaultMgr& fmgr = _fault_mgr();
+  TpgFaultMgr& fmgr = _fault_mgr();
   TdFsim& fsim = _td_fsim();
   TdTvMgr& tvmgr = _td_tv_mgr();
 

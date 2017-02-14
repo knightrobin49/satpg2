@@ -10,7 +10,7 @@
 #include "MinPatBase.h"
 
 #include "TpgNetwork.h"
-#include "FaultMgr.h"
+#include "TpgFaultMgr.h"
 #include "TpgFault.h"
 
 #include "sa/TvMgr.h"
@@ -57,7 +57,7 @@ MinPatBase::~MinPatBase()
 // @param[out] stats 実行結果の情報を格納する変数
 void
 MinPatBase::run(TpgNetwork& network,
-		FaultMgr& fmgr,
+		TpgFaultMgr& fmgr,
 		TvMgr& tvmgr,
 		Fsim& fsim2,
 		Fsim& fsim3,

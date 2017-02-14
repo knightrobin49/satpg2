@@ -8,7 +8,7 @@
 
 
 #include "UopBase.h"
-#include "FaultMgr.h"
+#include "TpgFaultMgr.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG_SA
@@ -16,7 +16,7 @@ BEGIN_NAMESPACE_YM_SATPG_SA
 // @brief 'base' タイプを生成する．
 // @param[in] fmgr 故障マネージャ
 UntestOp*
-new_UopBase(FaultMgr& fmgr)
+new_UopBase(TpgFaultMgr& fmgr)
 {
   return new UopBase(fmgr);
 }
@@ -27,8 +27,8 @@ new_UopBase(FaultMgr& fmgr)
 //////////////////////////////////////////////////////////////////////
 
 // @brief コンストラクタ
-// @param[in] fmgr FaultMgr
-UopBase::UopBase(FaultMgr& fmgr) :
+// @param[in] fmgr TpgFaultMgr
+UopBase::UopBase(TpgFaultMgr& fmgr) :
   mMgr(fmgr)
 {
 }
