@@ -89,7 +89,7 @@ TpgLogicXNOR2::noval() const
 // @param[in] lit_map 入出力とリテラルの対応マップ
 void
 TpgLogicXNOR2::make_cnf(SatSolver& solver,
-			const LitMap& lit_map) const
+			const GateLitMap& lit_map) const
 {
   SatLiteral ilit0 = lit_map.input(0);
   SatLiteral ilit1 = lit_map.input(1);
@@ -109,7 +109,7 @@ void
 TpgLogicXNOR2::make_faulty_cnf(SatSolver& solver,
 			       ymuint fpos,
 			       int fval,
-			       const LitMap& lit_map) const
+			       const GateLitMap& lit_map) const
 {
   ymuint pos = (fpos == 0) ? 1 : 0;
   SatLiteral ilit0 = lit_map.input(pos);

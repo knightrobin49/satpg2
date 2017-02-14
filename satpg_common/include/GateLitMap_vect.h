@@ -1,33 +1,43 @@
-﻿#ifndef VECTLITMAP_H
-#define VECTLITMAP_H
+﻿#ifndef GATELITMAP_VECT_H
+#define GATELITMAP_VECT_H
 
 /// @file VectLitMap.h
 /// @brief VectLitMap のヘッダファイル
 /// @author Yusuke Matsunaga (松永 裕介)
 ///
-/// Copyright (C) 2005-2010, 2012-2014, 2015 Yusuke Matsunaga
+/// Copyright (C) 2017 Yusuke Matsunaga
 /// All rights reserved.
 
 
-#include "LitMap.h"
+#include "GateLitMap.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG
 
 //////////////////////////////////////////////////////////////////////
-/// @class VectLitMap LitMap.h "LitMap.h"
+/// @class GateLitMap_vect LitMap.h "LitMap.h"
 /// @brief すべての変数を指定した LitMap
 //////////////////////////////////////////////////////////////////////
-class VectLitMap :
-  public LitMap
+class GateLitMap_vect :
+  public GateLitMap
 {
 public:
 
   /// @brief コンストラクタ
   /// @param[in] ivars 入力の変数のベクタ
   /// @param[in] ovar 出力の変数
-  VectLitMap(const vector<SatVarId>& ivars,
-	     SatVarId ovar);
+  GateLitMap_vect(const vector<SatVarId>& ivars,
+		  SatVarId ovar);
+
+  /// @brief デストラクタ
+  virtual
+  ~GateLitMap_vect();
+
+
+public:
+  //////////////////////////////////////////////////////////////////////
+  // 外部インターフェイス
+  //////////////////////////////////////////////////////////////////////
 
   /// @brief 入力数を返す．
   virtual
@@ -60,4 +70,4 @@ private:
 
 END_NAMESPACE_YM_SATPG
 
-#endif // LITMAP_H
+#endif // GATELITMAP_VECT_H

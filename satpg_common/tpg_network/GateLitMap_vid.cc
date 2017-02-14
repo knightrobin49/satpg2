@@ -1,13 +1,13 @@
 ﻿
-/// @file VidLitMap.cc
-/// @brief VidLitMap の実装ファイル
+/// @file GateLitMap_vid.cc
+/// @brief GateLitMap_vid の実装ファイル
 /// @author Yusuke Matsunaga (松永 裕介)
 ///
-/// Copyright (C) 2005-2010, 2012-2014 Yusuke Matsunaga
+/// Copyright (C) 2017 Yusuke Matsunaga
 /// All rights reserved.
 
 
-#include "VidLitMap.h"
+#include "GateLitMap_vid.h"
 #include "VidMap.h"
 #include "TpgNode.h"
 
@@ -15,32 +15,32 @@
 BEGIN_NAMESPACE_YM_SATPG
 
 //////////////////////////////////////////////////////////////////////
-// クラス VidLitMap
+// クラス GateLitMap_vid
 //////////////////////////////////////////////////////////////////////
 
 // @brief コンストラクタ
-VidLitMap::VidLitMap(const TpgNode* node,
-		     const VidMap& vid_map) :
+GateLitMap_vid::GateLitMap_vid(const TpgNode* node,
+			       const VidMap& vid_map) :
   mNode(node),
   mVidMap(vid_map)
 {
 }
 
 // @brief デストラクタ
-VidLitMap::~VidLitMap()
+GateLitMap_vid::~GateLitMap_vid()
 {
 }
 
 // @brief 入力数を返す．
 ymuint
-VidLitMap::input_size() const
+GateLitMap_vid::input_size() const
 {
   return mNode->fanin_num();
 }
 
 // @brief 入力のリテラルを返す．
 SatLiteral
-VidLitMap::input(ymuint pos) const
+GateLitMap_vid::input(ymuint pos) const
 {
   const TpgNode* inode = mNode->fanin(pos);
   return SatLiteral(mVidMap(inode), false);
@@ -48,7 +48,7 @@ VidLitMap::input(ymuint pos) const
 
 // @brief 出力のリテラルを返す．
 SatLiteral
-VidLitMap::output() const
+GateLitMap_vid::output() const
 {
   return SatLiteral(mVidMap(mNode), false);
 }

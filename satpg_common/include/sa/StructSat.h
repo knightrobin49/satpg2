@@ -10,7 +10,7 @@
 
 
 #include "sa/sa_nsdef.h"
-#include "GenVidMap.h"
+#include "VidMap.h"
 #include "TpgNode.h"
 #include "ym/SatSolver.h"
 
@@ -253,7 +253,7 @@ private:
   vector<bool> mMark;
 
   // 変数マップ
-  GenVidMap mVarMap;
+  VidMap mVarMap;
 
   // fanout cone のリスト
   vector<FoCone*> mFoConeList;

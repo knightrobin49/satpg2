@@ -1,11 +1,11 @@
-﻿#ifndef LITMAP_H
-#define LITMAP_H
+﻿#ifndef GATELITMAP_H
+#define GATELITMAP_H
 
-/// @file LitMap.h
-/// @brief LitMap のヘッダファイル
+/// @file GateLitMap.h
+/// @brief GateLitMap のヘッダファイル
 /// @author Yusuke Matsunaga (松永 裕介)
 ///
-/// Copyright (C) 2005-2010, 2012-2014 Yusuke Matsunaga
+/// Copyright (C) 2017 Yusuke Matsunaga
 /// All rights reserved.
 
 
@@ -16,13 +16,19 @@
 BEGIN_NAMESPACE_YM_SATPG
 
 //////////////////////////////////////////////////////////////////////
-/// @class LitMap LitMap.h "LitMap.h"
+/// @class GateLitMap GateLitMap.h "GateLitMap.h"
 /// @brief make_gate_cnf で用いられるファンクター
 ///
-/// ゲートの入出力に対応するリテラルを返すファクターオブジェクト
+/// ゲートの入出力に対応するリテラルを返すファンクターーオブジェクト
+/// このクラスはインターフェイスを定義しただけの純粋仮想基底クラス
 //////////////////////////////////////////////////////////////////////
-struct LitMap
+class GateLitMap
 {
+public:
+
+  /// @brief デストラクタ
+  virtual
+  ~GateLitMap() { }
 
   /// @brief 入力数を返す．
   virtual
@@ -44,4 +50,4 @@ struct LitMap
 
 END_NAMESPACE_YM_SATPG
 
-#endif // LITMAP_H
+#endif // GATELITMAP_H

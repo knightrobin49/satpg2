@@ -16,9 +16,9 @@
 #include "TpgDff.h"
 #include "FaultMgr.h"
 
-#include "LitMap.h"
-#include "VidLitMap.h"
-#include "VectLitMap.h"
+#include "GateLitMap.h"
+#include "GateLitMap_vect.h"
+#include "GateLitMap_vid.h"
 
 #include "td/Fsim.h"
 
@@ -222,10 +222,10 @@ DtpgSatS::run_single(const TpgFault* fault)
 
   SatSolver solver(sat_type(), sat_option());
 
-  GenVidMap hvar_map(mMaxNodeId);
-  GenVidMap gvar_map(mMaxNodeId);
-  GenVidMap fvar_map(mMaxNodeId);
-  GenVidMap dvar_map(mMaxNodeId);
+  VidMap hvar_map(mMaxNodeId);
+  VidMap gvar_map(mMaxNodeId);
+  VidMap fvar_map(mMaxNodeId);
+  VidMap dvar_map(mMaxNodeId);
 
   // TFO の部分に変数を割り当てる．
   for (ymuint rpos = 0; rpos < tfo_num; ++ rpos) {
@@ -263,12 +263,12 @@ DtpgSatS::run_single(const TpgFault* fault)
 
   for (ymuint i = 0; i < tfi_num; ++ i) {
     const TpgNode* node = mNodeList[i];
-    node->make_cnf(solver, VidLitMap(node, gvar_map));
+    node->make_cnf(solver, GateLitMap_vid(node, gvar_map));
   }
 
   for (ymuint i = 0; i < tfi2_num; ++ i) {
     const TpgNode* node = mNodeList2[i];
-    node->make_cnf(solver, VidLitMap(node, hvar_map));
+    node->make_cnf(solver, GateLitMap_vid(node, hvar_map));
   }
 
 
@@ -305,13 +305,13 @@ DtpgSatS::run_single(const TpgFault* fault)
     else {
       solver.add_clause(flit);
     }
-    fnode->make_cnf(solver, VectLitMap(ivars, fvar_map(fnode)));
+    fnode->make_cnf(solver, GateLitMap_vect(ivars, fvar_map(fnode)));
   }
   make_dchain_cnf(solver, fnode, gvar_map, fvar_map, dvar_map);
 
   for (ymuint i = 1; i < tfo_num; ++ i) {
     const TpgNode* node = mNodeList[i];
-    node->make_cnf(solver, VidLitMap(node, fvar_map));
+    node->make_cnf(solver, GateLitMap_vid(node, fvar_map));
 
     make_dchain_cnf(solver, node, gvar_map, fvar_map, dvar_map);
 

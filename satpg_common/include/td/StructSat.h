@@ -10,7 +10,7 @@
 
 
 #include "td/td_nsdef.h"
-#include "GenVidMap.h"
+#include "VidMap.h"
 #include "TpgNode.h"
 #include "ym/SatSolver.h"
 
@@ -287,10 +287,10 @@ private:
   vector<bool> mMark0;
 
   // 1時刻前の変数マップ
-  GenVidMap mHvarMap;
+  VidMap mHvarMap;
 
   // 現在の変数マップ
-  GenVidMap mGvarMap;
+  VidMap mGvarMap;
 
   // fanout cone のリスト
   vector<FoCone*> mFoConeList;

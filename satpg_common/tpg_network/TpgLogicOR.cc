@@ -89,7 +89,7 @@ TpgLogicOR2::noval() const
 // @param[in] lit_map 入出力とリテラルの対応マップ
 void
 TpgLogicOR2::make_cnf(SatSolver& solver,
-		      const LitMap& lit_map) const
+		      const GateLitMap& lit_map) const
 {
   SatLiteral olit  = lit_map.output();
   SatLiteral ilit0 = lit_map.input(0);
@@ -109,7 +109,7 @@ void
 TpgLogicOR2::make_faulty_cnf(SatSolver& solver,
 			     ymuint fpos,
 			     int fval,
-			     const LitMap& lit_map) const
+			     const GateLitMap& lit_map) const
 {
   ASSERT_COND( fval == 0 );
 
@@ -201,7 +201,7 @@ TpgLogicOR3::noval() const
 // @param[in] lit_map 入出力とリテラルの対応マップ
 void
 TpgLogicOR3::make_cnf(SatSolver& solver,
-		      const LitMap& lit_map) const
+		      const GateLitMap& lit_map) const
 {
   SatLiteral olit  = lit_map.output();
   SatLiteral ilit0 = lit_map.input(0);
@@ -222,7 +222,7 @@ void
 TpgLogicOR3::make_faulty_cnf(SatSolver& solver,
 			     ymuint fpos,
 			     int fval,
-			     const LitMap& lit_map) const
+			     const GateLitMap& lit_map) const
 {
   ASSERT_COND( fval == 0 );
 
@@ -327,7 +327,7 @@ TpgLogicOR4::noval() const
 // @param[in] lit_map 入出力とリテラルの対応マップ
 void
 TpgLogicOR4::make_cnf(SatSolver& solver,
-		      const LitMap& lit_map) const
+		      const GateLitMap& lit_map) const
 {
   SatLiteral olit  = lit_map.output();
   SatLiteral ilit0 = lit_map.input(0);
@@ -349,7 +349,7 @@ void
 TpgLogicOR4::make_faulty_cnf(SatSolver& solver,
 			     ymuint fpos,
 			     int fval,
-			     const LitMap& lit_map) const
+			     const GateLitMap& lit_map) const
 {
   ASSERT_COND( fval == 0 );
 
@@ -465,7 +465,7 @@ TpgLogicORN::noval() const
 // @param[in] lit_map 入出力とリテラルの対応マップ
 void
 TpgLogicORN::make_cnf(SatSolver& solver,
-		      const LitMap& lit_map) const
+		      const GateLitMap& lit_map) const
 {
   SatLiteral olit  = lit_map.output();
   ymuint ni = fanin_num();
@@ -489,7 +489,7 @@ void
 TpgLogicORN::make_faulty_cnf(SatSolver& solver,
 			     ymuint fpos,
 			     int fval,
-			     const LitMap& lit_map) const
+			     const GateLitMap& lit_map) const
 {
   ASSERT_COND( fval == 0 );
 

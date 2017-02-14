@@ -590,7 +590,7 @@ TpgNode::noval() const
 // @param[in] lit_map 入出力とリテラルの対応マップ
 void
 TpgNode::make_cnf(SatSolver& solver,
-		  const LitMap& lit_map) const
+		  const GateLitMap& lit_map) const
 {
   ASSERT_NOT_REACHED;
 }
@@ -606,7 +606,7 @@ void
 TpgNode::make_faulty_cnf(SatSolver& solver,
 			 ymuint fpos,
 			 int fval,
-			 const LitMap& lit_map) const
+			 const GateLitMap& lit_map) const
 {
   ASSERT_NOT_REACHED;
 }

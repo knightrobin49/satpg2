@@ -10,7 +10,7 @@
 #include "gtest/gtest.h"
 #include "satpg.h"
 #include "TpgNode.h"
-#include "VectLitMap.h"
+#include "GateLitMap_vect.h"
 #include "ym/SimpleAlloc.h"
 #include "ym/SatSolver.h"
 
@@ -85,7 +85,7 @@ MakeFaultyCnfTest::do_test(ymuint ni,
 
   TpgNode* prim_node = TpgNode::make_logic(ni, gate_type, mInputs, 1, mAlloc);
 
-  VectLitMap lit_map(mIvars, mOvar);
+  GateLitMap_vect lit_map(mIvars, mOvar);
 
   prim_node->make_faulty_cnf(mSolver, fpos, fval, lit_map);
 

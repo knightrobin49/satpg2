@@ -10,8 +10,8 @@
 #include "sa/MffcCone.h"
 #include "sa/StructSat.h"
 #include "TpgNode.h"
-#include "VectLitMap.h"
-#include "VidLitMap.h"
+#include "GateLitMap_vect.h"
+#include "GateLitMap_vid.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG_SA
@@ -47,7 +47,7 @@ MffcCone::MffcCone(StructSat& struct_sat,
       for (ymuint j = 0; j < ni; ++ j) {
 	tmp_ivars[j] = fvar(node->fanin(j));
       }
-      VectLitMap lit_map(tmp_ivars, tmp_var);
+      GateLitMap_vect lit_map(tmp_ivars, tmp_var);
       node->make_cnf(solver(), lit_map);
 
       SatLiteral ilit(tmp_var);
@@ -60,7 +60,7 @@ MffcCone::MffcCone(StructSat& struct_sat,
     }
     else {
       // 故障回路のゲートの入出力関係を表すCNFを作る．
-      node->make_cnf(solver(), VidLitMap(node, fvar_map()));
+      node->make_cnf(solver(), GateLitMap_vid(node, fvar_map()));
     }
 
     // D-Chain 制約を作る．

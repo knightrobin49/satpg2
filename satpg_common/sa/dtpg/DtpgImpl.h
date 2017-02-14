@@ -22,7 +22,7 @@
 #include "ym/SatStats.h"
 #include "ym/StopWatch.h"
 
-#include "GenVidMap.h"
+#include "VidMap.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG_SA
@@ -251,13 +251,13 @@ private:
   vector<ymuint8> mMarkArray;
 
   // 正常値を表す変数のマップ
-  GenVidMap mGvarMap;
+  VidMap mGvarMap;
 
   // 故障値を表す変数のマップ
-  GenVidMap mFvarMap;
+  VidMap mFvarMap;
 
   // 故障伝搬条件を表す変数のマップ
-  GenVidMap mDvarMap;
+  VidMap mDvarMap;
 
   // バックトレーサー
   BackTracer& mBackTracer;

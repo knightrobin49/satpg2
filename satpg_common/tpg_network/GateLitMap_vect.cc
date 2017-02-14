@@ -1,46 +1,51 @@
 ﻿
-/// @file VectLitMap.cc
-/// @brief VectLitMap の実装ファイル
+/// @file GateLitMap_vect.cc
+/// @brief GateLitMap_vect の実装ファイル
 /// @author Yusuke Matsunaga (松永 裕介)
 ///
-/// Copyright (C) 2005-2010, 2012-2014 Yusuke Matsunaga
+/// Copyright (C) 2017 Yusuke Matsunaga
 /// All rights reserved.
 
 
-#include "VectLitMap.h"
+#include "GateLitMap_vect.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG
 
 //////////////////////////////////////////////////////////////////////
-// クラス VectLitMap
+// クラス GateLitMap_vect
 //////////////////////////////////////////////////////////////////////
 
 // @brief コンストラクタ
-VectLitMap::VectLitMap(const vector<SatVarId>& ivars,
-		       SatVarId ovar) :
+GateLitMap_vect::GateLitMap_vect(const vector<SatVarId>& ivars,
+				 SatVarId ovar) :
   mIvars(ivars),
   mOvar(ovar)
 {
 }
 
+// @brief デストラクタ
+GateLitMap_vect::~GateLitMap_vect()
+{
+}
+
 // @brief 入力数を返す．
 ymuint
-VectLitMap::input_size() const
+GateLitMap_vect::input_size() const
 {
   return mIvars.size();
 }
 
 // @brief 入力のリテラルを返す．
 SatLiteral
-VectLitMap::input(ymuint pos) const
+GateLitMap_vect::input(ymuint pos) const
 {
   return SatLiteral(mIvars[pos], false);
 }
 
 // @brief 出力のリテラルを返す．
 SatLiteral
-VectLitMap::output() const
+GateLitMap_vect::output() const
 {
   return SatLiteral(mOvar, false);
 }

@@ -15,7 +15,7 @@
 #include "TpgFault.h"
 #include "TpgDff.h"
 #include "TpgNode.h"
-#include "VidLitMap.h"
+#include "GateLitMap_vid.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG_TD
@@ -102,7 +102,7 @@ StructSat::add_focone(const TpgFault* fault,
     int fval = fault->val();
     if ( fault->is_branch_fault() ) {
       ymuint pos = fault->tpg_pos();
-      fnode->make_faulty_cnf(solver(), pos, fval, VidLitMap(fnode, focone->fvar_map()));
+      fnode->make_faulty_cnf(solver(), pos, fval, GateLitMap_vid(fnode, focone->fvar_map()));
     }
     else {
       SatLiteral flit(focone->fvar(fnode));
@@ -139,7 +139,7 @@ StructSat::add_focone(const TpgFault* fault,
     int fval = fault->val();
     if ( fault->is_branch_fault() ) {
       ymuint pos = fault->tpg_pos();
-      fnode->make_faulty_cnf(solver(), pos, fval, VidLitMap(fnode, focone->fvar_map()));
+      fnode->make_faulty_cnf(solver(), pos, fval, GateLitMap_vid(fnode, focone->fvar_map()));
     }
     else {
       SatLiteral flit(focone->fvar(fnode));
@@ -342,7 +342,7 @@ StructSat::make_tfi_cnf(const TpgNode* node)
   set_gvar(node, gvar);
 
   // node の入出力の関係を表す節を作る．
-  node->make_cnf(mSolver, VidLitMap(node, gvar_map()));
+  node->make_cnf(mSolver, GateLitMap_vid(node, gvar_map()));
 }
 
 // @brief node の TFI の CNF を作る．
@@ -367,7 +367,7 @@ StructSat::make_tfi_cnf0(const TpgNode* node)
   set_hvar(node, hvar);
 
   // node の入出力の関係を表す節を作る．
-  node->make_cnf(mSolver, VidLitMap(node, hvar_map()));
+  node->make_cnf(mSolver, GateLitMap_vid(node, hvar_map()));
 }
 
 // @brief チェックを行う．

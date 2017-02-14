@@ -1,37 +1,37 @@
-#ifndef VIDLITMAP_H
-#define VIDLITMAP_H
+#ifndef GATELITMAP_VID_H
+#define GATELITMAP_VID_H
 
-/// @file VidLitMap.h
-/// @brief VidLitMap のヘッダファイル
+/// @file GateLitMap_vid.h
+/// @brief GateLitMap_vid のヘッダファイル
 /// @author Yusuke Matsunaga (松永 裕介)
 ///
-/// Copyright (C) 2015 Yusuke Matsunaga
+/// Copyright (C) 2017 Yusuke Matsunaga
 /// All rights reserved.
 
 
-#include "LitMap.h"
+#include "GateLitMap.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG
 
 //////////////////////////////////////////////////////////////////////
-/// @class VidLitMap VidLitMap.h "VidLitMap.h"
-/// @brief VidMap を用いた LitMap
+/// @class GateLitMap_vid GateLitMap_vid.h "GateLitMap_vid.h"
+/// @brief VidMap を用いた GateLitMap
 //////////////////////////////////////////////////////////////////////
-class VidLitMap :
-  public LitMap
+class GateLitMap_vid :
+  public GateLitMap
 {
 public:
 
   /// @brief コンストラクタ
   /// @param[in] node 対象のノード
   /// @param[in] vid_map 変数番号のマップ
-  VidLitMap(const TpgNode* node,
-	    const VidMap& vid_map);
+  GateLitMap_vid(const TpgNode* node,
+		 const VidMap& vid_map);
 
   /// @brief デストラクタ
   virtual
-  ~VidLitMap();
+  ~GateLitMap_vid();
 
 
 public:
@@ -77,4 +77,4 @@ private:
 
 END_NAMESPACE_YM_SATPG
 
-#endif // VIDLITMAP_H
+#endif // GATELITMAP_VID_H

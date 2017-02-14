@@ -3,19 +3,19 @@
 /// @brief FoCone の実装ファイル
 /// @author Yusuke Matsunaga (松永 裕介)
 ///
-/// Copyright (C) 2016 Yusuke Matsunaga
+/// Copyright (C) 2005-2010, 2012-2014 Yusuke Matsunaga
 /// All rights reserved.
 
 
-#include "td/FoCone.h"
-#include "td/StructSat.h"
+#include "sa/FoCone.h"
+#include "sa/StructSat.h"
 #include "TpgNode.h"
-#include "VidLitMap.h"
-#include "td/ModelValMap.h"
-#include "td/Extractor.h"
-#include "td/NodeValList.h"
+#include "GateLitMap_vid.h"
+#include "sa/ModelValMap.h"
+#include "sa/Extractor.h"
+#include "sa/NodeValList.h"
 
-BEGIN_NAMESPACE_YM_SATPG_TD
+BEGIN_NAMESPACE_YM_SATPG_SA
 
 // @brief コンストラクタ
 // @param[in] struct_sat StructSat ソルバ
@@ -42,7 +42,7 @@ FoCone::FoCone(StructSat& struct_sat,
     const TpgNode* node = tfo_node(i);
     if ( node != fnode ) {
       // 故障回路のゲートの入出力関係を表すCNFを作る．
-      node->make_cnf(solver(), VidLitMap(node, fvar_map()));
+      node->make_cnf(solver(), GateLitMap_vid(node, fvar_map()));
     }
 
     if ( detect == kVal1 ) {
@@ -91,11 +91,11 @@ FoCone::get_suf_list(const vector<SatBool3>& sat_model,
 		     const TpgFault* fault,
 		     NodeValList& suf_list) const
 {
-  ModelValMap val_map(hvar_map(), gvar_map(), fvar_map(), sat_model);
+  ModelValMap val_map(gvar_map(), fvar_map(), sat_model);
 
   Extractor extractor(val_map);
   extractor(fault, suf_list);
   suf_list.sort();
 }
 
-END_NAMESPACE_YM_SATPG_TD
+END_NAMESPACE_YM_SATPG_SA

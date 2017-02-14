@@ -53,7 +53,7 @@ public:
   virtual
   void
   make_cnf(SatSolver& solver,
-	   const LitMap& lit_map) const;
+	   const GateLitMap& lit_map) const;
 
 
 private:

@@ -12,7 +12,7 @@
 
 #include "TpgFault.h"
 #include "TpgNetwork.h"
-#include "VectLitMap.h"
+#include "GateLitMap_vect.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG_SA
@@ -192,7 +192,7 @@ DtpgImplM::make_mffc_condition()
       ovar = solver().new_var();
       inject_fault(elem_pos, ovar);
     }
-    node->make_cnf(solver(), VectLitMap(ivars, ovar));
+    node->make_cnf(solver(), GateLitMap_vect(ivars, ovar));
 
 #if DEBUG_DTPGM
     cout << "Node#" << node->id() << ": ofvar("
@@ -217,10 +217,8 @@ DtpgImplM::inject_fault(ymuint elem_pos,
   SatLiteral lit2(mElemVarArray[elem_pos]);
   const TpgNode* node = mElemArray[elem_pos];
   SatLiteral olit(fvar(node));
-  solver().add_clause( lit1,  lit2, ~olit);
-  solver().add_clause(~lit1, ~lit2, ~olit);
-  solver().add_clause(~lit1,  lit2,  olit);
-  solver().add_clause( lit1, ~lit2,  olit);
+
+  solver().add_xorgate_rel(lit1, lit2, olit);
 
 #if DEBUG_DTPGM
   cout << "inject fault: " << ovar << " -> " << fvar(node)

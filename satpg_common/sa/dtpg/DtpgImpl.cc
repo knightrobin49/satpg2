@@ -22,7 +22,7 @@
 #include "ym/SatStats.h"
 #include "ym/StopWatch.h"
 
-#include "VidLitMap.h"
+#include "GateLitMap_vid.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG_SA
@@ -197,7 +197,7 @@ DtpgImpl::gen_cnf_base()
   //////////////////////////////////////////////////////////////////////
   for (ymuint i = 0; i < tfi_num; ++ i) {
     const TpgNode* node = mNodeList[i];
-    node->make_cnf(mSolver, VidLitMap(node, mGvarMap));
+    node->make_cnf(mSolver, GateLitMap_vid(node, mGvarMap));
 
 #if DEBUG_DTPG
     cout << "Node#" << node->id() << ": gvar("
@@ -218,7 +218,7 @@ DtpgImpl::gen_cnf_base()
   for (ymuint i = 0; i < tfo_num; ++ i) {
     const TpgNode* node = mNodeList[i];
     if ( node != mRoot ) {
-      node->make_cnf(mSolver, VidLitMap(node, mFvarMap));
+      node->make_cnf(mSolver, GateLitMap_vid(node, mFvarMap));
 
 #if DEBUG_DTPG
     cout << "Node#" << node->id() << ": fvar("

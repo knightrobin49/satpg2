@@ -89,7 +89,7 @@ public:
   virtual
   void
   make_cnf(SatSolver& solver,
-	   const LitMap& lit_map) const;
+	   const GateLitMap& lit_map) const;
 
   /// @brief 入出力の関係を表す CNF 式を生成する(故障あり)．
   /// @param[in] solver SAT ソルバ
@@ -103,7 +103,7 @@ public:
   make_faulty_cnf(SatSolver& solver,
 		  ymuint fpos,
 		  int fval,
-		  const LitMap& lit_map) const;
+		  const GateLitMap& lit_map) const;
 
 
 private:

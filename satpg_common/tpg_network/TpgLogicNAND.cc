@@ -89,7 +89,7 @@ TpgLogicNAND2::noval() const
 // @param[in] lit_map 入出力とリテラルの対応マップ
 void
 TpgLogicNAND2::make_cnf(SatSolver& solver,
-			const LitMap& lit_map) const
+			const GateLitMap& lit_map) const
 {
   SatLiteral olit  = lit_map.output();
   SatLiteral ilit0 = lit_map.input(0);
@@ -109,7 +109,7 @@ void
 TpgLogicNAND2::make_faulty_cnf(SatSolver& solver,
 			       ymuint fpos,
 			       int fval,
-			       const LitMap& lit_map) const
+			       const GateLitMap& lit_map) const
 {
   ASSERT_COND( fval == 1 );
 
@@ -201,7 +201,7 @@ TpgLogicNAND3::noval() const
 // @param[in] lit_map 入出力とリテラルの対応マップ
 void
 TpgLogicNAND3::make_cnf(SatSolver& solver,
-		       const LitMap& lit_map) const
+		       const GateLitMap& lit_map) const
 {
   SatLiteral olit  = lit_map.output();
   SatLiteral ilit0 = lit_map.input(0);
@@ -222,7 +222,7 @@ void
 TpgLogicNAND3::make_faulty_cnf(SatSolver& solver,
 			       ymuint fpos,
 			       int fval,
-			       const LitMap& lit_map) const
+			       const GateLitMap& lit_map) const
 {
   ASSERT_COND( fval == 1 );
 
@@ -327,7 +327,7 @@ TpgLogicNAND4::noval() const
 // @param[in] lit_map 入出力とリテラルの対応マップ
 void
 TpgLogicNAND4::make_cnf(SatSolver& solver,
-			const LitMap& lit_map) const
+			const GateLitMap& lit_map) const
 {
   SatLiteral olit  = lit_map.output();
   SatLiteral ilit0 = lit_map.input(0);
@@ -349,7 +349,7 @@ void
 TpgLogicNAND4::make_faulty_cnf(SatSolver& solver,
 			       ymuint fpos,
 			       int fval,
-			       const LitMap& lit_map) const
+			       const GateLitMap& lit_map) const
 {
   ASSERT_COND( fval == 1 );
 
@@ -466,7 +466,7 @@ TpgLogicNANDN::noval() const
 // @param[in] lit_map 入出力とリテラルの対応マップ
 void
 TpgLogicNANDN::make_cnf(SatSolver& solver,
-			const LitMap& lit_map) const
+			const GateLitMap& lit_map) const
 {
   SatLiteral olit  = lit_map.output();
   ymuint ni = fanin_num();
@@ -490,7 +490,7 @@ void
 TpgLogicNANDN::make_faulty_cnf(SatSolver& solver,
 			       ymuint fpos,
 			       int fval,
-			       const LitMap& lit_map) const
+			       const GateLitMap& lit_map) const
 {
   ASSERT_COND( fval == 1 );
 

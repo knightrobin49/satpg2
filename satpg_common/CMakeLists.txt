@@ -40,9 +40,8 @@ set (tpg_network_SOURCES
   tpg_network/TpgLogicXOR.cc
   tpg_network/TpgLogicXNOR.cc
 
-  tpg_network/VectLitMap.cc
-  tpg_network/VidLitMap.cc
-  tpg_network/GenVidMap.cc
+  tpg_network/GateLitMap_vect.cc
+  tpg_network/GateLitMap_vid.cc
   )
 
 set (sa_SOURCES

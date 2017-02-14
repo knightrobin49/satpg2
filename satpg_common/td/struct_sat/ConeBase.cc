@@ -10,7 +10,6 @@
 #include "td/ConeBase.h"
 #include "td/StructSat.h"
 #include "TpgNode.h"
-#include "VidLitMap.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG_TD

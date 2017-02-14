@@ -10,7 +10,7 @@
 
 
 #include "satpg.h"
-#include "LitMap.h"
+#include "GateLitMap.h"
 #include "Val3.h"
 #include "ym/Alloc.h"
 #include "ym/ym_sat.h"
@@ -384,7 +384,7 @@ public:
   virtual
   void
   make_cnf(SatSolver& solver,
-	   const LitMap& lit_map) const;
+	   const GateLitMap& lit_map) const;
 
   /// @brief 入出力の関係を表す CNF 式を生成する(故障あり)．
   /// @param[in] solver SAT ソルバ
@@ -398,7 +398,7 @@ public:
   make_faulty_cnf(SatSolver& solver,
 		  ymuint fpos,
 		  int fval,
-		  const LitMap& lit_map) const;
+		  const GateLitMap& lit_map) const;
 
 
 private:

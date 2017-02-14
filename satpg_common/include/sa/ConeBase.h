@@ -176,10 +176,10 @@ private:
   vector<const TpgNode*> mOutputList;
 
   // 故障値の変数マップ
-  GenVidMap mFvarMap;
+  VidMap mFvarMap;
 
   // 故障伝搬値の変数マップ
-  GenVidMap mDvarMap;
+  VidMap mDvarMap;
 
 };
 

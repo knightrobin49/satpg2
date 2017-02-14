@@ -85,7 +85,7 @@ TpgPPO::fanin(ymuint pos) const
 // @param[in] lit_map 入出力とリテラルの対応マップ
 void
 TpgPPO::make_cnf(SatSolver& solver,
-		 const LitMap& lit_map) const
+		 const GateLitMap& lit_map) const
 {
   SatLiteral ilit = lit_map.input(0);
   SatLiteral olit = lit_map.output();
@@ -104,7 +104,7 @@ void
 TpgPPO::make_faulty_cnf(SatSolver& solver,
 			ymuint fpos,
 			int fval,
-			const LitMap& lit_map) const
+			const GateLitMap& lit_map) const
 {
   SatLiteral olit = lit_map.output();
   if ( fval == 0 ) {

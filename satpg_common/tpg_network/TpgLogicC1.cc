@@ -47,7 +47,7 @@ TpgLogicC1::gate_type() const
 // @param[in] lit_map 入出力とリテラルの対応マップ
 void
 TpgLogicC1::make_cnf(SatSolver& solver,
-		     const LitMap& lit_map) const
+		     const GateLitMap& lit_map) const
 {
   SatLiteral olit = lit_map.output();
   solver.add_clause(olit);
