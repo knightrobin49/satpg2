@@ -101,20 +101,20 @@ enum {
 // クラス名の宣言
 //////////////////////////////////////////////////////////////////////
 
-class TpgFault;
-class TpgFaultMgr;
 class TpgNetwork;
 class TpgDff;
 class TpgGateInfo;
 class TpgNode;
-class MffcInfo;
 
-class LitMap;
-class VectLitMap;
-class VidLitMap;
+class TpgFault;
+class TpgFaultMgr;
 
+class NodeValList;
+class TestVector;
+class TvMgr;
+
+class GateLitMap;
 class VidMap;
-class GenVidMap;
 
 END_NAMESPACE_YM_SATPG
 
