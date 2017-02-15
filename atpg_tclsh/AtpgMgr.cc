@@ -12,10 +12,8 @@
 #include "TpgFault.h"
 #include "TpgFaultMgr.h"
 
-#include "sa/TvMgr.h"
+#include "TvMgr.h"
 #include "sa/Fsim.h"
-
-#include "td/TvMgr.h"
 #include "td/Fsim.h"
 
 
@@ -30,15 +28,11 @@ AtpgMgr::AtpgMgr() :
   mTimer(TM_SIZE, TM_MISC)
 {
   mFaultMgr = nullptr;
-  mSaTvMgr = new nsSa::TvMgr();
-#if 1
-  mSaFsim = nsSa::new_Fsim2();
-#else
-  mSaFsim = nsSa::new_Fsim2New();
-#endif
-  mSaFsim3 = nsSa::new_Fsim3();
 
-  mTdTvMgr = new nsTd::TvMgr();
+  mTvMgr = new TvMgr();
+
+  mSaFsim = nsSa::new_Fsim2();
+  mSaFsim3 = nsSa::new_Fsim3();
   mTdFsim = nsTd::new_Fsim2();
 }
 
@@ -46,11 +40,9 @@ AtpgMgr::AtpgMgr() :
 AtpgMgr::~AtpgMgr()
 {
   delete mFaultMgr;
-  delete mSaTvMgr;
+  delete mTvMgr;
   delete mSaFsim;
   delete mSaFsim3;
-
-  delete mTdTvMgr;
   delete mTdFsim;
 }
 
@@ -96,8 +88,8 @@ AtpgMgr::after_set_network()
   delete mFaultMgr;
   mFaultMgr = new TpgFaultMgr(_network());
 
-  mSaTvMgr->clear();
-  mSaTvMgr->init(mNetwork.ppi_num());
+  mTvMgr->clear();
+  mTvMgr->init(mNetwork.ppi_num(), mNetwork.dff_num());
   mSaFsim->set_network(mNetwork);
   mSaFsim3->set_network(mNetwork);
 

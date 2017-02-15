@@ -11,7 +11,7 @@
 
 #include "FgMgr.h"
 
-#include "sa/NodeValList.h"
+#include "NodeValList.h"
 
 #include "FaultAnalyzer.h"
 #include "FaultInfo.h"

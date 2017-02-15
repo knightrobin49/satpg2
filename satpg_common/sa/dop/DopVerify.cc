@@ -10,7 +10,7 @@
 #include "DopVerify.h"
 #include "TpgFault.h"
 #include "sa/Fsim.h"
-#include "sa/NodeValList.h"
+#include "NodeValList.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG_SA

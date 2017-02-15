@@ -10,7 +10,7 @@
 
 
 #include "sa/sa_nsdef.h"
-#include "sa/NodeValList.h"
+#include "NodeValList.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG_SA

@@ -14,8 +14,8 @@
 #include "TpgNode.h"
 #include "TpgFault.h"
 
-#include "sa/TestVector.h"
-#include "sa/NodeValList.h"
+#include "TestVector.h"
+#include "NodeValList.h"
 #include "sa/DetectOp.h"
 
 #include "SimNode.h"
@@ -427,12 +427,12 @@ FSIM_CLASSNAME::_set_sp(const TestVector* tv)
   for (ymuint i = 0; i < npi; ++ i) {
     SimNode* simnode = mInputArray[i];
 #if FSIM_VAL2
-    PackedVal val = (tv->val3(i) == kVal1) ? kPvAll1 : kPvAll0;
+    PackedVal val = (tv->input_val(i) == kVal1) ? kPvAll1 : kPvAll0;
     simnode->set_val(val);
 #elif FSIM_VAL3
     PackedVal val0;
     PackedVal val1;
-    switch ( tv->val3(i) ) {
+    switch ( tv->input_val(i) ) {
     case kValX:
       val0 = kPvAll0;
       val1 = kPvAll0;
@@ -517,7 +517,7 @@ FSIM_CLASSNAME::_set_pp()
     PackedVal bit = 1ULL;
     for (ymuint j = 0; j < kPvBitLen; ++ j, bit <<= 1) {
       ymuint pos = (mPatMap & bit) ? j : first;
-      if ( mPatBuff[pos]->val3(i) == kVal1 ) {
+      if ( mPatBuff[pos]->input_val(i) == kVal1 ) {
 	val |= bit;
       }
     }
@@ -529,7 +529,7 @@ FSIM_CLASSNAME::_set_pp()
     PackedVal bit = 1ULL;
     for (ymuint j = 0; j < kPvBitLen; ++ j, bit <<= 1) {
       ymuint pos = (mPatMap & bit) ? j : first;
-      Val3 val = mPatBuff[pos]->val3(i);
+      Val3 val = mPatBuff[pos]->input_val(i);
       if ( val == kVal1 ) {
 	val1 |= bit;
       }

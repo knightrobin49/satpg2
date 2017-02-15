@@ -9,8 +9,8 @@
 
 #include "RtpgImpl.h"
 #include "TpgFaultMgr.h"
-#include "sa/TvMgr.h"
-#include "sa/TestVector.h"
+#include "TvMgr.h"
+#include "TestVector.h"
 #include "sa/Fsim.h"
 #include "sa/RtpgStats.h"
 #include "ym/StopWatch.h"
@@ -87,7 +87,7 @@ RtpgImpl::run(TpgFaultMgr& fmgr,
 
   TestVector* tv_array[kPvBitLen];
   for (ymuint i = 0; i < kPvBitLen; ++ i) {
-    tv_array[i] = tvmgr.new_vector();
+    tv_array[i] = tvmgr.new_sa_vector();
   }
 
   fsim.clear_patterns();
@@ -136,7 +136,7 @@ RtpgImpl::run(TpgFaultMgr& fmgr,
 	const TestVector* tv = tv_array[i];
 	tvlist.push_back(tv);
 	// tv_array には新しいパタンを補充しておく．
-	tv_array[i] = tvmgr.new_vector();
+	tv_array[i] = tvmgr.new_sa_vector();
 	++ epat_num;
       }
     }

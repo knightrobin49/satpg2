@@ -9,8 +9,8 @@
 
 #include "TpgNetwork.h"
 #include "TpgFault.h"
-#include "sa/TestVector.h"
-#include "sa/TvMgr.h"
+#include "TestVector.h"
+#include "TvMgr.h"
 #include "sa/Fsim.h"
 #include "ym/RandGen.h"
 #include "ym/StopWatch.h"
@@ -165,7 +165,7 @@ randgen(RandGen& rg,
   tv_list.clear();
   tv_list.resize(nv);
   for (ymuint i = 0; i < nv; ++ i) {
-    TestVector* tv = tvmgr.new_vector();
+    TestVector* tv = tvmgr.new_sa_vector();
     tv->set_from_random(rg);
     tv_list[i] = tv;
   }
@@ -313,7 +313,7 @@ fsim2test(int argc,
   fsim->set_network(network);
 
   TvMgr tvmgr;
-  tvmgr.init(network.ppi_num());
+  tvmgr.init(network.ppi_num(), 0);
 
   RandGen rg;
   vector<const TestVector*> tv_list;

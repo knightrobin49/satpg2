@@ -3,15 +3,15 @@
 /// @brief NodeValList の実装ファイル
 /// @author Yusuke Matsunaga (松永 裕介)
 ///
-/// Copyright (C) 2015 Yusuke Matsunaga
+/// Copyright (C) 2017 Yusuke Matsunaga
 /// All rights reserved.
 
 
-#include "sa/NodeValList.h"
+#include "NodeValList.h"
 #include "TpgNode.h"
 
 
-BEGIN_NAMESPACE_YM_SATPG_SA
+BEGIN_NAMESPACE_YM_SATPG
 
 // @brief マージする．
 // @param[in] src_list マージするリスト
@@ -97,7 +97,7 @@ NodeValList::diff(const NodeValList& src_list)
 bool
 NodeValList::sanity_check() const
 {
-  NodeVal prev(nullptr, false);
+  NodeVal prev(nullptr, 0, false);
   for (ymuint i = 0; i < mAsList.size(); ++ i) {
     NodeVal nv = mAsList[i];
     if ( prev.node() == nv.node() && prev.val() != nv.val() ) {
@@ -176,10 +176,13 @@ operator<<(ostream& s,
   ymuint n = src_list.size();
   for (ymuint i = 0; i < n; ++ i) {
     NodeVal nv = src_list[i];
-    s << " Node#" << nv.node()->id()
-      << ":" << nv.val();
+    s << " Node#" << nv.node()->id();
+    if( nv.time() == 1 ) {
+      s << "[1]";
+    }
+    s << ":" << nv.val();
   }
   return s;
 }
 
-END_NAMESPACE_YM_SATPG_SA
+END_NAMESPACE_YM_SATPG

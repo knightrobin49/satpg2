@@ -92,9 +92,9 @@ RtpgCmd::cmd_proc(TclObjVector& objv)
 
   TpgFaultMgr& fmgr = _fault_mgr();
   SaFsim& fsim = _sa_fsim();
-  SaTvMgr& tvmgr = _sa_tv_mgr();
+  TvMgr& tvmgr = _tv_mgr();
 
-  vector<const SaTestVector*>& tv_list = _sa_tv_list();
+  vector<const TestVector*>& tv_list = _sa_tv_list();
   nsSa::RtpgStats stats;
   rtpg->run(fmgr, tvmgr, fsim, min_f, max_i, max_pat, tv_list, stats);
 

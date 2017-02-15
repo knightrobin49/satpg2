@@ -9,8 +9,8 @@
 
 #include "DopTvList.h"
 #include "TpgNode.h"
-#include "sa/TvMgr.h"
-#include "sa/NodeValList.h"
+#include "TvMgr.h"
+#include "NodeValList.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG_SA
@@ -52,7 +52,7 @@ void
 DopTvList::operator()(const TpgFault* f,
 		      const NodeValList& assign_list)
 {
-  TestVector* tv = mTvMgr.new_vector();
+  TestVector* tv = mTvMgr.new_sa_vector();
   tv->set_from_assign_list(assign_list);
   mTvList.push_back(tv);
 }

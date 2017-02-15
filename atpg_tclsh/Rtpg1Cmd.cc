@@ -12,8 +12,8 @@
 #include "td/Rtpg.h"
 #include "td/RtpgStats.h"
 #include "td/Fsim.h"
-#include "td/TvMgr.h"
-#include "td/TestVector.h"
+#include "TvMgr.h"
+#include "TestVector.h"
 #include "ym/TclPopt.h"
 #include "ym/RandGen.h"
 
@@ -103,8 +103,8 @@ Rtpg1Cmd::cmd_proc(TclObjVector& objv)
     RandGen randgen;
     ymuint n_count = 10000;
     TdFsim& fsim = _td_fsim();
-    TdTvMgr& tvmgr = _td_tv_mgr();
-    TdTestVector* tv = tvmgr.new_vector();
+    TvMgr& tvmgr = _tv_mgr();
+    TestVector* tv = tvmgr.new_td_vector();
     ymuint wsa_sum = 0;
     ymuint wsa_max = 0;
     ymuint wsa_min = 0;
@@ -140,9 +140,9 @@ Rtpg1Cmd::cmd_proc(TclObjVector& objv)
 
   TpgFaultMgr& fmgr = _fault_mgr();
   TdFsim& fsim = _td_fsim();
-  TdTvMgr& tvmgr = _td_tv_mgr();
+  TvMgr& tvmgr = _tv_mgr();
 
-  vector<const TdTestVector*>& tv_list = _td_tv_list();
+  vector<const TestVector*>& tv_list = _td_tv_list();
   nsTd::RtpgStats stats;
 
   rtpg->run(fmgr, tvmgr, fsim, min_f, max_i, max_pat, wsa_limit, tv_list, stats);

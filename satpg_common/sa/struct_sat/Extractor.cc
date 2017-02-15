@@ -10,7 +10,7 @@
 #include "sa/Extractor.h"
 #include "TpgFault.h"
 #include "TpgNode.h"
-#include "sa/NodeValList.h"
+#include "NodeValList.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG_SA
@@ -243,7 +243,7 @@ Extractor::record_node(const TpgNode* node,
 		       NodeValList& assign_list)
 {
   bool val = (mValMap.gval(node) == kVal1);
-  assign_list.add(node, val);
+  assign_list.add(node, 0, val);
 }
 
 END_NAMESPACE_YM_SATPG_SA

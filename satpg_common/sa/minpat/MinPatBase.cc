@@ -13,7 +13,7 @@
 #include "TpgFaultMgr.h"
 #include "TpgFault.h"
 
-#include "sa/TvMgr.h"
+#include "TvMgr.h"
 #include "sa/ModelValMap.h"
 #include "sa/StructSat.h"
 
@@ -210,7 +210,7 @@ MinPatBase::run(TpgNetwork& network,
   for (ymuint i = 0; i < new_ng; ++ i) {
     ymuint gid = group_list[i];
     const NodeValList& suf_list = fgmgr.sufficient_assignment(gid);
-    TestVector* tv = tvmgr.new_vector();
+    TestVector* tv = tvmgr.new_sa_vector();
     make_testvector(network, suf_list, tv);
     tv_list.push_back(tv);
   }
@@ -341,7 +341,7 @@ MinPatBase::make_testvector(TpgNetwork& network,
     else {
       val = val_map.gval(node);
     }
-    tv->set_val(input_id, val);
+    tv->set_input_val(input_id, val);
   }
 }
 

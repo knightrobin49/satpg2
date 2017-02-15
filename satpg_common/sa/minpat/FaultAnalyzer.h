@@ -11,7 +11,7 @@
 
 #include "sa/sa_nsdef.h"
 
-#include "sa/NodeValList.h"
+#include "NodeValList.h"
 
 #include "FaultInfo.h"
 

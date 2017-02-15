@@ -10,7 +10,7 @@
 #include "sa/StructSat.h"
 #include "sa/FoCone.h"
 #include "sa/MffcCone.h"
-#include "sa/NodeValList.h"
+#include "NodeValList.h"
 
 #include "TpgFault.h"
 #include "TpgNode.h"
@@ -174,7 +174,7 @@ StructSat::add_fault_condition(const TpgFault* fault,
   const TpgNode* inode = fault->tpg_inode();
   // 0縮退故障の時 1にする．
   bool val = (fault->val() == 0);
-  assignment.add(inode, val);
+  assignment.add(inode, 0, val);
 
   if ( fault->is_branch_fault() ) {
     // 故障の伝搬条件
@@ -189,7 +189,7 @@ StructSat::add_fault_condition(const TpgFault* fault,
 	if ( inode1 == inode ) {
 	  continue;
 	}
-	assignment.add(inode1, val);
+	assignment.add(inode1, 0, val);
       }
     }
   }
@@ -226,7 +226,7 @@ StructSat::add_ffr_condition(const TpgNode* root_node,
       if ( inode == node ) {
 	continue;
       }
-      assignment.add(inode, val);
+      assignment.add(inode, 0, val);
     }
   }
 }

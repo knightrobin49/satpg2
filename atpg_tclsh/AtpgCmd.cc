@@ -248,14 +248,14 @@ AtpgCmd::_fault_mgr()
 }
 
 // @brief TvMgr を取り出す．
-nsSa::TvMgr&
-AtpgCmd::_sa_tv_mgr()
+TvMgr&
+AtpgCmd::_tv_mgr()
 {
-  return mMgr->_sa_tv_mgr();
+  return mMgr->_tv_mgr();
 }
 
 // @brief テストベクタのリストを取り出す．
-vector<const nsSa::TestVector*>&
+vector<const TestVector*>&
 AtpgCmd::_sa_tv_list()
 {
   return mMgr->_sa_tv_list();
@@ -275,15 +275,8 @@ AtpgCmd::_sa_fsim3()
   return mMgr->_sa_fsim3();
 }
 
-// @brief TvMgr を取り出す．
-nsTd::TvMgr&
-AtpgCmd::_td_tv_mgr()
-{
-  return mMgr->_td_tv_mgr();
-}
-
 // @brief テストベクタのリストを取り出す．
-vector<const nsTd::TestVector*>&
+vector<const TestVector*>&
 AtpgCmd::_td_tv_list()
 {
   return mMgr->_td_tv_list();

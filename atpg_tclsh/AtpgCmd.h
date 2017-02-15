@@ -63,11 +63,11 @@ protected:
   _fault_mgr();
 
   /// @brief TvMgr を取り出す．
-  nsSa::TvMgr&
-  _sa_tv_mgr();
+  TvMgr&
+  _tv_mgr();
 
   /// @brief テストベクタのリストを取り出す．
-  vector<const nsSa::TestVector*>&
+  vector<const TestVector*>&
   _sa_tv_list();
 
   /// @brief 2値の故障シミュレータを取り出す．
@@ -78,12 +78,8 @@ protected:
   nsSa::Fsim&
   _sa_fsim3();
 
-  /// @brief TvMgr を取り出す．
-  nsTd::TvMgr&
-  _td_tv_mgr();
-
   /// @brief テストベクタのリストを取り出す．
-  vector<const nsTd::TestVector*>&
+  vector<const TestVector*>&
   _td_tv_list();
 
   /// @brief 遷移故障用の2値の故障シミュレータを取り出す．

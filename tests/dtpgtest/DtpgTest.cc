@@ -11,7 +11,7 @@
 #include "TpgFault.h"
 #include "TpgFaultMgr.h"
 #include "sa/Dtpg.h"
-#include "sa/NodeValList.h"
+#include "NodeValList.h"
 #include "sa/BackTracer.h"
 #include "sa/Fsim.h"
 #include "sa/DetectOp.h"

@@ -44,6 +44,8 @@ set (tpg_network_SOURCES
   tpg_network/TestVector.cc
   tpg_network/TvMgr.cc
 
+  tpg_network/NodeValList.cc
+
   tpg_network/GateLitMap_vect.cc
   tpg_network/GateLitMap_vid.cc
   )
@@ -96,12 +98,8 @@ set (sa_SOURCES
   sa/struct_sat/ConeBase.cc
   sa/struct_sat/FoCone.cc
   sa/struct_sat/MffcCone.cc
-  sa/struct_sat/NodeValList.cc
   sa/struct_sat/Extractor.cc
   sa/struct_sat/ModelValMap.cc
-
-  sa/tvect/TestVector.cc
-  sa/tvect/TvMgr.cc
   )
 
 set (td_SOURCES
@@ -132,7 +130,6 @@ set (td_SOURCES
   td/struct_sat/ConeBase.cc
   td/struct_sat/FoCone.cc
   td/struct_sat/MffcCone.cc
-  td/struct_sat/NodeValList.cc
   td/struct_sat/ModelValMap.cc
   td/struct_sat/Extractor.cc
 
@@ -145,9 +142,9 @@ set (td_SOURCES
 # ターゲットの設定
 # ===================================================================
 ym_add_object_library ( satpg_common
+  ${tpg_network_SOURCES}
   ${sa_SOURCES}
   ${td_SOURCES}
-  ${tpg_network_SOURCES}
   )
 
 

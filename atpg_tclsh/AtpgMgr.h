@@ -52,11 +52,11 @@ public:
   _fault_mgr();
 
   /// @brief TvMgr を取り出す．
-  nsSa::TvMgr&
-  _sa_tv_mgr();
+  TvMgr&
+  _tv_mgr();
 
   /// @brief テストベクタのリストを取り出す．
-  vector<const nsSa::TestVector*>&
+  vector<const TestVector*>&
   _sa_tv_list();
 
   /// @brief 2値の故障シミュレータを取り出す．
@@ -72,7 +72,7 @@ public:
   _td_tv_mgr();
 
   /// @brief テストベクタのリストを取り出す．
-  vector<const nsTd::TestVector*>&
+  vector<const TestVector*>&
   _td_tv_list();
 
   /// @brief 2値の故障シミュレータを取り出す．(遷移故障用)
@@ -144,10 +144,10 @@ private:
   TpgFaultMgr* mFaultMgr;
 
   // テストベクタを管理するオブジェクト
-  nsSa::TvMgr* mSaTvMgr;
+  TvMgr* mTvMgr;
 
   // テストベクタのリスト
-  vector<const nsSa::TestVector*> mSaTvList;
+  vector<const TestVector*> mSaTvList;
 
   // 故障シミュレータ
   nsSa::Fsim* mSaFsim;
@@ -155,11 +155,8 @@ private:
   // 3値の故障シミュレータ
   nsSa::Fsim* mSaFsim3;
 
-  // テストベクタを管理するオブジェクト
-  nsTd::TvMgr* mTdTvMgr;
-
   // テストベクタのリスト
-  vector<const nsTd::TestVector*> mTdTvList;
+  vector<const TestVector*> mTdTvList;
 
   // 遷移故障用の故障シミュレータ
   nsTd::Fsim* mTdFsim;
@@ -195,15 +192,15 @@ AtpgMgr::_fault_mgr()
 
 // @brief TvMgr を取り出す．
 inline
-nsSa::TvMgr&
-AtpgMgr::_sa_tv_mgr()
+TvMgr&
+AtpgMgr::_tv_mgr()
 {
-  return *mSaTvMgr;
+  return *mTvMgr;
 }
 
 // @brief テストベクタのリストを取り出す．
 inline
-vector<const nsSa::TestVector*>&
+vector<const TestVector*>&
 AtpgMgr::_sa_tv_list()
 {
   return mSaTvList;
@@ -225,17 +222,9 @@ AtpgMgr::_sa_fsim3()
   return *mSaFsim3;
 }
 
-// @brief TvMgr を取り出す．
-inline
-nsTd::TvMgr&
-AtpgMgr::_td_tv_mgr()
-{
-  return *mTdTvMgr;
-}
-
 // @brief テストベクタのリストを取り出す．
 inline
-vector<const nsTd::TestVector*>&
+vector<const TestVector*>&
 AtpgMgr::_td_tv_list()
 {
   return mTdTvList;

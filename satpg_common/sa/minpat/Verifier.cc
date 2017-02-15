@@ -9,7 +9,7 @@
 
 #include "Verifier.h"
 #include "TpgFault.h"
-#include "sa/TestVector.h"
+#include "TestVector.h"
 #include "ym/HashSet.h"
 
 

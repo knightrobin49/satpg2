@@ -39,12 +39,9 @@ class ConeBase;
 class FoCone;
 class MffcCone;
 class StructSat;
-class NodeValList;
 class BackTracer;
 class DetectOp;
 class UntestOp;
-class TestVector;
-class TvMgr;
 class Dtpg;
 class DtpgStats;
 class ValMap;
@@ -58,8 +55,6 @@ END_NAMESPACE_YM_SATPG_SA
 
 BEGIN_NAMESPACE_YM_SATPG
 
-typedef nsSa::TestVector SaTestVector;
-typedef nsSa::TvMgr SaTvMgr;
 typedef nsSa::Fsim SaFsim;
 
 END_NAMESPACE_YM_SATPG

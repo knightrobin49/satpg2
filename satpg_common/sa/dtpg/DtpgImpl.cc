@@ -15,7 +15,6 @@
 
 #include "sa/DtpgStats.h"
 #include "sa/BackTracer.h"
-#include "sa/NodeValList.h"
 #include "sa/ModelValMap.h"
 
 #include "ym/SatSolver.h"
@@ -342,7 +341,7 @@ DtpgImpl::make_ffr_condition(const TpgFault* fault,
   const TpgNode* inode = fault->tpg_inode();
   // 0 縮退故障の時に 1 にする．
   bool val = (fault->val() == 0);
-  assign_list.add(inode, val);
+  assign_list.add(inode, 0, val);
 
   // ブランチの故障の場合，ゲートの出力までの伝搬条件を作る．
   if ( fault->is_branch_fault() ) {
@@ -354,7 +353,7 @@ DtpgImpl::make_ffr_condition(const TpgFault* fault,
       for (ymuint i = 0; i < ni; ++ i) {
 	const TpgNode* inode1 = onode->fanin(i);
 	if ( inode1 != inode ) {
-	  assign_list.add(inode1, val);
+	  assign_list.add(inode1, 0, val);
 
 #if DEBUG_DTPG
 	  cout << "  Node#" << inode1->id() << ": ";
@@ -386,7 +385,7 @@ DtpgImpl::make_ffr_condition(const TpgFault* fault,
     for (ymuint i = 0; i < ni; ++ i) {
       const TpgNode* inode1 = fonode->fanin(i);
       if ( inode1 != node ) {
-	assign_list.add(inode1, val);
+	assign_list.add(inode1, 0, val);
 
 #if DEBUG_DTPG
 	cout << "  Node#" << inode1->id() << ": ";

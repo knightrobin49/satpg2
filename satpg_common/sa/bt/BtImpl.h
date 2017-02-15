@@ -10,7 +10,7 @@
 
 
 #include "sa/BackTracer.h"
-#include "sa/NodeValList.h"
+#include "NodeValList.h"
 #include "sa/ValMap.h"
 #include "TpgNode.h"
 
@@ -100,10 +100,10 @@ BtImpl::record_value(const TpgNode* node,
 {
   Val3 v = val_map.gval(node);
   if ( v == kVal0 ) {
-    assign_list.add(node, false);
+    assign_list.add(node, 0, false);
   }
   else if ( v == kVal1 ) {
-    assign_list.add(node, true);
+    assign_list.add(node, 0, true);
   }
 }
 

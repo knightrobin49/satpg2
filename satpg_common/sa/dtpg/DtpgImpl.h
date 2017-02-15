@@ -13,7 +13,7 @@
 #include "sa/sa_nsdef.h"
 #include "TpgNode.h"
 #include "sa/DtpgStats.h"
-#include "sa/NodeValList.h"
+#include "NodeValList.h"
 
 #include "ym/ym_sat.h"
 #include "ym/SatBool3.h"

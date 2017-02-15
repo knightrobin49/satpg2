@@ -12,8 +12,8 @@
 #include "FaultAnalyzer.h"
 #include "TpgFault.h"
 
-#include "sa/TvMgr.h"
-#include "sa/TestVector.h"
+#include "TvMgr.h"
+#include "TestVector.h"
 #include "sa/Fsim.h"
 #include "sa/StructSat.h"
 
@@ -284,7 +284,7 @@ DomChecker::do_fsim(const vector<ymuint>& fid_list)
 
   TestVector* cur_array[kPvBitLen];
   for (ymuint i = 0; i < kPvBitLen; ++ i) {
-    TestVector* tv = mTvMgr.new_vector();
+    TestVector* tv = mTvMgr.new_sa_vector();
     cur_array[i] = tv;
   }
 

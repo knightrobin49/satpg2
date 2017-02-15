@@ -13,9 +13,9 @@
 #include "TpgNode.h"
 #include "TpgFault.h"
 
-#include "sa/TvMgr.h"
-#include "sa/TestVector.h"
-#include "sa/NodeValList.h"
+#include "TvMgr.h"
+#include "TestVector.h"
+#include "NodeValList.h"
 
 #include "sa/StructSat.h"
 #include "sa/FoCone.h"
@@ -307,19 +307,15 @@ FaultAnalyzer::analyze_fault(const TpgFault* fault,
     }
 
     // テストベクタを作る．
-    TestVector* tv = tvmgr.new_vector();
+    TestVector* tv = tvmgr.new_sa_vector();
     ymuint npi = pi_suf_list.size();
     for (ymuint i = 0; i < npi; ++ i) {
       NodeVal nv = pi_suf_list[i];
       const TpgNode* node = nv.node();
       ASSERT_COND ( node->is_ppi() );
       ymuint id = node->input_id();
-      if ( nv.val() ) {
-	tv->set_val(id, kVal1);
-      }
-      else {
-	tv->set_val(id, kVal0);
-      }
+      Val3 val = nv.val() ? kVal1 : kVal0;
+      tv->set_input_val(id, val);
     }
     // X の部分をランダムに設定しておく
     tv->fix_x_from_random(mRandGen);
@@ -334,12 +330,12 @@ FaultAnalyzer::analyze_fault(const TpgFault* fault,
 
       NodeValList list1;
       const TpgNode* node = nv.node();
-      bool val = nv.val();
-      list1.add(node, !val);
+      bool bval = nv.val();
+      list1.add(node, 0, !bval);
       if ( struct_sat.check_sat(list1) == kB3False ) {
 	// node の値を反転したら検出できなかった．
 	// -> この割当は必須割当
-	ma_list.add(node, val);
+	ma_list.add(node, 0, bval);
       }
     }
 
