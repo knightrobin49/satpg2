@@ -40,16 +40,16 @@ DtpgImpl::DtpgImpl(const string& sat_type,
 		   const TpgNetwork& network,
 		   const TpgNode* root) :
   mSolver(sat_type, sat_option, sat_outp),
-  mMaxNodeId(network.node_num()),
+  mNetwork(network),
   mRoot(root),
-  mMarkArray(mMaxNodeId, 0U),
-  mGvarMap(mMaxNodeId),
-  mFvarMap(mMaxNodeId),
-  mDvarMap(mMaxNodeId),
+  mMarkArray(mNetwork.node_num(), 0U),
+  mGvarMap(network.node_num()),
+  mFvarMap(network.node_num()),
+  mDvarMap(network.node_num()),
   mBackTracer(bt),
   mTimerEnable(true)
 {
-  mNodeList.reserve(mMaxNodeId);
+  mNodeList.reserve(network.node_num());
   mOutputList.reserve(network.ppo_num());
 }
 

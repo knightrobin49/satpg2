@@ -624,10 +624,10 @@ TpgNetwork::set(const BnNetwork& network)
   //////////////////////////////////////////////////////////////////////
   // データ系のノードに印をつける．
   //////////////////////////////////////////////////////////////////////
-  vector<bool> marks(mNodeNum, false);
+  vector<bool> dmarks(mNodeNum, false);
   for (ymuint i = 0; i < ppo_num(); ++ i) {
     TpgNode* node = ppo(i);
-    tfimark(node, marks);
+    tfimark(node, dmarks);
   }
 
 
@@ -639,7 +639,7 @@ TpgNetwork::set(const BnNetwork& network)
     // ノードごとに代表故障を設定する．
     // この処理は出力側から行う必要がある．
     TpgNode* node = mNodeArray[mNodeNum - i - 1];
-    if ( marks[node->id()] ) {
+    if ( dmarks[node->id()] ) {
       set_rep_faults(node);
       ymuint nf = node_fault_num(node->id());
       mRepFaultNum += nf;
@@ -712,6 +712,9 @@ TpgNetwork::set(const BnNetwork& network)
   for (ymuint i = 0; i < mNodeNum; ++ i) {
     TpgNode* node = mNodeArray[i];
     if ( node->imm_dom() != nullptr ) {
+      continue;
+    }
+    if ( !dmarks[node->id()] ) {
       continue;
     }
 

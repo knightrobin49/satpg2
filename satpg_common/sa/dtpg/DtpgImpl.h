@@ -11,6 +11,7 @@
 
 
 #include "sa/sa_nsdef.h"
+#include "TpgNetwork.h"
 #include "TpgNode.h"
 #include "sa/DtpgStats.h"
 #include "NodeValList.h"
@@ -84,6 +85,10 @@ protected:
   //////////////////////////////////////////////////////////////////////
   // 継承クラスから用いられる関数
   //////////////////////////////////////////////////////////////////////
+
+  /// @brief 対象のネットワークを返す．
+  const TpgNetwork&
+  network() const;
 
   /// @brief ノード番号の最大値を返す．
   ymuint
@@ -231,8 +236,8 @@ private:
   // SATソルバ
   SatSolver mSolver;
 
-  // ノード番号の最大値
-  ymuint mMaxNodeId;
+  // 対象のネットワーク
+  const TpgNetwork& mNetwork;
 
   // 故障伝搬の起点となるノード
   const TpgNode* mRoot;
@@ -291,12 +296,20 @@ DtpgImpl::solver()
   return mSolver;
 }
 
+// @brief 対象のネットワークを返す．
+inline
+const TpgNetwork&
+DtpgImpl::network() const
+{
+  return mNetwork;
+}
+
 // @brief ノード番号の最大値を返す．
 inline
 ymuint
 DtpgImpl::max_node_id() const
 {
-  return mMaxNodeId;
+  return network().node_num();
 }
 
 // @brief 起点となるノードを返す．
