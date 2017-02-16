@@ -68,9 +68,12 @@ ffr_test(Dtpg& dtpg,
     if ( node->ffr_root() != node ) {
       continue;
     }
+    ymuint nf = network.ffr_fault_num(node->id());
+    if ( nf == 0 ) {
+      continue;
+    }
 
     dtpg.gen_ffr_cnf(network, node, stats);
-    ymuint nf = network.ffr_fault_num(node->id());
     for (ymuint j = 0; j < nf; ++ j) {
       const TpgFault* fault = network.ffr_fault(node->id(), j);
       if ( fmgr.status(fault) == kFsUndetected ) {
@@ -106,10 +109,13 @@ mffc_test(Dtpg& dtpg,
     if ( node->imm_dom() != nullptr ) {
       continue;
     }
+    ymuint ne = node->mffc_elem_num();
+    if ( ne == 0 ) {
+      continue;
+    }
 
     dtpg.gen_mffc_cnf(network, node, stats);
 
-    ymuint ne = node->mffc_elem_num();
     for (ymuint j = 0; j < ne; ++ j) {
       const TpgNode* node1 = node->mffc_elem(j);
       ymuint nf = network.ffr_fault_num(node1->id());

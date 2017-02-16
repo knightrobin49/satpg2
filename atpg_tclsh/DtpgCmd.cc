@@ -65,9 +65,12 @@ run_mffc(nsSa::Dtpg& dtpg,
     if ( node->imm_dom() != nullptr ) {
       continue;
     }
+    ymuint ne = node->mffc_elem_num();
+    if ( ne == 0 ) {
+      continue;
+    }
 
     dtpg.gen_mffc_cnf(network, node, stats);
-    ymuint ne = node->mffc_elem_num();
     for (ymuint j = 0; j < ne; ++ j) {
       const TpgNode* node1 = node->mffc_elem(j);
       ymuint nf = network.ffr_fault_num(node1->id());
