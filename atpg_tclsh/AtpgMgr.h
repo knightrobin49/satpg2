@@ -67,10 +67,6 @@ public:
   nsSa::Fsim&
   _sa_fsim3();
 
-  /// @brief TvMgr を取り出す．
-  nsTd::TvMgr&
-  _td_tv_mgr();
-
   /// @brief テストベクタのリストを取り出す．
   vector<const TestVector*>&
   _td_tv_list();

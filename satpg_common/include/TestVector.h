@@ -56,6 +56,12 @@ public:
   ymuint
   dff_num() const;
 
+  /// @brief PPI数を得る．
+  ///
+  /// = input_num() + dff_num()
+  ymuint
+  ppi_num() const;
+
   /// @brief 縮退故障用のベクタの時 true を返す．
   bool
   is_sa_mode() const;
@@ -71,20 +77,31 @@ public:
   ymuint
   vect_len() const;
 
+  /// @brief PPIの値を得る．
+  /// @param[in] pos PPI の位置番号 ( 0 <= pos < ppi_num() )
+  ///
+  /// is_sa_mode() == true の時のみ有効
+  Val3
+  ppi_val(ymuint pos) const;
+
   /// @brief 1時刻目の外部入力の値を得る．
   /// @param[in] pos 入力の位置番号 ( 0 <= pos < input_num() )
+  ///
+  /// is_td_mode() == true の時のみ有効
   Val3
   input_val(ymuint pos) const;
 
   /// @brief 1時刻目のDFFの値を得る．
   /// @param[in] pos DFFの位置番号 ( 0 <= pos < dff_num() )
+  ///
+  /// is_td_mode() == true の時のみ有効
   Val3
   dff_val(ymuint pos) const;
 
   /// @brief 2時刻目の外部入力の値を得る．
   /// @param[in] pos 入力の位置番号 ( 0 <= pos < input_num() )
   ///
-  /// is_td_mode() == true の時のみ意味を持つ．
+  /// is_td_mode() == true の時のみ有効
   Val3
   aux_input_val(ymuint pos) const;
 
@@ -141,9 +158,20 @@ public:
   void
   init();
 
+  /// @brief PPIの値を設定する．
+  /// @param[in] pos PPIの位置番号 ( 0 <= pos < ppi_num() )
+  /// @param[in] val 値
+  ///
+  /// is_sa_mode() == true の時のみ有効
+  void
+  set_ppi_val(ymuint pos,
+	      Val3 val);
+
   /// @breif 1時刻目の外部入力の値を設定する．
   /// @param[in] pos 入力の位置番号 ( 0 <= pos < input_num() )
   /// @param[in] val 値
+  ///
+  /// is_td_mode() == true の時のみ有効
   void
   set_input_val(ymuint pos,
 		Val3 val);
@@ -151,6 +179,8 @@ public:
   /// @breif 1時刻目のDFFの値を設定する．
   /// @param[in] pos DFFの位置番号 ( 0 <= pos < dff_num() )
   /// @param[in] val 値
+  ///
+  /// is_td_mode() == true の時のみ有効
   void
   set_dff_val(ymuint pos,
 	      Val3 val);
@@ -212,14 +242,14 @@ private:
   /// @brief pos 番めの値を得る．
   /// @param[in] pos 入力の位置番号
   Val3
-  _val3(ymuint pos) const;
+  _val(ymuint pos) const;
 
   /// @breif pos 番めの値を設定する．
   /// @param[in] pos 入力の位置番号
   /// @param[in] val 値
   void
-  _set_val3(ymuint pos,
-	    Val3 val);
+  _set_val(ymuint pos,
+	   Val3 val);
 
   /// @brief ブロック数を返す．
   /// @param[in] ni 入力数
@@ -377,6 +407,16 @@ TestVector::dff_num() const
   return mDffNum;
 }
 
+// @brief PPI数を得る．
+//
+// = input_num() + dff_num()
+inline
+ymuint
+TestVector::ppi_num() const
+{
+  return input_num() + dff_num();
+}
+
 // @brief 縮退故障用のベクタの時 true を返す．
 inline
 bool
@@ -406,13 +446,30 @@ TestVector::vect_len() const
   }
 }
 
+// @brief PPIの値を得る．
+// @param[in] pos PPI の位置番号 ( 0 <= pos < ppi_num() )
+//
+// is_sa_mode() == true の時のみ有効
+inline
+Val3
+TestVector::ppi_val(ymuint pos) const
+{
+  ASSERT_COND( is_sa_mode() );
+  ASSERT_COND( pos < ppi_num() );
+
+  return _val(pos);
+}
+
 // @brief 1時刻目の外部入力の値を得る．
 // @param[in] pos 入力の位置番号 ( 0 <= pos < input_num() )
 inline
 Val3
 TestVector::input_val(ymuint pos) const
 {
-  return _val3(pos);
+  ASSERT_COND( is_td_mode() );
+  ASSERT_COND( pos < input_num() );
+
+  return _val(pos);
 }
 
 // @brief 1時刻目のDFFの値を得る．
@@ -421,7 +478,10 @@ inline
 Val3
 TestVector::dff_val(ymuint pos) const
 {
-  return _val3(pos + input_num());
+  ASSERT_COND( is_td_mode() );
+  ASSERT_COND( pos < dff_num() );
+
+  return _val(pos + input_num());
 }
 
 // @brief 2時刻目の外部入力の値を得る．
@@ -431,13 +491,25 @@ Val3
 TestVector::aux_input_val(ymuint pos) const
 {
   ASSERT_COND( is_td_mode() );
+  ASSERT_COND( pos < input_num() );
 
-  if ( is_sa_mode() ) {
-    return kValX;
-  }
-  else {
-    return _val3(pos + input_num() + dff_num());
-  }
+  return _val(pos + input_num() + dff_num());
+}
+
+// @brief PPIの値を設定する．
+// @param[in] pos PPIの位置番号 ( 0 <= pos < ppi_num() )
+// @param[in] val 値
+//
+// is_sa_mode() == true の時のみ有効
+inline
+void
+TestVector::set_ppi_val(ymuint pos,
+			Val3 val)
+{
+  ASSERT_COND( is_sa_mode() );
+  ASSERT_COND( pos < ppi_num() );
+
+  _set_val(pos, val);
 }
 
 // @breif 1時刻目の外部入力の値を設定する．
@@ -448,7 +520,10 @@ void
 TestVector::set_input_val(ymuint pos,
 			  Val3 val)
 {
-  _set_val3(pos, val);
+  ASSERT_COND( is_td_mode() );
+  ASSERT_COND( pos < input_num() );
+
+  _set_val(pos, val);
 }
 
 // @breif 1時刻目のDFFの値を設定する．
@@ -459,7 +534,10 @@ void
 TestVector::set_dff_val(ymuint pos,
 			Val3 val)
 {
-  _set_val3(pos + input_num(), val);
+  ASSERT_COND( is_td_mode() );
+  ASSERT_COND( pos < dff_num() );
+
+  _set_val(pos + input_num(), val);
 }
 
 // @breif 2時刻目の外部入力の値を設定する．
@@ -471,16 +549,17 @@ TestVector::set_aux_input_val(ymuint pos,
 			      Val3 val)
 {
   ASSERT_COND( is_td_mode() );
+  ASSERT_COND( pos < input_num() );
 
   if ( is_td_mode() ) {
-    _set_val3(pos + input_num() + dff_num(), val);
+    _set_val(pos + input_num() + dff_num(), val);
   }
 }
 
 // @brief pos 番めの値を得る．
 inline
 Val3
-TestVector::_val3(ymuint pos) const
+TestVector::_val(ymuint pos) const
 {
   ymuint shift = shift_num(pos);
   ymuint block0 = block_idx(pos);
@@ -493,8 +572,8 @@ TestVector::_val3(ymuint pos) const
 // @breif pos 番めの値を設定する．
 inline
 void
-TestVector::_set_val3(ymuint pos,
-		      Val3 val)
+TestVector::_set_val(ymuint pos,
+		     Val3 val)
 {
   ymuint shift = shift_num(pos);
   ymuint block0 = block_idx(pos);

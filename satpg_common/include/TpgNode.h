@@ -230,18 +230,18 @@ public:
 
   /// @brief 外部入力タイプの時に入力番号を返す．
   ///
-  /// node = TpgNetwork::input(node->input_id())
+  /// node = TpgNetwork::ppi(node->input_id())
   /// の関係を満たす．
-  /// is_input() が false の場合の返り値は不定
+  /// is_ppi() が false の場合の返り値は不定
   virtual
   ymuint
   input_id() const;
 
   /// @brief 外部出力タイプの時に出力番号を返す．
   ///
-  /// node = TpgNetwork::output(node->output_id())
+  /// node = TpgNetwork::ppo(node->output_id())
   /// の関係を満たす．
-  /// is_output() が false の場合の返り値は不定
+  /// is_ppo() が false の場合の返り値は不定
   virtual
   ymuint
   output_id() const;

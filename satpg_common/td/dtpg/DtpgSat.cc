@@ -16,7 +16,7 @@
 #include "td/DtpgStats.h"
 
 #include "td/BackTracer.h"
-#include "td/NodeValList.h"
+#include "NodeValList.h"
 #include "td/ModelValMap.h"
 
 #include "ym/SatSolver.h"

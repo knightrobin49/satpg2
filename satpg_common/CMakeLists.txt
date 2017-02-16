@@ -41,8 +41,8 @@ set (tpg_network_SOURCES
   tpg_network/TpgFault.cc
   tpg_network/TpgFaultMgr.cc
 
-  tpg_network/TestVector.cc
-  tpg_network/TvMgr.cc
+  tvect/TestVector.cc
+  tvect/TvMgr.cc
 
   tpg_network/NodeValList.cc
 
@@ -132,9 +132,6 @@ set (td_SOURCES
   td/struct_sat/MffcCone.cc
   td/struct_sat/ModelValMap.cc
   td/struct_sat/Extractor.cc
-
-  td/tvect/TestVector.cc
-  td/tvect/TvMgr.cc
   )
 
 

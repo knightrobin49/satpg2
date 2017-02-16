@@ -162,22 +162,31 @@ TestVector::set_from_assign_list(const NodeValList& assign_list)
     NodeVal nv = assign_list[i];
     Val3 val = nv.val() ? kVal1 : kVal0;
     const TpgNode* node = nv.node();
-    if ( node->is_primary_input() ) {
-      ymuint id = node->input_id();
-      if ( nv.time() == 1 ) {
-	ASSERT_COND( is_td_mode() );
-
-	set_aux_input_val(id, val);
-      }
-      else {
-	set_input_val(id, val);
-      }
-    }
-    else if ( node->is_dff_output() ) {
+    ASSERT_COND( node->is_ppi() );
+    if ( is_sa_mode() ) {
       ASSERT_COND( nv.time() == 0 );
 
-      ymuint id = node->dff()->id();
-      set_dff_val(id, val);
+      ymuint id = node->input_id();
+      set_ppi_val(id, val);
+    }
+    else {
+      if ( node->is_primary_input() ) {
+	ymuint id = node->input_id();
+	if ( nv.time() == 1 ) {
+	  ASSERT_COND( is_td_mode() );
+
+	  set_aux_input_val(id, val);
+	}
+	else {
+	  set_input_val(id, val);
+	}
+      }
+      else if ( node->is_dff_output() ) {
+	ASSERT_COND( nv.time() == 0 );
+
+	ymuint id = node->dff()->id();
+	set_dff_val(id, val);
+      }
     }
   }
 }
@@ -324,7 +333,7 @@ TestVector::bin_str() const
   // よく問題になるが，ここでは最下位ビット側から出力する．
   string ans;
   for (ymuint i = 0; i < vect_len(); ++ i) {
-    switch ( _val3(i) ) {
+    switch ( _val(i) ) {
     case kVal0: ans += '0'; break;
     case kVal1: ans += '1'; break;
     case kValX: ans += 'X'; break;
@@ -344,7 +353,7 @@ TestVector::hex_str() const
   string ans;
   for (ymuint i = 0; ; ++ i) {
     if ( i < vect_len() ) {
-      if ( _val3(i) == kVal1 ) {
+      if ( _val(i) == kVal1 ) {
 	// 面倒くさいので kValX は kVal0 と同じとみなす．
 	tmp += bit;
       }

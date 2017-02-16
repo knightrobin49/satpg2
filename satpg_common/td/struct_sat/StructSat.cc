@@ -10,7 +10,7 @@
 #include "td/StructSat.h"
 #include "td/FoCone.h"
 #include "td/MffcCone.h"
-#include "td/NodeValList.h"
+#include "NodeValList.h"
 
 #include "TpgFault.h"
 #include "TpgDff.h"

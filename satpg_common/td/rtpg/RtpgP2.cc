@@ -9,8 +9,8 @@
 
 #include "RtpgP2.h"
 #include "TpgFaultMgr.h"
-#include "td/TvMgr.h"
-#include "td/TestVector.h"
+#include "TvMgr.h"
+#include "TestVector.h"
 #include "td/Fsim.h"
 #include "td/RtpgStats.h"
 #include "FopRtpg.h"
@@ -70,8 +70,8 @@ gen_neighbor(const TestVector* tv1,
   rcg.generate(randgen);
   for (ymuint i = 0; i < nbits; ++ i) {
     ymuint pos = rcg.elem(i);
-    Val3 val = tv2->cur_input_val(pos);
-    tv2->set_cur_input_val(pos, ~val);
+    Val3 val = tv2->aux_input_val(pos);
+    tv2->set_aux_input_val(pos, ~val);
   }
 #warning "TODO: dff も考慮する．"
 }
@@ -139,8 +139,8 @@ RtpgP2::run(TpgFaultMgr& fmgr,
     }
   }
 
-  TestVector* tv1 = tvmgr.new_vector();
-  TestVector* tv2 = tvmgr.new_vector();
+  TestVector* tv1 = tvmgr.new_td_vector();
+  TestVector* tv2 = tvmgr.new_td_vector();
 
   FopRtpg op(fsim, fmgr);
 
@@ -189,7 +189,7 @@ RtpgP2::run(TpgFaultMgr& fmgr,
 	ymuint det_count = op.count(0);
 	if ( det_count > 0 ) {
 	  tvlist.push_back(tv1);
-	  tv1 = tvmgr.new_vector();
+	  tv1 = tvmgr.new_td_vector();
 	  ++ epat_num;
 	}
 

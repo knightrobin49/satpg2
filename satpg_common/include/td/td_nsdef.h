@@ -38,12 +38,9 @@ BEGIN_NAMESPACE_YM_SATPG_TD
 class FoCone;
 class MffcCone;
 class StructSat;
-class NodeValList;
 class BackTracer;
 class DetectOp;
 class UntestOp;
-class TestVector;
-class TvMgr;
 class Dtpg;
 class DtpgEngine;
 class DtpgStats;
@@ -60,8 +57,6 @@ END_NAMESPACE_YM_SATPG_TD
 
 BEGIN_NAMESPACE_YM_SATPG
 
-typedef nsTd::TestVector TdTestVector;
-typedef nsTd::TvMgr TdTvMgr;
 typedef nsTd::Fsim TdFsim;
 
 END_NAMESPACE_YM_SATPG

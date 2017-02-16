@@ -14,8 +14,8 @@
 #include "TpgFault.h"
 
 #include "td/FsimOp.h"
-#include "td/TestVector.h"
-#include "td/NodeValList.h"
+#include "TestVector.h"
+#include "NodeValList.h"
 #include "td/DetectOp.h"
 
 #include "SimNode.h"
@@ -316,14 +316,14 @@ Fsim2::sppfp(TestVector* tv,
   // tv を全ビットにセットしていく．
   for (ymuint i = 0; i < npi; ++ i) {
     SimNode* simnode = mInputArray[i];
-    PackedVal val0 = (tv->prev_input_val(i) == kVal1) ? kPvAll1 : kPvAll0;
+    PackedVal val0 = (tv->input_val(i) == kVal1) ? kPvAll1 : kPvAll0;
     simnode->set_hval(val0);
-    PackedVal val1 = (tv->cur_input_val(i) == kVal1) ? kPvAll1 : kPvAll0;
+    PackedVal val1 = (tv->aux_input_val(i) == kVal1) ? kPvAll1 : kPvAll0;
     simnode->set_gval(val1);
   }
   for (ymuint i = 0; i < ndff; ++ i) {
     SimNode* simnode = mInputArray[i + npi];
-    PackedVal val0 = (tv->prev_dff_val(i) == kVal1) ? kPvAll1 : kPvAll0;
+    PackedVal val0 = (tv->dff_val(i) == kVal1) ? kPvAll1 : kPvAll0;
     simnode->set_hval(val0);
   }
 
@@ -385,20 +385,20 @@ Fsim2::ppsfp(const vector<TestVector*>& tv_array,
     PackedVal cur_val = kPvAll0;
     PackedVal bit = 1UL;
     for (ymuint j = 0; j < nb; ++ j, bit <<= 1) {
-      if ( tv_array[j]->cur_input_val(i) == kVal1 ) {
+      if ( tv_array[j]->aux_input_val(i) == kVal1 ) {
 	cur_val |= bit;
       }
-      if ( tv_array[j]->prev_input_val(i) == kVal1 ) {
+      if ( tv_array[j]->input_val(i) == kVal1 ) {
 	prev_val |= bit;
       }
     }
     // 残ったビットには 0 番めのパタンを詰めておく．
-    if ( tv_array[0]->cur_input_val(i) == kVal1 ) {
+    if ( tv_array[0]->aux_input_val(i) == kVal1 ) {
       for (ymuint j = nb; j < kPvBitLen; ++ j, bit <<= 1) {
 	cur_val |= bit;
       }
     }
-    if ( tv_array[0]->prev_input_val(i) == kVal1 ) {
+    if ( tv_array[0]->input_val(i) == kVal1 ) {
       for (ymuint j = nb; j < kPvBitLen; ++ j, bit <<= 1) {
 	prev_val |= bit;
       }
@@ -411,12 +411,12 @@ Fsim2::ppsfp(const vector<TestVector*>& tv_array,
     PackedVal prev_val = kPvAll0;
     PackedVal bit = 1UL;
     for (ymuint j = 0; j < nb; ++ j, bit <<= 1) {
-      if ( tv_array[j]->prev_dff_val(i) == kVal1 ) {
+      if ( tv_array[j]->dff_val(i) == kVal1 ) {
 	prev_val |= bit;
       }
     }
     // 残ったビットには 0 番めのパタンを詰めておく．
-    if ( tv_array[0]->prev_input_val(i) == kVal1 ) {
+    if ( tv_array[0]->input_val(i) == kVal1 ) {
       for (ymuint j = nb; j < kPvBitLen; ++ j, bit <<= 1) {
 	prev_val |= bit;
       }
@@ -496,14 +496,14 @@ Fsim2::spsfp(TestVector* tv,
   // tv を全ビットにセットしていく．
   for (ymuint i = 0; i < npi; ++ i) {
     SimNode* simnode = mInputArray[i];
-    PackedVal cur_val = (tv->cur_input_val(i) == kVal1) ? kPvAll1 : kPvAll0;
+    PackedVal cur_val = (tv->aux_input_val(i) == kVal1) ? kPvAll1 : kPvAll0;
     simnode->set_gval(cur_val);
-    PackedVal prev_val = (tv->prev_input_val(i) == kVal1) ? kPvAll1 : kPvAll0;
+    PackedVal prev_val = (tv->input_val(i) == kVal1) ? kPvAll1 : kPvAll0;
     simnode->set_hval(prev_val);
   }
   for (ymuint i = 0; i < ndff; ++ i) {
     SimNode* simnode = mInputArray[i + npi];
-    PackedVal prev_val = (tv->prev_dff_val(i) == kVal1) ? kPvAll1 : kPvAll0;
+    PackedVal prev_val = (tv->dff_val(i) == kVal1) ? kPvAll1 : kPvAll0;
     simnode->set_hval(prev_val);
   }
 
@@ -869,14 +869,14 @@ Fsim2::calc_wsa(TestVector* tv)
   // tv を全ビットにセットしていく．
   for (ymuint i = 0; i < npi; ++ i) {
     SimNode* simnode = mInputArray[i];
-    PackedVal cur_val = (tv->cur_input_val(i) == kVal1) ? kPvAll1 : kPvAll0;
+    PackedVal cur_val = (tv->aux_input_val(i) == kVal1) ? kPvAll1 : kPvAll0;
     simnode->set_gval(cur_val);
-    PackedVal prev_val = (tv->prev_input_val(i) == kVal1) ? kPvAll1 : kPvAll0;
+    PackedVal prev_val = (tv->input_val(i) == kVal1) ? kPvAll1 : kPvAll0;
     simnode->set_hval(prev_val);
   }
   for (ymuint i = 0; i < ndff; ++ i) {
     SimNode* simnode = mInputArray[i + npi];
-    PackedVal prev_val = (tv->prev_dff_val(i) == kVal1) ? kPvAll1 : kPvAll0;
+    PackedVal prev_val = (tv->dff_val(i) == kVal1) ? kPvAll1 : kPvAll0;
     simnode->set_hval(prev_val);
   }
 

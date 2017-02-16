@@ -15,7 +15,7 @@
 #include "sa/DtpgStats.h"
 #include "sa/Dtpg.h"
 #include "sa/Fsim.h"
-#include "sa/NodeValList.h"
+#include "NodeValList.h"
 #include "sa/BackTracer.h"
 #include "sa/DetectOp.h"
 #include "sa/DopList.h"
@@ -39,7 +39,7 @@ run_single(nsSa::Dtpg& dtpg,
     if ( fmgr.status(fault) == kFsUndetected ) {
       const TpgNode* ffr_root = fault->ffr_root();
       dtpg.gen_ffr_cnf(network, ffr_root, stats);
-      nsSa::NodeValList nodeval_list;
+      NodeValList nodeval_list;
       SatBool3 ans = dtpg.dtpg(fault, nodeval_list, stats);
       if ( ans == kB3True ) {
 	dop(fault, nodeval_list);
@@ -75,7 +75,7 @@ run_mffc(nsSa::Dtpg& dtpg,
 	const TpgFault* fault = network.ffr_fault(node1->id(), k);
 	if ( fmgr.status(fault) == kFsUndetected ) {
 	  // 故障に対するテスト生成を行なう．
-	  nsSa::NodeValList nodeval_list;
+	  NodeValList nodeval_list;
 	  SatBool3 ans = dtpg.dtpg(fault, nodeval_list, stats);
 	  if ( ans == kB3True ) {
 	    dop(fault, nodeval_list);
@@ -207,7 +207,7 @@ DtpgCmd::cmd_proc(TclObjVector& objv)
   nsSa::UopList uop_list;
 
   if ( !mPoptNoPat->is_specified() ) {
-    dop_list.add(nsSa::new_DopTvList(_sa_tv_mgr(), _sa_tv_list()));
+    dop_list.add(nsSa::new_DopTvList(_tv_mgr(), _sa_tv_list()));
   }
   dop_list.add(nsSa::new_DopBase(_fault_mgr()));
   uop_list.add(nsSa::new_UopBase(_fault_mgr()));

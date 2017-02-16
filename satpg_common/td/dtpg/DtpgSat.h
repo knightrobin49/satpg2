@@ -15,7 +15,7 @@
 #include "TpgNode.h"
 
 #include "td/DtpgStats.h"
-#include "td/NodeValList.h"
+#include "NodeValList.h"
 
 #include "ym/ym_sat.h"
 #include "ym/SatBool3.h"

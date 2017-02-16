@@ -13,7 +13,7 @@
 #include "GateLitMap_vid.h"
 #include "td/ModelValMap.h"
 #include "td/Extractor.h"
-#include "td/NodeValList.h"
+#include "NodeValList.h"
 
 BEGIN_NAMESPACE_YM_SATPG_TD
 
