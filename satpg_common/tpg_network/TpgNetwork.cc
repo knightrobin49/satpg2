@@ -321,7 +321,7 @@ BEGIN_NONAMESPACE
 
 // @brief ノードの TFI にマークをつける．
 ymuint
-tfimark(TpgNode* node,
+tfimark(const TpgNode* node,
 	vector<bool>& mark)
 {
   if ( mark[node->id()] ) {
@@ -382,6 +382,7 @@ TpgNetwork::set(const BnNetwork& network)
     node_info_list[i] = node_info;
   }
 
+
   //////////////////////////////////////////////////////////////////////
   // 追加で生成されるノード数を数える．
   //////////////////////////////////////////////////////////////////////
@@ -398,6 +399,7 @@ TpgNetwork::set(const BnNetwork& network)
       extra_node_num += (ni - 2);
     }
   }
+
 
   //////////////////////////////////////////////////////////////////////
   // 要素数を数え，必要なメモリ領域を確保する．
@@ -449,14 +451,15 @@ TpgNetwork::set(const BnNetwork& network)
   }
 
   ymuint nn = mInputNum + mOutputNum + mDffNum * 2 + nl + extra_node_num + dff_control_num;
-
   mNodeArray = new TpgNode*[nn];
-
   mAuxInfoArray = new AuxNodeInfo[nn];
 
-  mPPIArray = new TpgNode*[mInputNum + mDffNum];
-  mPPOArray = new TpgNode*[mOutputNum + mDffNum];
-  mPPOArray2 = new TpgNode*[mOutputNum + mDffNum];
+  ymuint nppi = mInputNum + mDffNum;
+  mPPIArray = new TpgNode*[nppi];
+
+  ymuint nppo = mOutputNum + mDffNum;
+  mPPOArray = new TpgNode*[nppo];
+  mPPOArray2 = new TpgNode*[nppo];
 
   NodeMap node_map;
 
@@ -488,8 +491,9 @@ TpgNetwork::set(const BnNetwork& network)
     ASSERT_COND( src_node->is_input() );
     ymuint nfo = src_node->fanout_num();
     TpgDff* dff = &mDffArray[i];
-    TpgNode* node = make_dff_output_node(i + mInputNum, dff, src_node->name(), nfo);
-    mPPIArray[i + mInputNum] = node;
+    ymuint iid = i + mInputNum;
+    TpgNode* node = make_dff_output_node(iid, dff, src_node->name(), nfo);
+    mPPIArray[iid] = node;
     dff->mOutput = node;
 
     node_map.reg(src_node->id(), node);
@@ -498,7 +502,8 @@ TpgNetwork::set(const BnNetwork& network)
 
   //////////////////////////////////////////////////////////////////////
   // 論理ノードを作成する．
-  // ただし mNodeArray は入力からのトポロジカル順になる．
+  // BnNetwork::logic() はトポロジカルソートされているので
+  // 結果として TpgNode もトポロジカル順に並べられる．
   //////////////////////////////////////////////////////////////////////
   for (ymuint i = 0; i < nl; ++ i) {
     const BnNode* src_node = network.logic(i);
@@ -553,8 +558,9 @@ TpgNetwork::set(const BnNetwork& network)
     string dff_name = src_dff->name();
     string input_name = dff_name + ".input";
     TpgDff* dff = &mDffArray[i];
-    TpgNode* node = make_dff_input_node(i + mOutputNum, dff, input_name, inode);
-    mPPOArray[i + mOutputNum] = node;
+    ymuint oid = i + mOutputNum;
+    TpgNode* node = make_dff_input_node(oid, dff, input_name, inode);
+    mPPOArray[oid] = node;
     dff->mInput = node;
 
     // クロック端子を作る．
@@ -626,7 +632,7 @@ TpgNetwork::set(const BnNetwork& network)
   //////////////////////////////////////////////////////////////////////
   vector<bool> dmarks(mNodeNum, false);
   for (ymuint i = 0; i < ppo_num(); ++ i) {
-    TpgNode* node = ppo(i);
+    const TpgNode* node = ppo(i);
     tfimark(node, dmarks);
   }
 
@@ -664,7 +670,7 @@ TpgNetwork::set(const BnNetwork& network)
   ymuint npo = ppo_num();
   vector<pair<ymuint, ymuint> > tmp_list(npo);
   for (ymuint i = 0; i < npo; ++ i) {
-    TpgNode* onode = ppo(i);
+    const TpgNode* onode = ppo(i);
     // onode の TFI のノード数を計算する．
     vector<bool> mark(nn, false);
     ymuint n = tfimark(onode, mark);
@@ -685,10 +691,7 @@ TpgNetwork::set(const BnNetwork& network)
   for (ymuint i = 0; i < mNodeNum; ++ i) {
     TpgNode* node = mNodeArray[mNodeNum - i - 1];
     const TpgNode* imm_dom = nullptr;
-    if ( !node->is_ppo() &&
-	 !node->is_dff_clock() &&
-	 !node->is_dff_clear() &&
-	 !node->is_dff_preset() ) {
+    if ( !node->is_ppo() ) {
       ymuint nfo = node->fanout_num();
       if ( nfo > 0 ) {
 	imm_dom = node->fanout(0);

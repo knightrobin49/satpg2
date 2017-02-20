@@ -5,7 +5,7 @@
 /// @brief TpgNetwork のヘッダファイル
 /// @author Yusuke Matsunaga (松永 裕介)
 ///
-/// Copyright (C) 2005-2014, 2016 Yusuke Matsunaga
+/// Copyright (C) 2005-2014, 2016, 2017 Yusuke Matsunaga
 /// All rights reserved.
 
 
@@ -29,6 +29,20 @@ class AuxNodeInfo;
 //////////////////////////////////////////////////////////////////////
 /// @class TpgNetwork TpgNetwork.h "TpgNetwork.h"
 /// @brief SATPG 用のネットワークを表すクラス
+///
+/// 基本的には TpgNode のネットワーク(DAG)を表す．
+/// ただし，順序回路を扱うために TpgDff, TpgLatch というクラスを持つ．
+/// TpgDff, TpgLatch の入出力はそれぞれ疑似出力，疑似入力の TpgNode を持つ．<br>
+/// 本当の入力と疑似入力をあわせて PPI(Pseudo Primary Input) と呼ぶ．<br>
+/// 本当の出力と疑似出力をあわせて PPO(Pseudo Primary Output) と呼ぶ．<br>
+/// クロック系の回路の情報も保持されるが，一般のノードとは区別される．
+/// セット/リセット系の回路は通常の論理系の回路とみなす．
+/// このクラスは const BnNetwork& から設定され，以降，一切変更されない．
+/// 設定用の便利関数として blif フォーマットと isca89(.bench) フォーマットの
+/// ファイルを読み込んで内容を設定する関数もある．<br>
+/// 内容が設定されると同時に故障も定義される．
+/// 構造的に等価な故障の中で一つ代表故障を決めて代表故障のリストを作る．
+/// 代表故障はネットワーク全体，FFR，ノードごとにリスト化される．<br>
 //////////////////////////////////////////////////////////////////////
 class TpgNetwork
 {
@@ -66,7 +80,7 @@ public:
 
   /// @brief 外部入力ノードを得る．
   /// @param[in] pos 位置番号 ( 0 <= pos < input_num() )
-  TpgNode*
+  const TpgNode*
   input(ymuint pos) const;
 
   /// @brief 外部出力数を得る．
@@ -75,21 +89,12 @@ public:
 
   /// @brief 外部出力ノードを得る．
   /// @param[in] pos 位置番号 ( 0 <= pos < output_num() )
-  TpgNode*
+  const TpgNode*
   output(ymuint pos) const;
 
   /// @brief サイズの降順で整列した順番で外部出力ノードを取り出す．
-  TpgNode*
+  const TpgNode*
   output2(ymuint pos) const;
-
-  /// @brief DFF数を得る．
-  ymuint
-  dff_num() const;
-
-  /// @brief DFF を得る．
-  /// @param[in] pos 位置番号 ( 0 <= pos < dff_num() )
-  const TpgDff*
-  dff(ymuint pos) const;
 
   /// @brief スキャン方式の擬似外部入力数を得る．
   ///
@@ -99,7 +104,7 @@ public:
 
   /// @brief スキャン方式の擬似外部入力を得る．
   /// @param[in] pos 位置番号 ( 0 <= pos < ppi_num() )
-  TpgNode*
+  const TpgNode*
   ppi(ymuint pos) const;
 
   /// @brief スキャン方式の擬似外部出力数を得る．
@@ -110,7 +115,7 @@ public:
 
   /// @brief スキャン方式の擬似外部出力を得る．
   /// @param[in] pos 位置番号 ( 0 <= pos < pseudo_output_num() )
-  TpgNode*
+  const TpgNode*
   ppo(ymuint pos) const;
 
   /// @brief MFFC 数を返す．
@@ -120,6 +125,15 @@ public:
   /// @brief FFR 数を返す．
   ymuint
   ffr_num() const;
+
+  /// @brief DFF数を得る．
+  ymuint
+  dff_num() const;
+
+  /// @brief DFF を得る．
+  /// @param[in] pos 位置番号 ( 0 <= pos < dff_num() )
+  const TpgDff*
+  dff(ymuint pos) const;
 
   /// @brief 故障IDの最大値+1を返す．
   ymuint
@@ -512,10 +526,11 @@ TpgNetwork::input_num() const
 // @brief 外部入力ノードを得る．
 // @param[in] pos 位置番号 ( 0 <= pos < input_num() )
 inline
-TpgNode*
+const TpgNode*
 TpgNetwork::input(ymuint pos) const
 {
   ASSERT_COND( pos < input_num() );
+
   return mPPIArray[pos];
 }
 
@@ -530,19 +545,21 @@ TpgNetwork::output_num() const
 // @brief 外部出力ノードを得る．
 // @param[in] pos 位置番号 ( 0 <= pos < output_num() )
 inline
-TpgNode*
+const TpgNode*
 TpgNetwork::output(ymuint pos) const
 {
   ASSERT_COND( pos < output_num() );
+
   return mPPIArray[pos];
 }
 
 // @brief サイズの降順で整列した順番で外部出力ノードを取り出す．
 inline
-TpgNode*
+const TpgNode*
 TpgNetwork::output2(ymuint pos) const
 {
   ASSERT_COND( pos < output_num() );
+
   return mPPOArray2[pos];
 }
 
@@ -576,11 +593,12 @@ TpgNetwork::ppi_num() const
 
 // @brief スキャン方式の擬似外部入力を得る．
 // @param[in] pos 位置番号 ( 0 <= pos < ppi_num() )
-inline
+const inline
 TpgNode*
 TpgNetwork::ppi(ymuint pos) const
 {
   ASSERT_COND( pos < ppi_num() );
+
   return mPPIArray[pos];
 }
 
@@ -597,10 +615,11 @@ TpgNetwork::ppo_num() const
 // @brief スキャン方式の擬似外部出力を得る．
 // @param[in] pos 位置番号 ( 0 <= pos < ppo_num() )
 inline
-TpgNode*
+const TpgNode*
 TpgNetwork::ppo(ymuint pos) const
 {
   ASSERT_COND( pos < ppo_num() );
+
   return mPPOArray[pos];
 }
 

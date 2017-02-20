@@ -320,9 +320,10 @@ dtpg_test(int argc,
   ymuint detect_num = num_pair.first;
   ymuint untest_num = num_pair.second;
 
-  cout << "# of inputs             = " << network.ppi_num() << endl
-       << "# of outputs            = " << network.ppo_num() << endl
-       << "# of logic gates        = " << network.node_num() << endl
+  cout << "# of inputs             = " << network.input_num() << endl
+       << "# of outputs            = " << network.output_num() << endl
+       << "# of DFFs               = " << network.dff_num() << endl
+       << "# of logic gates        = " << network.node_num() - network.ppi_num() << endl
        << "# of MFFCs              = " << network.mffc_num() << endl
        << "# of FFRs               = " << network.ffr_num() << endl
        << "# of total faults       = " << network.rep_fault_num() << endl
