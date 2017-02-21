@@ -31,9 +31,16 @@ BEGIN_NAMESPACE_YM_SATPG
 class TpgNode
 {
 public:
+  //////////////////////////////////////////////////////////////////////
+  // TpgNode の派生クラスのインスタンスを作るクラスメソッド
+  // 別に個々のクラスのコンストラクタを直に呼んでもよいが，
+  // こうすることで TpgNode の派生クラスのヘッダファイルを
+  // TpgNode 以外のクラスの実装ファイルでインクルードする必要がなくなる．
+  //////////////////////////////////////////////////////////////////////
 
   /// @brief 入力ノードを作る．
   /// @param[in] id ノード番号
+  /// @param[in] name ノード名
   /// @param[in] iid 入力番号
   /// @param[in] fanout_num ファンアウト数
   /// @param[in] alloc メモリアロケータ
@@ -41,12 +48,14 @@ public:
   static
   TpgNode*
   make_input(ymuint id,
+	     const string& name,
 	     ymuint iid,
 	     ymuint fanout_num,
 	     Alloc& alloc);
 
   /// @brief 出力ノードを作る．
   /// @param[in] id ノード番号
+  /// @param[in] name ノード名
   /// @param[in] oid 出力番号
   /// @param[in] inode 入力ノード
   /// @param[in] alloc メモリアロケータ
@@ -54,12 +63,14 @@ public:
   static
   TpgNode*
   make_output(ymuint id,
+	      const string& name,
 	      ymuint oid,
 	      TpgNode* inode,
 	      Alloc& alloc);
 
   /// @brief DFFの入力ノードを作る．
   /// @param[in] id ノード番号
+  /// @param[in] name ノード名
   /// @param[in] oid 出力番号
   /// @param[in] dff 接続しているDFF
   /// @param[in] inode 入力ノード
@@ -68,6 +79,7 @@ public:
   static
   TpgNode*
   make_dff_input(ymuint id,
+		 const string& name,
 		 ymuint oid,
 		 TpgDff* dff,
 		 TpgNode* inode,
@@ -75,6 +87,7 @@ public:
 
   /// @brief DFFの出力ノードを作る．
   /// @param[in] id ノード番号
+  /// @param[in] name ノード名
   /// @param[in] iid 入力番号
   /// @param[in] dff 接続しているDFF
   /// @param[in] fanout_num ファンアウト数
@@ -83,6 +96,7 @@ public:
   static
   TpgNode*
   make_dff_output(ymuint id,
+		  const string& name,
 		  ymuint iid,
 		  TpgDff* dff,
 		  ymuint fanout_num,
@@ -90,6 +104,7 @@ public:
 
   /// @brief DFFのクロック端子を作る．
   /// @param[in] id ノード番号
+  /// @param[in] name ノード名
   /// @param[in] dff 接続しているDFF
   /// @param[in] inode 入力ノード
   /// @param[in] alloc メモリアロケータ
@@ -97,12 +112,14 @@ public:
   static
   TpgNode*
   make_dff_clock(ymuint id,
+		 const string& name,
 		 TpgDff* dff,
 		 TpgNode* inode,
 		 Alloc& alloc);
 
   /// @brief DFFのクリア端子を作る．
   /// @param[in] id ノード番号
+  /// @param[in] name ノード名
   /// @param[in] dff 接続しているDFF
   /// @param[in] inode 入力ノード
   /// @param[in] alloc メモリアロケータ
@@ -110,12 +127,14 @@ public:
   static
   TpgNode*
   make_dff_clear(ymuint id,
+		 const string& name,
 		 TpgDff* dff,
 		 TpgNode* inode,
 		 Alloc& alloc);
 
   /// @brief DFFのプリセット端子を作る．
   /// @param[in] id ノード番号
+  /// @param[in] name ノード名
   /// @param[in] dff 接続しているDFF
   /// @param[in] inode 入力ノード
   /// @param[in] alloc メモリアロケータ
@@ -123,12 +142,14 @@ public:
   static
   TpgNode*
   make_dff_preset(ymuint id,
+		  const string& name,
 		  TpgDff* dff,
 		  TpgNode* inode,
 		  Alloc& alloc);
 
   /// @brief 論理ノードを作る．
   /// @param[in] id ノード番号
+  /// @param[in] name ノード名
   /// @param[in] gate_type ゲートタイプ
   /// @param[in] inode_list 入力ノードのリスト
   /// @param[in] fanout_num ファンアウト数
@@ -137,6 +158,7 @@ public:
   static
   TpgNode*
   make_logic(ymuint id,
+	     const string& name,
 	     GateType gate_type,
 	     const vector<TpgNode*>& inode_list,
 	     ymuint fanout_num,
@@ -150,11 +172,7 @@ public:
 
   /// @brief コンストラクタ
   /// @param[in] id ID番号
-  /// @param[in] fanout_num ファンアウト数
-  /// @param[in] fanout_list ファンアウトのリストを格納する配列
-  TpgNode(ymuint id,
-	  ymuint fanout_num,
-	  TpgNode** fanout_list);
+  TpgNode(ymuint id);
 
   /// @brief デストラクタ
   virtual
@@ -169,6 +187,10 @@ public:
   /// @brief ID番号を得る．
   ymuint
   id() const;
+
+  /// @brief ノード名を返す．
+  const char*
+  name() const;
 
   /// @brief 外部入力タイプの時 true を返す．
   virtual
@@ -372,6 +394,32 @@ public:
   set_mffc_info(ymuint num,
 		TpgNode** node_list);
 
+  /// @brief ノード名を設定する．
+  /// @param[in] name ノード名
+  /// @param[in] alloc メモリアロケータ
+  void
+  set_name(const string& name,
+	   Alloc& alloc);
+
+  /// @brief ファンインを設定する．
+  /// @param[in] inode_list ファンインのリスト
+  ///
+  /// と同時にファンイン用の配列も確保する．
+  /// 多入力ゲートのみ意味を持つ仮想関数
+  virtual
+  void
+  set_fanin(const vector<TpgNode*>& inode_list,
+	    Alloc& alloc);
+
+  /// @brief ファンアウト数を設定する．
+  /// @param[in] fanout_num
+  /// @param[in] alloc メモリアロケータ
+  ///
+  /// 同時にファンアウト用の配列も確保する．
+  void
+  set_fanout_num(ymuint fanout_num,
+		 Alloc& alloc);
+
 
 public:
   //////////////////////////////////////////////////////////////////////
@@ -409,6 +457,9 @@ private:
   // ID 番号
   ymuint mId;
 
+  // ノード名
+  char* mName;
+
   // ファンアウト数
   ymuint mFanoutNum;
 
@@ -432,7 +483,6 @@ private:
 /// @param[in] node 対象のノード
 void
 print_node(ostream& s,
-	   const TpgNetwork& network,
 	   const TpgNode* node);
 
 
@@ -446,6 +496,14 @@ ymuint
 TpgNode::id() const
 {
   return mId;
+}
+
+// @brief ノード名を返す．
+inline
+const char*
+TpgNode::name() const
+{
+  return mName;
 }
 
 // @brief ファンアウト数を得る．

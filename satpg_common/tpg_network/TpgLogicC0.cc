@@ -19,12 +19,8 @@ BEGIN_NAMESPACE_YM_SATPG
 
 // @brief コンストラクタ
 // @param[in] id ID番号
-// @param[in] fanout_num ファンアウト数
-// @param[in] fanout_list ファンアウトのリストを格納する配列
-TpgLogicC0::TpgLogicC0(ymuint id,
-		       ymuint fanout_num,
-		       TpgNode** fanout_list) :
-  TpgLogic0(id, fanout_num, fanout_list)
+TpgLogicC0::TpgLogicC0(ymuint id) :
+  TpgLogic0(id)
 {
 }
 

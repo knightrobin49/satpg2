@@ -211,16 +211,6 @@ TpgNetwork::read_iscas89(const string& filename)
   return stat;
 }
 
-// @brief ノード名を返す．
-// @param[in] id ノードID ( 0 <= id < node_num() )
-const char*
-TpgNetwork::node_name(ymuint id) const
-{
-  ASSERT_COND( id < mNodeNum );
-
-  return mAuxInfoArray[id].name();
-}
-
 // @brief 出力の故障を得る．
 // @param[in] id ノードID ( 0 <= id < node_num() )
 // @param[in] val 故障値 ( 0 / 1 )
@@ -863,14 +853,14 @@ TpgNetwork::make_input_node(ymuint iid,
 			    const string& name,
 			    ymuint fanout_num)
 {
-  TpgNode* node = TpgNode::make_input(mNodeNum, iid, fanout_num, mAlloc);
+  TpgNode* node = TpgNode::make_input(mNodeNum, name, iid, fanout_num, mAlloc);
   mNodeArray[mNodeNum] = node;
   ++ mNodeNum;
 
-  mAuxInfoArray[node->id()].init(name, 0, mAlloc);
+  mAuxInfoArray[node->id()].init(0, mAlloc);
 
   // 出力位置の故障を生成
-  const char* c_name = node_name(node->id());
+  const char* c_name = node->name();
   for (int val = 0; val < 2; ++ val) {
     new_ofault(c_name, val, node);
   }
@@ -889,14 +879,14 @@ TpgNetwork::make_output_node(ymuint oid,
 			     const string& name,
 			     TpgNode* inode)
 {
-  TpgNode* node = TpgNode::make_output(mNodeNum, oid, inode, mAlloc);
+  TpgNode* node = TpgNode::make_output(mNodeNum, name, oid, inode, mAlloc);
   mNodeArray[mNodeNum] = node;
   ++ mNodeNum;
 
-  mAuxInfoArray[node->id()].init(name, 1, mAlloc);
+  mAuxInfoArray[node->id()].init(1, mAlloc);
 
   // 入力位置の故障を生成
-  const char* c_name = node_name(node->id());
+  const char* c_name = node->name();
   ymuint ipos = 0;
   for (int val = 0; val < 2; ++ val) {
     new_ifault(c_name, ipos, val, InodeInfo(node, ipos), nullptr);
@@ -917,14 +907,14 @@ TpgNetwork::make_dff_input_node(ymuint oid,
 				const string& name,
 				TpgNode* inode)
 {
-  TpgNode* node = TpgNode::make_dff_input(mNodeNum, oid, dff, inode, mAlloc);
+  TpgNode* node = TpgNode::make_dff_input(mNodeNum, name, oid, dff, inode, mAlloc);
   mNodeArray[mNodeNum] = node;
   ++ mNodeNum;
 
-  mAuxInfoArray[node->id()].init(name, 1, mAlloc);
+  mAuxInfoArray[node->id()].init(1, mAlloc);
 
   // 入力位置の故障を生成
-  const char* c_name = node_name(node->id());
+  const char* c_name = node->name();
   ymuint ipos = 0;
   for (int val = 0; val < 2; ++ val) {
     new_ifault(c_name, ipos, val, InodeInfo(node, ipos), nullptr);
@@ -945,14 +935,14 @@ TpgNetwork::make_dff_output_node(ymuint iid,
 				 const string& name,
 				 ymuint fanout_num)
 {
-  TpgNode* node = TpgNode::make_dff_output(mNodeNum, iid, dff, fanout_num, mAlloc);
+  TpgNode* node = TpgNode::make_dff_output(mNodeNum, name, iid, dff, fanout_num, mAlloc);
   mNodeArray[mNodeNum] = node;
   ++ mNodeNum;
 
-  mAuxInfoArray[node->id()].init(name, 0, mAlloc);
+  mAuxInfoArray[node->id()].init(0, mAlloc);
 
   // 出力位置の故障を生成
-  const char* c_name = node_name(node->id());
+  const char* c_name = node->name();
   for (int val = 0; val < 2; ++ val) {
     new_ofault(c_name, val, node);
   }
@@ -970,14 +960,14 @@ TpgNetwork::make_dff_clock_node(TpgDff* dff,
 				const string& name,
 				TpgNode* inode)
 {
-  TpgNode* node = TpgNode::make_dff_clock(mNodeNum, dff, inode, mAlloc);
+  TpgNode* node = TpgNode::make_dff_clock(mNodeNum, name, dff, inode, mAlloc);
   mNodeArray[mNodeNum] = node;
   ++ mNodeNum;
 
-  mAuxInfoArray[node->id()].init(name, 1, mAlloc);
+  mAuxInfoArray[node->id()].init(1, mAlloc);
 
   // 入力位置の故障を生成
-  const char* c_name = node_name(node->id());
+  const char* c_name = node->name();
   ymuint ipos = 0;
   for (int val = 0; val < 2; ++ val) {
     new_ifault(c_name, ipos, val, InodeInfo(node, ipos), nullptr);
@@ -996,14 +986,14 @@ TpgNetwork::make_dff_clear_node(TpgDff* dff,
 				const string& name,
 				TpgNode* inode)
 {
-  TpgNode* node = TpgNode::make_dff_clear(mNodeNum, dff, inode, mAlloc);
+  TpgNode* node = TpgNode::make_dff_clear(mNodeNum, name, dff, inode, mAlloc);
   mNodeArray[mNodeNum] = node;
   ++ mNodeNum;
 
-  mAuxInfoArray[node->id()].init(name, 1, mAlloc);
+  mAuxInfoArray[node->id()].init(1, mAlloc);
 
   // 入力位置の故障を生成
-  const char* c_name = node_name(node->id());
+  const char* c_name = node->name();
   ymuint ipos = 0;
   for (int val = 0; val < 2; ++ val) {
     new_ifault(c_name, ipos, val, InodeInfo(node, ipos), nullptr);
@@ -1022,14 +1012,14 @@ TpgNetwork::make_dff_preset_node(TpgDff* dff,
 				 const string& name,
 				 TpgNode* inode)
 {
-  TpgNode* node = TpgNode::make_dff_preset(mNodeNum, dff, inode, mAlloc);
+  TpgNode* node = TpgNode::make_dff_preset(mNodeNum, name, dff, inode, mAlloc);
   mNodeArray[mNodeNum] = node;
   ++ mNodeNum;
 
-  mAuxInfoArray[node->id()].init(name, 1, mAlloc);
+  mAuxInfoArray[node->id()].init(1, mAlloc);
 
   // 入力位置の故障を生成
-  const char* c_name = node_name(node->id());
+  const char* c_name = node->name();
   ymuint ipos = 0;
   for (int val = 0; val < 2; ++ val) {
     new_ifault(c_name, ipos, val, InodeInfo(node, ipos), nullptr);
@@ -1163,13 +1153,13 @@ TpgNetwork::make_logic_node(const string& src_name,
   }
 
   // 出力位置の故障を生成
-  const char* c_name = node_name(node->id());
+  const char* c_name = node->name();
   for (int val = 0; val < 2; ++ val) {
     new_ofault(c_name, val, node);
   }
 
   // 入力位置の故障を生成
-  mAuxInfoArray[node->id()].init(string(), ni, mAlloc);
+  mAuxInfoArray[node->id()].init(ni, mAlloc);
   for (ymuint i = 0; i < ni; ++ i) {
     Val3 oval0 = node_info->cval(i, kVal0);
     Val3 oval1 = node_info->cval(i, kVal1);
@@ -1277,14 +1267,14 @@ TpgNetwork::make_prim_node(const string& name,
 			   const vector<TpgNode*>& fanin_list,
 			   ymuint fanout_num)
 {
-  TpgNode* node = TpgNode::make_logic(mNodeNum, type, fanin_list, fanout_num, mAlloc);
+  TpgNode* node = TpgNode::make_logic(mNodeNum, name, type, fanin_list, fanout_num, mAlloc);
   mNodeArray[mNodeNum] = node;
   ++ mNodeNum;
 
   ymuint id = node->id();
   ymuint fanin_num = fanin_list.size();
 
-  mAuxInfoArray[id].init(name, fanin_num, mAlloc);
+  mAuxInfoArray[id].init(fanin_num, mAlloc);
 
   return node;
 }
@@ -1431,7 +1421,7 @@ print_network(ostream& s,
   ymuint n = network.node_num();
   for (ymuint i = 0; i < n; ++ i) {
     const TpgNode* node = network.node(i);
-    print_node(s, network, node);
+    print_node(s, node);
     s << ": ";
     if ( node->is_primary_input() ) {
       s << "INPUT#" << node->input_id();
@@ -1444,14 +1434,14 @@ print_network(ostream& s,
       s << "OUTPUT#" << node->output_id();
       const TpgNode* inode = node->fanin(0);
       s << " = ";
-      print_node(s, network, inode);
+      print_node(s, inode);
     }
     else if ( node->is_dff_input() ) {
       s << "OUTPUT#" << node->output_id()
 	<< "(DFF#" << node->dff()->id() << ".input)";
       const TpgNode* inode = node->fanin(0);
       s << " = ";
-      print_node(s, network, inode);
+      print_node(s, inode);
     }
     else if ( node->is_dff_clock() ) {
       s << "DFF#" << node->dff()->id() << ".clock";
@@ -1470,7 +1460,7 @@ print_network(ostream& s,
 	for (ymuint j = 0; j < ni; ++ j) {
 	  const TpgNode* inode = node->fanin(j);
 	  s << " ";
-	  print_node(s, network, inode);
+	  print_node(s, inode);
 	}
 	s << " )";
       }
@@ -1488,15 +1478,9 @@ print_network(ostream& s,
 // @param[in] node 対象のノード
 void
 print_node(ostream& s,
-	   const TpgNetwork& network,
 	   const TpgNode* node)
 {
-  ymuint id = node->id();
-  s << "NODE#" << id << ": ";
-  const char* name = network.node_name(id);
-  if ( name != nullptr ) {
-    s << name;
-  }
+  s << "NODE#" << node->id() << ": " << node->name();
 }
 
 
@@ -1507,7 +1491,6 @@ print_node(ostream& s,
 // @brief コンストラクタ
 AuxNodeInfo::AuxNodeInfo()
 {
-  mName = nullptr;
   mFaultNum = 0;
   mFaultList = nullptr;
   mOutputFaults[0] = nullptr;
@@ -1527,22 +1510,12 @@ AuxNodeInfo::~AuxNodeInfo()
 }
 
 // @brief 初期化する．
-// @param[in] name 名前
 // @param[in] ni 入力数
 // @param[in] alloc メモリアロケータ
 void
-AuxNodeInfo::init(const string& name,
-		  ymuint ni,
+AuxNodeInfo::init(ymuint ni,
 		  Alloc& alloc)
 {
-  ymuint l = name.size();
-  void* p = alloc.get_memory(sizeof(char) * (l + 1));
-  mName = new (p) char[l + 1];
-  for (ymuint i = 0; i < l; ++ i) {
-    mName[i] = name[i];
-  }
-  mName[l] = '\0';
-
   mFaninNum = ni;
 
   ymuint ni2 = ni * 2;

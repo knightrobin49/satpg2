@@ -20,13 +20,9 @@ BEGIN_NAMESPACE_YM_SATPG
 // @brief コンストラクタ
 // @param[in] id ID番号
 // @param[in] fanin_list ファンインのリスト
-// @param[in] fanout_num ファンアウト数
-// @param[in] fanout_list ファンアウトのリストを格納する配列
 TpgLogicXOR2::TpgLogicXOR2(ymuint id,
-			   const vector<TpgNode*>& fanin_list,
-			   ymuint fanout_num,
-			   TpgNode** fanout_list) :
-  TpgLogic2(id, fanin_list, fanout_num, fanout_list)
+			   const vector<TpgNode*>& fanin_list) :
+  TpgLogic2(id, fanin_list)
 {
 }
 

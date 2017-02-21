@@ -24,7 +24,7 @@ BEGIN_NAMESPACE_YM_SATPG
 TpgPPO::TpgPPO(ymuint id,
 	       ymuint output_id,
 	       TpgNode* fanin) :
-  TpgNode(id, 0, nullptr),
+  TpgNode(id),
   mOutputId(output_id),
   mFanin(fanin)
 {

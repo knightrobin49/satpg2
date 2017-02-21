@@ -19,11 +19,10 @@ BEGIN_NAMESPACE_YM_SATPG
 // @brief コンストラクタ
 // @param[in] id ID番号
 // @param[in] dff 接続しているDFF
-// @param[in] fanin ファンインのノード
 TpgDffControl::TpgDffControl(ymuint id,
 			     TpgDff* dff,
 			     TpgNode* fanin) :
-  TpgNode(id, 0, nullptr),
+  TpgNode(id),
   mFanin(fanin),
   mDff(dff)
 {

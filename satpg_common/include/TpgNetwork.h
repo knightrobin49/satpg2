@@ -18,7 +18,6 @@
 #include "ym/ym_cell.h"
 #include "ym/ym_logic.h"
 #include "ym/SimpleAlloc.h"
-#include "ym/HashMap.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG
@@ -29,6 +28,9 @@ class AuxNodeInfo;
 //////////////////////////////////////////////////////////////////////
 /// @class TpgNetwork TpgNetwork.h "TpgNetwork.h"
 /// @brief SATPG 用のネットワークを表すクラス
+/// @sa TpgNode
+/// @sa TpgDff
+/// @sa TpgFault
 ///
 /// 基本的には TpgNode のネットワーク(DAG)を表す．
 /// ただし，順序回路を扱うために TpgDff, TpgLatch というクラスを持つ．
@@ -48,7 +50,7 @@ class TpgNetwork
 {
 public:
   //////////////////////////////////////////////////////////////////////
-  // ファイルを読み込んでインスタンスを作るクラスメソッド
+  // コンストラクタ/デストラクタ
   //////////////////////////////////////////////////////////////////////
 
   /// @brief コンストラクタ
@@ -70,7 +72,10 @@ public:
   /// @brief ノードを得る．
   /// @param[in] id ID番号 ( 0 <= id < node_num() )
   ///
-  /// node->id() == id となるノードを返す．
+  /// @code
+  /// node = network.node(node->id())
+  /// @endcode
+  /// の関係が成り立つ．
   const TpgNode*
   node(ymuint id) const;
 
@@ -80,6 +85,11 @@ public:
 
   /// @brief 外部入力ノードを得る．
   /// @param[in] pos 位置番号 ( 0 <= pos < input_num() )
+  ///
+  /// @code
+  /// node = network.input(node->input_id())
+  /// @endcode
+  /// の関係が成り立つ．
   const TpgNode*
   input(ymuint pos) const;
 
@@ -89,10 +99,21 @@ public:
 
   /// @brief 外部出力ノードを得る．
   /// @param[in] pos 位置番号 ( 0 <= pos < output_num() )
+  ///
+  /// @code
+  /// node = network.output(node->output_id())
+  /// @endcode
+  /// の関係が成り立つ．
   const TpgNode*
   output(ymuint pos) const;
 
-  /// @brief サイズの降順で整列した順番で外部出力ノードを取り出す．
+  /// @brief TFIサイズの降順で整列した順番で外部出力ノードを取り出す．
+  /// @param[in] pos 位置番号 ( 0 <= pos < output_num() )
+  ///
+  /// @code
+  /// node = network.output2(node->output_id2())
+  /// @endcode
+  /// の関係が成り立つ．
   const TpgNode*
   output2(ymuint pos) const;
 
@@ -104,6 +125,11 @@ public:
 
   /// @brief スキャン方式の擬似外部入力を得る．
   /// @param[in] pos 位置番号 ( 0 <= pos < ppi_num() )
+  ///
+  /// @code
+  /// node = network.ppi(node->input_id())
+  /// @endcode
+  /// の関係が成り立つ．
   const TpgNode*
   ppi(ymuint pos) const;
 
@@ -114,7 +140,12 @@ public:
   ppo_num() const;
 
   /// @brief スキャン方式の擬似外部出力を得る．
-  /// @param[in] pos 位置番号 ( 0 <= pos < pseudo_output_num() )
+  /// @param[in] pos 位置番号 ( 0 <= pos < ppo_num() )
+  ///
+  /// @code
+  /// node = network.ppo(node->output_id())
+  /// @endcode
+  /// の関係が成り立つ．
   const TpgNode*
   ppo(ymuint pos) const;
 
@@ -132,6 +163,11 @@ public:
 
   /// @brief DFF を得る．
   /// @param[in] pos 位置番号 ( 0 <= pos < dff_num() )
+  ///
+  /// @code
+  /// dff = network.dff(dff->id())
+  /// @endcode
+  /// の関係が成り立つ．
   const TpgDff*
   dff(ymuint pos) const;
 
@@ -153,11 +189,6 @@ public:
   //////////////////////////////////////////////////////////////////////
   // ノードに関する情報を取得する関数
   //////////////////////////////////////////////////////////////////////
-
-  /// @brief ノード名を返す．
-  /// @param[in] id ノードID ( 0 <= id < node_num() )
-  const char*
-  node_name(ymuint id) const;
 
   /// @brief 出力の故障を得る．
   /// @param[in] id ノードID ( 0 <= id < node_num() )

@@ -61,51 +61,50 @@ operator<<(ostream& s,
 
 // @brief 入力ノードを作る．
 // @param[in] id ノード番号
+// @param[in] name ノード名
 // @param[in] iid 入力番号
 // @param[in] fanout_num ファンアウト数
 // @param[in] alloc メモリアロケータ
 // @return 作成したノードを返す．
 TpgNode*
 TpgNode::make_input(ymuint id,
+		    const string& name,
 		    ymuint iid,
 		    ymuint fanout_num,
 		    Alloc& alloc)
 {
-  TpgNode** fanout_list;
-  if ( fanout_num > 0 ) {
-    void* p = alloc.get_memory(sizeof(TpgNode*) * fanout_num);
-    fanout_list = new (p) TpgNode*[fanout_num];
-  }
-  else {
-    fanout_list = nullptr;
-  }
-
   void* p = alloc.get_memory(sizeof(TpgInput));
-  TpgNode* node = new (p) TpgInput(id, iid, fanout_num, fanout_list);
+  TpgNode* node = new (p) TpgInput(id, iid);
+  node->set_name(name, alloc);
+  node->set_fanout_num(fanout_num, alloc);
 
   return node;
 }
 
 // @brief 出力ノードを作る．
 // @param[in] id ノード番号
+// @param[in] name ノード名
 // @param[in] oid 出力番号
 // @param[in] inode 入力ノード
 // @param[in] alloc メモリアロケータ
 // @return 作成したノードを返す．
 TpgNode*
 TpgNode::make_output(ymuint id,
+		     const string& name,
 		     ymuint oid,
 		     TpgNode* inode,
 		     Alloc& alloc)
 {
   void* p = alloc.get_memory(sizeof(TpgOutput));
   TpgNode* node = new (p) TpgOutput(id, oid, inode);
+  node->set_name(name, alloc);
 
   return node;
 }
 
 // @brief DFFの入力ノードを作る．
 // @param[in] id ノード番号
+// @param[in] name ノード名
 // @param[in] oid 出力番号
 // @param[in] dff 接続しているDFF
 // @param[in] inode 入力ノード
@@ -113,6 +112,7 @@ TpgNode::make_output(ymuint id,
 // @return 作成したノードを返す．
 TpgNode*
 TpgNode::make_dff_input(ymuint id,
+			const string& name,
 			ymuint oid,
 			TpgDff* dff,
 			TpgNode* inode,
@@ -120,12 +120,14 @@ TpgNode::make_dff_input(ymuint id,
 {
   void* p = alloc.get_memory(sizeof(TpgDffInput));
   TpgNode* node = new (p) TpgDffInput(id, oid, dff, inode);
+  node->set_name(name, alloc);
 
   return node;
 }
 
 // @brief DFFの出力ノードを作る．
 // @param[in] id ノード番号
+// @param[in] name ノード名
 // @param[in] iid 入力番号
 // @param[in] dff 接続しているDFF
 // @param[in] fanout_num ファンアウト数
@@ -133,82 +135,86 @@ TpgNode::make_dff_input(ymuint id,
 // @return 作成したノードを返す．
 TpgNode*
 TpgNode::make_dff_output(ymuint id,
+			 const string& name,
 			 ymuint iid,
 			 TpgDff* dff,
 			 ymuint fanout_num,
 			 Alloc& alloc)
 {
-  TpgNode** fanout_list;
-  if ( fanout_num > 0 ) {
-    void* p = alloc.get_memory(sizeof(TpgNode*) * fanout_num);
-    fanout_list = new (p) TpgNode*[fanout_num];
-  }
-  else {
-    fanout_list = nullptr;
-  }
-
   void* p = alloc.get_memory(sizeof(TpgDffOutput));
-  TpgNode* node = new (p) TpgDffOutput(id, iid, dff, fanout_num, fanout_list);
+  TpgNode* node = new (p) TpgDffOutput(id, iid, dff);
+  node->set_name(name, alloc);
+  node->set_fanout_num(fanout_num, alloc);
 
   return node;
 }
 
 // @brief DFFのクロック端子を作る．
 // @param[in] id ノード番号
+// @param[in] name ノード名
 // @param[in] dff 接続しているDFF
 // @param[in] inode 入力ノード
 // @param[in] alloc メモリアロケータ
 // @return 作成したノードを返す．
 TpgNode*
 TpgNode::make_dff_clock(ymuint id,
+			const string& name,
 			TpgDff* dff,
 			TpgNode* inode,
 			Alloc& alloc)
 {
   void* p = alloc.get_memory(sizeof(TpgDffClock));
   TpgNode* node = new (p) TpgDffClock(id, dff, inode);
+  node->set_name(name, alloc);
 
   return node;
 }
 
 // @brief DFFのクリア端子を作る．
 // @param[in] id ノード番号
+// @param[in] name ノード名
 // @param[in] dff 接続しているDFF
 // @param[in] inode 入力ノード
 // @param[in] alloc メモリアロケータ
 // @return 作成したノードを返す．
 TpgNode*
 TpgNode::make_dff_clear(ymuint id,
+			const string& name,
 			TpgDff* dff,
 			TpgNode* inode,
 			Alloc& alloc)
 {
   void* p = alloc.get_memory(sizeof(TpgDffClear));
   TpgNode* node = new (p) TpgDffClear(id, dff, inode);
+  node->set_name(name, alloc);
 
   return node;
 }
 
 // @brief DFFのプリセット端子を作る．
 // @param[in] id ノード番号
+// @param[in] name ノード名
 // @param[in] dff 接続しているDFF
 // @param[in] inode 入力ノード
 // @param[in] alloc メモリアロケータ
 // @return 作成したノードを返す．
 TpgNode*
 TpgNode::make_dff_preset(ymuint id,
+			 const string& name,
 			 TpgDff* dff,
 			 TpgNode* inode,
 			 Alloc& alloc)
 {
   void* p = alloc.get_memory(sizeof(TpgDffPreset));
   TpgNode* node = new (p) TpgDffPreset(id, dff, inode);
+  node->set_name(name, alloc);
 
   return node;
 }
 
 // @brief 論理ノードを作る．
 // @param[in] id ノード番号
+// @param[in] name ノード名
 // @param[in] gate_type ゲートタイプ
 // @param[in] inode_list 入力ノードのリスト
 // @param[in] fanout_num ファンアウト数
@@ -216,79 +222,65 @@ TpgNode::make_dff_preset(ymuint id,
 // @return 作成したノードを返す．
 TpgNode*
 TpgNode::make_logic(ymuint id,
+		    const string& name,
 		    GateType gate_type,
 		    const vector<TpgNode*>& inode_list,
 		    ymuint fanout_num,
 		    Alloc& alloc)
 {
-  TpgNode** fanout_list;
-  if ( fanout_num > 0 ) {
-    void* p = alloc.get_memory(sizeof(TpgNode*) * fanout_num);
-    fanout_list = new (p) TpgNode*[fanout_num];
-  }
-  else {
-    fanout_list = nullptr;
-  }
-
   void* p;
-  void* q;
   ymuint ni = inode_list.size();
-  TpgNode** fanin_list = nullptr;
   TpgNode* node = nullptr;
   switch ( gate_type ) {
   case kGateCONST0:
     ASSERT_COND( ni == 0 );
 
     p = alloc.get_memory(sizeof(TpgLogicC0));
-    node = new (p) TpgLogicC0(id, fanout_num, fanout_list);
+    node = new (p) TpgLogicC0(id);
     break;
 
   case kGateCONST1:
     ASSERT_COND( ni == 0 );
 
     p = alloc.get_memory(sizeof(TpgLogicC1));
-    node = new (p) TpgLogicC1(id, fanout_num, fanout_list);
+    node = new (p) TpgLogicC1(id);
     break;
 
   case kGateBUFF:
     ASSERT_COND( ni == 1 );
 
     p = alloc.get_memory(sizeof(TpgLogicBUFF));
-    node = new (p) TpgLogicBUFF(id, inode_list[0], fanout_num, fanout_list);
+    node = new (p) TpgLogicBUFF(id, inode_list[0]);
     break;
 
   case kGateNOT:
     ASSERT_COND( ni == 1 );
 
     p = alloc.get_memory(sizeof(TpgLogicNOT));
-    node = new (p) TpgLogicNOT(id, inode_list[0], fanout_num, fanout_list);
+    node = new (p) TpgLogicNOT(id, inode_list[0]);
     break;
 
   case kGateAND:
     switch ( ni ) {
     case 2:
       p = alloc.get_memory(sizeof(TpgLogicAND2));
-      node = new (p) TpgLogicAND2(id, inode_list, fanout_num, fanout_list);
+      node = new (p) TpgLogicAND2(id, inode_list);
       break;
 
     case 3:
       p = alloc.get_memory(sizeof(TpgLogicAND3));
-      node = new (p) TpgLogicAND3(id, inode_list, fanout_num, fanout_list);
+      node = new (p) TpgLogicAND3(id, inode_list);
       break;
 
     case 4:
       p = alloc.get_memory(sizeof(TpgLogicAND4));
-      node = new (p) TpgLogicAND4(id, inode_list, fanout_num, fanout_list);
+      node = new (p) TpgLogicAND4(id, inode_list);
       break;
 
     default:
       p = alloc.get_memory(sizeof(TpgLogicANDN));
-      q = alloc.get_memory(sizeof(TpgNode*) * ni);
-      fanin_list = new (q) TpgNode*[ni];
-      for (ymuint i = 0; i < ni; ++ i) {
-	fanin_list[i] = inode_list[i];
-      }
-      node = new (p) TpgLogicANDN(id, ni, fanin_list, fanout_num, fanout_list);
+      node = new (p) TpgLogicANDN(id);
+      node->set_fanin(inode_list, alloc);
       break;
     }
     break;
@@ -297,27 +289,23 @@ TpgNode::make_logic(ymuint id,
     switch ( ni ) {
     case 2:
       p = alloc.get_memory(sizeof(TpgLogicNAND2));
-      node = new (p) TpgLogicNAND2(id, inode_list, fanout_num, fanout_list);
+      node = new (p) TpgLogicNAND2(id, inode_list);
       break;
 
     case 3:
       p = alloc.get_memory(sizeof(TpgLogicNAND3));
-      node = new (p) TpgLogicNAND3(id, inode_list, fanout_num, fanout_list);
+      node = new (p) TpgLogicNAND3(id, inode_list);
       break;
 
     case 4:
       p = alloc.get_memory(sizeof(TpgLogicNAND4));
-      node = new (p) TpgLogicNAND4(id, inode_list, fanout_num, fanout_list);
+      node = new (p) TpgLogicNAND4(id, inode_list);
       break;
 
     default:
       p = alloc.get_memory(sizeof(TpgLogicNANDN));
-      q = alloc.get_memory(sizeof(TpgNode*) * ni);
-      fanin_list = new (q) TpgNode*[ni];
-      for (ymuint i = 0; i < ni; ++ i) {
-	fanin_list[i] = inode_list[i];
-      }
-      node = new (p) TpgLogicNANDN(id, ni, fanin_list, fanout_num, fanout_list);
+      node = new (p) TpgLogicNANDN(id);
+      node->set_fanin(inode_list, alloc);
       break;
     }
     break;
@@ -326,27 +314,23 @@ TpgNode::make_logic(ymuint id,
     switch ( ni ) {
     case 2:
       p = alloc.get_memory(sizeof(TpgLogicOR2));
-      node = new (p) TpgLogicOR2(id, inode_list, fanout_num, fanout_list);
+      node = new (p) TpgLogicOR2(id, inode_list);
       break;
 
     case 3:
       p = alloc.get_memory(sizeof(TpgLogicOR3));
-      node = new (p) TpgLogicOR3(id, inode_list, fanout_num, fanout_list);
+      node = new (p) TpgLogicOR3(id, inode_list);
       break;
 
     case 4:
       p = alloc.get_memory(sizeof(TpgLogicOR4));
-      node = new (p) TpgLogicOR4(id, inode_list, fanout_num, fanout_list);
+      node = new (p) TpgLogicOR4(id, inode_list);
       break;
 
     default:
       p = alloc.get_memory(sizeof(TpgLogicORN));
-      q = alloc.get_memory(sizeof(TpgNode*) * ni);
-      fanin_list = new (q) TpgNode*[ni];
-      for (ymuint i = 0; i < ni; ++ i) {
-	fanin_list[i] = inode_list[i];
-      }
-      node = new (p) TpgLogicORN(id, ni, fanin_list, fanout_num, fanout_list);
+      node = new (p) TpgLogicORN(id);
+      node->set_fanin(inode_list, alloc);
       break;
     }
     break;
@@ -355,27 +339,23 @@ TpgNode::make_logic(ymuint id,
     switch ( ni ) {
     case 2:
       p = alloc.get_memory(sizeof(TpgLogicNOR2));
-      node = new (p) TpgLogicNOR2(id, inode_list, fanout_num, fanout_list);
+      node = new (p) TpgLogicNOR2(id, inode_list);
       break;
 
     case 3:
       p = alloc.get_memory(sizeof(TpgLogicNOR3));
-      node = new (p) TpgLogicNOR3(id, inode_list, fanout_num, fanout_list);
+      node = new (p) TpgLogicNOR3(id, inode_list);
       break;
 
     case 4:
       p = alloc.get_memory(sizeof(TpgLogicNOR4));
-      node = new (p) TpgLogicNOR4(id, inode_list, fanout_num, fanout_list);
+      node = new (p) TpgLogicNOR4(id, inode_list);
       break;
 
     default:
       p = alloc.get_memory(sizeof(TpgLogicNORN));
-      q = alloc.get_memory(sizeof(TpgNode*) * ni);
-      fanin_list = new (q) TpgNode*[ni];
-      for (ymuint i = 0; i < ni; ++ i) {
-	fanin_list[i] = inode_list[i];
-      }
-      node = new (p) TpgLogicNORN(id, ni, fanin_list, fanout_num, fanout_list);
+      node = new (p) TpgLogicNORN(id);
+      node->set_fanin(inode_list, alloc);
       break;
     }
     break;
@@ -384,37 +364,36 @@ TpgNode::make_logic(ymuint id,
     ASSERT_COND( ni == 2 );
 
     p = alloc.get_memory(sizeof(TpgLogicXOR2));
-    node = new (p) TpgLogicXOR2(id, inode_list, fanout_num, fanout_list);
+    node = new (p) TpgLogicXOR2(id, inode_list);
     break;
 
   case kGateXNOR:
     ASSERT_COND( ni == 2 );
 
     p = alloc.get_memory(sizeof(TpgLogicXNOR2));
-    node = new (p) TpgLogicXNOR2(id, inode_list, fanout_num, fanout_list);
+    node = new (p) TpgLogicXNOR2(id, inode_list);
     break;
 
   default:
     ASSERT_NOT_REACHED;
   }
+  node->set_name(name, alloc);
+  node->set_fanout_num(fanout_num, alloc);
 
   return node;
 }
 
 // @brief コンストラクタ
 // @param[in] id ID番号
-// @param[in] fanout_num ファンアウト数
-// @param[in] fanout_list ファンアウトのリストを格納する配列
-TpgNode::TpgNode(ymuint id,
-		 ymuint fanout_num,
-		 TpgNode** fanout_list) :
+TpgNode::TpgNode(ymuint id) :
   mId(id),
-  mFanoutNum(fanout_num),
-  mFanoutList(fanout_list)
+  mName(nullptr),
+  mFanoutNum(0),
+  mFanoutList(nullptr),
+  mImmDom(nullptr),
+  mMffcElemNum(0),
+  mMffcElemList(nullptr)
 {
-  mImmDom = nullptr;
-  mMffcElemNum = 0;
-  mMffcElemList = nullptr;
 }
 
 // @brief デストラクタ
@@ -621,6 +600,18 @@ TpgNode::set_output_id2(ymuint id)
   ASSERT_NOT_REACHED;
 }
 
+// @brief ファンインを設定する．
+// @param[in] inode_list ファンインのリスト
+//
+// と同時にファンイン用の配列も確保する．
+// 多入力ゲートのみ意味を持つ仮想関数
+void
+TpgNode::set_fanin(const vector<TpgNode*>& inode_list,
+		   Alloc& alloc)
+{
+  ASSERT_NOT_REACHED;
+}
+
 // @brief ファンアウトを設定する．
 // @param[in] pos 位置番号 ( 0 <= pos < fanout_num() )
 // @param[in] fo_node ファンアウト先のノード
@@ -649,6 +640,45 @@ TpgNode::set_mffc_info(ymuint num,
 {
   mMffcElemNum = num;
   mMffcElemList = node_list;
+
+  /// @brief ノード名を設定する．
+  /// @param[in] name ノード名
+  void
+  set_name(const string& name,
+	   Alloc& alloc);
+}
+
+// @brief ノード名を設定する．
+// @param[in] name ノード名
+// @param[in] alloc メモリアロケータ
+void
+TpgNode::set_name(const string& name,
+		  Alloc& alloc)
+{
+  // name が空文字列( l == 0 )でも正しく動く．
+  ymuint l = name.size();
+  void* p = alloc.get_memory(sizeof(char) * (l + 1));
+  mName = new (p) char[l + 1];
+  for (ymuint i = 0; i < l; ++ i) {
+    mName[i] = name[i];
+  }
+  mName[l] = '\0';
+}
+
+// @brief ファンアウト数を設定する．
+// @param[in] fanout_num
+// @param[in] alloc メモリアロケータ
+//
+// 同時にファンアウト用の配列も確保する．
+void
+TpgNode::set_fanout_num(ymuint fanout_num,
+			Alloc& alloc)
+{
+  mFanoutNum = fanout_num;
+  if ( fanout_num > 0 ) {
+    void* p = alloc.get_memory(sizeof(TpgNode*) * fanout_num);
+    mFanoutList = new (p) TpgNode*[fanout_num];
+  }
 }
 
 END_NAMESPACE_YM_SATPG

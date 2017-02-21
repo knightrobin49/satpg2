@@ -26,7 +26,6 @@ public:
   /// @brief コンストラクタ
   /// @param[in] id ID番号
   /// @param[in] dff 接続しているDFF
-  /// @param[in] fanin ファンインのノード
   TpgDffControl(ymuint id,
 		TpgDff* dff,
 		TpgNode* fanin);

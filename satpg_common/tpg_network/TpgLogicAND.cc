@@ -21,13 +21,9 @@ BEGIN_NAMESPACE_YM_SATPG
 // @brief コンストラクタ
 // @param[in] id ID番号
 // @param[in] fanin_list ファンインのリスト
-// @param[in] fanout_num ファンアウト数
-// @param[in] fanout_list ファンアウトのリストを格納する配列
 TpgLogicAND2::TpgLogicAND2(ymuint id,
-			   const vector<TpgNode*>& fanin_list,
-			   ymuint fanout_num,
-			   TpgNode** fanout_list) :
-  TpgLogic2(id, fanin_list, fanout_num, fanout_list)
+			   const vector<TpgNode*>& fanin_list) :
+  TpgLogic2(id, fanin_list)
 {
 }
 
@@ -132,13 +128,9 @@ TpgLogicAND2::make_faulty_cnf(SatSolver& solver,
 // @brief コンストラクタ
 // @param[in] id ID番号
 // @param[in] fanin_list ファンインのリスト
-// @param[in] fanout_num ファンアウト数
-// @param[in] fanout_list ファンアウトのリストを格納する配列
 TpgLogicAND3::TpgLogicAND3(ymuint id,
-			   const vector<TpgNode*>& fanin_list,
-			   ymuint fanout_num,
-			   TpgNode** fanout_list) :
-  TpgLogic3(id, fanin_list, fanout_num, fanout_list)
+			   const vector<TpgNode*>& fanin_list) :
+  TpgLogic3(id, fanin_list)
 {
 }
 
@@ -258,13 +250,9 @@ TpgLogicAND3::make_faulty_cnf(SatSolver& solver,
 // @brief コンストラクタ
 // @param[in] id ID番号
 // @param[in] fanin_list ファンインのリスト
-// @param[in] fanout_num ファンアウト数
-// @param[in] fanout_list ファンアウトのリストを格納する配列
 TpgLogicAND4::TpgLogicAND4(ymuint id,
-			   const vector<TpgNode*>& fanin_list,
-			   ymuint fanout_num,
-			   TpgNode** fanout_list) :
-  TpgLogic4(id, fanin_list, fanout_num, fanout_list)
+			   const vector<TpgNode*>& fanin_list) :
+  TpgLogic4(id, fanin_list)
 {
 }
 
@@ -389,21 +377,13 @@ TpgLogicAND4::make_faulty_cnf(SatSolver& solver,
 
 
 //////////////////////////////////////////////////////////////////////
-// クラス TpgLogicAND
+// クラス TpgLogicANDN
 //////////////////////////////////////////////////////////////////////
 
 // @brief コンストラクタ
 // @param[in] id ID番号
-// @param[in] fanin_num ファンイン数
-// @param[in] fanin_list ファンインのリストを表す配列
-// @param[in] fanout_num ファンアウト数
-// @param[in] fanout_list ファンアウトのリストを格納する配列
-TpgLogicANDN::TpgLogicANDN(ymuint id,
-			   ymuint fanin_num,
-			   TpgNode** fanin_list,
-			   ymuint fanout_num,
-			   TpgNode** fanout_list) :
-  TpgLogicN(id, fanin_num, fanin_list, fanout_num, fanout_list)
+TpgLogicANDN::TpgLogicANDN(ymuint id) :
+  TpgLogicN(id)
 {
 }
 

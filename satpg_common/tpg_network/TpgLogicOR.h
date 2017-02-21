@@ -26,14 +26,10 @@ public:
   /// @brief コンストラクタ
   /// @param[in] id ID番号
   /// @param[in] fanin_list ファンインのリスト
-  /// @param[in] fanout_num ファンアウト数
-  /// @param[in] fanout_list ファンアウトのリストを格納する配列
   ///
   /// fanin_list.size() == 2 であることを仮定している．
   TpgLogicOR2(ymuint id,
-	      const vector<TpgNode*>& fanin_list,
-	      ymuint fanout_num,
-	      TpgNode** fanout_list);
+	      const vector<TpgNode*>& fanin_list);
 
   /// @brief デストラクタ
   ~TpgLogicOR2();
@@ -120,14 +116,10 @@ public:
   /// @brief コンストラクタ
   /// @param[in] id ID番号
   /// @param[in] fanin_list ファンインのリスト
-  /// @param[in] fanout_num ファンアウト数
-  /// @param[in] fanout_list ファンアウトのリストを格納する配列
   ///
   /// fanin_list.size() == 3 であることを仮定している．
   TpgLogicOR3(ymuint id,
-	      const vector<TpgNode*>& fanin_list,
-	      ymuint fanout_num,
-	      TpgNode** fanout_list);
+	      const vector<TpgNode*>& fanin_list);
 
   /// @brief デストラクタ
   ~TpgLogicOR3();
@@ -214,14 +206,10 @@ public:
   /// @brief コンストラクタ
   /// @param[in] id ID番号
   /// @param[in] fanin_list ファンインのリスト
-  /// @param[in] fanout_num ファンアウト数
-  /// @param[in] fanout_list ファンアウトのリストを格納する配列
   ///
   /// fanin_list.size() == 4 であることを仮定している．
   TpgLogicOR4(ymuint id,
-	      const vector<TpgNode*>& fanin_list,
-	      ymuint fanout_num,
-	      TpgNode** fanout_list);
+	      const vector<TpgNode*>& fanin_list);
 
   /// @brief デストラクタ
   ~TpgLogicOR4();
@@ -305,15 +293,7 @@ public:
 
   /// @brief コンストラクタ
   /// @param[in] id ID番号
-  /// @param[in] fanin_num ファンイン数
-  /// @param[in] fanin_list ファンインのリストを表す配列
-  /// @param[in] fanout_num ファンアウト数
-  /// @param[in] fanout_list ファンアウトのリストを格納する配列
-  TpgLogicORN(ymuint id,
-	      ymuint fanin_num,
-	      TpgNode** fanin_list,
-	      ymuint fanout_num,
-	      TpgNode** fanout_list);
+  TpgLogicORN(ymuint id);
 
   /// @brief デストラクタ
   ~TpgLogicORN();

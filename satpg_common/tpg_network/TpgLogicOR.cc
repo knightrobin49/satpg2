@@ -20,13 +20,9 @@ BEGIN_NAMESPACE_YM_SATPG
 // @brief コンストラクタ
 // @param[in] id ID番号
 // @param[in] fanin_list ファンインのリスト
-// @param[in] fanout_num ファンアウト数
-// @param[in] fanout_list ファンアウトのリストを格納する配列
 TpgLogicOR2::TpgLogicOR2(ymuint id,
-			 const vector<TpgNode*>& fanin_list,
-			 ymuint fanout_num,
-			 TpgNode** fanout_list) :
-  TpgLogic2(id, fanin_list, fanout_num, fanout_list)
+			 const vector<TpgNode*>& fanin_list) :
+  TpgLogic2(id, fanin_list)
 {
 }
 
@@ -132,13 +128,9 @@ TpgLogicOR2::make_faulty_cnf(SatSolver& solver,
 // @brief コンストラクタ
 // @param[in] id ID番号
 // @param[in] fanin_list ファンインのリスト
-// @param[in] fanout_num ファンアウト数
-// @param[in] fanout_list ファンアウトのリストを格納する配列
 TpgLogicOR3::TpgLogicOR3(ymuint id,
-			 const vector<TpgNode*>& fanin_list,
-			 ymuint fanout_num,
-			 TpgNode** fanout_list) :
-  TpgLogic3(id, fanin_list, fanout_num, fanout_list)
+			 const vector<TpgNode*>& fanin_list) :
+  TpgLogic3(id, fanin_list)
 {
 }
 
@@ -258,13 +250,9 @@ TpgLogicOR3::make_faulty_cnf(SatSolver& solver,
 // @brief コンストラクタ
 // @param[in] id ID番号
 // @param[in] fanin_list ファンインのリスト
-// @param[in] fanout_num ファンアウト数
-// @param[in] fanout_list ファンアウトのリストを格納する配列
 TpgLogicOR4::TpgLogicOR4(ymuint id,
-			 const vector<TpgNode*>& fanin_list,
-			 ymuint fanout_num,
-			 TpgNode** fanout_list) :
-  TpgLogic4(id, fanin_list, fanout_num, fanout_list)
+			 const vector<TpgNode*>& fanin_list) :
+  TpgLogic4(id, fanin_list)
 {
 }
 
@@ -393,16 +381,8 @@ TpgLogicOR4::make_faulty_cnf(SatSolver& solver,
 
 // @brief コンストラクタ
 // @param[in] id ID番号
-// @param[in] fanin_num ファンイン数
-// @param[in] fanin_list ファンインのリストを表す配列
-// @param[in] fanout_num ファンアウト数
-// @param[in] fanout_list ファンアウトのリストを格納する配列
-TpgLogicORN::TpgLogicORN(ymuint id,
-			 ymuint fanin_num,
-			 TpgNode** fanin_list,
-			 ymuint fanout_num,
-			 TpgNode** fanout_list) :
-  TpgLogicN(id, fanin_num, fanin_list, fanout_num, fanout_list)
+TpgLogicORN::TpgLogicORN(ymuint id) :
+  TpgLogicN(id)
 {
 }
 

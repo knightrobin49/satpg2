@@ -19,13 +19,9 @@ BEGIN_NAMESPACE_YM_SATPG
 // @brief コンストラクタ
 // @param[in] id ID番号
 // @param[in] input_id 入力番号
-// @param[in] fanout_num ファンアウト数
-// @param[in] fanout_list ファンアウトのリストを格納する配列
 TpgPPI::TpgPPI(ymuint id,
-	       ymuint input_id,
-	       ymuint fanout_num,
-	       TpgNode** fanout_list) :
-  TpgNode(id, fanout_num, fanout_list),
+	       ymuint input_id) :
+  TpgNode(id),
   mInputId(input_id)
 {
 }

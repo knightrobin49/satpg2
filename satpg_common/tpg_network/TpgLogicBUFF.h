@@ -26,12 +26,8 @@ public:
   /// @brief コンストラクタ
   /// @param[in] id ID番号
   /// @param[in] fanin ファンイン
-  /// @param[in] fanout_num ファンアウト数
-  /// @param[in] fanout_list ファンアウトのリストを格納する配列
   TpgLogicBUFF(ymuint id,
-	       TpgNode* fanin,
-	       ymuint fanout_num,
-	       TpgNode** fanout_list);
+	       TpgNode* fanin);
 
   /// @brief デストラクタ
   ~TpgLogicBUFF();

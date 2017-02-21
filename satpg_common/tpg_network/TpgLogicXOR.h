@@ -26,14 +26,10 @@ public:
   /// @brief コンストラクタ
   /// @param[in] id ID番号
   /// @param[in] fanin_list ファンインのリスト
-  /// @param[in] fanout_num ファンアウト数
-  /// @param[in] fanout_list ファンアウトのリストを格納する配列
   ///
   /// fanin_list.size() == 2 であることを仮定している．
   TpgLogicXOR2(ymuint id,
-	       const vector<TpgNode*>& fanin_list,
-	       ymuint fanout_num,
-	       TpgNode** fanout_list);
+	       const vector<TpgNode*>& fanin_list);
 
   /// @brief デストラクタ
   ~TpgLogicXOR2();

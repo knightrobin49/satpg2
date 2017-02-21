@@ -139,7 +139,7 @@ Fsim2::set_network(const TpgNetwork& network)
     // 対応表に登録しておく．
     mSimMap[tpgnode->id()] = node;
     // 名前をコピーしておく．
-    const char* name = network.node_name(tpgnode->id());
+    const char* name = tpgnode->name();
     node->set_name(name);
   }
 

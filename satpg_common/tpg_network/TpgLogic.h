@@ -28,11 +28,7 @@ public:
 
   /// @brief コンストラクタ
   /// @param[in] id ID番号
-  /// @param[in] fanout_num ファンアウト数
-  /// @param[in] fanout_list ファンアウトのリストを格納する配列
-  TpgLogic(ymuint id,
-	   ymuint fanout_num,
-	   TpgNode** fanout_list);
+  TpgLogic(ymuint id);
 
   /// @brief デストラクタ
   virtual
@@ -72,11 +68,7 @@ public:
 
   /// @brief コンストラクタ
   /// @param[in] id ID番号
-  /// @param[in] fanout_num ファンアウト数
-  /// @param[in] fanout_list ファンアウトのリストを格納する配列
-  TpgLogic0(ymuint id,
-	    ymuint fanout_num,
-	    TpgNode** fanout_list);
+  TpgLogic0(ymuint id);
 
   /// @brief デストラクタ
   virtual
@@ -123,12 +115,8 @@ public:
   /// @brief コンストラクタ
   /// @param[in] id ID番号
   /// @param[in] fanin ファンイン
-  /// @param[in] fanout_num ファンアウト数
-  /// @param[in] fanout_list ファンアウトのリストを格納する配列
   TpgLogic1(ymuint id,
-	    TpgNode* fanin,
-	    ymuint fanout_num,
-	    TpgNode** fanout_list);
+	    TpgNode* fanin);
 
   /// @brief デストラクタ
   virtual
@@ -178,14 +166,10 @@ public:
   /// @brief コンストラクタ
   /// @param[in] id ID番号
   /// @param[in] fanin_list ファンインのリスト
-  /// @param[in] fanout_num ファンアウト数
-  /// @param[in] fanout_list ファンアウトのリストを格納する配列
   ///
   /// fanin_list.size() == 2 であることを仮定している．
   TpgLogic2(ymuint id,
-	    const vector<TpgNode*>& fanin_list,
-	    ymuint fanout_num,
-	    TpgNode** fanout_list);
+	    const vector<TpgNode*>& fanin_list);
 
   /// @brief デストラクタ
   virtual
@@ -235,14 +219,10 @@ public:
   /// @brief コンストラクタ
   /// @param[in] id ID番号
   /// @param[in] fanin_list ファンインのリスト
-  /// @param[in] fanout_num ファンアウト数
-  /// @param[in] fanout_list ファンアウトのリストを格納する配列
   ///
   /// fanin_list.size() == 3 であることを仮定している．
   TpgLogic3(ymuint id,
-	    const vector<TpgNode*>& fanin_list,
-	    ymuint fanout_num,
-	    TpgNode** fanout_list);
+	    const vector<TpgNode*>& fanin_list);
 
   /// @brief デストラクタ
   virtual
@@ -292,14 +272,10 @@ public:
   /// @brief コンストラクタ
   /// @param[in] id ID番号
   /// @param[in] fanin_list ファンインのリスト
-  /// @param[in] fanout_num ファンアウト数
-  /// @param[in] fanout_list ファンアウトのリストを格納する配列
   ///
   /// fanin_list.size() == 4 であることを仮定している．
   TpgLogic4(ymuint id,
-	    const vector<TpgNode*>& fanin_list,
-	    ymuint fanout_num,
-	    TpgNode** fanout_list);
+	    const vector<TpgNode*>& fanin_list);
 
   /// @brief デストラクタ
   virtual
@@ -348,15 +324,7 @@ public:
 
   /// @brief コンストラクタ
   /// @param[in] id ID番号
-  /// @param[in] fanin_num ファンイン数
-  /// @param[in] fanin_list ファンインのリストを表す配列
-  /// @param[in] fanout_num ファンアウト数
-  /// @param[in] fanout_list ファンアウトのリストを格納する配列
-  TpgLogicN(ymuint id,
-	    ymuint fanin_num,
-	    TpgNode** fanin_list,
-	    ymuint fanout_num,
-	    TpgNode** fanout_list);
+  TpgLogicN(ymuint id);
 
   /// @brief デストラクタ
   virtual
@@ -378,6 +346,22 @@ public:
   virtual
   TpgNode*
   fanin(ymuint pos) const;
+
+
+public:
+  //////////////////////////////////////////////////////////////////////
+  // 設定用の関数
+  //////////////////////////////////////////////////////////////////////
+
+  /// @brief ファンインを設定する．
+  /// @param[in] inode_list ファンインのリスト
+  ///
+  /// と同時にファンイン用の配列も確保する．
+  /// 多入力ゲートのみ意味を持つ仮想関数
+  virtual
+  void
+  set_fanin(const vector<TpgNode*>& inode_list,
+	    Alloc& alloc);
 
 
 private:

@@ -27,13 +27,9 @@ public:
   /// @param[in] id ID番号
   /// @param[in] input_id 入力番号
   /// @param[in] dff 接続しているDFF
-  /// @param[in] fanout_num ファンアウト数
-  /// @param[in] fanout_list ファンアウトのリストを格納する配列
   TpgDffOutput(ymuint id,
 	       ymuint input_id,
-	       TpgDff* dff,
-	       ymuint fanout_num,
-	       TpgNode** fanout_list);
+	       TpgDff* dff);
 
   /// @brief デストラクタ
   virtual
