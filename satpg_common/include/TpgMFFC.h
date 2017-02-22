@@ -80,19 +80,19 @@ private:
   //////////////////////////////////////////////////////////////////////
 
   // 根のノード
-  TpgNode* mRoot;
+  const TpgNode* mRoot;
 
   // FFR数
   ymuint mElemNum;
 
   // FFRの配列
-  TpgFFR** mElemList;
+  const TpgFFR** mElemList;
 
   // 故障数
   ymuint mFaultNum;
 
   // 故障の配列
-  TpgFault** mFaultList;
+  const TpgFault** mFaultList;
 
 };
 

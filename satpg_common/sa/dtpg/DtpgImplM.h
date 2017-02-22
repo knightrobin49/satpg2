@@ -30,13 +30,13 @@ public:
   /// @param[in] sat_outp SATソルバ用の出力ストリーム
   /// @param[in] bt バックトレーサー
   /// @param[in] network 対象のネットワーク
-  /// @param[in] mffc_root MFFC の根のノード
+  /// @param[in] mffc 対象のMFFC
   DtpgImplM(const string& sat_type,
 	    const string& sat_option,
 	    ostream* sat_outp,
 	    BackTracer& bt,
 	    const TpgNetwork& network,
-	    const TpgNode* mffc_root);
+	    const TpgMFFC* mffc);
 
   /// @brief デストラクタ
   virtual
@@ -92,12 +92,12 @@ private:
   // [0] は MFFC の根でもある．
   vector<const TpgNode*> mElemArray;
 
-  // 故障番号をキーにしてFFR番号を入れる配列
-  vector<ymuint> mElemPosMap;
-
   // 各FFRの根に反転イベントを挿入するための変数
   // サイズは mElemNum
   vector<SatVarId> mElemVarArray;
+
+  // 故障番号をキーにしてFFR番号を入れる配列
+  vector<ymuint> mElemPosMap;
 
 };
 

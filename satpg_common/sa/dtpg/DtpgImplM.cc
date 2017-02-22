@@ -12,6 +12,8 @@
 
 #include "TpgFault.h"
 #include "TpgNetwork.h"
+#include "TpgMFFC.h"
+#include "TpgFFR.h"
 #include "GateLitMap_vect.h"
 
 
@@ -23,27 +25,24 @@ BEGIN_NAMESPACE_YM_SATPG_SA
 // @param[in] sat_outp SATソルバ用の出力ストリーム
 // @param[in] bt バックトレーサー
 // @param[in] network 対象のネットワーク
-// @param[in] mffc_root MFFC の根のノード
+// @param[in] mffc 対象のMFFC
 DtpgImplM::DtpgImplM(const string& sat_type,
 		     const string& sat_option,
 		     ostream* sat_outp,
 		     BackTracer& bt,
 		     const TpgNetwork& network,
-		     const TpgNode* mffc_root) :
-  DtpgImpl(sat_type, sat_option, sat_outp, bt, network, mffc_root),
-  mElemArray(mffc_root->mffc_elem_num()),
-  mElemPosMap(network.max_fault_id(), -1),
-  mElemVarArray(mffc_root->mffc_elem_num())
+		     const TpgMFFC* mffc) :
+  DtpgImpl(sat_type, sat_option, sat_outp, bt, network, mffc->root()),
+  mElemArray(mffc->elem_num()),
+  mElemVarArray(mffc->elem_num()),
+  mElemPosMap(network.max_fault_id(), -1)
 {
-  ymuint ne = mffc_root->mffc_elem_num();
-  ASSERT_COND( ne > 1 );
-  for (ymuint i = 0; i < ne; ++ i) {
-    const TpgNode* node1 = mffc_root->mffc_elem(i);
-    mElemArray[i] = node1;
-    // node1 を根とする FFR に含まれる故障を求める．
-    ymuint nf = network.ffr_fault_num(node1->id());
+  for (ymuint i = 0; i < mffc->elem_num(); ++ i ) {
+    const TpgFFR* ffr = mffc->elem(i);
+    mElemArray[i] = ffr->root();
+    ymuint nf = ffr->fault_num();
     for (ymuint j = 0; j < nf; ++ j) {
-      const TpgFault* f = network.ffr_fault(node1->id(), j);
+      const TpgFault* f = ffr->fault(j);
       mElemPosMap[f->id()] = i;
     }
   }
@@ -79,7 +78,7 @@ DtpgImplM::dtpg(const TpgFault* fault,
 		DtpgStats& stats)
 {
   if ( mElemPosMap[fault->id()] == -1 ) {
-    cerr << "Error[DtpgImplM::dtpg()]: fault is not within the MFFC" << endl;
+    cerr << "Error[DtpgImplM::dtpg()]: " << fault << " is not within the MFFC" << endl;
     return kB3X;
   }
 

@@ -21,6 +21,10 @@ BEGIN_NAMESPACE_YM_SATPG
 //////////////////////////////////////////////////////////////////////
 /// @class TpgNode TpgNode.h "TpgNode.h"
 /// @brief SATPG 用のノードを表すクラス
+/// @sa TpgNetwork
+/// @sa TpgFault
+/// @sa TpgMFFC
+/// @sa TpgFFR
 ///
 /// 基本的には一つの BnNode に対応しているが，
 /// もとのゲートが組み込み型でない場合には複数の TpgNode を組み合わ
@@ -346,7 +350,21 @@ public:
   const TpgNode*
   ffr_root() const;
 
+  /// @brief FFRの根の場合にFFRを返す．
+  ///
+  /// そうでなければ nullptr を返す．
+  const TpgFFR*
+  ffr() const;
+
+  /// @brief MFFCの根の場合にMFFCを返す．
+  ///
+  /// そうでなければ nullptr を返す．
+  const TpgMFFC*
+  mffc() const;
+
   /// @brief 直近の dominator を得る．
+  ///
+  /// これが nullptr の場合は MFFC の根のノードだということ．
   const TpgNode*
   imm_dom() const;
 
@@ -358,17 +376,6 @@ public:
   /// @param[in] pos 位置番号 ( 0 <= pos < fault_num() )
   const TpgFault*
   fault(ymuint pos) const;
-
-  /// @brief MFFC の根の場合に MFFC内のFFRの根のノード数を返す．
-  ymuint
-  mffc_elem_num() const;
-
-  /// @brief MFFC の根の場合に MFFC内のFFRの根のノードを返す．
-  /// @param[in] pos 位置番号 ( 0 <= pos < mffc_elem_num() )
-  ///
-  /// pos == 0 の時は常に自分を返す．
-  const TpgNode*
-  mffc_elem(ymuint pos) const;
 
 
 public:
@@ -395,13 +402,6 @@ public:
   /// @param[in] dom dominator ノード
   void
   set_imm_dom(const TpgNode* dom);
-
-  /// @brief MFFC 内の根のノードの情報をセットする．
-  /// @param[in] num 要素数
-  /// @param[in] node_list ノードのリスト
-  void
-  set_mffc_info(ymuint num,
-		TpgNode** node_list);
 
   /// @brief ノード名を設定する．
   /// @param[in] name ノード名
@@ -433,6 +433,14 @@ public:
   void
   set_fault_list(const vector<const TpgFault*>& fault_list,
 		 Alloc& alloc);
+
+  /// @brief MFFC を設定する．
+  void
+  set_mffc(const TpgMFFC* mffc);
+
+  /// @brief FFR を設定する．
+  void
+  set_ffr(const TpgFFR* ffr);
 
 
 public:
@@ -483,17 +491,17 @@ private:
   // immediate dominator
   const TpgNode* mImmDom;
 
+  // FFR
+  const TpgFFR* mFfr;
+
+  // MFFC
+  const TpgMFFC* mMffc;
+
   // 故障数
   ymuint mFaultNum;
 
   // 故障のリスト
   const TpgFault** mFaultList;
-
-  // MFFC 内の根のノード数
-  ymuint mMffcElemNum;
-
-  // MFFC 内の根のノードのリスト
-  TpgNode** mMffcElemList;
 
 };
 
@@ -557,6 +565,26 @@ TpgNode::ffr_root() const
   return fanout(0)->ffr_root();
 }
 
+// @brief FFRの根の場合にFFRを返す．
+//
+// そうでなければ nullptr を返す．
+inline
+const TpgFFR*
+TpgNode::ffr() const
+{
+  return mFfr;
+}
+
+// @brief MFFCの根の場合にMFFCを返す．
+//
+// そうでなければ nullptr を返す．
+inline
+const TpgMFFC*
+TpgNode::mffc() const
+{
+  return mMffc;
+}
+
 // @brief 直近の dominator を得る．
 inline
 const TpgNode*
@@ -582,26 +610,6 @@ TpgNode::fault(ymuint pos) const
   ASSERT_COND( pos < fault_num() );
 
   return mFaultList[pos];
-}
-
-// @brief MFFC の根の場合に MFFC内の根のノード数を返す．
-inline
-ymuint
-TpgNode::mffc_elem_num() const
-{
-  return mMffcElemNum;
-}
-
-// @brief MFFC の根の場合に MFFC内の根のノードを返す．
-// @param[in] pos 位置番号 ( 0 <= pos < mffc_elem_num() )
-//
-// pos == 0 の時は常に自分を返す．
-inline
-const TpgNode*
-TpgNode::mffc_elem(ymuint pos) const
-{
-  ASSERT_COND( pos < mffc_elem_num() );
-  return mMffcElemList[pos];
 }
 
 END_NAMESPACE_YM_SATPG

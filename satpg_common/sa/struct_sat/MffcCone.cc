@@ -10,6 +10,8 @@
 #include "sa/MffcCone.h"
 #include "sa/StructSat.h"
 #include "TpgNode.h"
+#include "TpgMFFC.h"
+#include "TpgFFR.h"
 #include "GateLitMap_vect.h"
 #include "GateLitMap_vid.h"
 
@@ -22,12 +24,15 @@ BEGIN_NAMESPACE_YM_SATPG_SA
 MffcCone::MffcCone(StructSat& struct_sat,
 		   const TpgNode* fnode) :
   ConeBase(struct_sat),
-  mElemList(fnode->mffc_elem_num()),
-  mElemVarList(fnode->mffc_elem_num())
+  mElemList(fnode->mffc()->elem_num()),
+  mElemVarList(fnode->mffc()->elem_num())
 {
+  const TpgMFFC* mffc = fnode->mffc();
+  ASSERT_COND( mffc != nullptr );
+
   vector<int> elem_map(max_id(), -1);
-  for (ymuint i = 0; i < fnode->mffc_elem_num(); ++ i) {
-    const TpgNode* node = fnode->mffc_elem(i);
+  for (ymuint i = 0; i < mffc->elem_num(); ++ i) {
+    const TpgNode* node = mffc->elem(i)->root();
     mElemList[i] = node;
     mElemVarList[i] = solver().new_var();
     elem_map[node->id()] = i;

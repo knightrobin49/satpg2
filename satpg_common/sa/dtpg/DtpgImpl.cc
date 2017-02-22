@@ -84,7 +84,8 @@ DtpgImpl::dtpg(const TpgFault* fault,
 	       DtpgStats& stats)
 {
   if ( fault->ffr_root() != root_node() ) {
-    cerr << "Error[DtpgImpl::dtpg()]: fault is not within mFfrRoot's FFR" << endl;
+    cerr << "Error[DtpgImpl::dtpg()]: " << fault << " is not within mFfrRoot's FFR" << endl;
+    cerr << " fautl->ffr_root() = " << fault->ffr_root()->name() << endl;
     return kB3X;
   }
 

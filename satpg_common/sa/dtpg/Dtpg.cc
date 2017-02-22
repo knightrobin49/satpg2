@@ -12,6 +12,9 @@
 #include "DtpgImpl.h"
 #include "DtpgImplM.h"
 
+#include "TpgMFFC.h"
+#include "TpgFFR.h"
+
 #include "sa/DtpgStats.h"
 
 
@@ -38,11 +41,11 @@ Dtpg::~Dtpg()
 
 // @brief 回路の構造を表すCNF式を作る(FFRモード)．
 // @param[in] network 対象のネットワーク
-// @param[in] ffr_root 故障伝搬の起点となる FFR の根のノード
+// @param[in] ffr 故障伝搬の起点となる FFR
 // @param[out] stats DTPGの統計情報
 void
 Dtpg::gen_ffr_cnf(const TpgNetwork& network,
-		  const TpgNode* ffr_root,
+		  const TpgFFR* ffr,
 		  DtpgStats& stats)
 {
   if ( mImpl != nullptr ) {
@@ -50,20 +53,20 @@ Dtpg::gen_ffr_cnf(const TpgNetwork& network,
     delete mImpl;
   }
 
-  mImpl = new DtpgImpl(mSatType, mSatOption, mSatOutP, mBackTracer, network, ffr_root);
+  mImpl = new DtpgImpl(mSatType, mSatOption, mSatOutP, mBackTracer, network, ffr->root());
   mImpl->gen_cnf(stats);
 }
 
 // @brief 回路の構造を表すCNF式を作る(MfFCモード)．
 // @param[in] network 対象のネットワーク
-// @param[in] mffc_root 故障伝搬の起点となる MFFC の根のノード
+// @param[in] mffc 故障伝搬の起点となる MFFC
 // @param[out] stats DTPGの統計情報
 //
 // この MFFC に含まれるすべての FFR が対象となる．
 // FFR と MFFC が一致している場合は gen_ffr_cnf と同じことになる．
 void
 Dtpg::gen_mffc_cnf(const TpgNetwork& network,
-		   const TpgNode* mffc_root,
+		   const TpgMFFC* mffc,
 		   DtpgStats& stats)
 {
   if ( mImpl != nullptr ) {
@@ -71,11 +74,11 @@ Dtpg::gen_mffc_cnf(const TpgNetwork& network,
     delete mImpl;
   }
 
-  if ( mffc_root->mffc_elem_num() > 1 ) {
-    mImpl = new DtpgImplM(mSatType, mSatOption, mSatOutP, mBackTracer, network, mffc_root);
+  if ( mffc->elem_num() > 1 ) {
+    mImpl = new DtpgImplM(mSatType, mSatOption, mSatOutP, mBackTracer, network, mffc);
   }
   else {
-    mImpl = new DtpgImpl(mSatType, mSatOption, mSatOutP, mBackTracer, network, mffc_root);
+    mImpl = new DtpgImpl(mSatType, mSatOption, mSatOutP, mBackTracer, network, mffc->root());
   }
   mImpl->gen_cnf(stats);
 }

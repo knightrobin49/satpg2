@@ -284,52 +284,6 @@ TpgNetwork::_node_input_fault(ymuint id,
   return mAuxInfoArray[id].input_fault(pos, val);
 }
 
-#if 0
-// @brief このノードに関係する代表故障数を返す．
-// @param[in] id ノードID ( 0 <= id < node_num() )
-ymuint
-TpgNetwork::node_fault_num(ymuint id) const
-{
-  ASSERT_COND( id < mNodeNum );
-
-  return mAuxInfoArray[id].fault_num();
-}
-
-// @brief このノードに関係する代表故障を返す．
-// @param[in] id ノードID ( 0 <= id < node_num() )
-// @param[in] pos 位置番号 ( 0 <= pos < fault_num() )
-const TpgFault*
-TpgNetwork::node_fault(ymuint id,
-		       ymuint pos) const
-{
-  ASSERT_COND( id < mNodeNum );
-
-  return mAuxInfoArray[id].fault(pos);
-}
-#endif
-
-// @brief FFR に属する代表故障数を返す．
-// @param[in] id FFRの根のノードID ( 0 <= id < node_num() )
-ymuint
-TpgNetwork::ffr_fault_num(ymuint id) const
-{
-  ASSERT_COND( id < mNodeNum );
-
-  return mAuxInfoArray[id].ffr_fault_num();
-}
-
-// @brief FFR に属する代表故障を返す．
-// @param[in] id FFRの根のノードID ( 0 <= id < node_num() )
-// @param[in] pos 位置番号 ( 0 <= pos < ffr_fault_num(id) )
-const TpgFault*
-TpgNetwork::ffr_fault(ymuint id,
-		      ymuint pos) const
-{
-  ASSERT_COND( id < mNodeNum );
-
-  return mAuxInfoArray[id].ffr_fault(pos);
-}
-
 BEGIN_NONAMESPACE
 
 // @brief ノードの TFI にマークをつける．
@@ -725,6 +679,8 @@ TpgNetwork::set(const BnNetwork& network)
   //////////////////////////////////////////////////////////////////////
   // FFR の情報を作る．
   //////////////////////////////////////////////////////////////////////
+
+  // まずFFRの根のノードを求める．
   vector<TpgNode*> root_list;
   for (ymuint i = 0; i < mNodeNum; ++ i) {
     TpgNode* node = mNodeArray[i];
@@ -738,59 +694,55 @@ TpgNetwork::set(const BnNetwork& network)
     // node は FFR の根のノード
     root_list.push_back(node);
   }
+
   mFfrNum = root_list.size();
   mFfrArray = new TpgFFR[mFfrNum];
   for (ymuint i = 0; i < mFfrNum; ++ i) {
-    const TpgNode* node = root_list[i];
-    vector<const TpgNode*> node_list;
-    mark_ffr(node, node_list);
-    TpgFFR& ffr = mFfrArray[i];
-    ymuint ne = node_list.size();
-    ffr.mElemNum = ne;
-    void* p = mAlloc.get_memory(sizeof(const TpgNode*) * ne);
-    ffr.mElemList = new (p) const TpgNode*[ne];
-    ymuint nf = 0;
-    for (ymuint j = 0; j < ne; ++ j) {
-      const TpgNode* node1 = node_list[j];
-      ffr.mElemList[j] = node1;
-      nf += node1->fault_num();
-    }
-    ffr.mFaultNum = nf;
-    void* q = mAlloc.get_memory(sizeof(const TpgFault*) * nf);
-    ffr.mFaultList = new (q) const TpgFault*[nf];
-    nf = 0;
-    for (ymuint j = 0; j < ne; ++ j) {
-      const TpgNode* node1 = node_list[j];
-      ymuint n = node1->fault_num();
-      for (ymuint k = 0; k < n; ++ k, ++ nf) {
-	ffr.mFaultList[nf] = node1->fault(k);
-      }
-    }
+    TpgNode* node = root_list[i];
+    TpgFFR* ffr = &mFfrArray[i];
+    set_ffr(node, ffr);
   }
 
 
-  // MFFC 内の FFR の情報をセットしておく．
+  //////////////////////////////////////////////////////////////////////
+  // MFFC の情報を作る．
+  //////////////////////////////////////////////////////////////////////
   ymuint total_mffc_size = 0;
   ymuint max_mffc_size = 0;
   ymuint total_mffc_inputs = 0;
   ymuint max_mffc_inputs = 0;
 
-  mMffcNum = 0;
-  vector<bool> mark(node_num(), false);
+  // まず根のノードを求める．
+  root_list.clear();
   for (ymuint i = 0; i < mNodeNum; ++ i) {
     TpgNode* node = mNodeArray[i];
-    if ( node->imm_dom() != nullptr ) {
-      continue;
-    }
     if ( !dmarks[node->id()] ) {
       continue;
     }
+    if ( node->imm_dom() != nullptr ) {
+      continue;
+    }
+    root_list.push_back(node);
+  }
+
+  mMffcNum = root_list.size();
+  mMffcArray = new TpgMFFC[mMffcNum];
+
+  vector<bool> mark(node_num(), false);
+  for (ymuint i = 0; i < mMffcNum; ++ i) {
+    TpgNode* node = root_list[i];
+
+    TpgMFFC& mffc = mMffcArray[i];
+    node->set_mffc(&mffc);
+    mffc.mRoot = node;
 
     // node を根とする MFFC の情報を得る．
     vector<TpgNode*> node_list;
     vector<TpgNode*> input_list;
+    vector<const TpgFFR*> ffr_list;
 
     node_list.push_back(node);
+    ffr_list.push_back(node->ffr());
     mark[node->id()] = true;
     for (ymuint rpos = 0; rpos < node_list.size(); ++ rpos) {
       TpgNode* node = node_list[rpos];
@@ -810,6 +762,9 @@ TpgNetwork::set(const BnNetwork& network)
 	    input_list.push_back(inode);
 	  }
 	  node_list.push_back(inode);
+	  if ( inode->ffr_root() == inode ) {
+	    ffr_list.push_back(inode->ffr());
+	  }
 	}
       }
     }
@@ -821,26 +776,26 @@ TpgNetwork::set(const BnNetwork& network)
       mark[node->id()] = false;
     }
 
-    // node を根とする MFFC 内の FFR の根のノードのリストを作る．
-    ymuint elem_num = 0;
-    for (ymuint rpos = 0; rpos < node_list.size(); ++ rpos) {
-      TpgNode* node = node_list[rpos];
-      if ( node->ffr_root() == node ) {
-	++ elem_num;
+    vector<const TpgFault*> fault_list;
+    ymuint elem_num = ffr_list.size();
+    void* p = mAlloc.get_memory(sizeof(const TpgFFR*) * elem_num);
+    mffc.mElemNum = elem_num;
+    mffc.mElemList = new (p) const TpgFFR*[elem_num];
+    for (ymuint j = 0; j < elem_num; ++ j) {
+      const TpgFFR* ffr = ffr_list[j];
+      mffc.mElemList[j] = ffr;
+      ymuint nf = ffr->fault_num();
+      for (ymuint k = 0; k < nf; ++ k) {
+	fault_list.push_back(ffr->fault(k));
       }
     }
-    void* p = mAlloc.get_memory(sizeof(TpgNode*) * elem_num);
-    TpgNode** root_list = new (p) TpgNode*[elem_num];
-    ymuint wpos = 0;
-    for (ymuint rpos = 0; rpos < node_list.size(); ++ rpos) {
-      TpgNode* node = node_list[rpos];
-      if ( node->ffr_root() == node ) {
-	root_list[wpos] = node;
-	++ wpos;
-      }
+    ymuint nf = fault_list.size();
+    mffc.mFaultNum = nf;
+    void* q = mAlloc.get_memory(sizeof(const TpgFault*) * nf);
+    mffc.mFaultList = new (q) const TpgFault*[nf];
+    for (ymuint j = 0; j < nf; ++ j) {
+      mffc.mFaultList[j] = fault_list[j];
     }
-    node->set_mffc_info(elem_num, root_list);
-    ++ mMffcNum;
 
     ymuint mffc_size = node_list.size();
     total_mffc_size += mffc_size;
@@ -852,37 +807,6 @@ TpgNetwork::set(const BnNetwork& network)
     if ( max_mffc_inputs < input_size ) {
       max_mffc_inputs = input_size;
     }
-  }
-
-  // FFR ごとの故障リストを作る．
-  // 上のループと一緒にできるかもしれないけど
-  // シンプルにしたほうがわかりやすいので
-  for (ymuint i = 0; i < mNodeNum; ++ i) {
-    TpgNode* node = mNodeArray[i];
-    if ( node->ffr_root() != node ) {
-      continue;
-    }
-
-    vector<const TpgNode*> queue;
-    vector<const TpgFault*> fault_list;
-    queue.push_back(node);
-    for (ymuint rpos = 0; rpos < queue.size(); ++ rpos) {
-      const TpgNode* node1 = queue[rpos];
-      ymuint nf = node1->fault_num();
-      for (ymuint j = 0; j < nf; ++ j) {
-	const TpgFault* f = node1->fault(j);
-	fault_list.push_back(f);
-      }
-      ymuint ni = node1->fanin_num();
-      for (ymuint j = 0; j < ni; ++ j) {
-	const TpgNode* inode = node1->fanin(j);
-	if ( inode->ffr_root() == node ) {
-	  queue.push_back(inode);
-	}
-      }
-    }
-
-    mAuxInfoArray[node->id()].set_ffr_fault_list(fault_list, mAlloc);
   }
 }
 
@@ -1485,6 +1409,46 @@ TpgNetwork::set_rep_faults(TpgNode* node)
   node->set_fault_list(fault_list, mAlloc);
 }
 
+// @brief FFR の情報を設定する．
+// @param[in] root FFR の根のノード
+// @param[in] ffr 対象の FFR
+void
+TpgNetwork::set_ffr(TpgNode* root,
+		    TpgFFR* ffr)
+{
+  root->set_ffr(ffr);
+
+  vector<const TpgNode*> node_list;
+  mark_ffr(root, node_list);
+
+  ymuint ne = node_list.size();
+  ffr->mElemNum = ne;
+
+  void* p = mAlloc.get_memory(sizeof(const TpgNode*) * ne);
+  ffr->mElemList = new (p) const TpgNode*[ne];
+
+  ymuint nf = 0;
+  for (ymuint j = 0; j < ne; ++ j) {
+    const TpgNode* node = node_list[j];
+    ffr->mElemList[j] = node;
+    nf += node->fault_num();
+  }
+
+  ffr->mFaultNum = nf;
+
+  void* q = mAlloc.get_memory(sizeof(const TpgFault*) * nf);
+  ffr->mFaultList = new (q) const TpgFault*[nf];
+
+  nf = 0;
+  for (ymuint j = 0; j < ne; ++ j) {
+    const TpgNode* node = node_list[j];
+    ymuint n = node->fault_num();
+    for (ymuint k = 0; k < n; ++ k, ++ nf) {
+      ffr->mFaultList[nf] = node->fault(k);
+    }
+  }
+}
+
 // @brief MFFC を返す．
 // @param[in] pos 位置番号 ( 0 <= pos < mffc_num() )
 const TpgMFFC*
@@ -1585,14 +1549,10 @@ print_node(ostream& s,
 // @brief コンストラクタ
 AuxNodeInfo::AuxNodeInfo()
 {
-  mFaultNum = 0;
-  mFaultList = nullptr;
   mOutputFaults[0] = nullptr;
   mOutputFaults[1] = nullptr;
   mFaninNum = 0;
   mInputFaults = nullptr;
-  mFfrFaultNum = 0;
-  mFfrFaultList = nullptr;
 }
 
 // @brief デストラクタ
@@ -1645,36 +1605,6 @@ AuxNodeInfo::set_input_fault(ymuint ipos,
   ASSERT_COND( ipos < mFaninNum );
 
   mInputFaults[(ipos * 2) + val] = f;
-}
-
-// @brief 故障リストを設定する．
-// @param[in] fault_list 故障リスト
-// @param[in] alloc メモリアロケータ
-void
-AuxNodeInfo::set_fault_list(const vector<const TpgFault*>& fault_list,
-			    Alloc& alloc)
-{
-  mFaultNum = fault_list.size();
-  void* p = alloc.get_memory(sizeof(const TpgFault*) * mFaultNum);
-  mFaultList = new (p) const TpgFault*[mFaultNum];
-  for (ymuint i = 0; i < mFaultNum; ++ i) {
-    mFaultList[i] = fault_list[i];
-  }
-}
-
-// @brief FFR内の故障リストを設定する．
-// @param[in] fault_list 故障リスト
-// @param[in] alloc メモリアロケータ
-void
-AuxNodeInfo::set_ffr_fault_list(const vector<const TpgFault*>& fault_list,
-				Alloc& alloc)
-{
-  mFfrFaultNum = fault_list.size();
-  void* p = alloc.get_memory(sizeof(const TpgFault*) * mFfrFaultNum);
-  mFfrFaultList = new (p) const TpgFault*[mFfrFaultNum];
-  for (ymuint i = 0; i < mFfrFaultNum; ++ i) {
-    mFfrFaultList[i] = fault_list[i];
-  }
 }
 
 END_NAMESPACE_YM_SATPG

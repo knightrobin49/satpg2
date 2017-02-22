@@ -390,11 +390,11 @@ TpgNode::TpgNode(ymuint id) :
   mName(nullptr),
   mFanoutNum(0),
   mFanoutList(nullptr),
+  mFfr(nullptr),
+  mMffc(nullptr),
   mImmDom(nullptr),
   mFaultNum(0),
-  mFaultList(nullptr),
-  mMffcElemNum(0),
-  mMffcElemList(nullptr)
+  mFaultList(nullptr)
 {
 }
 
@@ -633,23 +633,6 @@ TpgNode::set_imm_dom(const TpgNode* dom)
   mImmDom = dom;
 }
 
-// @brief MFFC 内の根のノードの情報をセットする．
-// @param[in] num 要素数
-// @param[in] node_list ノードのリスト
-void
-TpgNode::set_mffc_info(ymuint num,
-		       TpgNode** node_list)
-{
-  mMffcElemNum = num;
-  mMffcElemList = node_list;
-
-  /// @brief ノード名を設定する．
-  /// @param[in] name ノード名
-  void
-  set_name(const string& name,
-	   Alloc& alloc);
-}
-
 // @brief ノード名を設定する．
 // @param[in] name ノード名
 // @param[in] alloc メモリアロケータ
@@ -696,6 +679,20 @@ TpgNode::set_fault_list(const vector<const TpgFault*>& fault_list,
       mFaultList[i] = fault_list[i];
     }
   }
+}
+
+// @brief MFFC を設定する．
+void
+TpgNode::set_mffc(const TpgMFFC* mffc)
+{
+  mMffc = mffc;
+}
+
+// @brief FFR を設定する．
+void
+TpgNode::set_ffr(const TpgFFR* ffr)
+{
+  mFfr = ffr;
 }
 
 END_NAMESPACE_YM_SATPG

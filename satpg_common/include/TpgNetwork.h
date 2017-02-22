@@ -203,22 +203,6 @@ public:
   /// @brief 出力の故障を得る．
   /// @param[in] id ノードID ( 0 <= id < node_num() )
   /// @param[in] val 故障値 ( 0 / 1 )
-  TpgFault*
-  _node_output_fault(ymuint id,
-		     int val);
-
-  /// @brief 入力の故障を得る．
-  /// @param[in] id ノードID ( 0 <= id < node_num() )
-  /// @param[in] val 故障値 ( 0 / 1 )
-  /// @param[in] pos 入力の位置番号
-  TpgFault*
-  _node_input_fault(ymuint id,
-		    int val,
-		    ymuint pos);
-
-  /// @brief 出力の故障を得る．
-  /// @param[in] id ノードID ( 0 <= id < node_num() )
-  /// @param[in] val 故障値 ( 0 / 1 )
   const TpgFault*
   node_output_fault(ymuint id,
 		    int val) const;
@@ -231,32 +215,6 @@ public:
   node_input_fault(ymuint id,
 		   int val,
 		   ymuint pos) const;
-
-#if 0
-  /// @brief このノードに関係する代表故障数を返す．
-  /// @param[in] id ノードID ( 0 <= id < node_num() )
-  ymuint
-  node_fault_num(ymuint id) const;
-
-  /// @brief このノードに関係する代表故障を返す．
-  /// @param[in] id ノードID ( 0 <= id < node_num() )
-  /// @param[in] pos 位置番号 ( 0 <= pos < node_fault_num(id) )
-  const TpgFault*
-  node_fault(ymuint id,
-	     ymuint pos) const;
-#endif
-
-  /// @brief FFR に属する代表故障数を返す．
-  /// @param[in] id FFRの根のノードID ( 0 <= id < node_num() )
-  ymuint
-  ffr_fault_num(ymuint id) const;
-
-  /// @brief FFR に属する代表故障を返す．
-  /// @param[in] id FFRの根のノードID ( 0 <= id < node_num() )
-  /// @param[in] pos 位置番号 ( 0 <= pos < ffr_fault_num(id) )
-  const TpgFault*
-  ffr_fault(ymuint id,
-	    ymuint pos) const;
 
 
 public:
@@ -464,10 +422,34 @@ private:
 	     const InodeInfo& inode_info,
 	     const TpgFault* rep);
 
+  /// @brief 出力の故障を得る．
+  /// @param[in] id ノードID ( 0 <= id < node_num() )
+  /// @param[in] val 故障値 ( 0 / 1 )
+  TpgFault*
+  _node_output_fault(ymuint id,
+		     int val);
+
+  /// @brief 入力の故障を得る．
+  /// @param[in] id ノードID ( 0 <= id < node_num() )
+  /// @param[in] val 故障値 ( 0 / 1 )
+  /// @param[in] pos 入力の位置番号
+  TpgFault*
+  _node_input_fault(ymuint id,
+		    int val,
+		    ymuint pos);
+
+
   /// @brief 代表故障を設定する．
   /// @param[in] node 対象のノード
   void
   set_rep_faults(TpgNode* node);
+
+  /// @brief FFR の情報を設定する．
+  /// @param[in] root FFR の根のノード
+  /// @param[in] ffr 対象の FFR
+  void
+  set_ffr(TpgNode* root,
+	  TpgFFR* ffr);
 
 
 private:

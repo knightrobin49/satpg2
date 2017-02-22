@@ -11,6 +11,7 @@
 #include "ym/TclPopt.h"
 #include "AtpgMgr.h"
 #include "TpgNetwork.h"
+#include "TpgMFFC.h"
 #include "TpgFaultMgr.h"
 #include "sa/DtpgStats.h"
 #include "sa/Dtpg.h"
@@ -38,7 +39,8 @@ run_single(nsSa::Dtpg& dtpg,
     const TpgFault* fault = network.rep_fault(i);
     if ( fmgr.status(fault) == kFsUndetected ) {
       const TpgNode* ffr_root = fault->ffr_root();
-      dtpg.gen_ffr_cnf(network, ffr_root, stats);
+      const TpgFFR* ffr = ffr_root->ffr();
+      dtpg.gen_ffr_cnf(network, ffr, stats);
       NodeValList nodeval_list;
       SatBool3 ans = dtpg.dtpg(fault, nodeval_list, stats);
       if ( ans == kB3True ) {
@@ -59,33 +61,24 @@ run_mffc(nsSa::Dtpg& dtpg,
 	 nsSa::UntestOp& uop,
 	 nsSa::DtpgStats& stats)
 {
-  ymuint nn = network.node_num();
-  for (ymuint i = 0; i < nn; ++ i) {
-    const TpgNode* node = network.node(i);
-    if ( node->imm_dom() != nullptr ) {
-      continue;
-    }
-    ymuint ne = node->mffc_elem_num();
-    if ( ne == 0 ) {
-      continue;
-    }
+  ymuint n = network.mffc_num();
+  for (ymuint i = 0; i < n; ++ i) {
+    const TpgMFFC* mffc = network.mffc(i);
 
-    dtpg.gen_mffc_cnf(network, node, stats);
-    for (ymuint j = 0; j < ne; ++ j) {
-      const TpgNode* node1 = node->mffc_elem(j);
-      ymuint nf = network.ffr_fault_num(node1->id());
-      for (ymuint k = 0; k < nf; ++ k) {
-	const TpgFault* fault = network.ffr_fault(node1->id(), k);
-	if ( fmgr.status(fault) == kFsUndetected ) {
-	  // 故障に対するテスト生成を行なう．
-	  NodeValList nodeval_list;
-	  SatBool3 ans = dtpg.dtpg(fault, nodeval_list, stats);
-	  if ( ans == kB3True ) {
-	    dop(fault, nodeval_list);
-	  }
-	  else if ( ans == kB3False ) {
-	    uop(fault);
-	  }
+    dtpg.gen_mffc_cnf(network, mffc, stats);
+
+    ymuint nf = mffc->fault_num();
+    for (ymuint j = 0; j < nf; ++ j) {
+      const TpgFault* fault = mffc->fault(j);
+      if ( fmgr.status(fault) == kFsUndetected ) {
+	// 故障に対するテスト生成を行なう．
+	NodeValList nodeval_list;
+	SatBool3 ans = dtpg.dtpg(fault, nodeval_list, stats);
+	if ( ans == kB3True ) {
+	  dop(fault, nodeval_list);
+	}
+	else if ( ans == kB3False ) {
+	  uop(fault);
 	}
       }
     }

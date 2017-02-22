@@ -49,24 +49,24 @@ public:
 
   /// @brief 回路の構造を表すCNF式を作る(FFRモード)．
   /// @param[in] network 対象のネットワーク
-  /// @param[in] ffr_root 故障伝搬の起点となる FFR の根のノード
+  /// @param[in] ffr 故障伝搬の起点となる FFR
   /// @param[out] stats DTPGの統計情報
   void
   gen_ffr_cnf(const TpgNetwork& network,
-	      const TpgNode* ffr_root,
+	      const TpgFFR* ffr,
 	      DtpgStats& stats);
 
   /// @brief 回路の構造を表すCNF式を作る(MfFCモード)．
   /// @param[in] network 対象のネットワーク
-  /// @param[in] mffc_root 故障伝搬の起点となる MFFC の根のノード
+  /// @param[in] mffc 故障伝搬の起点となる MFFC
   /// @param[out] stats DTPGの統計情報
   ///
   /// この MFFC に含まれるすべての FFR が対象となる．
   /// FFR と MFFC が一致している場合は gen_ffr_cnf と同じことになる．
   void
   gen_mffc_cnf(const TpgNetwork& network,
-	      const TpgNode* mffc_root,
-	      DtpgStats& stats);
+	       const TpgMFFC* mffc,
+	       DtpgStats& stats);
 
   /// @brief テスト生成を行なう．
   /// @param[in] fault 対象の故障

@@ -8,6 +8,8 @@
 
 
 #include "TpgNetwork.h"
+#include "TpgMFFC.h"
+#include "TpgFFR.h"
 #include "TpgFault.h"
 #include "TpgFaultMgr.h"
 #include "sa/Dtpg.h"
@@ -37,8 +39,9 @@ single_test(Dtpg& dtpg,
     const TpgFault* fault = network.rep_fault(i);
     if ( fmgr.status(fault) == kFsUndetected ) {
       const TpgNode* ffr_root = fault->ffr_root();
+      const TpgFFR* ffr = ffr_root->ffr();
 
-      dtpg.gen_ffr_cnf(network, ffr_root, stats);
+      dtpg.gen_ffr_cnf(network, ffr, stats);
       NodeValList nodeval_list;
       SatBool3 ans = dtpg.dtpg(fault, nodeval_list, stats);
       if ( ans == kB3True ) {
@@ -63,19 +66,14 @@ ffr_test(Dtpg& dtpg,
 {
   ymuint detect_num = 0;
   ymuint untest_num = 0;
-  for (ymuint i = 0; i < network.node_num(); ++ i) {
-    const TpgNode* node = network.node(i);
-    if ( node->ffr_root() != node ) {
-      continue;
-    }
-    ymuint nf = network.ffr_fault_num(node->id());
-    if ( nf == 0 ) {
-      continue;
-    }
+  for (ymuint i = 0; i < network.ffr_num(); ++ i) {
+    const TpgFFR* ffr = network.ffr(i);
 
-    dtpg.gen_ffr_cnf(network, node, stats);
+    dtpg.gen_ffr_cnf(network, ffr, stats);
+
+    ymuint nf = ffr->fault_num();
     for (ymuint j = 0; j < nf; ++ j) {
-      const TpgFault* fault = network.ffr_fault(node->id(), j);
+      const TpgFault* fault = ffr->fault(j);
       if ( fmgr.status(fault) == kFsUndetected ) {
 	NodeValList nodeval_list;
 	SatBool3 ans = dtpg.dtpg(fault, nodeval_list, stats);
@@ -102,36 +100,25 @@ mffc_test(Dtpg& dtpg,
 {
   ymuint detect_num = 0;
   ymuint untest_num = 0;
+  for (ymuint i = 0; i < network.mffc_num(); ++ i) {
+    const TpgMFFC* mffc = network.mffc(i);
 
-  ymuint nn = network.node_num();
-  for (ymuint i = 0; i < nn; ++ i) {
-    const TpgNode* node = network.node(i);
-    if ( node->imm_dom() != nullptr ) {
-      continue;
-    }
-    ymuint ne = node->mffc_elem_num();
-    if ( ne == 0 ) {
-      continue;
-    }
+    dtpg.gen_mffc_cnf(network, mffc, stats);
 
-    dtpg.gen_mffc_cnf(network, node, stats);
+    ymuint nf = mffc->fault_num();
+    for (ymuint j = 0; j < nf; ++ j) {
+      const TpgFault* fault = mffc->fault(j);
 
-    for (ymuint j = 0; j < ne; ++ j) {
-      const TpgNode* node1 = node->mffc_elem(j);
-      ymuint nf = network.ffr_fault_num(node1->id());
-      for (ymuint k = 0; k < nf; ++ k) {
-	const TpgFault* fault = network.ffr_fault(node1->id(), k);
-	if ( fmgr.status(fault) == kFsUndetected ) {
-	  // 故障に対するテスト生成を行なう．
-	  NodeValList nodeval_list;
-	  SatBool3 ans = dtpg.dtpg(fault, nodeval_list, stats);
-	  if ( ans == kB3True ) {
-	    ++ detect_num;
-	    dop(fault, nodeval_list);
-	  }
-	  else if ( ans == kB3False ) {
-	    ++ untest_num;
-	  }
+      if ( fmgr.status(fault) == kFsUndetected ) {
+	// 故障に対するテスト生成を行なう．
+	NodeValList nodeval_list;
+	SatBool3 ans = dtpg.dtpg(fault, nodeval_list, stats);
+	if ( ans == kB3True ) {
+	  ++ detect_num;
+	  dop(fault, nodeval_list);
+	}
+	else if ( ans == kB3False ) {
+	  ++ untest_num;
 	}
       }
     }
