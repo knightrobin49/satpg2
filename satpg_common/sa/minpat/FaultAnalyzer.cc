@@ -172,9 +172,9 @@ FaultAnalyzer::init(const TpgNetwork& network,
       sort(input_list2.begin(), input_list2.end());
     }
 
-    ymuint nf = network.node_fault_num(node->id());
+    ymuint nf = node->fault_num();
     for (ymuint j = 0; j < nf; ++ j) {
-      const TpgFault* fault = network.node_fault(node->id(), j);
+      const TpgFault* fault = node->fault(j);
       SatBool3 stat = analyze_fault(fault, tvmgr);
       ++ f_all;
       switch ( stat ) {

@@ -141,9 +141,9 @@ DtpgSatS::run(TpgNetwork& network,
   for (ymuint i = 0; i < nn; ++ i) {
     const TpgNode* node = network.node(i);
 
-    ymuint nf = network.node_fault_num(node->id());
+    ymuint nf = node->fault_num();
     for (ymuint i = 0; i < nf; ++ i) {
-      const TpgFault* fault = network.node_fault(node->id(), i);
+      const TpgFault* fault = node->fault(i);
       if ( !fault_mark[fault->id()] || fmgr.status(fault) != kFsUndetected ) {
 	continue;
       }

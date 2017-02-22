@@ -33,8 +33,8 @@ class AuxNodeInfo;
 /// @sa TpgFault
 ///
 /// 基本的には TpgNode のネットワーク(DAG)を表す．
-/// ただし，順序回路を扱うために TpgDff, TpgLatch というクラスを持つ．
-/// TpgDff, TpgLatch の入出力はそれぞれ疑似出力，疑似入力の TpgNode を持つ．<br>
+/// ただし，順序回路を扱うために TpgDff というクラスを持つ．
+/// TpgDff の入出力はそれぞれ疑似出力，疑似入力の TpgNode を持つ．<br>
 /// 本当の入力と疑似入力をあわせて PPI(Pseudo Primary Input) と呼ぶ．<br>
 /// 本当の出力と疑似出力をあわせて PPO(Pseudo Primary Output) と呼ぶ．<br>
 /// クロック系の回路の情報も保持されるが，一般のノードとは区別される．
@@ -153,9 +153,19 @@ public:
   ymuint
   mffc_num() const;
 
+  /// @brief MFFC を返す．
+  /// @param[in] pos 位置番号 ( 0 <= pos < mffc_num() )
+  const TpgMFFC*
+  mffc(ymuint pos) const;
+
   /// @brief FFR 数を返す．
   ymuint
   ffr_num() const;
+
+  /// @brief FFR を返す．
+  /// @param[in] pos 位置番号 ( 0 <= pos < ffr_num() )
+  const TpgFFR*
+  ffr(ymuint pos) const;
 
   /// @brief DFF数を得る．
   ymuint
@@ -222,6 +232,7 @@ public:
 		   int val,
 		   ymuint pos) const;
 
+#if 0
   /// @brief このノードに関係する代表故障数を返す．
   /// @param[in] id ノードID ( 0 <= id < node_num() )
   ymuint
@@ -233,6 +244,7 @@ public:
   const TpgFault*
   node_fault(ymuint id,
 	     ymuint pos) const;
+#endif
 
   /// @brief FFR に属する代表故障数を返す．
   /// @param[in] id FFRの根のノードID ( 0 <= id < node_num() )
@@ -512,8 +524,14 @@ private:
   // MFFC 数
   ymuint mMffcNum;
 
+  // MFFC の本体の配列
+  TpgMFFC* mMffcArray;
+
   // FFR 数
   ymuint mFfrNum;
+
+  // FFR の本体の配列
+  TpgFFR* mFfrArray;
 
   // 全故障数
   ymuint mFaultNum;

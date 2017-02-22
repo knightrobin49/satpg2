@@ -105,6 +105,8 @@ class TpgNetwork;
 class TpgDff;
 class TpgGateInfo;
 class TpgNode;
+class TpgMFFC;
+class TpgFFR;
 
 class TpgFault;
 class TpgFaultMgr;

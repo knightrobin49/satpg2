@@ -391,6 +391,8 @@ TpgNode::TpgNode(ymuint id) :
   mFanoutNum(0),
   mFanoutList(nullptr),
   mImmDom(nullptr),
+  mFaultNum(0),
+  mFaultList(nullptr),
   mMffcElemNum(0),
   mMffcElemList(nullptr)
 {
@@ -678,6 +680,21 @@ TpgNode::set_fanout_num(ymuint fanout_num,
   if ( fanout_num > 0 ) {
     void* p = alloc.get_memory(sizeof(TpgNode*) * fanout_num);
     mFanoutList = new (p) TpgNode*[fanout_num];
+  }
+}
+
+// @brief 故障リストを設定する．
+void
+TpgNode::set_fault_list(const vector<const TpgFault*>& fault_list,
+			Alloc& alloc)
+{
+  mFaultNum = fault_list.size();
+  if ( mFaultNum > 0 ) {
+    void* p = alloc.get_memory(sizeof(const TpgFault*) * mFaultNum);
+    mFaultList = new (p) const TpgFault*[mFaultNum];
+    for (ymuint i = 0; i < mFaultNum; ++ i) {
+      mFaultList[i] = fault_list[i];
+    }
   }
 }
 

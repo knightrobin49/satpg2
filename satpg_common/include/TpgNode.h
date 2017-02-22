@@ -350,6 +350,15 @@ public:
   const TpgNode*
   imm_dom() const;
 
+  /// @brief このノードに含まれる代表故障の数を返す．
+  ymuint
+  fault_num() const;
+
+  /// @brief このノードに含まれる代表故障を返す．
+  /// @param[in] pos 位置番号 ( 0 <= pos < fault_num() )
+  const TpgFault*
+  fault(ymuint pos) const;
+
   /// @brief MFFC の根の場合に MFFC内のFFRの根のノード数を返す．
   ymuint
   mffc_elem_num() const;
@@ -420,6 +429,11 @@ public:
   set_fanout_num(ymuint fanout_num,
 		 Alloc& alloc);
 
+  /// @brief 故障リストを設定する．
+  void
+  set_fault_list(const vector<const TpgFault*>& fault_list,
+		 Alloc& alloc);
+
 
 public:
   //////////////////////////////////////////////////////////////////////
@@ -468,6 +482,12 @@ private:
 
   // immediate dominator
   const TpgNode* mImmDom;
+
+  // 故障数
+  ymuint mFaultNum;
+
+  // 故障のリスト
+  const TpgFault** mFaultList;
 
   // MFFC 内の根のノード数
   ymuint mMffcElemNum;
@@ -543,6 +563,25 @@ const TpgNode*
 TpgNode::imm_dom() const
 {
   return mImmDom;
+}
+
+// @brief このノードに含まれる代表故障の数を返す．
+inline
+ymuint
+TpgNode::fault_num() const
+{
+  return mFaultNum;
+}
+
+// @brief このノードに含まれる代表故障を返す．
+// @param[in] pos 位置番号 ( 0 <= pos < fault_num() )
+inline
+const TpgFault*
+TpgNode::fault(ymuint pos) const
+{
+  ASSERT_COND( pos < fault_num() );
+
+  return mFaultList[pos];
 }
 
 // @brief MFFC の根の場合に MFFC内の根のノード数を返す．
