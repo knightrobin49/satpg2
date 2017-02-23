@@ -356,6 +356,12 @@ public:
   const TpgFFR*
   ffr() const;
 
+  /// @brief MFFCの根のノードを得る．
+  ///
+  /// 自分が根の場合には自分自身を返す．
+  const TpgNode*
+  mffc_root() const;
+
   /// @brief MFFCの根の場合にMFFCを返す．
   ///
   /// そうでなければ nullptr を返す．
@@ -431,7 +437,7 @@ public:
 
   /// @brief 故障リストを設定する．
   void
-  set_fault_list(const vector<const TpgFault*>& fault_list,
+  set_fault_list(const vector<TpgFault*>& fault_list,
 		 Alloc& alloc);
 
   /// @brief MFFC を設定する．
@@ -439,8 +445,11 @@ public:
   set_mffc(const TpgMFFC* mffc);
 
   /// @brief FFR を設定する．
+  /// @param[in] ffr このノードが含まれるFFR
+  /// @param[in] alloc メモリアロケータ
   void
-  set_ffr(const TpgFFR* ffr);
+  set_ffr(const TpgFFR* ffr,
+	  Alloc& alloc);
 
 
 public:
@@ -473,6 +482,19 @@ public:
 
 private:
   //////////////////////////////////////////////////////////////////////
+  // 内部で用いられる関数
+  //////////////////////////////////////////////////////////////////////
+
+  /// @brief DFS を行い FFR 内のノードと故障を求める．
+  /// @param[out] node_list ノードリスト
+  /// @param[out] fault_list 故障のリスト
+  void
+  dfs_ffr(vector<TpgNode*>& node_list,
+	  vector<TpgFault*>& fault_list);
+
+
+private:
+  //////////////////////////////////////////////////////////////////////
   // データメンバ
   //////////////////////////////////////////////////////////////////////
 
@@ -501,7 +523,7 @@ private:
   ymuint mFaultNum;
 
   // 故障のリスト
-  const TpgFault** mFaultList;
+  TpgFault** mFaultList;
 
 };
 
@@ -573,6 +595,19 @@ const TpgFFR*
 TpgNode::ffr() const
 {
   return mFfr;
+}
+
+// @brief MFFCの根のノードを得る．
+//
+// 自分が根の場合には自分自身を返す．
+inline
+const TpgNode*
+TpgNode::mffc_root() const
+{
+  if ( imm_dom() == nullptr ) {
+    return this;
+  }
+  return imm_dom()->mffc_root();
 }
 
 // @brief MFFCの根の場合にMFFCを返す．

@@ -82,10 +82,6 @@ public:
   ymuint
   tpg_pos() const = 0;
 
-  /// @brief 故障の属するFFRの根のノードを返す．
-  const TpgNode*
-  ffr_root() const;
-
   /// @brief 故障値を返す．
   /// @note 返す値は 0 か 1
   int
@@ -109,6 +105,14 @@ public:
   const TpgFault*
   rep_fault() const;
 
+  /// @brief この故障の属しているFFRを返す．
+  const TpgFFR*
+  ffr() const;
+
+  /// @brief この故障の属しているMFFCを返す．
+  const TpgMFFC*
+  mffc() const;
+
 
 public:
   //////////////////////////////////////////////////////////////////////
@@ -120,6 +124,14 @@ public:
   void
   set_rep(const TpgFault* rep);
 
+  /// @brief FFRを設定する．
+  void
+  set_ffr(const TpgFFR* ffr);
+
+  /// @brief MFFCを設定する．
+  void
+  set_mffc(const TpgMFFC* mffc);
+
 
 private:
   //////////////////////////////////////////////////////////////////////
@@ -129,11 +141,14 @@ private:
   // ID番号 + 故障値(最下位ビット)
   ymuint mIdVal;
 
-  // FFR の根のノード
-  const TpgNode* mFfrRoot;
-
   // 代表故障
   const TpgFault* mRepFault;
+
+  // FFR
+  const TpgFFR* mFFR;
+
+  // MFFC
+  const TpgMFFC* mMFFC;
 
 };
 
@@ -205,13 +220,20 @@ TpgFault::rep_fault() const
   return mRepFault;
 }
 
-// @brief 代表故障を設定する．
-// @param[in] rep 代表故障
+// @brief この故障の属しているFFRを返す．
 inline
-void
-TpgFault::set_rep(const TpgFault* rep)
+const TpgFFR*
+TpgFault::ffr() const
 {
-  mRepFault = rep;
+  return mFFR;
+}
+
+// @brief この故障の属しているMFFCを返す．
+inline
+const TpgMFFC*
+TpgFault::mffc() const
+{
+  return mMFFC;
 }
 
 END_NAMESPACE_YM_SATPG

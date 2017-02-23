@@ -668,13 +668,13 @@ TpgNode::set_fanout_num(ymuint fanout_num,
 
 // @brief 故障リストを設定する．
 void
-TpgNode::set_fault_list(const vector<const TpgFault*>& fault_list,
+TpgNode::set_fault_list(const vector<TpgFault*>& fault_list,
 			Alloc& alloc)
 {
   mFaultNum = fault_list.size();
   if ( mFaultNum > 0 ) {
-    void* p = alloc.get_memory(sizeof(const TpgFault*) * mFaultNum);
-    mFaultList = new (p) const TpgFault*[mFaultNum];
+    void* p = alloc.get_memory(sizeof(TpgFault*) * mFaultNum);
+    mFaultList = new (p) TpgFault*[mFaultNum];
     for (ymuint i = 0; i < mFaultNum; ++ i) {
       mFaultList[i] = fault_list[i];
     }
@@ -688,11 +688,46 @@ TpgNode::set_mffc(const TpgMFFC* mffc)
   mMffc = mffc;
 }
 
+BEGIN_NONAMESPACE
+
+END_NONAMESPACE
+
 // @brief FFR を設定する．
+// @param[in] ffr このノードが含まれるFFR
+// @param[in] alloc メモリアロケータ
 void
-TpgNode::set_ffr(const TpgFFR* ffr)
+TpgNode::set_ffr(const TpgFFR* ffr,
+		 Alloc& alloc)
 {
   mFfr = ffr;
+
+  // this を根とするFFRのノードと故障を求める．
+  vector<TpgNode*> node_list;
+  vector<TpgFault*> fault_list;
+  dfs_ffr(node_list, fault_list);
+
+  ffr->set(node_list, fault_list, alloc);
+}
+
+// @brief DFS を行い FFR 内のノードと故障を求める．
+// @param[out] node_list ノードリスト
+// @param[out] fault_list 故障のリスト
+void
+TpgNode::dfs_ffr(vector<TpgNode*>& node_list,
+		 vector<TpgFault*>& fault_list)
+{
+  node_list.push_back(this);
+  for (ymuint i = 0; i < mFaultNum; ++ i) {
+    fault_list.push_back(mFaultList[i]);
+  }
+
+  ymuint ni = fanin_num();
+  for (ymuint i = 0; i < ni; ++ i) {
+    const TpgNode* inode = fanin(i);
+    if ( inode->ffr_root() != inode ) {
+      inode->dfs_ffr(node_list, fault_list);
+    }
+  }
 }
 
 END_NAMESPACE_YM_SATPG

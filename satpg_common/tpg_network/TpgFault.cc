@@ -38,11 +38,26 @@ TpgFault::~TpgFault()
 {
 }
 
-// @brief 故障の属するFFRの根のノードを返す．
-const TpgNode*
-TpgFault::ffr_root() const
+// @brief 代表故障を設定する．
+// @param[in] rep 代表故障
+void
+TpgFault::set_rep(const TpgFault* rep)
 {
-  return tpg_onode()->ffr_root();
+  mRepFault = rep;
+}
+
+// @brief FFRを設定する．
+void
+TpgFault::set_ffr(const TpgFFR* ffr)
+{
+  mFFR = ffr;
+}
+
+// @brief MFFCを設定する．
+void
+TpgFault::set_mffc(const TpgMFFC* mffc)
+{
+  mMFFC = mffc;
 }
 
 // @brief ストリーム出力演算子

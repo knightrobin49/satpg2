@@ -146,22 +146,6 @@ check_network_connection(const TpgNetwork& network)
   }
 }
 
-// DFS を行い FFR 内のノードを求める．
-void
-mark_ffr(const TpgNode* node,
-	 vector<const TpgNode*>& node_list)
-{
-  node_list.push_back(node);
-
-  ymuint ni = node->fanin_num();
-  for (ymuint i = 0; i < ni; ++ i) {
-    const TpgNode* inode = node->fanin(i);
-    if ( inode->ffr_root() != inode ) {
-      mark_ffr(inode, node_list);
-    }
-  }
-}
-
 END_NONAMESPACE
 
 
@@ -700,7 +684,7 @@ TpgNetwork::set(const BnNetwork& network)
   for (ymuint i = 0; i < mFfrNum; ++ i) {
     TpgNode* node = root_list[i];
     TpgFFR* ffr = &mFfrArray[i];
-    set_ffr(node, ffr);
+    node->set_ffr(ffr, mAlloc);
   }
 
 
@@ -1323,7 +1307,7 @@ TpgNetwork::new_ifault(const char* name,
 void
 TpgNetwork::set_rep_faults(TpgNode* node)
 {
-  vector<const TpgFault*> fault_list;
+  vector<TpgFault*> fault_list;
 
   if ( node->fanout_num() == 1 ) {
     TpgNode* onode = node->fanout(0);
@@ -1339,13 +1323,13 @@ TpgNetwork::set_rep_faults(TpgNode* node)
     }
     ASSERT_COND( ipos < ni );
 
-    const TpgFault* rep0 = node_input_fault(onode->id(), 0, ipos);
+    TpgFault* rep0 = _node_input_fault(onode->id(), 0, ipos);
     TpgFault* of0 = _node_output_fault(node->id(), 0);
     if ( of0 != nullptr ) {
       of0->set_rep(rep0);
     }
 
-    const TpgFault* rep1 = node_input_fault(onode->id(), 1, ipos);
+    TpgFault* rep1 = _node_input_fault(onode->id(), 1, ipos);
     TpgFault* of1 = _node_output_fault(node->id(), 1);
     if ( of1 != nullptr ){
       of1->set_rep(rep1);
@@ -1355,7 +1339,7 @@ TpgNetwork::set_rep_faults(TpgNode* node)
   if ( !node->is_ppo() ) {
     TpgFault* of0 = _node_output_fault(node->id(), 0);
     if ( of0 != nullptr ) {
-      const TpgFault* rep0 = of0->rep_fault();
+      TpgFault* rep0 = of0->rep_fault();
       if ( rep0 == nullptr ) {
 	of0->set_rep(of0);
 	fault_list.push_back(of0);
@@ -1367,7 +1351,7 @@ TpgNetwork::set_rep_faults(TpgNode* node)
 
     TpgFault* of1 = _node_output_fault(node->id(), 1);
     if ( of1 != nullptr ) {
-      const TpgFault* rep1 = of1->rep_fault();
+      TpgFault* rep1 = of1->rep_fault();
       if ( rep1 == nullptr ) {
 	of1->set_rep(of1);
 	fault_list.push_back(of1);
@@ -1382,7 +1366,7 @@ TpgNetwork::set_rep_faults(TpgNode* node)
   for (ymuint i = 0; i < ni; ++ i) {
     TpgFault* if0 = _node_input_fault(node->id(), 0, i);
     if ( if0 != nullptr ) {
-      const TpgFault* rep0 = if0->rep_fault();
+      TpgFault* rep0 = if0->rep_fault();
       if ( rep0 == nullptr ) {
 	if0->set_rep(if0);
 	fault_list.push_back(if0);
@@ -1394,7 +1378,7 @@ TpgNetwork::set_rep_faults(TpgNode* node)
 
     TpgFault* if1 = _node_input_fault(node->id(), 1, i);
     if ( if1 != nullptr ) {
-      const TpgFault* rep1 = if1->rep_fault();
+      TpgFault* rep1 = if1->rep_fault();
       if ( rep1 == nullptr ) {
 	if1->set_rep(if1);
 	fault_list.push_back(if1);
@@ -1409,6 +1393,7 @@ TpgNetwork::set_rep_faults(TpgNode* node)
   node->set_fault_list(fault_list, mAlloc);
 }
 
+#if 0
 // @brief FFR の情報を設定する．
 // @param[in] root FFR の根のノード
 // @param[in] ffr 対象の FFR
@@ -1444,10 +1429,12 @@ TpgNetwork::set_ffr(TpgNode* root,
     const TpgNode* node = node_list[j];
     ymuint n = node->fault_num();
     for (ymuint k = 0; k < n; ++ k, ++ nf) {
+
       ffr->mFaultList[nf] = node->fault(k);
     }
   }
 }
+#endif
 
 // @brief MFFC を返す．
 // @param[in] pos 位置番号 ( 0 <= pos < mffc_num() )

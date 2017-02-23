@@ -29,8 +29,6 @@ BEGIN_NAMESPACE_YM_SATPG
 //////////////////////////////////////////////////////////////////////
 class TpgFFR
 {
-  friend class TpgNetwork;
-
 public:
 
   /// @brief コンストラクタ
@@ -66,6 +64,21 @@ public:
   /// @param[in] pos 位置番号 ( 0 <= pos < fault_num() )
   const TpgFault*
   fault(ymuint pos) const;
+
+
+public:
+  //////////////////////////////////////////////////////////////////////
+  // 設定用の関数
+  //////////////////////////////////////////////////////////////////////
+
+  /// @brief 内容を設定する．
+  /// @param[in] node_list ノードのリスト
+  /// @param[in] fault_list 故障のリスト
+  /// @param[in] alloc メモリアロケータ
+  void
+  set(vector<TpgNode*>& node_list,
+      vector<TpgFault*>& fault_list,
+      Alloc& alloc);
 
 
 private:
