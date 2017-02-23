@@ -38,8 +38,7 @@ run_single(nsSa::Dtpg& dtpg,
   for (ymuint i = 0; i < nf; ++ i) {
     const TpgFault* fault = network.rep_fault(i);
     if ( fmgr.status(fault) == kFsUndetected ) {
-      const TpgNode* ffr_root = fault->ffr_root();
-      const TpgFFR* ffr = ffr_root->ffr();
+      const TpgFFR* ffr = fault->ffr();
       dtpg.gen_ffr_cnf(network, ffr, stats);
       NodeValList nodeval_list;
       SatBool3 ans = dtpg.dtpg(fault, nodeval_list, stats);

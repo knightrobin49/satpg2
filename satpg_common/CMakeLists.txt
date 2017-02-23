@@ -37,6 +37,8 @@ set (tpg_network_SOURCES
   tpg_network/TpgLogicNOR.cc
   tpg_network/TpgLogicXOR.cc
   tpg_network/TpgLogicXNOR.cc
+  tpg_network/TpgFFR.cc
+  tpg_network/TpgMFFC.cc
 
   tpg_network/TpgFault.cc
   tpg_network/TpgFaultMgr.cc

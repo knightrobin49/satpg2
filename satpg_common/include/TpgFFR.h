@@ -9,6 +9,7 @@
 /// All rights reserved.
 
 #include "satpg.h"
+#include "ym/Alloc.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG
@@ -23,7 +24,6 @@ BEGIN_NAMESPACE_YM_SATPG
 ///
 /// 具体的には以下の情報を持つ．
 /// - FFR の根のノード
-/// - FFR の要素のノードのリスト
 /// - FFR に含まれる代表故障のリスト
 /// 一度設定された不変のオブジェクトとなる．
 //////////////////////////////////////////////////////////////////////
@@ -47,15 +47,6 @@ public:
   const TpgNode*
   root() const;
 
-  /// @brief このFFRに含まれるノード数を返す．
-  ymuint
-  elem_num() const;
-
-  /// @brief このFFRに含まれるノードを返す．
-  /// @param[in] pos 位置番号 ( 0 <= pos < elem_num() )
-  const TpgNode*
-  elem(ymuint pos) const;
-
   /// @brief このFFRに含まれる代表故障の数を返す．
   ymuint
   fault_num() const;
@@ -72,11 +63,11 @@ public:
   //////////////////////////////////////////////////////////////////////
 
   /// @brief 内容を設定する．
-  /// @param[in] node_list ノードのリスト
+  /// @param[in] root 根のノード
   /// @param[in] fault_list 故障のリスト
   /// @param[in] alloc メモリアロケータ
   void
-  set(vector<TpgNode*>& node_list,
+  set(TpgNode* root,
       vector<TpgFault*>& fault_list,
       Alloc& alloc);
 
@@ -92,11 +83,8 @@ private:
   // データメンバ
   //////////////////////////////////////////////////////////////////////
 
-  // ノード数
-  ymuint mElemNum;
-
-  // ノードの配列
-  const TpgNode** mElemList;
+  // 根のノード
+  const TpgNode* mRoot;
 
   // 故障数
   ymuint mFaultNum;
@@ -115,8 +103,7 @@ private:
 inline
 TpgFFR::TpgFFR()
 {
-  mElemNum = 0;
-  mElemList = nullptr;
+  mRoot = nullptr;
   mFaultNum = 0;
   mFaultList = nullptr;
 }
@@ -132,26 +119,7 @@ inline
 const TpgNode*
 TpgFFR::root() const
 {
-  return mElemList[0];
-}
-
-// @brief このFFRに含まれるノード数を返す．
-inline
-ymuint
-TpgFFR::elem_num() const
-{
-  return mElemNum;
-}
-
-// @brief このFFRに含まれるノードを返す．
-// @param[in] pos 位置番号 ( 0 <= pos < elem_num() )
-inline
-const TpgNode*
-TpgFFR::elem(ymuint pos) const
-{
-  ASSERT_COND( pos < elem_num() );
-
-  return mElemList[pos];
+  return mRoot;
 }
 
 // @brief このFFRに含まれる代表故障の数を返す．

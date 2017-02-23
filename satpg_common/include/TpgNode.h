@@ -441,15 +441,18 @@ public:
 		 Alloc& alloc);
 
   /// @brief MFFC を設定する．
+  /// @param[in] mffc このノードを根とするMFFC
   void
   set_mffc(const TpgMFFC* mffc);
 
   /// @brief FFR を設定する．
-  /// @param[in] ffr このノードが含まれるFFR
-  /// @param[in] alloc メモリアロケータ
+  /// @param[in] ffr このノードを根とするFFR
   void
-  set_ffr(const TpgFFR* ffr,
-	  Alloc& alloc);
+  set_ffr(TpgFFR* ffr);
+
+  /// @brief このノードが持っている代表故障をリストに追加する．
+  void
+  add_to_fault_list(vector<TpgFault*>& fault_list);
 
 
 public:
@@ -486,11 +489,9 @@ private:
   //////////////////////////////////////////////////////////////////////
 
   /// @brief DFS を行い FFR 内のノードと故障を求める．
-  /// @param[out] node_list ノードリスト
   /// @param[out] fault_list 故障のリスト
   void
-  dfs_ffr(vector<TpgNode*>& node_list,
-	  vector<TpgFault*>& fault_list);
+  dfs_ffr(vector<TpgFault*>& fault_list);
 
 
 private:

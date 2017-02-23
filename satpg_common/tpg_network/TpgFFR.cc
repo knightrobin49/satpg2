@@ -8,6 +8,7 @@
 
 
 #include "TpgFFR.h"
+#include "TpgFault.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG
@@ -17,23 +18,15 @@ BEGIN_NAMESPACE_YM_SATPG
 //////////////////////////////////////////////////////////////////////
 
 // @brief 内容を設定する．
-// @param[in] node_list ノードのリスト
+// @param[in] root 根のノード
 // @param[in] fault_list 故障のリスト
 // @param[in] alloc メモリアロケータ
 void
-TpgFFR::set(vector<TpgNode*>& node_list,
+TpgFFR::set(TpgNode* root,
 	    vector<TpgFault*>& fault_list,
 	    Alloc& alloc)
 {
-  ymuint ne = node_list.size();
-  mElemNum = ne;
-  void* p = alloc.get_memory(sizeof(const TpgNode*) * ne);
-  mElemList = new (p) const TpgNode*[ne];
-
-  for (ymuint i = 0; i < ne; ++ i) {
-    TpgNode* node = node_list[i];
-    mElemList[i] = node;
-  }
+  mRoot = root;
 
   ymuint nf = fault_list.size();
   mFaultNum = nf;

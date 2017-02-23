@@ -40,6 +40,7 @@ DtpgImplM::DtpgImplM(const string& sat_type,
   for (ymuint i = 0; i < mffc->elem_num(); ++ i ) {
     const TpgFFR* ffr = mffc->elem(i);
     mElemArray[i] = ffr->root();
+    ASSERT_COND( ffr->root() != nullptr );
     ymuint nf = ffr->fault_num();
     for (ymuint j = 0; j < nf; ++ j) {
       const TpgFault* f = ffr->fault(j);

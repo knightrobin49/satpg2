@@ -9,6 +9,7 @@
 /// All rights reserved.
 
 #include "satpg.h"
+#include "ym/Alloc.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG
@@ -29,8 +30,6 @@ BEGIN_NAMESPACE_YM_SATPG
 //////////////////////////////////////////////////////////////////////
 class TpgMFFC
 {
-  friend class TpgNetwork;
-
 public:
 
   /// @brief コンストラクタ
@@ -68,6 +67,23 @@ public:
   fault(ymuint pos) const;
 
 
+public:
+  //////////////////////////////////////////////////////////////////////
+  // 設定用の関数
+  //////////////////////////////////////////////////////////////////////
+
+  /// @brief 内容を設定する．
+  /// @param[in] root 根のノード
+  /// @param[in] ffr_list このMFFCに含まれるFFRのリスト
+  /// @param[in] fault_list このMFFCに含まれる故障のリスト
+  /// @param[in] alloc メモリアロケータ
+  void
+  set(TpgNode* root,
+      const vector<const TpgFFR*>& ffr_list,
+      const vector<TpgFault*>& fault_list,
+      Alloc& alloc);
+
+
 private:
   //////////////////////////////////////////////////////////////////////
   // 内部で用いられる関数
@@ -92,7 +108,7 @@ private:
   ymuint mFaultNum;
 
   // 故障の配列
-  const TpgFault** mFaultList;
+  TpgFault** mFaultList;
 
 };
 

@@ -197,28 +197,6 @@ public:
 
 public:
   //////////////////////////////////////////////////////////////////////
-  // ノードに関する情報を取得する関数
-  //////////////////////////////////////////////////////////////////////
-
-  /// @brief 出力の故障を得る．
-  /// @param[in] id ノードID ( 0 <= id < node_num() )
-  /// @param[in] val 故障値 ( 0 / 1 )
-  const TpgFault*
-  node_output_fault(ymuint id,
-		    int val) const;
-
-  /// @brief 入力の故障を得る．
-  /// @param[in] id ノードID ( 0 <= id < node_num() )
-  /// @param[in] val 故障値 ( 0 / 1 )
-  /// @param[in] pos 入力の位置番号
-  const TpgFault*
-  node_input_fault(ymuint id,
-		   int val,
-		   ymuint pos) const;
-
-
-public:
-  //////////////////////////////////////////////////////////////////////
   // 内容を設定するための関数
   //////////////////////////////////////////////////////////////////////
 
@@ -420,7 +398,7 @@ private:
 	     ymuint ipos,
 	     int val,
 	     const InodeInfo& inode_info,
-	     const TpgFault* rep);
+	     TpgFault* rep);
 
   /// @brief 出力の故障を得る．
   /// @param[in] id ノードID ( 0 <= id < node_num() )
@@ -450,6 +428,13 @@ private:
   void
   set_ffr(TpgNode* root,
 	  TpgFFR* ffr);
+
+  /// @brief MFFC の情報を設定する．
+  /// @param[in] root MFFCの根のノード
+  /// @param[in] mffc 対象のMFFC
+  void
+  set_mffc(TpgNode* root,
+	   TpgMFFC* mffc);
 
 
 private:

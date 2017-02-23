@@ -219,32 +219,6 @@ TpgNetwork::read_iscas89(const string& filename)
 // @brief 出力の故障を得る．
 // @param[in] id ノードID ( 0 <= id < node_num() )
 // @param[in] val 故障値 ( 0 / 1 )
-const TpgFault*
-TpgNetwork::node_output_fault(ymuint id,
-			      int val) const
-{
-  ASSERT_COND( id < mNodeNum );
-
-  return mAuxInfoArray[id].output_fault(val);
-}
-
-// @brief 入力の故障を得る．
-// @param[in] id ノードID ( 0 <= id < node_num() )
-// @param[in] val 故障値 ( 0 / 1 )
-// @param[in] pos 入力の位置番号
-const TpgFault*
-TpgNetwork::node_input_fault(ymuint id,
-			     int val,
-			     ymuint pos) const
-{
-  ASSERT_COND( id < mNodeNum );
-
-  return mAuxInfoArray[id].input_fault(pos, val);
-}
-
-// @brief 出力の故障を得る．
-// @param[in] id ノードID ( 0 <= id < node_num() )
-// @param[in] val 故障値 ( 0 / 1 )
 TpgFault*
 TpgNetwork::_node_output_fault(ymuint id,
 			       int val)
@@ -661,126 +635,58 @@ TpgNetwork::set(const BnNetwork& network)
 
 
   //////////////////////////////////////////////////////////////////////
-  // FFR の情報を作る．
+  // FFR と MFFC の根のノードを求める．
   //////////////////////////////////////////////////////////////////////
-
-  // まずFFRの根のノードを求める．
-  vector<TpgNode*> root_list;
+  vector<TpgNode*> ffr_root_list;
+  vector<TpgNode*> mffc_root_list;
   for (ymuint i = 0; i < mNodeNum; ++ i) {
     TpgNode* node = mNodeArray[i];
     if ( !dmarks[node->id()] ) {
+      // データ系のノードでなければスキップ
       continue;
     }
-    if ( node->ffr_root() != node ) {
-      continue;
-    }
+    if ( node->ffr_root() == node ) {
+      ffr_root_list.push_back(node);
 
-    // node は FFR の根のノード
-    root_list.push_back(node);
+      // MFFC の根は必ず FFR の根でもある．
+      if ( node->imm_dom() == nullptr ) {
+	mffc_root_list.push_back(node);
+      }
+    }
   }
 
-  mFfrNum = root_list.size();
+
+  //////////////////////////////////////////////////////////////////////
+  // FFR の情報を作る．
+  //////////////////////////////////////////////////////////////////////
+  mFfrNum = ffr_root_list.size();
   mFfrArray = new TpgFFR[mFfrNum];
   for (ymuint i = 0; i < mFfrNum; ++ i) {
-    TpgNode* node = root_list[i];
+    TpgNode* node = ffr_root_list[i];
     TpgFFR* ffr = &mFfrArray[i];
-    node->set_ffr(ffr, mAlloc);
+    set_ffr(node, ffr);
   }
 
 
   //////////////////////////////////////////////////////////////////////
   // MFFC の情報を作る．
   //////////////////////////////////////////////////////////////////////
+#if 0
   ymuint total_mffc_size = 0;
   ymuint max_mffc_size = 0;
   ymuint total_mffc_inputs = 0;
   ymuint max_mffc_inputs = 0;
+#endif
 
-  // まず根のノードを求める．
-  root_list.clear();
-  for (ymuint i = 0; i < mNodeNum; ++ i) {
-    TpgNode* node = mNodeArray[i];
-    if ( !dmarks[node->id()] ) {
-      continue;
-    }
-    if ( node->imm_dom() != nullptr ) {
-      continue;
-    }
-    root_list.push_back(node);
-  }
-
-  mMffcNum = root_list.size();
+  mMffcNum = mffc_root_list.size();
   mMffcArray = new TpgMFFC[mMffcNum];
 
-  vector<bool> mark(node_num(), false);
   for (ymuint i = 0; i < mMffcNum; ++ i) {
-    TpgNode* node = root_list[i];
+    TpgNode* node = mffc_root_list[i];
+    TpgMFFC* mffc = &mMffcArray[i];
+    set_mffc(node, mffc);
 
-    TpgMFFC& mffc = mMffcArray[i];
-    node->set_mffc(&mffc);
-    mffc.mRoot = node;
-
-    // node を根とする MFFC の情報を得る．
-    vector<TpgNode*> node_list;
-    vector<TpgNode*> input_list;
-    vector<const TpgFFR*> ffr_list;
-
-    node_list.push_back(node);
-    ffr_list.push_back(node->ffr());
-    mark[node->id()] = true;
-    for (ymuint rpos = 0; rpos < node_list.size(); ++ rpos) {
-      TpgNode* node = node_list[rpos];
-      ymuint ni = node->fanin_num();
-      for (ymuint i = 0; i < ni; ++ i) {
-	TpgNode* inode = node->fanin(i);
-	if ( mark[inode->id()] ) {
-	  continue;
-	}
-	mark[inode->id()] = true;
-	if ( inode->imm_dom() == nullptr ) {
-	  input_list.push_back(inode);
-	}
-	else {
-	  if ( inode->is_ppi() ) {
-	    // これは例外
-	    input_list.push_back(inode);
-	  }
-	  node_list.push_back(inode);
-	  if ( inode->ffr_root() == inode ) {
-	    ffr_list.push_back(inode->ffr());
-	  }
-	}
-      }
-    }
-    // マークを消しておく．
-    // ただし根と葉のノードだけで十分
-    mark[node->id()] = false;
-    for (ymuint rpos = 0; rpos < input_list.size(); ++ rpos) {
-      TpgNode* node = input_list[rpos];
-      mark[node->id()] = false;
-    }
-
-    vector<const TpgFault*> fault_list;
-    ymuint elem_num = ffr_list.size();
-    void* p = mAlloc.get_memory(sizeof(const TpgFFR*) * elem_num);
-    mffc.mElemNum = elem_num;
-    mffc.mElemList = new (p) const TpgFFR*[elem_num];
-    for (ymuint j = 0; j < elem_num; ++ j) {
-      const TpgFFR* ffr = ffr_list[j];
-      mffc.mElemList[j] = ffr;
-      ymuint nf = ffr->fault_num();
-      for (ymuint k = 0; k < nf; ++ k) {
-	fault_list.push_back(ffr->fault(k));
-      }
-    }
-    ymuint nf = fault_list.size();
-    mffc.mFaultNum = nf;
-    void* q = mAlloc.get_memory(sizeof(const TpgFault*) * nf);
-    mffc.mFaultList = new (q) const TpgFault*[nf];
-    for (ymuint j = 0; j < nf; ++ j) {
-      mffc.mFaultList[j] = fault_list[j];
-    }
-
+#if 0
     ymuint mffc_size = node_list.size();
     total_mffc_size += mffc_size;
     if ( max_mffc_size < mffc_size ) {
@@ -791,6 +697,7 @@ TpgNetwork::set(const BnNetwork& network)
     if ( max_mffc_inputs < input_size ) {
       max_mffc_inputs = input_size;
     }
+#endif
   }
 }
 
@@ -1146,20 +1053,20 @@ TpgNetwork::make_logic_node(const string& src_name,
     Val3 oval0 = node_info->cval(i, kVal0);
     Val3 oval1 = node_info->cval(i, kVal1);
 
-    const TpgFault* rep0 = nullptr;
+    TpgFault* rep0 = nullptr;
     if ( oval0 == kVal0 ) {
-      rep0 = node_output_fault(node->id(), 0);
+      rep0 = _node_output_fault(node->id(), 0);
     }
     else if ( oval0 == kVal1 ) {
-      rep0 = node_output_fault(node->id(), 1);
+      rep0 = _node_output_fault(node->id(), 1);
     }
 
-    const TpgFault* rep1 = nullptr;
+    TpgFault* rep1 = nullptr;
     if ( oval1 == kVal0 ) {
-      rep1 = node_output_fault(node->id(), 0);
+      rep1 = _node_output_fault(node->id(), 0);
     }
     else if ( oval1 == kVal1 ) {
-      rep1 = node_output_fault(node->id(), 1);
+      rep1 = _node_output_fault(node->id(), 1);
     }
     new_ifault(c_name, i, 0, inode_array[i], rep0);
     new_ifault(c_name, i, 1, inode_array[i], rep1);
@@ -1291,7 +1198,7 @@ TpgNetwork::new_ifault(const char* name,
 		       ymuint ipos,
 		       int val,
 		       const InodeInfo& inode_info,
-		       const TpgFault* rep)
+		       TpgFault* rep)
 {
   TpgNode* node = inode_info.mNode;
   ymuint inode_pos = inode_info.mPos;
@@ -1339,25 +1246,25 @@ TpgNetwork::set_rep_faults(TpgNode* node)
   if ( !node->is_ppo() ) {
     TpgFault* of0 = _node_output_fault(node->id(), 0);
     if ( of0 != nullptr ) {
-      TpgFault* rep0 = of0->rep_fault();
+      TpgFault* rep0 = of0->_rep_fault();
       if ( rep0 == nullptr ) {
 	of0->set_rep(of0);
 	fault_list.push_back(of0);
       }
       else {
-	of0->set_rep(rep0->rep_fault());
+	of0->set_rep(rep0->_rep_fault());
       }
     }
 
     TpgFault* of1 = _node_output_fault(node->id(), 1);
     if ( of1 != nullptr ) {
-      TpgFault* rep1 = of1->rep_fault();
+      TpgFault* rep1 = of1->_rep_fault();
       if ( rep1 == nullptr ) {
 	of1->set_rep(of1);
 	fault_list.push_back(of1);
       }
       else {
-	of1->set_rep(rep1->rep_fault());
+	of1->set_rep(rep1->_rep_fault());
       }
     }
   }
@@ -1366,25 +1273,25 @@ TpgNetwork::set_rep_faults(TpgNode* node)
   for (ymuint i = 0; i < ni; ++ i) {
     TpgFault* if0 = _node_input_fault(node->id(), 0, i);
     if ( if0 != nullptr ) {
-      TpgFault* rep0 = if0->rep_fault();
+      TpgFault* rep0 = if0->_rep_fault();
       if ( rep0 == nullptr ) {
 	if0->set_rep(if0);
 	fault_list.push_back(if0);
       }
       else {
-	if0->set_rep(rep0->rep_fault());
+	if0->set_rep(rep0->_rep_fault());
       }
     }
 
     TpgFault* if1 = _node_input_fault(node->id(), 1, i);
     if ( if1 != nullptr ) {
-      TpgFault* rep1 = if1->rep_fault();
+      TpgFault* rep1 = if1->_rep_fault();
       if ( rep1 == nullptr ) {
 	if1->set_rep(if1);
 	fault_list.push_back(if1);
       }
       else {
-	if1->set_rep(rep1->rep_fault());
+	if1->set_rep(rep1->_rep_fault());
       }
     }
   }
@@ -1393,7 +1300,6 @@ TpgNetwork::set_rep_faults(TpgNode* node)
   node->set_fault_list(fault_list, mAlloc);
 }
 
-#if 0
 // @brief FFR の情報を設定する．
 // @param[in] root FFR の根のノード
 // @param[in] ffr 対象の FFR
@@ -1401,40 +1307,69 @@ void
 TpgNetwork::set_ffr(TpgNode* root,
 		    TpgFFR* ffr)
 {
-  root->set_ffr(ffr);
+  // root を根とするFFRの故障リストを求める．
+  vector<TpgNode*> node_list;
+  vector<TpgFault*> fault_list;
 
-  vector<const TpgNode*> node_list;
-  mark_ffr(root, node_list);
+  node_list.push_back(root);
+  while ( !node_list.empty() ) {
+    TpgNode* node = node_list.back();
+    node_list.pop_back();
 
-  ymuint ne = node_list.size();
-  ffr->mElemNum = ne;
+    node->add_to_fault_list(fault_list);
 
-  void* p = mAlloc.get_memory(sizeof(const TpgNode*) * ne);
-  ffr->mElemList = new (p) const TpgNode*[ne];
-
-  ymuint nf = 0;
-  for (ymuint j = 0; j < ne; ++ j) {
-    const TpgNode* node = node_list[j];
-    ffr->mElemList[j] = node;
-    nf += node->fault_num();
-  }
-
-  ffr->mFaultNum = nf;
-
-  void* q = mAlloc.get_memory(sizeof(const TpgFault*) * nf);
-  ffr->mFaultList = new (q) const TpgFault*[nf];
-
-  nf = 0;
-  for (ymuint j = 0; j < ne; ++ j) {
-    const TpgNode* node = node_list[j];
-    ymuint n = node->fault_num();
-    for (ymuint k = 0; k < n; ++ k, ++ nf) {
-
-      ffr->mFaultList[nf] = node->fault(k);
+    ymuint ni = node->fanin_num();
+    for (ymuint i = 0; i < ni; ++ i) {
+      TpgNode* inode = node->fanin(i);
+      if ( inode->ffr_root() != inode ) {
+	node_list.push_back(inode);
+      }
     }
   }
+
+  root->set_ffr(ffr);
+  ffr->set(root, fault_list, mAlloc);
 }
-#endif
+
+// @brief MFFC の情報を設定する．
+// @param[in] root MFFCの根のノード
+// @param[in] mffc 対象のMFFC
+void
+TpgNetwork::set_mffc(TpgNode* root,
+		     TpgMFFC* mffc)
+{
+  // root を根とする MFFC の情報を得る．
+  vector<bool> mark(node_num());
+  vector<TpgNode*> node_list;
+  vector<const TpgFFR*> ffr_list;
+  vector<TpgFault*> fault_list;
+
+  node_list.push_back(root);
+  mark[root->id()] = true;
+  while ( !node_list.empty() ) {
+    TpgNode* node = node_list.back();
+    node_list.pop_back();
+
+    if ( node->ffr_root() == node ) {
+      ffr_list.push_back(node->ffr());
+    }
+
+    node->add_to_fault_list(fault_list);
+
+    ymuint ni = node->fanin_num();
+    for (ymuint i = 0; i < ni; ++ i) {
+      TpgNode* inode = node->fanin(i);
+      if ( !mark[inode->id()] &&
+	   inode->imm_dom() != nullptr ) {
+	mark[inode->id()] = true;
+	node_list.push_back(inode);
+      }
+    }
+  }
+
+  root->set_mffc(mffc);
+  mffc->set(root, ffr_list, fault_list, mAlloc);
+}
 
 // @brief MFFC を返す．
 // @param[in] pos 位置番号 ( 0 <= pos < mffc_num() )

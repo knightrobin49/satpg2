@@ -30,7 +30,7 @@ public:
   /// @param[in] rep_fault 代表故障
   TpgFault(ymuint id,
 	   int val,
-	   const TpgFault* rep_fault);
+	   TpgFault* rep_fault);
 
   /// @brief デストラクタ
   virtual
@@ -101,7 +101,8 @@ public:
   is_rep() const;
 
   /// @brief 代表故障を返す．
-  /// @note 代表故障の時は自分自身を返す．
+  ///
+  /// 代表故障の時は自分自身を返す．
   const TpgFault*
   rep_fault() const;
 
@@ -122,7 +123,11 @@ public:
   /// @brief 代表故障を設定する．
   /// @param[in] rep 代表故障
   void
-  set_rep(const TpgFault* rep);
+  set_rep(TpgFault* rep);
+
+  /// @brief 代表故障を返す．
+  TpgFault*
+  _rep_fault();
 
   /// @brief FFRを設定する．
   void
@@ -142,7 +147,7 @@ private:
   ymuint mIdVal;
 
   // 代表故障
-  const TpgFault* mRepFault;
+  TpgFault* mRepFault;
 
   // FFR
   const TpgFFR* mFFR;
@@ -216,6 +221,14 @@ TpgFault::is_rep() const
 inline
 const TpgFault*
 TpgFault::rep_fault() const
+{
+  return mRepFault;
+}
+
+// @brief 代表故障を返す．
+inline
+TpgFault*
+TpgFault::_rep_fault()
 {
   return mRepFault;
 }
