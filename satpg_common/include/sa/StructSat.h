@@ -17,8 +17,6 @@
 
 BEGIN_NAMESPACE_YM_SATPG_SA
 
-class FoCone;
-
 //////////////////////////////////////////////////////////////////////
 /// @class StructSat StructSat.h "sa/StructSat.h"
 /// @brief TpgNetwork の構造に基づく SAT ソルバ
@@ -100,13 +98,6 @@ public:
   add_focone(const TpgFault* fault,
 	     const TpgNode* bnode,
 	     Val3 detect);
-
-  /// @brief fault cone を追加する．
-  /// @param[in] fnode 故障のあるノード
-  ///
-  /// こちらは MFFC 内の故障を対象にする．
-  const MffcCone*
-  add_mffccone(const TpgNode* fnode);
 
   /// @brief 故障の検出条件を割当リストに追加する．
   /// @param[in] fault 故障
@@ -257,9 +248,6 @@ private:
 
   // fanout cone のリスト
   vector<FoCone*> mFoConeList;
-
-  // MFFC cone のリスト
-  vector<MffcCone*> mMffcConeList;
 
   // デバッグ用のフラグ
   ymuint mDebugFlag;

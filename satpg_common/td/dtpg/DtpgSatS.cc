@@ -20,7 +20,7 @@
 #include "GateLitMap_vect.h"
 #include "GateLitMap_vid.h"
 
-#include "td/Fsim.h"
+#include "Fsim.h"
 
 #include "ym/SatSolver.h"
 

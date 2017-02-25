@@ -11,7 +11,7 @@
 #include "TpgFaultMgr.h"
 #include "TvMgr.h"
 #include "TestVector.h"
-#include "td/Fsim.h"
+#include "Fsim.h"
 #include "td/RtpgStats.h"
 #include "FopRtpg.h"
 #include "ym/StopWatch.h"
@@ -150,7 +150,11 @@ RtpgP2::run(TpgFaultMgr& fmgr,
   ymuint pat_num = 0;
 
   tv1->set_from_random(mRandGen);
+#if 0
   ymuint wsa0 = fsim.calc_wsa(tv1);
+#else
+  ymuint wsa0 = 0;
+#endif
   double val0 = evaluate(wsa0, wsa_limit);
   ymuint count = 0;
 
@@ -158,7 +162,11 @@ RtpgP2::run(TpgFaultMgr& fmgr,
     // tv1 から tv2 を作る．
     gen_neighbor(tv1, tv2, mRandGen, mNbits);
     ++ gnum;
+#if 0
     ymuint wsa1 = fsim.calc_wsa(tv2);
+#else
+    ymuint wsa1 = 0;
+#endif
     double val1 = evaluate(wsa1, wsa_limit);
     //cout << "wsa = " << wsa1 << ", val = " << val1
     //<< ", # of pat = " << pat_num << endl;
@@ -183,7 +191,7 @@ RtpgP2::run(TpgFaultMgr& fmgr,
       if ( wsa1 <= wsa_limit ) {
 	op.clear_count();
 
-	fsim.sppfp(tv1, op);
+	fsim.td_sppfp(tv1);
 	++ pat_num;
 
 	ymuint det_count = op.count(0);

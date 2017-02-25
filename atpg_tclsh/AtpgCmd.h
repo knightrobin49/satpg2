@@ -62,6 +62,14 @@ protected:
   TpgFaultMgr&
   _fault_mgr();
 
+  /// @brief 2値の故障シミュレータを取り出す．
+  Fsim&
+  _fsim2();
+
+  /// @brief 3値の故障シミュレータを返す．
+  Fsim&
+  _fsim3();
+
   /// @brief TvMgr を取り出す．
   TvMgr&
   _tv_mgr();
@@ -70,21 +78,9 @@ protected:
   vector<const TestVector*>&
   _sa_tv_list();
 
-  /// @brief 2値の故障シミュレータを取り出す．
-  nsSa::Fsim&
-  _sa_fsim();
-
-  /// @brief 3値の故障シミュレータを返す．
-  nsSa::Fsim&
-  _sa_fsim3();
-
   /// @brief テストベクタのリストを取り出す．
   vector<const TestVector*>&
   _td_tv_list();
-
-  /// @brief 遷移故障用の2値の故障シミュレータを取り出す．
-  nsTd::Fsim&
-  _td_fsim();
 
   /// @brief ファイル読み込みに関わる時間を得る．
   USTime

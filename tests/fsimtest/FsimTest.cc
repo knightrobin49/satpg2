@@ -11,12 +11,12 @@
 #include "TpgFault.h"
 #include "TestVector.h"
 #include "TvMgr.h"
-#include "sa/Fsim.h"
+#include "Fsim.h"
 #include "ym/RandGen.h"
 #include "ym/StopWatch.h"
 
 
-BEGIN_NAMESPACE_YM_SATPG_SA
+BEGIN_NAMESPACE_YM_SATPG
 
 const char* argv0 = "";
 
@@ -39,7 +39,7 @@ spsfp_test(const TpgNetwork& network,
       if ( mark[f->id()] ) {
 	continue;
       }
-      if ( fsim.spsfp(tv, f) ) {
+      if ( fsim.sa_spsfp(tv, f) ) {
 	++ det_num;
 	detect = true;
 	mark[f->id()] = true;
@@ -63,7 +63,7 @@ sppfp_test(Fsim& fsim,
   ymuint nv = tv_list.size();
   for (ymuint i = 0; i < nv; ++ i) {
     const TestVector* tv = tv_list[i];
-    ymuint n = fsim.sppfp(tv);
+    ymuint n = fsim.sa_sppfp(tv);
     if ( n > 0 ) {
       det_num += n;
       ++ nepat;
@@ -93,7 +93,7 @@ ppsfp_test(Fsim& fsim,
     fsim.set_pattern(wpos, tv);
     ++ wpos;
     if ( wpos == kPvBitLen ) {
-      ymuint n = fsim.ppsfp();
+      ymuint n = fsim.sa_ppsfp();
 
       ymuint nb = wpos;
       PackedVal dpat_all = 0ULL;
@@ -122,7 +122,7 @@ ppsfp_test(Fsim& fsim,
     }
   }
   if ( wpos > 0 ) {
-    ymuint n = fsim.ppsfp();
+    ymuint n = fsim.sa_ppsfp();
 
     ymuint nb = wpos;
     PackedVal dpat_all = 0ULL;
@@ -358,12 +358,12 @@ fsim2test(int argc,
   return 0;
 }
 
-END_NAMESPACE_YM_SATPG_SA
+END_NAMESPACE_YM_SATPG
 
 
 int
 main(int argc,
      char** argv)
 {
-  return nsYm::nsSatpg::nsSa::fsim2test(argc, argv);
+  return nsYm::nsSatpg::fsim2test(argc, argv);
 }

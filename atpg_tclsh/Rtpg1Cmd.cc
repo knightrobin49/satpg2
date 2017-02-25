@@ -11,7 +11,7 @@
 #include "TpgFaultMgr.h"
 #include "td/Rtpg.h"
 #include "td/RtpgStats.h"
-#include "td/Fsim.h"
+#include "Fsim.h"
 #include "TvMgr.h"
 #include "TestVector.h"
 #include "ym/TclPopt.h"
@@ -102,7 +102,7 @@ Rtpg1Cmd::cmd_proc(TclObjVector& objv)
     // 平均の WSA を求める．
     RandGen randgen;
     ymuint n_count = 10000;
-    TdFsim& fsim = _td_fsim();
+    Fsim& fsim = _fsim2();
     TvMgr& tvmgr = _tv_mgr();
     TestVector* tv = tvmgr.new_td_vector();
     ymuint wsa_sum = 0;
@@ -140,7 +140,7 @@ Rtpg1Cmd::cmd_proc(TclObjVector& objv)
   }
 
   TpgFaultMgr& fmgr = _fault_mgr();
-  TdFsim& fsim = _td_fsim();
+  Fsim& fsim = _fsim2();
   TvMgr& tvmgr = _tv_mgr();
 
   vector<const TestVector*>& tv_list = _td_tv_list();

@@ -11,7 +11,7 @@
 #include "TpgFaultMgr.h"
 #include "TvMgr.h"
 #include "TestVector.h"
-#include "sa/Fsim.h"
+#include "Fsim.h"
 #include "sa/RtpgStats.h"
 #include "ym/StopWatch.h"
 
@@ -108,7 +108,7 @@ RtpgImpl::run(TpgFaultMgr& fmgr,
       break;
     }
 
-    ymuint det_count = fsim.ppsfp();
+    ymuint det_count = fsim.sa_ppsfp();
 
     bool det_flags[kPvBitLen];
     for (ymuint i = 0; i < kPvBitLen; ++ i) {

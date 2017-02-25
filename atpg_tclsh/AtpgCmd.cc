@@ -262,17 +262,17 @@ AtpgCmd::_sa_tv_list()
 }
 
 // @brief 2値の故障シミュレータを取り出す．
-nsSa::Fsim&
-AtpgCmd::_sa_fsim()
+Fsim&
+AtpgCmd::_fsim2()
 {
-  return mMgr->_sa_fsim();
+  return mMgr->_fsim2();
 }
 
 // @brief 3値の故障シミュレータを返す．
-nsSa::Fsim&
-AtpgCmd::_sa_fsim3()
+Fsim&
+AtpgCmd::_fsim3()
 {
-  return mMgr->_sa_fsim3();
+  return mMgr->_fsim3();
 }
 
 // @brief テストベクタのリストを取り出す．
@@ -280,13 +280,6 @@ vector<const TestVector*>&
 AtpgCmd::_td_tv_list()
 {
   return mMgr->_td_tv_list();
-}
-
-// @brief 遷移故障用の2値の故障シミュレータを取り出す．
-nsTd::Fsim&
-AtpgCmd::_td_fsim()
-{
-  return mMgr->_td_fsim();
 }
 
 // @brief ファイル読み込みに関わる時間を得る．

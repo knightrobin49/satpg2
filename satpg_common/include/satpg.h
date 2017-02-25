@@ -118,6 +118,8 @@ class TvMgr;
 class GateLitMap;
 class VidMap;
 
+class Fsim;
+
 END_NAMESPACE_YM_SATPG
 
 #endif // SATPG_H

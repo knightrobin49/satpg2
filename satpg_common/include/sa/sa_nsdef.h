@@ -35,9 +35,7 @@ BEGIN_NAMESPACE_YM_SATPG_SA
 // クラス名の宣言
 //////////////////////////////////////////////////////////////////////
 
-class ConeBase;
 class FoCone;
-class MffcCone;
 class StructSat;
 class BackTracer;
 class DetectOp;
@@ -49,14 +47,7 @@ class Rtpg;
 class RtpgStats;
 class MinPat;
 class MinPatStats;
-class Fsim;
 
 END_NAMESPACE_YM_SATPG_SA
-
-BEGIN_NAMESPACE_YM_SATPG
-
-typedef nsSa::Fsim SaFsim;
-
-END_NAMESPACE_YM_SATPG
 
 #endif // SATPG_SA_H

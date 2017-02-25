@@ -13,7 +13,10 @@
 #include "TpgFaultMgr.h"
 #include "TpgFault.h"
 
+#include "Fsim.h"
+
 #include "TvMgr.h"
+
 #include "sa/ModelValMap.h"
 #include "sa/StructSat.h"
 

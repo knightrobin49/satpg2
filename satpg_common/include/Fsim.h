@@ -10,7 +10,7 @@
 /// All rights reserved.
 
 
-#include "satpg_nsdef.h"
+#include "satpg.h"
 #include "PackedVal.h"
 
 
@@ -129,25 +129,6 @@ public:
   ymuint
   sa_sppfp(const NodeValList& assign_list) = 0;
 
-  /// @brief ppsfp 用のパタンバッファをクリアする．
-  virtual
-  void
-  sa_clear_patterns() = 0;
-
-  /// @brief ppsfp 用のパタンを設定する．
-  /// @param[in] pos 位置番号 ( 0 <= pos < kPvBitLen )
-  /// @param[in] tv テストベクタ
-  virtual
-  void
-  sa_set_pattern(ymuint pos,
-		 const TestVector* tv) = 0;
-
-  /// @brief 設定した ppsfp 用のパタンを読み出す．
-  /// @param[in] pos 位置番号 ( 0 <= pos < kPvBitLen )
-  virtual
-  const TestVector*
-  sa_get_pattern(ymuint pos) = 0;
-
   /// @brief 複数のパタンで故障シミュレーションを行う．
   /// @return 検出された故障数を返す．
   ///
@@ -201,25 +182,6 @@ public:
   ymuint
   td_sppfp(const NodeValList& assign_list) = 0;
 
-  /// @brief ppsfp 用のパタンバッファをクリアする．
-  virtual
-  void
-  td_clear_patterns() = 0;
-
-  /// @brief ppsfp 用のパタンを設定する．
-  /// @param[in] pos 位置番号 ( 0 <= pos < kPvBitLen )
-  /// @param[in] tv テストベクタ
-  virtual
-  void
-  td_set_pattern(ymuint pos,
-		 const TestVector* tv) = 0;
-
-  /// @brief 設定した ppsfp 用のパタンを読み出す．
-  /// @param[in] pos 位置番号 ( 0 <= pos < kPvBitLen )
-  virtual
-  const TestVector*
-  td_get_pattern(ymuint pos) = 0;
-
   /// @brief 複数のパタンで故障シミュレーションを行う．
   /// @return 検出された故障数を返す．
   ///
@@ -228,6 +190,31 @@ public:
   virtual
   ymuint
   td_ppsfp() = 0;
+
+
+public:
+  //////////////////////////////////////////////////////////////////////
+  // ppsfp のテストパタンを設定する関数
+  //////////////////////////////////////////////////////////////////////
+
+  /// @brief ppsfp 用のパタンバッファをクリアする．
+  virtual
+  void
+  clear_patterns() = 0;
+
+  /// @brief ppsfp 用のパタンを設定する．
+  /// @param[in] pos 位置番号 ( 0 <= pos < kPvBitLen )
+  /// @param[in] tv テストベクタ
+  virtual
+  void
+  set_pattern(ymuint pos,
+	      const TestVector* tv) = 0;
+
+  /// @brief 設定した ppsfp 用のパタンを読み出す．
+  /// @param[in] pos 位置番号 ( 0 <= pos < kPvBitLen )
+  virtual
+  const TestVector*
+  get_pattern(ymuint pos) = 0;
 
 
 public:
@@ -269,6 +256,6 @@ extern
 Fsim*
 new_Fsim3();
 
-END_NAMESPACE_YM_SATPG_SA
+END_NAMESPACE_YM_SATPG
 
 #endif // FSIM_H

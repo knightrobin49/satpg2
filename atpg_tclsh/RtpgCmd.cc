@@ -12,7 +12,7 @@
 #include "TpgFaultMgr.h"
 #include "sa/Rtpg.h"
 #include "sa/RtpgStats.h"
-#include "sa/Fsim.h"
+#include "Fsim.h"
 #include "ym/TclPopt.h"
 
 
@@ -91,7 +91,7 @@ RtpgCmd::cmd_proc(TclObjVector& objv)
   }
 
   TpgFaultMgr& fmgr = _fault_mgr();
-  SaFsim& fsim = _sa_fsim();
+  Fsim& fsim = _fsim2();
   TvMgr& tvmgr = _tv_mgr();
 
   vector<const TestVector*>& tv_list = _sa_tv_list();

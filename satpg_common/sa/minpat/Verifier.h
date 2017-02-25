@@ -8,7 +8,7 @@
 /// Copyright (C) 2014 Yusuke Matsunaga
 /// All rights reserved.
 
-#include "sa/Fsim.h"
+#include "sa/sa_nsdef.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG_SA

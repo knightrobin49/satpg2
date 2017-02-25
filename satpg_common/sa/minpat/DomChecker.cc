@@ -14,7 +14,7 @@
 
 #include "TvMgr.h"
 #include "TestVector.h"
-#include "sa/Fsim.h"
+#include "Fsim.h"
 #include "sa/StructSat.h"
 
 
@@ -275,7 +275,7 @@ DomChecker::do_fsim(const vector<ymuint>& fid_list)
       cout << "\rFSIM: " << setw(6) << npat;
       cout.flush();
     }
-    mFsim.ppsfp();
+    mFsim.sa_ppsfp();
     record_dom_cand();
     npat += wpos;
     mFsim.clear_patterns();
@@ -300,7 +300,7 @@ DomChecker::do_fsim(const vector<ymuint>& fid_list)
       cout << "\rFSIM: " << setw(6) << npat;
       cout.flush();
     }
-    mFsim.ppsfp();
+    mFsim.sa_ppsfp();
     ymuint nchg = 0;
     nchg += record_dom_cand();
     npat += kPvBitLen;

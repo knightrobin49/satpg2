@@ -14,7 +14,7 @@
 #include "TpgFault.h"
 #include "TvMgr.h"
 #include "TestVector.h"
-#include "sa/Fsim.h"
+#include "Fsim.h"
 
 #include "sa/StructSat.h"
 #include "sa/FoCone.h"
@@ -466,7 +466,7 @@ ConflictChecker::do_fsim(const vector<ymuint>& fid_list)
       cout << "\rFSIM: " << base;
       cout.flush();
     }
-    mFsim.ppsfp();
+    mFsim.sa_ppsfp();
     record_pat(fid_list);
     base += wpos;
     mFsim.clear_patterns();
@@ -490,7 +490,7 @@ ConflictChecker::do_fsim(const vector<ymuint>& fid_list)
       cout << "\rFSIM: " << base;
       cout.flush();
     }
-    mFsim.ppsfp();
+    mFsim.sa_ppsfp();
     ymuint nchg = 0;
     nchg += record_pat(fid_list);
     base += kPvBitLen;

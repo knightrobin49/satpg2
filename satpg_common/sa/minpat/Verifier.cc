@@ -8,6 +8,7 @@
 
 
 #include "Verifier.h"
+#include "Fsim.h"
 #include "TpgFault.h"
 #include "TestVector.h"
 #include "ym/HashSet.h"
@@ -59,7 +60,7 @@ Verifier::check(Fsim& fsim,
       break;
     }
 
-    ymuint n = fsim.ppsfp();
+    ymuint n = fsim.sa_ppsfp();
     fsim.clear_patterns();
     wpos = 0;
 

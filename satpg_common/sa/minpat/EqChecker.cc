@@ -13,7 +13,7 @@
 
 #include "TvMgr.h"
 #include "TestVector.h"
-#include "sa/Fsim.h"
+#include "Fsim.h"
 
 
 BEGIN_NAMESPACE_YM_SATPG_SA
@@ -206,7 +206,7 @@ EqChecker::do_fsim(const vector<ymuint>& fid_list)
       cout << "\rFSIM: " << setw(6) << i;
       cout.flush();
     }
-    mFsim.ppsfp();
+    mFsim.sa_ppsfp();
     mEqSet.multi_refinement(mFsim);
     mFsim.clear_patterns();
     wpos = 0;
@@ -230,7 +230,7 @@ EqChecker::do_fsim(const vector<ymuint>& fid_list)
       cout << "\rFSIM: " << setw(6) << npat;
       cout.flush();
     }
-    mFsim.ppsfp();
+    mFsim.sa_ppsfp();
     npat += kPvBitLen;
     ymuint nchg = 0;
     if ( mEqSet.multi_refinement(mFsim) ) {

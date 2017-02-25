@@ -15,7 +15,7 @@
 #include "TpgFaultMgr.h"
 #include "sa/DtpgStats.h"
 #include "sa/Dtpg.h"
-#include "sa/Fsim.h"
+#include "Fsim.h"
 #include "NodeValList.h"
 #include "sa/BackTracer.h"
 #include "sa/DetectOp.h"
@@ -215,10 +215,10 @@ DtpgCmd::cmd_proc(TclObjVector& objv)
   nsSa::BackTracer bt(xmode, _network().node_num());
 
   if ( mPoptDrop->is_specified() ) {
-    dop_list.add(nsSa::new_DopDrop(_fault_mgr(), _sa_fsim3()));
+    dop_list.add(nsSa::new_DopDrop(_fault_mgr(), _fsim3()));
   }
   if ( mPoptVerify->is_specified() ) {
-    dop_list.add(nsSa::new_DopVerify(_sa_fsim3()));
+    dop_list.add(nsSa::new_DopVerify(_fsim3()));
   }
 
   bool timer_enable = true;
@@ -226,11 +226,11 @@ DtpgCmd::cmd_proc(TclObjVector& objv)
     timer_enable = false;
   }
 
-  _sa_fsim3().set_skip_all();
+  _fsim3().set_skip_all();
   for (ymuint i = 0; i < _fault_mgr().max_fault_id(); ++ i) {
     const TpgFault* f = _fault_mgr().fault(i);
     if ( f != nullptr && _fault_mgr().status(f) == kFsUndetected ) {
-      _sa_fsim3().clear_skip(f);
+      _fsim3().clear_skip(f);
     }
   }
 

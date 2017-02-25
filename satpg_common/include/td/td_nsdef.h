@@ -49,16 +49,7 @@ class Rtpg;
 class RtpgStats;
 class MinPat;
 class MinPatStats;
-class Fsim;
-class FsimOp;
 
 END_NAMESPACE_YM_SATPG_TD
-
-
-BEGIN_NAMESPACE_YM_SATPG
-
-typedef nsTd::Fsim TdFsim;
-
-END_NAMESPACE_YM_SATPG
 
 #endif // SATPG_TD_H

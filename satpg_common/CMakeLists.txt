@@ -3,7 +3,7 @@
 # サブディレクトリの設定
 # ===================================================================
 
-add_subdirectory ( sa/fsim )
+add_subdirectory ( fsim )
 
 
 # ===================================================================
@@ -52,6 +52,10 @@ set (tpg_network_SOURCES
   tpg_network/GateLitMap_vid.cc
   )
 
+set (fsim_SOURCES
+  fsim/Fsim.cc
+  )
+
 set (sa_SOURCES
   sa/bt/BackTracer.cc
   sa/bt/BtImpl.cc
@@ -70,8 +74,6 @@ set (sa_SOURCES
   sa/dtpg/Dtpg.cc
   sa/dtpg/DtpgImpl.cc
   sa/dtpg/DtpgImplM.cc
-
-  sa/fsim/Fsim.cc
 
   sa/uop/UopBase.cc
   sa/uop/UopDummy.cc
@@ -97,9 +99,7 @@ set (sa_SOURCES
   sa/rtpg/RtpgImpl.cc
 
   sa/struct_sat/StructSat.cc
-  sa/struct_sat/ConeBase.cc
   sa/struct_sat/FoCone.cc
-  sa/struct_sat/MffcCone.cc
   sa/struct_sat/Extractor.cc
   sa/struct_sat/ModelValMap.cc
   )
@@ -114,15 +114,6 @@ set (td_SOURCES
 
   td/dtpg/DtpgSat.cc
   td/dtpg/DtpgSatS.cc
-
-  td/fsim2/EventQ.cc
-  td/fsim2/Fsim2.cc
-  td/fsim2/SimNode.cc
-  td/fsim2/SnAnd.cc
-  td/fsim2/SnGate.cc
-  td/fsim2/SnInput.cc
-  td/fsim2/SnOr.cc
-  td/fsim2/SnXor.cc
 
   td/rtpg/FopRtpg.cc
   td/rtpg/RtpgP1.cc
@@ -142,6 +133,7 @@ set (td_SOURCES
 # ===================================================================
 ym_add_object_library ( satpg_common
   ${tpg_network_SOURCES}
+  ${fsim_SOURCES}
   ${sa_SOURCES}
   ${td_SOURCES}
   )

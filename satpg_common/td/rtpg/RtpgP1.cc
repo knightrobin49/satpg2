@@ -11,7 +11,7 @@
 #include "TpgFaultMgr.h"
 #include "TvMgr.h"
 #include "TestVector.h"
-#include "td/Fsim.h"
+#include "Fsim.h"
 #include "td/RtpgStats.h"
 #include "FopRtpg.h"
 #include "ym/StopWatch.h"
@@ -100,7 +100,11 @@ RtpgP1::run(TpgFaultMgr& fmgr,
     tv->set_from_random(mRandGen);
     ++ gnum;
 
+#if 0
     ymuint wsa = fsim.calc_wsa(tv);
+#else
+    ymuint wsa = 0;
+#endif
     //cout << "wsa = " << wsa << ", # of pat = " << pat_num << endl;
     if ( wsa > wsa_limit ) {
       continue;
@@ -108,7 +112,7 @@ RtpgP1::run(TpgFaultMgr& fmgr,
 
     op.clear_count();
 
-    fsim.sppfp(tv, op);
+    fsim.td_sppfp(tv);
     ++ pat_num;
 
     ymuint det_count = op.count(0);

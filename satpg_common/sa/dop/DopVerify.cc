@@ -9,7 +9,7 @@
 
 #include "DopVerify.h"
 #include "TpgFault.h"
-#include "sa/Fsim.h"
+#include "Fsim.h"
 #include "NodeValList.h"
 
 
@@ -47,7 +47,7 @@ void
 DopVerify::operator()(const TpgFault* f,
 		      const NodeValList& assign_list)
 {
-  bool detect = mFsim.spsfp(assign_list, f);
+  bool detect = mFsim.sa_spsfp(assign_list, f);
   if ( !detect ) {
     cout << "Error: " << f->str() << " is not detected with "
 	 << assign_list << endl;

@@ -51,6 +51,14 @@ public:
   TpgFaultMgr&
   _fault_mgr();
 
+  /// @brief 2値の故障シミュレータを取り出す．
+  Fsim&
+  _fsim2();
+
+  /// @brief 3値の故障シミュレータを返す．
+  Fsim&
+  _fsim3();
+
   /// @brief TvMgr を取り出す．
   TvMgr&
   _tv_mgr();
@@ -59,21 +67,9 @@ public:
   vector<const TestVector*>&
   _sa_tv_list();
 
-  /// @brief 2値の故障シミュレータを取り出す．
-  nsSa::Fsim&
-  _sa_fsim();
-
-  /// @brief 3値の故障シミュレータを返す．
-  nsSa::Fsim&
-  _sa_fsim3();
-
   /// @brief テストベクタのリストを取り出す．
   vector<const TestVector*>&
   _td_tv_list();
-
-  /// @brief 2値の故障シミュレータを取り出す．(遷移故障用)
-  nsTd::Fsim&
-  _td_fsim();
 
 
 public:
@@ -139,23 +135,20 @@ private:
   // 故障マネージャ
   TpgFaultMgr* mFaultMgr;
 
+  // 2値の故障シミュレータ
+  Fsim* mFsim2;
+
+  // 3値の故障シミュレータ
+  Fsim* mFsim3;
+
   // テストベクタを管理するオブジェクト
   TvMgr* mTvMgr;
 
   // テストベクタのリスト
   vector<const TestVector*> mSaTvList;
 
-  // 故障シミュレータ
-  nsSa::Fsim* mSaFsim;
-
-  // 3値の故障シミュレータ
-  nsSa::Fsim* mSaFsim3;
-
   // テストベクタのリスト
   vector<const TestVector*> mTdTvList;
-
-  // 遷移故障用の故障シミュレータ
-  nsTd::Fsim* mTdFsim;
 
   // ネットワークが変更された時に呼ばれるイベントハンドラ
   T1BindMgr<const TpgNetwork&> mNtwkBindMgr;
@@ -186,6 +179,22 @@ AtpgMgr::_fault_mgr()
   return *mFaultMgr;
 }
 
+// @brief 2値の故障シミュレータを取り出す．
+inline
+Fsim&
+AtpgMgr::_fsim2()
+{
+  return *mFsim2;
+}
+
+// @brief 3値の故障シミュレータを返す．
+inline
+Fsim&
+AtpgMgr::_fsim3()
+{
+  return *mFsim3;
+}
+
 // @brief TvMgr を取り出す．
 inline
 TvMgr&
@@ -202,36 +211,12 @@ AtpgMgr::_sa_tv_list()
   return mSaTvList;
 }
 
-// @brief 2値の故障シミュレータを取り出す．
-inline
-nsSa::Fsim&
-AtpgMgr::_sa_fsim()
-{
-  return *mSaFsim;
-}
-
-// @brief 3値の故障シミュレータを返す．
-inline
-nsSa::Fsim&
-AtpgMgr::_sa_fsim3()
-{
-  return *mSaFsim3;
-}
-
 // @brief テストベクタのリストを取り出す．
 inline
 vector<const TestVector*>&
 AtpgMgr::_td_tv_list()
 {
   return mTdTvList;
-}
-
-// @brief 2値の故障シミュレータを取り出す．(遷移故障用)
-inline
-nsTd::Fsim&
-AtpgMgr::_td_fsim()
-{
-  return *mTdFsim;
 }
 
 // @brief ネットワークの変更に関するハンドラを登録する．
